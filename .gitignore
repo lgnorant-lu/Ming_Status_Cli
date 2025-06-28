@@ -1,0 +1,47 @@
+# Dart/Flutter项目.gitignore
+
+# 编译文件
+build/
+**/*.so
+**/*.dylib
+**/*.dll
+
+# Flutter/Dart生成文件
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+
+# IDE文件
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 操作系统生成文件
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# 日志文件
+*.log
+
+# 环境和配置文件
+.env
+.env.*
+!.env.example
+
+# 任务管理文件（工作文件，不需要版本控制）
+.tasks/
+
+# 测试和覆盖率
+coverage/
+test/.test_coverage.dart
+
+# 临时文件
+*.tmp
+*.bak

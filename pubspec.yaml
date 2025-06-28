@@ -1,0 +1,37 @@
+name: ming_status_cli
+description: Ming Status CLI - 模块化脚手架工具for Pet App平台
+version: 1.0.0
+repository: https://github.com/pet-app/ming_status_cli
+
+environment:
+  sdk: ^3.2.0
+
+dependencies:
+  # CLI核心
+  args: ^2.4.2
+  
+  # 模板引擎
+  mason: ^0.1.0-dev.51
+  mason_api: ^0.1.0-dev.51
+  
+  # 配置和数据
+  yaml: ^3.1.2
+  json_annotation: ^4.8.1
+  
+  # 文件和网络
+  path: ^1.8.3
+  http: ^1.1.0
+  
+  # 工具类
+  ansi_styles: ^0.3.2
+  cli_util: ^0.4.0
+
+dev_dependencies:
+  # 代码生成
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
+  
+  # 测试和质量
+  test: ^1.24.9
+  very_good_analysis: ^5.1.0
+  mocktail: ^1.0.3
