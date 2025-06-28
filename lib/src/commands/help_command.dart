@@ -4,320 +4,175 @@ File name:          help_command.dart
 Author:             Ignorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
-Dart Version:       3.2+
+Dart Version:       3.32.4
 Description:        帮助命令 (Help command)
 ---------------------------------------------------------------
 Change History:
-    2025/06/29: Initial creation - CLI帮助信息命令;
+    2025/06/29: Initial creation - CLI帮助命令;
+    2025/06/29: Performance optimization - 轻量级实现，避免重度依赖;
 ---------------------------------------------------------------
 */
 
-import 'base_command.dart';
+import 'package:args/command_runner.dart';
 import '../utils/logger.dart';
+import '../utils/help_formatter.dart';
 
-/// 帮助命令
-/// 显示详细的CLI使用帮助信息
-class HelpCommand extends BaseCommand {
-  @override
-  String get name => 'help';
+/// 增强的帮助命令
+/// 提供更友好和详细的帮助信息显示（轻量级实现）
+class HelpCommand {
+  final CommandRunner _runner;
 
-  @override
-  String get description => '显示命令帮助信息';
+  HelpCommand(this._runner);
 
-  @override
-  String get invocation => 'ming help [command]';
-
-  @override
-  Future<int> execute() async {
-    final commandName = argResults?.rest.isNotEmpty == true 
-        ? argResults!.rest.first 
-        : null;
-
-    if (commandName != null) {
-      _showCommandHelp(commandName);
-    } else {
-      _showGeneralHelp();
+  /// 显示特定命令的帮助信息
+  Future<int> showSpecificCommandHelp(String commandName, bool verbose) async {
+    final command = _runner.commands[commandName];
+    
+    if (command == null) {
+      Logger.error('未找到命令: $commandName');
+      Logger.newLine();
+      Logger.info('可用命令:');
+      for (final name in _runner.commands.keys) {
+        Logger.listItem(name);
+      }
+      return 1;
     }
 
+    _showCommandDetailedHelp(command, verbose);
     return 0;
   }
 
-  /// 显示通用帮助信息
-  void _showGeneralHelp() {
-    Logger.title('Ming Status CLI - 模块化开发工具');
+  /// 显示命令的详细帮助信息
+  void _showCommandDetailedHelp(Command command, bool verbose) {
+    Logger.title('📖 ${command.name} 命令帮助');
+    Logger.newLine();
     
-    print('''
-Ming Status CLI 是一个强大的模块化开发工具，用于创建、管理和验证模块化应用的代码结构。
-
-用法:
-  ming <command> [arguments]
-
-全局选项:
-  -v, --verbose    显示详细输出
-  -q, --quiet      静默模式，仅显示错误
-  -h, --help       显示帮助信息
-      --version    显示版本信息
-
-可用命令:''');
-
-    _showCommandList();
-
-    print('''
-
-示例:
-  ming init my_workspace          # 初始化工作空间
-  ming template create basic      # 创建基础模板
-  ming generate basic ./my_module # 使用模板生成模块
-  ming validate ./my_module       # 验证模块结构
-
-获取特定命令的帮助:
-  ming help <command>
-
-更多信息请访问: https://github.com/ignorant-lu/ming-status-cli
-''');
-  }
-
-  /// 显示命令列表
-  void _showCommandList() {
-    final commands = [
-      CommandInfo(
-        name: 'init',
-        description: '初始化Ming Status工作空间',
-        usage: 'ming init [workspace_name]',
-      ),
-      CommandInfo(
-        name: 'template',
-        description: '模板管理（创建、列出、删除模板）',
-        usage: 'ming template <create|list|delete> [args]',
-      ),
-      CommandInfo(
-        name: 'generate',
-        description: '使用模板生成模块代码',
-        usage: 'ming generate <template> <output_path>',
-      ),
-      CommandInfo(
-        name: 'validate',
-        description: '验证模块结构和规范',
-        usage: 'ming validate <module_path>',
-      ),
-      CommandInfo(
-        name: 'status',
-        description: '显示工作空间状态信息',
-        usage: 'ming status',
-      ),
-      CommandInfo(
-        name: 'clean',
-        description: '清理临时文件和缓存',
-        usage: 'ming clean',
-      ),
-      CommandInfo(
-        name: 'help',
-        description: '显示帮助信息',
-        usage: 'ming help [command]',
-      ),
-      CommandInfo(
-        name: 'version',
-        description: '显示版本信息',
-        usage: 'ming version',
-      ),
-    ];
-
-    for (final cmd in commands) {
-      final nameFormatted = cmd.name.padRight(12);
-      print('  $nameFormatted ${cmd.description}');
+    // 基本信息
+    Logger.subtitle('📋 基本信息');
+    Logger.keyValue('命令名称', command.name);
+    Logger.keyValue('描述', command.description);
+    
+    if (command.aliases.isNotEmpty) {
+      Logger.keyValue('别名', command.aliases.join(', '));
     }
+    
+    Logger.newLine();
+    
+    // 用法示例
+    Logger.subtitle('🚀 用法');
+    if (command is Command && command.invocation.isNotEmpty) {
+      Logger.info('  ${command.invocation}');
+    } else {
+      Logger.info('  ming ${command.name} [选项]');
+    }
+    Logger.newLine();
+    
+    // 参数和选项
+    if (command.argParser.options.isNotEmpty) {
+      Logger.subtitle('⚙️  选项');
+      for (final option in command.argParser.options.values) {
+        final abbr = option.abbr != null ? '-${option.abbr}, ' : '';
+        final name = '--${option.name}';
+        final help = option.help ?? '无描述';
+        
+        if (option.isFlag) {
+          Logger.listItem('$abbr$name: $help');
+        } else {
+          final defaultValue = option.defaultsTo != null ? ' (默认: ${option.defaultsTo})' : '';
+          Logger.listItem('$abbr$name <值>: $help$defaultValue');
+        }
+      }
+      Logger.newLine();
+    }
+    
+    // 具体命令的示例
+    Logger.subtitle('💡 示例');
+    _showCommandExamples(command.name);
+    Logger.newLine();
+    
+    if (verbose) {
+      _showCommandVerboseHelp(command.name);
+    }
+    
+    // 获取更多帮助的信息
+    Logger.subtitle('📚 获取更多帮助');
+    Logger.listItem('查看所有命令: ming help');
+    Logger.listItem('项目主页: https://github.com/ignorant-lu/ming-status-cli');
+    Logger.listItem('问题反馈: https://github.com/ignorant-lu/ming-status-cli/issues');
   }
 
-  /// 显示特定命令的帮助
-  void _showCommandHelp(String commandName) {
-    switch (commandName.toLowerCase()) {
+  /// 显示命令示例
+  void _showCommandExamples(String commandName) {
+    switch (commandName) {
       case 'init':
-        _showInitHelp();
+        Logger.listItem('基本初始化: ming init');
+        Logger.listItem('指定名称: ming init my-project');
+        Logger.listItem('完整配置: ming init --name "我的项目" --author "开发者" --description "项目描述"');
+        Logger.listItem('强制重新初始化: ming init --force');
         break;
-      case 'template':
-        _showTemplateHelp();
+        
+      case 'doctor':
+        Logger.listItem('基本检查: ming doctor');
+        Logger.listItem('详细检查: ming doctor --detailed');
+        Logger.listItem('自动修复: ming doctor --fix');
         break;
-      case 'generate':
-        _showGenerateHelp();
-        break;
-      case 'validate':
-        _showValidateHelp();
-        break;
-      case 'status':
-        _showStatusHelp();
-        break;
-      case 'clean':
-        _showCleanHelp();
-        break;
+        
       case 'version':
-        _showVersionHelp();
+        Logger.listItem('显示版本: ming version');
+        Logger.listItem('详细信息: ming version --detailed');
         break;
+        
       default:
-        Logger.error('未知命令: $commandName');
-        Logger.info('使用 "ming help" 查看可用命令');
-        return;
+        Logger.listItem('基本用法: ming $commandName');
+        Logger.listItem('查看帮助: ming help $commandName');
     }
   }
 
-  /// 显示init命令帮助
-  void _showInitHelp() {
-    print('''
-ming init - 初始化Ming Status工作空间
-
-用法:
-  ming init [workspace_name] [options]
-
-参数:
-  workspace_name    工作空间名称（可选）
-
-选项:
-  -n, --name        指定工作空间名称
-  -d, --description 指定工作空间描述
-  -a, --author      指定默认作者名称 (默认: Ignorant-lu)
-  -f, --force       强制初始化，覆盖现有配置
-
-示例:
-  ming init                       # 交互式初始化
-  ming init my_workspace          # 指定名称初始化
-  ming init -n my_workspace -d "我的模块工作空间"
-  ming init --force               # 强制重新初始化
-''');
+  /// 显示命令的详细信息
+  void _showCommandVerboseHelp(String commandName) {
+    Logger.subtitle('🔧 详细信息');
+    
+    switch (commandName) {
+      case 'init':
+        Logger.info('init 命令用于初始化Ming Status工作空间：');
+        Logger.listItem('创建配置文件 (ming_status.yaml)');
+        Logger.listItem('建立标准目录结构 (src/, tests/, docs/)');
+        Logger.listItem('生成示例文件和文档');
+        Logger.listItem('配置默认设置和模板');
+        Logger.newLine();
+        Logger.info('⚠️  注意事项:');
+        Logger.listItem('确保当前目录有写权限');
+        Logger.listItem('工作空间名称应符合包命名规范');
+        Logger.listItem('使用 --force 会覆盖现有配置');
+        break;
+        
+      case 'doctor':
+        Logger.info('doctor 命令检查开发环境状态：');
+        Logger.listItem('验证 Dart SDK 版本和配置');
+        Logger.listItem('检查工作空间配置完整性');
+        Logger.listItem('验证依赖包状态');
+        Logger.listItem('检查文件系统权限');
+        Logger.newLine();
+        Logger.info('🔧 自动修复功能:');
+        Logger.listItem('创建缺失的配置文件');
+        Logger.listItem('修复权限问题');
+        Logger.listItem('清理无效缓存');
+        break;
+        
+      case 'version':
+        Logger.info('version 命令显示工具版本信息：');
+        Logger.listItem('CLI 工具版本号');
+        Logger.listItem('Dart SDK 版本');
+        Logger.listItem('运行环境信息');
+        Logger.listItem('性能和系统状态');
+        break;
+        
+      default:
+        Logger.info('这是一个标准的Ming Status CLI命令。');
+        Logger.listItem('使用 --help 获取命令特定帮助');
+        Logger.listItem('使用 --verbose 获取详细输出');
+    }
+    
+    Logger.newLine();
   }
-
-  /// 显示template命令帮助
-  void _showTemplateHelp() {
-    print('''
-ming template - 模板管理
-
-用法:
-  ming template <subcommand> [arguments]
-
-子命令:
-  create <name>     创建新模板
-  list              列出所有可用模板
-  delete <name>     删除指定模板
-  info <name>       显示模板详细信息
-
-示例:
-  ming template create basic      # 创建基础模板
-  ming template list              # 列出所有模板
-  ming template info basic        # 查看模板信息
-  ming template delete old_template
-''');
-  }
-
-  /// 显示generate命令帮助
-  void _showGenerateHelp() {
-    print('''
-ming generate - 使用模板生成模块
-
-用法:
-  ming generate <template> <output_path> [options]
-
-参数:
-  template      模板名称
-  output_path   输出路径
-
-选项:
-  --overwrite   覆盖现有文件
-  --dry-run     预览生成结果，不实际创建文件
-
-示例:
-  ming generate basic ./my_module
-  ming generate advanced ./modules/user_service --overwrite
-  ming generate widget ./ui/my_widget --dry-run
-''');
-  }
-
-  /// 显示validate命令帮助
-  void _showValidateHelp() {
-    print('''
-ming validate - 验证模块结构
-
-用法:
-  ming validate <module_path> [options]
-
-参数:
-  module_path   要验证的模块路径
-
-选项:
-  --strict      启用严格模式验证
-  --fix         自动修复可修复的问题
-  --report      生成详细验证报告
-
-示例:
-  ming validate ./my_module
-  ming validate ./modules/user_service --strict
-  ming validate ./ui/widget --fix --report
-''');
-  }
-
-  /// 显示status命令帮助
-  void _showStatusHelp() {
-    print('''
-ming status - 显示工作空间状态
-
-用法:
-  ming status [options]
-
-选项:
-  --detailed    显示详细状态信息
-  --json        以JSON格式输出
-
-示例:
-  ming status
-  ming status --detailed
-  ming status --json
-''');
-  }
-
-  /// 显示clean命令帮助
-  void _showCleanHelp() {
-    print('''
-ming clean - 清理临时文件
-
-用法:
-  ming clean [options]
-
-选项:
-  --cache       清理缓存文件
-  --temp        清理临时文件
-  --all         清理所有可清理的文件
-
-示例:
-  ming clean
-  ming clean --cache
-  ming clean --all
-''');
-  }
-
-  /// 显示version命令帮助
-  void _showVersionHelp() {
-    print('''
-ming version - 显示版本信息
-
-用法:
-  ming version [options]
-
-选项:
-  --detailed    显示详细版本信息
-
-示例:
-  ming version
-  ming version --detailed
-''');
-  }
-}
-
-/// 命令信息类
-class CommandInfo {
-  final String name;
-  final String description;
-  final String usage;
-
-  const CommandInfo({
-    required this.name,
-    required this.description,
-    required this.usage,
-  });
 } 

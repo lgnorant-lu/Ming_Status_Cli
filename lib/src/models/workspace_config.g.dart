@@ -20,10 +20,10 @@ WorkspaceConfig _$WorkspaceConfigFromJson(Map<String, dynamic> json) =>
 
 Map<String, dynamic> _$WorkspaceConfigToJson(WorkspaceConfig instance) =>
     <String, dynamic>{
-      'workspace': instance.workspace,
-      'templates': instance.templates,
-      'defaults': instance.defaults,
-      'validation': instance.validation,
+      'workspace': instance.workspace.toJson(),
+      'templates': instance.templates.toJson(),
+      'defaults': instance.defaults.toJson(),
+      'validation': instance.validation.toJson(),
     };
 
 WorkspaceInfo _$WorkspaceInfoFromJson(Map<String, dynamic> json) =>

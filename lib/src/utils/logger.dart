@@ -144,6 +144,154 @@ class Logger {
     }
   }
 
+  /// 输出结构化错误信息
+  static void structuredError({
+    required String title,
+    required String description,
+    String? context,
+    List<String>? suggestions,
+    String? docLink,
+    Object? technicalDetails,
+  }) {
+    if (!_shouldLog(LogLevel.error)) return;
+
+    // 错误标题
+    final styledTitle = _supportsColor 
+        ? AnsiStyles.red(AnsiStyles.bold('❌ $title'))
+        : '❌ $title';
+    stderr.writeln(styledTitle);
+    
+    // 错误描述
+    final styledDesc = _supportsColor 
+        ? AnsiStyles.red('   $description')
+        : '   $description';
+    stderr.writeln(styledDesc);
+    
+    // 上下文信息
+    if (context != null && context.isNotEmpty) {
+      stderr.writeln('');
+      final styledContext = _supportsColor 
+          ? AnsiStyles.gray('   📍 上下文: $context')
+          : '   📍 上下文: $context';
+      stderr.writeln(styledContext);
+    }
+    
+    // 建议解决方案
+    if (suggestions != null && suggestions.isNotEmpty) {
+      stderr.writeln('');
+      final suggestionHeader = _supportsColor 
+          ? AnsiStyles.yellow(AnsiStyles.bold('   💡 建议解决方案:'))
+          : '   💡 建议解决方案:';
+      stderr.writeln(suggestionHeader);
+      
+      for (int i = 0; i < suggestions.length; i++) {
+        final suggestion = suggestions[i];
+        final styledSuggestion = _supportsColor 
+            ? AnsiStyles.yellow('      ${i + 1}. $suggestion')
+            : '      ${i + 1}. $suggestion';
+        stderr.writeln(styledSuggestion);
+      }
+    }
+    
+    // 文档链接
+    if (docLink != null && docLink.isNotEmpty) {
+      stderr.writeln('');
+      final styledLink = _supportsColor 
+          ? AnsiStyles.blue('   📚 相关文档: $docLink')
+          : '   📚 相关文档: $docLink';
+      stderr.writeln(styledLink);
+    }
+    
+    // 技术详情（仅在详细模式下显示）
+    if (technicalDetails != null && verbose) {
+      stderr.writeln('');
+      final styledDetails = _supportsColor 
+          ? AnsiStyles.gray('   🔧 技术详情: $technicalDetails')
+          : '   🔧 技术详情: $technicalDetails';
+      stderr.writeln(styledDetails);
+    }
+    
+    stderr.writeln(''); // 空行分隔
+  }
+
+  /// 输出结构化警告信息
+  static void structuredWarning({
+    required String title,
+    required String description,
+    String? context,
+    List<String>? suggestions,
+    String? docLink,
+  }) {
+    if (!_shouldLog(LogLevel.warning)) return;
+
+    // 警告标题
+    final styledTitle = _supportsColor 
+        ? AnsiStyles.yellow(AnsiStyles.bold('⚠️  $title'))
+        : '⚠️  $title';
+    print(styledTitle);
+    
+    // 警告描述
+    final styledDesc = _supportsColor 
+        ? AnsiStyles.yellow('   $description')
+        : '   $description';
+    print(styledDesc);
+    
+    // 上下文信息
+    if (context != null && context.isNotEmpty) {
+      print('');
+      final styledContext = _supportsColor 
+          ? AnsiStyles.gray('   📍 上下文: $context')
+          : '   📍 上下文: $context';
+      print(styledContext);
+    }
+    
+    // 建议
+    if (suggestions != null && suggestions.isNotEmpty) {
+      print('');
+      final suggestionHeader = _supportsColor 
+          ? AnsiStyles.cyan(AnsiStyles.bold('   💡 建议:'))
+          : '   💡 建议:';
+      print(suggestionHeader);
+      
+      for (int i = 0; i < suggestions.length; i++) {
+        final suggestion = suggestions[i];
+        final styledSuggestion = _supportsColor 
+            ? AnsiStyles.cyan('      ${i + 1}. $suggestion')
+            : '      ${i + 1}. $suggestion';
+        print(styledSuggestion);
+      }
+    }
+    
+    // 文档链接
+    if (docLink != null && docLink.isNotEmpty) {
+      print('');
+      final styledLink = _supportsColor 
+          ? AnsiStyles.blue('   📚 相关文档: $docLink')
+          : '   📚 相关文档: $docLink';
+      print(styledLink);
+    }
+    
+    print(''); // 空行分隔
+  }
+
+  /// 输出使用提示
+  static void usageTip(String command, String description, {String? example}) {
+    if (!_shouldLog(LogLevel.info)) return;
+    
+    final styledCmd = _supportsColor 
+        ? AnsiStyles.green(AnsiStyles.bold(command))
+        : command;
+    
+    print('💬 $styledCmd - $description');
+    
+    if (example != null) {
+      final styledExample = _supportsColor 
+          ? AnsiStyles.gray('   示例: $example')
+          : '   示例: $example';
+      print(styledExample);
+    }
+  }
+
   /// 内部日志方法
   static void _log(LogLevel level, String message, {String? prefix}) {
     if (!_shouldLog(level)) return;

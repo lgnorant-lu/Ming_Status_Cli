@@ -9,6 +9,7 @@ Description:        CLI应用主类 (Main CLI application class)
 ---------------------------------------------------------------
 Change History:
     2025/06/29: Initial creation - CLI应用程序主入口;
+    2025/06/29: Performance optimization - 延迟命令注册，提升启动性能;
 ---------------------------------------------------------------
 */
 
@@ -16,12 +17,17 @@ import 'package:args/command_runner.dart';
 
 import 'commands/init_command.dart';
 import 'commands/version_command.dart';
+import 'commands/doctor_command.dart';
+import 'commands/help_command.dart';
 import 'utils/logger.dart';
+import 'utils/error_handler.dart';
+import 'utils/help_formatter.dart';
 
 /// CLI应用主类
 /// 负责注册命令、处理全局选项和应用程序生命周期
 class MingStatusCliApp {
   late final CommandRunner<int> _runner;
+  bool _commandsRegistered = false;
   
   /// 应用名称
   static const String appName = 'ming';
@@ -33,7 +39,7 @@ class MingStatusCliApp {
 
   MingStatusCliApp() {
     _initializeRunner();
-    _registerCommands();
+    // 不再立即注册命令，延迟到实际需要时
   }
 
   /// 初始化命令运行器
@@ -62,12 +68,17 @@ class MingStatusCliApp {
     );
   }
 
-  /// 注册所有命令
-  void _registerCommands() {
+  /// 延迟注册所有命令（仅在需要时）
+  void _ensureCommandsRegistered() {
+    if (_commandsRegistered) return;
+    
     // 核心命令
     _runner.addCommand(InitCommand());
-    // 注意：CommandRunner已经有内置的help命令，不需要重复添加
     _runner.addCommand(VersionCommand());
+    _runner.addCommand(DoctorCommand());
+    
+    // 注意：使用自定义帮助处理而不是添加help命令
+    // 因为CommandRunner已经有内置的help命令
     
     // TODO: 在后续阶段添加更多命令
     // _runner.addCommand(TemplateCommand());
@@ -75,6 +86,8 @@ class MingStatusCliApp {
     // _runner.addCommand(ValidateCommand());
     // _runner.addCommand(StatusCommand());
     // _runner.addCommand(CleanCommand());
+    
+    _commandsRegistered = true;
   }
 
   /// 运行CLI应用
@@ -86,26 +99,55 @@ class MingStatusCliApp {
       // 设置全局日志级别
       _setupGlobalLogging(arguments);
       
-      // 处理特殊的全局参数
-      if (_shouldShowVersion(arguments)) {
-        await VersionCommand().execute();
-        return 0;
+      // 优先处理快速命令，避免注册所有命令
+      final quickResult = await _handleQuickCommands(arguments);
+      if (quickResult != null) return quickResult;
+      
+      // 处理自定义帮助显示
+      if (_shouldShowCustomHelp(arguments)) {
+        return await _handleCustomHelp(arguments);
       }
+      
+      // 只有在真正需要运行命令时才注册所有命令
+      _ensureCommandsRegistered();
       
       // 运行命令
       final result = await _runner.run(arguments);
       return result ?? 0;
       
     } on UsageException catch (e) {
-      // 处理用法错误
-      _handleUsageError(e);
+      // 使用增强的错误处理器
+      ErrorHandler.handleException(e, context: '命令行参数解析');
+      ErrorHandler.showCommonCommands();
       return 64; // EX_USAGE
       
     } catch (e) {
-      // 处理其他错误
-      _handleUnexpectedError(e);
+      // 使用增强的错误处理器
+      ErrorHandler.handleException(e, context: '应用程序运行');
+      ErrorHandler.showQuickFixes();
       return 1;
     }
+  }
+
+  /// 处理快速命令（避免完整初始化）
+  Future<int?> _handleQuickCommands(List<String> arguments) async {
+    // 处理 --version 全局参数
+    if (_shouldShowVersion(arguments)) {
+      await VersionCommand().run();
+      return 0;
+    }
+    
+    // 处理直接的 version 命令
+    if (arguments.isNotEmpty && arguments.first == 'version') {
+      // 创建临时的CommandRunner来处理version命令
+      final tempRunner = CommandRunner<int>('temp', 'temp');
+      final versionCmd = VersionCommand();
+      tempRunner.addCommand(versionCmd);
+      await tempRunner.run(arguments);
+      return 0;
+    }
+    
+    return null; // 需要完整处理
   }
 
   /// 预处理命令行参数
@@ -148,22 +190,74 @@ class MingStatusCliApp {
     return arguments.contains('--version');
   }
 
-  /// 处理用法错误
-  void _handleUsageError(UsageException e) {
-    Logger.error(e.message);
+  /// 检查是否应该显示自定义帮助
+  bool _shouldShowCustomHelp(List<String> arguments) {
+    if (arguments.isEmpty) return false;
     
-    if (e.usage.isNotEmpty) {
-      print('\n${e.usage}');
-    }
-    
-    Logger.info('使用 "ming help" 获取更多帮助信息');
+    return arguments.contains('help') || 
+           arguments.contains('--help') || 
+           arguments.contains('-h');
   }
 
-  /// 处理意外错误
-  void _handleUnexpectedError(Object error) {
-    Logger.error('意外错误: $error');
-    Logger.debug('如果问题持续存在，请报告此问题');
-    Logger.info('GitHub: https://github.com/ignorant-lu/ming-status-cli/issues');
+  /// 处理自定义帮助显示
+  Future<int> _handleCustomHelp(List<String> arguments) async {
+    // 提取help命令的参数
+    String? commandName;
+    bool verbose = false;
+    
+    // 查找help参数的位置和后续参数
+    for (int i = 0; i < arguments.length; i++) {
+      if (arguments[i] == 'help') {
+        // 检查是否有命令名称参数
+        if (i + 1 < arguments.length && !arguments[i + 1].startsWith('-')) {
+          commandName = arguments[i + 1];
+        }
+        break;
+      }
+    }
+    
+    // 检查verbose标志
+    verbose = arguments.contains('--verbose') || arguments.contains('-v');
+    
+    // 直接调用帮助显示逻辑
+    if (commandName != null) {
+      return await _showCommandHelp(commandName, verbose);
+    } else {
+      _showMainHelp(verbose);
+      return 0;
+    }
+  }
+
+  /// 显示主帮助信息
+  void _showMainHelp(bool verbose) {
+    HelpFormatter.showMainHelp(_runner);
+    
+    if (verbose) {
+      _showVerboseMainHelp();
+    }
+  }
+
+  /// 显示详细的主帮助信息
+  void _showVerboseMainHelp() {
+    Logger.subtitle('🔧 开发者信息');
+    Logger.keyValue('项目状态', 'Phase 1 - 核心功能开发中');
+    Logger.keyValue('支持平台', 'Windows, macOS, Linux');
+    Logger.keyValue('Dart版本要求', '>=3.0.0');
+    Logger.newLine();
+    
+    Logger.subtitle('📊 当前功能');
+    Logger.listItem('✅ 工作空间初始化和配置管理');
+    Logger.listItem('✅ 环境检查和诊断工具');
+    Logger.listItem('✅ 模块化项目结构创建');
+    Logger.listItem('🚧 模板系统（开发中）');
+    Logger.listItem('🚧 代码生成工具（计划中）');
+    Logger.newLine();
+  }
+
+  /// 显示特定命令的帮助
+  Future<int> _showCommandHelp(String commandName, bool verbose) async {
+    final helpCommand = HelpCommand(_runner);
+    return await helpCommand.showSpecificCommandHelp(commandName, verbose);
   }
 
   /// 显示欢迎信息（可选）
@@ -178,6 +272,7 @@ class MingStatusCliApp {
 
   /// 获取可用命令列表
   List<String> get availableCommands {
+    _ensureCommandsRegistered(); // 确保命令已注册
     return _runner.commands.keys.toList()..sort();
   }
 

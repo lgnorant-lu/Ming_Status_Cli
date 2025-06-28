@@ -12,10 +12,12 @@ Change History:
 ---------------------------------------------------------------
 */
 
+import 'dart:io';
 import 'package:path/path.dart' as path;
 
 import 'base_command.dart';
 import '../utils/logger.dart';
+import '../utils/progress_manager.dart';
 import '../utils/string_utils.dart';
 
 /// 初始化命令
@@ -60,8 +62,6 @@ class InitCommand extends BaseCommand {
 
   @override
   Future<int> execute() async {
-    Logger.title('Ming Status 工作空间初始化');
-    
     // 检查是否已经初始化
     if (configManager.isWorkspaceInitialized() && !(argResults!['force'] as bool)) {
       Logger.warning('工作空间已经初始化');
@@ -69,45 +69,190 @@ class InitCommand extends BaseCommand {
       return 0;
     }
     
-    // 获取工作空间配置
-    final workspaceName = await _getWorkspaceName();
-    final description = await _getDescription();
-    final author = await _getAuthor();
-    
-    // 显示配置信息
-    Logger.subtitle('工作空间配置');
-    Logger.keyValue('名称', workspaceName);
-    Logger.keyValue('描述', description);
-    Logger.keyValue('作者', author);
-    Logger.keyValue('路径', workingDirectory);
-    Logger.newLine();
-    
-    // 确认初始化
-    if (!quiet && !confirmAction('确认初始化工作空间？', defaultValue: true)) {
-      Logger.info('初始化已取消');
-      return 0;
-    }
-    
-    // 执行初始化
-    Logger.progress('正在初始化工作空间...');
-    
-    final success = await configManager.initializeWorkspace(
-      workspaceName: workspaceName,
-      description: description,
-      author: author,
+    // 创建进度管理器
+    final progress = ProgressManager(
+      showProgressBar: true,
+      showTaskDetails: true,
+      showTimestamp: false,
     );
-    
-    if (success) {
-      Logger.complete('工作空间初始化成功！');
-      Logger.newLine();
-      
+
+    // 添加初始化任务
+    progress.addTasks([
+      {
+        'id': 'config_gathering',
+        'name': '收集配置信息',
+        'description': '获取工作空间名称、描述和作者信息',
+      },
+      {
+        'id': 'config_validation',
+        'name': '验证配置',
+        'description': '验证工作空间配置的有效性',
+      },
+      {
+        'id': 'user_confirmation',
+        'name': '用户确认',
+        'description': '显示配置信息并确认初始化',
+      },
+      {
+        'id': 'workspace_creation',
+        'name': '创建工作空间',
+        'description': '创建目录结构和配置文件',
+      },
+      {
+        'id': 'finalization',
+        'name': '完成初始化',
+        'description': '生成示例文件和文档',
+      },
+    ]);
+
+    // 开始进度跟踪
+    progress.start(title: 'Ming Status 工作空间初始化');
+
+    try {
+      // 步骤1：收集配置信息
+      final configData = await progress.executeTask(() async {
+        final workspaceName = await _getWorkspaceName();
+        final description = await _getDescription();
+        final author = await _getAuthor();
+        
+        return {
+          'workspaceName': workspaceName,
+          'description': description,
+          'author': author,
+        };
+      });
+
+      // 步骤2：验证配置
+      await progress.executeTask(() async {
+        final workspaceName = configData['workspaceName'] as String;
+        if (!_isValidWorkspaceName(workspaceName)) {
+          throw Exception('工作空间名称格式无效: $workspaceName');
+        }
+        
+        // 检查目录权限
+        if (!await _checkDirectoryPermissions()) {
+          throw Exception('目录权限不足，无法创建工作空间');
+        }
+      });
+
+      // 步骤3：用户确认
+      final confirmed = await progress.executeTask(() async {
+        // 显示配置信息
+        Logger.newLine();
+        Logger.subtitle('工作空间配置');
+        Logger.keyValue('名称', configData['workspaceName'] as String);
+        Logger.keyValue('描述', configData['description'] as String);
+        Logger.keyValue('作者', configData['author'] as String);
+        Logger.keyValue('路径', workingDirectory);
+        Logger.newLine();
+        
+        // 确认初始化
+        if (!quiet) {
+          return confirmAction('确认初始化工作空间？', defaultValue: true);
+        }
+        return true;
+      });
+
+      if (!confirmed) {
+        Logger.info('初始化已取消');
+        return 0;
+      }
+
+      // 步骤4：创建工作空间
+      final workspaceSuccess = await progress.executeTask(() async {
+        return await configManager.initializeWorkspace(
+          workspaceName: configData['workspaceName'] as String,
+          description: configData['description'] as String,
+          author: configData['author'] as String,
+        );
+      });
+
+      if (!workspaceSuccess) {
+        throw Exception('工作空间初始化失败');
+      }
+
+      // 步骤5：完成初始化
+      await progress.executeTask(() async {
+        // 创建示例目录和文件
+        await _createSampleStructure();
+        return true;
+      });
+
+      // 完成进度跟踪
+      progress.complete(
+        summary: '工作空间初始化成功完成！',
+      );
+
       // 显示后续操作建议
       _showNextSteps();
       
       return 0;
-    } else {
-      Logger.error('工作空间初始化失败');
+
+    } catch (e) {
+      Logger.error('初始化过程中发生错误: $e');
       return 1;
+    }
+  }
+
+  /// 检查目录权限
+  Future<bool> _checkDirectoryPermissions() async {
+    try {
+      // 尝试在当前目录创建临时文件以测试权限
+      final testFile = File('${workingDirectory}/.ming_test_permissions');
+      await testFile.writeAsString('test');
+      await testFile.delete();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /// 创建示例结构
+  Future<void> _createSampleStructure() async {
+    // 这里可以创建一些示例目录和文件
+    // 例如：src/, tests/, docs/ 等
+    try {
+      final srcDir = Directory('${workingDirectory}/src');
+      if (!await srcDir.exists()) {
+        await srcDir.create(recursive: true);
+      }
+      
+      final testsDir = Directory('${workingDirectory}/tests');
+      if (!await testsDir.exists()) {
+        await testsDir.create(recursive: true);
+      }
+      
+      final docsDir = Directory('${workingDirectory}/docs');
+      if (!await docsDir.exists()) {
+        await docsDir.create(recursive: true);
+      }
+      
+      // 创建README.md
+      final readmeFile = File('${workingDirectory}/README.md');
+      if (!await readmeFile.exists()) {
+        await readmeFile.writeAsString('''# ${path.basename(workingDirectory)}
+
+这是一个使用 Ming Status CLI 创建的模块化项目。
+
+## 项目结构
+
+- `src/` - 源代码目录
+- `tests/` - 测试代码目录  
+- `docs/` - 文档目录
+- `.ming/` - Ming Status CLI 配置目录
+
+## 快速开始
+
+1. 查看可用命令：`ming help`
+2. 检查环境状态：`ming doctor`
+3. 创建新模块：`ming generate <template> <path>`
+
+''');
+      }
+      
+    } catch (e) {
+      // 创建示例结构失败不应该影响整体初始化
+      Logger.warning('创建示例结构时出现问题: $e');
     }
   }
 

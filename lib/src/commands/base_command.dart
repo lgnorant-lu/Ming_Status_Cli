@@ -9,6 +9,7 @@ Description:        基础命令类 (Base command class)
 ---------------------------------------------------------------
 Change History:
     2025/06/29: Initial creation - CLI命令基础类;
+    2025/06/29: Performance optimization - 延迟初始化服务，提升启动性能;
 ---------------------------------------------------------------
 */
 
@@ -24,14 +25,14 @@ import '../utils/logger.dart';
 /// 基础命令类
 /// 为所有CLI命令提供通用功能和依赖注入
 abstract class BaseCommand extends Command<int> {
-  /// 配置管理器
-  late final ConfigManager configManager;
+  /// 配置管理器（延迟初始化）
+  ConfigManager? _configManager;
   
-  /// 模板引擎
-  late final TemplateEngine templateEngine;
+  /// 模板引擎（延迟初始化）
+  TemplateEngine? _templateEngine;
   
-  /// 模块验证器
-  late final ModuleValidator moduleValidator;
+  /// 模块验证器（延迟初始化）
+  ModuleValidator? _moduleValidator;
   
   /// 当前工作目录
   String get workingDirectory => Directory.current.path;
@@ -42,16 +43,23 @@ abstract class BaseCommand extends Command<int> {
   /// 是否启用安静模式
   bool get quiet => globalResults?['quiet'] == true;
 
-  BaseCommand() {
-    _initializeServices();
-    _setupCommonOptions();
+  /// 获取配置管理器（延迟初始化）
+  ConfigManager get configManager {
+    return _configManager ??= ConfigManager(workingDirectory: workingDirectory);
+  }
+  
+  /// 获取模板引擎（延迟初始化）
+  TemplateEngine get templateEngine {
+    return _templateEngine ??= TemplateEngine(workingDirectory: workingDirectory);
+  }
+  
+  /// 获取模块验证器（延迟初始化）
+  ModuleValidator get moduleValidator {
+    return _moduleValidator ??= ModuleValidator();
   }
 
-  /// 初始化服务
-  void _initializeServices() {
-    configManager = ConfigManager(workingDirectory: workingDirectory);
-    templateEngine = TemplateEngine(workingDirectory: workingDirectory);
-    moduleValidator = ModuleValidator();
+  BaseCommand() {
+    _setupCommonOptions();
   }
 
   /// 设置通用选项
@@ -75,9 +83,9 @@ abstract class BaseCommand extends Command<int> {
 
   /// 执行后的清理工作
   Future<void> postExecute() async {
-    // 清理缓存
-    templateEngine.clearCache();
-    configManager.clearCache();
+    // 只清理已初始化的服务
+    _templateEngine?.clearCache();
+    _configManager?.clearCache();
     
     Logger.debug('命令执行完成: ${name}');
   }
