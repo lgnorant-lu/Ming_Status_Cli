@@ -15,14 +15,41 @@ Change History:
 import 'dart:io';
 import 'package:path/path.dart' as path;
 
-import 'base_command.dart';
-import '../utils/logger.dart';
-import '../utils/progress_manager.dart';
-import '../utils/string_utils.dart';
+import 'package:ming_status_cli/src/commands/base_command.dart';
+import 'package:ming_status_cli/src/utils/logger.dart';
+import 'package:ming_status_cli/src/utils/progress_manager.dart';
+import 'package:ming_status_cli/src/utils/string_utils.dart';
 
 /// 初始化命令
 /// 用于初始化Ming Status工作空间
 class InitCommand extends BaseCommand {
+  InitCommand() {
+    argParser.addOption(
+      'name',
+      abbr: 'n',
+      help: '工作空间名称',
+    );
+
+    argParser.addOption(
+      'description',
+      abbr: 'd',
+      help: '工作空间描述',
+    );
+
+    argParser.addOption(
+      'author',
+      abbr: 'a',
+      help: '默认作者名称',
+      defaultsTo: 'Ignorant-lu',
+    );
+
+    argParser.addFlag(
+      'force',
+      abbr: 'f',
+      help: '强制初始化（覆盖现有配置）',
+      negatable: false,
+    );
+  }
   @override
   String get name => 'init';
 
@@ -32,49 +59,18 @@ class InitCommand extends BaseCommand {
   @override
   String get invocation => 'ming init [workspace_name]';
 
-  InitCommand() {
-    argParser.addOption(
-      'name',
-      abbr: 'n',
-      help: '工作空间名称',
-    );
-    
-    argParser.addOption(
-      'description',
-      abbr: 'd',
-      help: '工作空间描述',
-    );
-    
-    argParser.addOption(
-      'author',
-      abbr: 'a',
-      help: '默认作者名称',
-      defaultsTo: 'Ignorant-lu',
-    );
-    
-    argParser.addFlag(
-      'force',
-      abbr: 'f',
-      help: '强制初始化（覆盖现有配置）',
-      negatable: false,
-    );
-  }
-
   @override
   Future<int> execute() async {
     // 检查是否已经初始化
-    if (configManager.isWorkspaceInitialized() && !(argResults!['force'] as bool)) {
+    if (configManager.isWorkspaceInitialized() &&
+        !(argResults!['force'] as bool)) {
       Logger.warning('工作空间已经初始化');
       Logger.info('如需重新初始化，请使用 --force 参数');
       return 0;
     }
-    
+
     // 创建进度管理器
-    final progress = ProgressManager(
-      showProgressBar: true,
-      showTaskDetails: true,
-      showTimestamp: false,
-    );
+    final progress = ProgressManager();
 
     // 添加初始化任务
     progress.addTasks([
@@ -114,7 +110,7 @@ class InitCommand extends BaseCommand {
         final workspaceName = await _getWorkspaceName();
         final description = await _getDescription();
         final author = await _getAuthor();
-        
+
         return {
           'workspaceName': workspaceName,
           'description': description,
@@ -124,11 +120,11 @@ class InitCommand extends BaseCommand {
 
       // 步骤2：验证配置
       await progress.executeTask(() async {
-        final workspaceName = configData['workspaceName'] as String;
+        final workspaceName = configData['workspaceName']!;
         if (!_isValidWorkspaceName(workspaceName)) {
           throw Exception('工作空间名称格式无效: $workspaceName');
         }
-        
+
         // 检查目录权限
         if (!await _checkDirectoryPermissions()) {
           throw Exception('目录权限不足，无法创建工作空间');
@@ -140,12 +136,12 @@ class InitCommand extends BaseCommand {
         // 显示配置信息
         Logger.newLine();
         Logger.subtitle('工作空间配置');
-        Logger.keyValue('名称', configData['workspaceName'] as String);
-        Logger.keyValue('描述', configData['description'] as String);
-        Logger.keyValue('作者', configData['author'] as String);
+        Logger.keyValue('名称', configData['workspaceName']!);
+        Logger.keyValue('描述', configData['description']!);
+        Logger.keyValue('作者', configData['author']!);
         Logger.keyValue('路径', workingDirectory);
         Logger.newLine();
-        
+
         // 确认初始化
         if (!quiet) {
           return confirmAction('确认初始化工作空间？', defaultValue: true);
@@ -160,10 +156,10 @@ class InitCommand extends BaseCommand {
 
       // 步骤4：创建工作空间
       final workspaceSuccess = await progress.executeTask(() async {
-        return await configManager.initializeWorkspace(
-          workspaceName: configData['workspaceName'] as String,
-          description: configData['description'] as String,
-          author: configData['author'] as String,
+        return configManager.initializeWorkspace(
+          workspaceName: configData['workspaceName']!,
+          description: configData['description']!,
+          author: configData['author']!,
         );
       });
 
@@ -185,9 +181,8 @@ class InitCommand extends BaseCommand {
 
       // 显示后续操作建议
       _showNextSteps();
-      
-      return 0;
 
+      return 0;
     } catch (e) {
       Logger.error('初始化过程中发生错误: $e');
       return 1;
@@ -198,7 +193,7 @@ class InitCommand extends BaseCommand {
   Future<bool> _checkDirectoryPermissions() async {
     try {
       // 尝试在当前目录创建临时文件以测试权限
-      final testFile = File('${workingDirectory}/.ming_test_permissions');
+      final testFile = File('$workingDirectory/.ming_test_permissions');
       await testFile.writeAsString('test');
       await testFile.delete();
       return true;
@@ -212,23 +207,23 @@ class InitCommand extends BaseCommand {
     // 这里可以创建一些示例目录和文件
     // 例如：src/, tests/, docs/ 等
     try {
-      final srcDir = Directory('${workingDirectory}/src');
+      final srcDir = Directory('$workingDirectory/src');
       if (!await srcDir.exists()) {
         await srcDir.create(recursive: true);
       }
-      
-      final testsDir = Directory('${workingDirectory}/tests');
+
+      final testsDir = Directory('$workingDirectory/tests');
       if (!await testsDir.exists()) {
         await testsDir.create(recursive: true);
       }
-      
-      final docsDir = Directory('${workingDirectory}/docs');
+
+      final docsDir = Directory('$workingDirectory/docs');
       if (!await docsDir.exists()) {
         await docsDir.create(recursive: true);
       }
-      
+
       // 创建README.md
-      final readmeFile = File('${workingDirectory}/README.md');
+      final readmeFile = File('$workingDirectory/README.md');
       if (!await readmeFile.exists()) {
         await readmeFile.writeAsString('''# ${path.basename(workingDirectory)}
 
@@ -249,7 +244,6 @@ class InitCommand extends BaseCommand {
 
 ''');
       }
-      
     } catch (e) {
       // 创建示例结构失败不应该影响整体初始化
       Logger.warning('创建示例结构时出现问题: $e');
@@ -267,7 +261,7 @@ class InitCommand extends BaseCommand {
         Logger.warning('工作空间名称格式无效: $name');
       }
     }
-    
+
     // 从选项获取
     if (argResults!['name'] != null) {
       final name = argResults!['name'] as String;
@@ -277,21 +271,21 @@ class InitCommand extends BaseCommand {
         Logger.warning('工作空间名称格式无效: $name');
       }
     }
-    
+
     // 交互式获取
     final defaultName = path.basename(workingDirectory);
-    
+
     while (true) {
       final name = getUserInput(
         '请输入工作空间名称',
         defaultValue: defaultName,
         required: true,
       );
-      
+
       if (name != null && _isValidWorkspaceName(name)) {
         return name;
       }
-      
+
       Logger.error('工作空间名称必须是有效的包名格式（小写字母、数字、下划线）');
     }
   }
@@ -301,11 +295,12 @@ class InitCommand extends BaseCommand {
     if (argResults!['description'] != null) {
       return argResults!['description'] as String;
     }
-    
+
     return getUserInput(
-      '请输入工作空间描述',
-      defaultValue: 'Ming Status模块工作空间',
-    ) ?? 'Ming Status模块工作空间';
+          '请输入工作空间描述',
+          defaultValue: 'Ming Status模块工作空间',
+        ) ??
+        'Ming Status模块工作空间';
   }
 
   /// 获取作者名称
@@ -313,27 +308,28 @@ class InitCommand extends BaseCommand {
     if (argResults!['author'] != null) {
       return argResults!['author'] as String;
     }
-    
+
     return getUserInput(
-      '请输入默认作者名称',
-      defaultValue: 'Ignorant-lu',
-    ) ?? 'Ignorant-lu';
+          '请输入默认作者名称',
+          defaultValue: 'Ignorant-lu',
+        ) ??
+        'Ignorant-lu';
   }
 
   /// 验证工作空间名称格式
   bool _isValidWorkspaceName(String name) {
     if (name.isEmpty) return false;
-    
+
     // 基本格式检查
     if (!StringUtils.isValidPackageName(name)) {
       return false;
     }
-    
+
     // 长度检查
     if (name.length < 2 || name.length > 50) {
       return false;
     }
-    
+
     return true;
   }
 
@@ -345,7 +341,7 @@ class InitCommand extends BaseCommand {
     Logger.listItem('生成模块: ming generate <template_name> <output_path>');
     Logger.listItem('验证模块: ming validate <module_path>');
     Logger.newLine();
-    
+
     Logger.info('工作空间已就绪，现在可以开始创建和管理模块了！');
   }
-} 
+}

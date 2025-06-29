@@ -13,7 +13,7 @@ Change History:
 */
 
 import 'package:args/command_runner.dart';
-import 'logger.dart';
+import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 帮助文本格式化器
 /// 提供美化的CLI帮助文本显示
@@ -25,22 +25,22 @@ class HelpFormatter {
     Logger.subtitle('强大的模块化开发工具');
     Logger.info('用于创建、管理和验证模块化应用的代码结构');
     Logger.newLine();
-    
+
     // 快速开始指南
     _showQuickStart();
-    
+
     // 用法信息
     _showUsage(runner);
-    
+
     // 全局选项
     _showGlobalOptions(runner);
-    
+
     // 可用命令
     _showAvailableCommands(runner);
-    
+
     // 示例
     _showExamples();
-    
+
     // 获取更多帮助
     _showMoreHelp();
   }
@@ -75,14 +75,17 @@ class HelpFormatter {
   /// 显示可用命令
   static void _showAvailableCommands(CommandRunner runner) {
     Logger.subtitle('📋 可用命令');
-    
+
     // 按类别组织命令
     final commands = runner.commands;
-    
+
     // 核心命令
     Logger.info('💼 核心命令：');
     if (commands.containsKey('init')) {
       Logger.listItem('init     - 初始化Ming Status模块工作空间', indent: 1);
+    }
+    if (commands.containsKey('config')) {
+      Logger.listItem('config   - 管理全局和工作空间配置', indent: 1);
     }
     if (commands.containsKey('doctor')) {
       Logger.listItem('doctor   - 检查开发环境和工作空间状态', indent: 1);
@@ -90,9 +93,9 @@ class HelpFormatter {
     if (commands.containsKey('version')) {
       Logger.listItem('version  - 显示版本信息', indent: 1);
     }
-    
+
     Logger.newLine();
-    
+
     // 获取命令详细帮助的提示
     Logger.info('💡 使用 "ming help <command>" 查看特定命令的详细帮助');
     Logger.newLine();
@@ -101,19 +104,27 @@ class HelpFormatter {
   /// 显示示例
   static void _showExamples() {
     Logger.subtitle('💡 常用示例');
-    
+
     Logger.info('🔧 环境检查：');
     Logger.listItem('ming doctor                    # 基本环境检查', indent: 1);
     Logger.listItem('ming doctor --detailed         # 详细环境检查', indent: 1);
+    Logger.listItem('ming doctor --config           # 配置深度检查', indent: 1);
     Logger.listItem('ming doctor --fix              # 自动修复问题', indent: 1);
     Logger.newLine();
-    
+
     Logger.info('🏗️  项目初始化：');
     Logger.listItem('ming init                      # 在当前目录初始化', indent: 1);
     Logger.listItem('ming init my-project           # 创建并初始化新项目', indent: 1);
     Logger.listItem('ming init --name "My App"      # 指定项目名称', indent: 1);
     Logger.newLine();
-    
+
+    Logger.info('⚙️  配置管理：');
+    Logger.listItem('ming config --list             # 查看所有配置', indent: 1);
+    Logger.listItem('ming config --get user.name    # 获取配置值', indent: 1);
+    Logger.listItem('ming config --set user.name=值 # 设置配置值', indent: 1);
+    Logger.listItem('ming config --global --set key=value # 设置全局配置', indent: 1);
+    Logger.newLine();
+
     Logger.info('ℹ️  版本信息：');
     Logger.listItem('ming version                   # 显示基本版本', indent: 1);
     Logger.listItem('ming version --detailed        # 显示详细系统信息', indent: 1);
@@ -124,15 +135,19 @@ class HelpFormatter {
   static void _showMoreHelp() {
     Logger.subtitle('📚 获取更多帮助');
     Logger.keyValue('项目主页', 'https://github.com/ignorant-lu/ming-status-cli');
-    Logger.keyValue('文档', 'https://github.com/ignorant-lu/ming-status-cli/wiki');
-    Logger.keyValue('问题反馈', 'https://github.com/ignorant-lu/ming-status-cli/issues');
+    Logger.keyValue(
+        '文档', 'https://github.com/ignorant-lu/ming-status-cli/wiki');
+    Logger.keyValue(
+        '问题反馈', 'https://github.com/ignorant-lu/ming-status-cli/issues');
     Logger.newLine();
-    
+
     Logger.info('💬 提示：使用 --verbose 选项获取更详细的执行信息');
   }
 
   /// 格式化命令特定帮助
-  static void showCommandHelp(String commandName, String usage, {
+  static void showCommandHelp(
+    String commandName,
+    String usage, {
     String? description,
     List<String>? examples,
     List<String>? notes,
@@ -140,26 +155,26 @@ class HelpFormatter {
   }) {
     // 命令标题
     Logger.title('$commandName 命令帮助');
-    
+
     if (description != null) {
       Logger.info(description);
       Logger.newLine();
     }
-    
+
     // 用法
     Logger.subtitle('📖 用法');
     Logger.info(usage);
     Logger.newLine();
-    
+
     // 示例
     if (examples != null && examples.isNotEmpty) {
       Logger.subtitle('💡 示例');
-      for (int i = 0; i < examples.length; i++) {
+      for (var i = 0; i < examples.length; i++) {
         Logger.listItem('${i + 1}. ${examples[i]}');
       }
       Logger.newLine();
     }
-    
+
     // 注意事项
     if (notes != null && notes.isNotEmpty) {
       Logger.subtitle('⚠️  注意事项');
@@ -168,20 +183,21 @@ class HelpFormatter {
       }
       Logger.newLine();
     }
-    
+
     // 文档链接
     if (docLink != null) {
       Logger.subtitle('📚 相关文档');
       Logger.info(docLink);
       Logger.newLine();
     }
-    
+
     // 返回主帮助的提示
     Logger.info('💬 使用 "ming help" 查看所有可用命令');
   }
 
   /// 格式化选项帮助
-  static void formatOption(String option, String description, {String? defaultValue}) {
+  static void formatOption(String option, String description,
+      {String? defaultValue}) {
     if (defaultValue != null) {
       Logger.keyValue(option, '$description (默认: $defaultValue)');
     } else {
@@ -210,4 +226,4 @@ class HelpFormatter {
       description: message,
     );
   }
-} 
+}

@@ -8,11 +8,11 @@ void main() {
       expect(app, isNotNull);
       expect(app.availableCommands, isNotEmpty);
     });
-    
+
     test('should contain basic commands', () {
       final app = MingStatusCliApp();
       final commands = app.availableCommands;
-      
+
       expect(commands, contains('init'));
       expect(commands, contains('help')); // 内置的help命令
       expect(commands, contains('version'));

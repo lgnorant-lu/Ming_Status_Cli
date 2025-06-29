@@ -14,20 +14,18 @@ Change History:
 */
 
 import 'package:args/command_runner.dart';
-import '../utils/logger.dart';
-import '../utils/help_formatter.dart';
+import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 增强的帮助命令
 /// 提供更友好和详细的帮助信息显示（轻量级实现）
 class HelpCommand {
-  final CommandRunner _runner;
-
   HelpCommand(this._runner);
+  final CommandRunner _runner;
 
   /// 显示特定命令的帮助信息
   Future<int> showSpecificCommandHelp(String commandName, bool verbose) async {
     final command = _runner.commands[commandName];
-    
+
     if (command == null) {
       Logger.error('未找到命令: $commandName');
       Logger.newLine();
@@ -46,27 +44,27 @@ class HelpCommand {
   void _showCommandDetailedHelp(Command command, bool verbose) {
     Logger.title('📖 ${command.name} 命令帮助');
     Logger.newLine();
-    
+
     // 基本信息
     Logger.subtitle('📋 基本信息');
     Logger.keyValue('命令名称', command.name);
     Logger.keyValue('描述', command.description);
-    
+
     if (command.aliases.isNotEmpty) {
       Logger.keyValue('别名', command.aliases.join(', '));
     }
-    
+
     Logger.newLine();
-    
+
     // 用法示例
     Logger.subtitle('🚀 用法');
-    if (command is Command && command.invocation.isNotEmpty) {
+    if (command.invocation.isNotEmpty) {
       Logger.info('  ${command.invocation}');
     } else {
       Logger.info('  ming ${command.name} [选项]');
     }
     Logger.newLine();
-    
+
     // 参数和选项
     if (command.argParser.options.isNotEmpty) {
       Logger.subtitle('⚙️  选项');
@@ -74,31 +72,33 @@ class HelpCommand {
         final abbr = option.abbr != null ? '-${option.abbr}, ' : '';
         final name = '--${option.name}';
         final help = option.help ?? '无描述';
-        
+
         if (option.isFlag) {
           Logger.listItem('$abbr$name: $help');
         } else {
-          final defaultValue = option.defaultsTo != null ? ' (默认: ${option.defaultsTo})' : '';
+          final defaultValue =
+              option.defaultsTo != null ? ' (默认: ${option.defaultsTo})' : '';
           Logger.listItem('$abbr$name <值>: $help$defaultValue');
         }
       }
       Logger.newLine();
     }
-    
+
     // 具体命令的示例
     Logger.subtitle('💡 示例');
     _showCommandExamples(command.name);
     Logger.newLine();
-    
+
     if (verbose) {
       _showCommandVerboseHelp(command.name);
     }
-    
+
     // 获取更多帮助的信息
     Logger.subtitle('📚 获取更多帮助');
     Logger.listItem('查看所有命令: ming help');
     Logger.listItem('项目主页: https://github.com/ignorant-lu/ming-status-cli');
-    Logger.listItem('问题反馈: https://github.com/ignorant-lu/ming-status-cli/issues');
+    Logger.listItem(
+        '问题反馈: https://github.com/ignorant-lu/ming-status-cli/issues');
   }
 
   /// 显示命令示例
@@ -107,21 +107,19 @@ class HelpCommand {
       case 'init':
         Logger.listItem('基本初始化: ming init');
         Logger.listItem('指定名称: ming init my-project');
-        Logger.listItem('完整配置: ming init --name "我的项目" --author "开发者" --description "项目描述"');
+        Logger.listItem(
+            '完整配置: ming init --name "我的项目" --author "开发者" --description "项目描述"');
         Logger.listItem('强制重新初始化: ming init --force');
-        break;
-        
+
       case 'doctor':
         Logger.listItem('基本检查: ming doctor');
         Logger.listItem('详细检查: ming doctor --detailed');
         Logger.listItem('自动修复: ming doctor --fix');
-        break;
-        
+
       case 'version':
         Logger.listItem('显示版本: ming version');
         Logger.listItem('详细信息: ming version --detailed');
-        break;
-        
+
       default:
         Logger.listItem('基本用法: ming $commandName');
         Logger.listItem('查看帮助: ming help $commandName');
@@ -131,7 +129,7 @@ class HelpCommand {
   /// 显示命令的详细信息
   void _showCommandVerboseHelp(String commandName) {
     Logger.subtitle('🔧 详细信息');
-    
+
     switch (commandName) {
       case 'init':
         Logger.info('init 命令用于初始化Ming Status工作空间：');
@@ -144,8 +142,7 @@ class HelpCommand {
         Logger.listItem('确保当前目录有写权限');
         Logger.listItem('工作空间名称应符合包命名规范');
         Logger.listItem('使用 --force 会覆盖现有配置');
-        break;
-        
+
       case 'doctor':
         Logger.info('doctor 命令检查开发环境状态：');
         Logger.listItem('验证 Dart SDK 版本和配置');
@@ -157,22 +154,20 @@ class HelpCommand {
         Logger.listItem('创建缺失的配置文件');
         Logger.listItem('修复权限问题');
         Logger.listItem('清理无效缓存');
-        break;
-        
+
       case 'version':
         Logger.info('version 命令显示工具版本信息：');
         Logger.listItem('CLI 工具版本号');
         Logger.listItem('Dart SDK 版本');
         Logger.listItem('运行环境信息');
         Logger.listItem('性能和系统状态');
-        break;
-        
+
       default:
         Logger.info('这是一个标准的Ming Status CLI命令。');
         Logger.listItem('使用 --help 获取命令特定帮助');
         Logger.listItem('使用 --verbose 获取详细输出');
     }
-    
+
     Logger.newLine();
   }
-} 
+}

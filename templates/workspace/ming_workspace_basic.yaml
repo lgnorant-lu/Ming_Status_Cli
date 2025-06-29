@@ -1,0 +1,44 @@
+# Ming Status CLI 基础工作空间配置模板
+# 版本: 1.0.0
+# 适用场景: 个人开发、小型项目、快速原型
+
+workspace:
+  name: "my_modules"
+  version: "1.0.0"
+  description: "Ming Status模块工作空间"
+  type: "basic"
+
+# 模板配置
+templates:
+  source: "local"
+  localPath: "./templates"
+  cacheTimeout: 3600
+  autoUpdate: false
+
+# 默认设置
+defaults:
+  author: "开发者名称"
+  license: "MIT"
+  dartVersion: "^3.2.0"
+  description: "A Flutter module created by Ming Status CLI"
+
+# 验证规则
+validation:
+  strictMode: false
+  requireTests: true
+  minCoverage: 80
+
+# 环境配置
+environments:
+  development:
+    description: "开发环境配置"
+    debug: true
+    hotReload: true
+    optimize: false
+    minify: false
+  production:
+    description: "生产环境配置"
+    debug: false
+    hotReload: false
+    optimize: true
+    minify: true 

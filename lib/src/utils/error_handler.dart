@@ -15,58 +15,52 @@ Change History:
 import 'dart:io';
 import 'package:args/command_runner.dart';
 
-import 'logger.dart';
+import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 错误类型枚举
 enum ErrorType {
-  usage,           // 用法错误
-  fileSystem,      // 文件系统错误  
-  permission,      // 权限错误
-  network,         // 网络错误
-  validation,      // 验证错误
-  configuration,   // 配置错误
-  dependency,      // 依赖错误
-  unknown,         // 未知错误
+  usage, // 用法错误
+  fileSystem, // 文件系统错误
+  permission, // 权限错误
+  network, // 网络错误
+  validation, // 验证错误
+  configuration, // 配置错误
+  dependency, // 依赖错误
+  unknown, // 未知错误
 }
 
 /// 错误处理器
 /// 提供统一的错误处理机制和智能建议
 class ErrorHandler {
   /// 基础文档URL
-  static const String baseDocUrl = 'https://github.com/ignorant-lu/ming-status-cli/wiki';
-  
+  static const String baseDocUrl =
+      'https://github.com/ignorant-lu/ming-status-cli/wiki';
+
   /// 问题反馈URL
-  static const String issueUrl = 'https://github.com/ignorant-lu/ming-status-cli/issues';
+  static const String issueUrl =
+      'https://github.com/ignorant-lu/ming-status-cli/issues';
 
   /// 处理任意异常
   static void handleException(Object exception, {String? context}) {
     final errorType = _classifyError(exception);
-    
+
     switch (errorType) {
       case ErrorType.usage:
         _handleUsageError(exception as UsageException, context: context);
-        break;
       case ErrorType.fileSystem:
         _handleFileSystemError(exception, context: context);
-        break;
       case ErrorType.permission:
         _handlePermissionError(exception, context: context);
-        break;
       case ErrorType.network:
         _handleNetworkError(exception, context: context);
-        break;
       case ErrorType.validation:
         _handleValidationError(exception, context: context);
-        break;
       case ErrorType.configuration:
         _handleConfigurationError(exception, context: context);
-        break;
       case ErrorType.dependency:
         _handleDependencyError(exception, context: context);
-        break;
       case ErrorType.unknown:
         _handleUnknownError(exception, context: context);
-        break;
     }
   }
 
@@ -84,7 +78,7 @@ class ErrorHandler {
       ],
       docLink: '$baseDocUrl/Command-Usage',
     );
-    
+
     // 显示可用命令提示
     if (exception.usage.isNotEmpty) {
       Logger.newLine();
@@ -95,13 +89,13 @@ class ErrorHandler {
 
   /// 处理文件系统错误
   static void _handleFileSystemError(Object exception, {String? context}) {
-    String title = '文件系统错误';
-    String description = exception.toString();
-    List<String> suggestions = [];
-    
+    var title = '文件系统错误';
+    var description = exception.toString();
+    var suggestions = <String>[];
+
     if (exception is FileSystemException) {
       final path = exception.path ?? '未知路径';
-      
+
       switch (exception.osError?.errorCode) {
         case 2: // 文件未找到
           title = '文件未找到';
@@ -112,7 +106,6 @@ class ErrorHandler {
             '检查当前工作目录是否正确',
             '使用绝对路径而不是相对路径',
           ];
-          break;
         case 13: // 权限被拒绝
           title = '文件访问权限不足';
           description = '无法访问文件或目录: $path';
@@ -121,7 +114,6 @@ class ErrorHandler {
             '使用管理员权限运行命令',
             '确认当前用户有访问该路径的权限',
           ];
-          break;
         default:
           suggestions = [
             '检查文件路径是否正确',
@@ -254,7 +246,7 @@ class ErrorHandler {
       docLink: '$baseDocUrl/Troubleshooting',
       technicalDetails: exception,
     );
-    
+
     // 鼓励用户报告问题
     Logger.newLine();
     Logger.info('如果问题持续存在，请访问以下链接报告问题：');
@@ -266,40 +258,40 @@ class ErrorHandler {
     if (exception is UsageException) {
       return ErrorType.usage;
     }
-    
+
     if (exception is FileSystemException) {
       return ErrorType.fileSystem;
     }
-    
+
     if (exception is ProcessException) {
       return ErrorType.permission;
     }
-    
-    if (exception is SocketException || 
+
+    if (exception is SocketException ||
         exception is HttpException ||
         exception.toString().toLowerCase().contains('network') ||
         exception.toString().toLowerCase().contains('connection')) {
       return ErrorType.network;
     }
-    
+
     if (exception is FormatException ||
         exception.toString().toLowerCase().contains('validation') ||
         exception.toString().toLowerCase().contains('invalid')) {
       return ErrorType.validation;
     }
-    
+
     if (exception.toString().toLowerCase().contains('config') ||
         exception.toString().toLowerCase().contains('yaml') ||
         exception.toString().toLowerCase().contains('setting')) {
       return ErrorType.configuration;
     }
-    
+
     if (exception.toString().toLowerCase().contains('dependency') ||
         exception.toString().toLowerCase().contains('package') ||
         exception.toString().toLowerCase().contains('pubspec')) {
       return ErrorType.dependency;
     }
-    
+
     return ErrorType.unknown;
   }
 
@@ -310,7 +302,8 @@ class ErrorHandler {
     Logger.usageTip('ming help', '显示所有可用命令', example: 'ming help');
     Logger.usageTip('ming doctor', '检查环境状态', example: 'ming doctor --detailed');
     Logger.usageTip('ming init', '初始化工作空间', example: 'ming init my-project');
-    Logger.usageTip('ming version', '显示版本信息', example: 'ming version --detailed');
+    Logger.usageTip('ming version', '显示版本信息',
+        example: 'ming version --detailed');
   }
 
   /// 显示快速修复建议
@@ -323,4 +316,4 @@ class ErrorHandler {
     Logger.listItem('确认网络连接正常');
     Logger.listItem('重启终端或IDE');
   }
-} 
+}

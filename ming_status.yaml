@@ -1,0 +1,36 @@
+workspace:
+  name: test_workspace
+  version: 1.0.0
+  description: Test workspace for Ming Status CLI
+  type: basic
+templates:
+  source: local
+  localPath: ./templates
+  remoteRegistry: null
+  cacheTimeout: 3600
+  autoUpdate: false
+defaults:
+  author: Test Author
+  license: MIT
+  dartVersion: ^3.2.0
+  description: A Flutter module created by Ming Status CLI
+validation:
+  strictMode: false
+  requireTests: true
+  minCoverage: 80
+environments:
+  development:
+    description: Development environment config
+    debug: true
+    hotReload: true
+    optimize: false
+    minify: false
+  production:
+    description: Production environment config
+    debug: false
+    hotReload: false
+    optimize: true
+    minify: true
+collaboration: null
+quality: null
+integrations: null 

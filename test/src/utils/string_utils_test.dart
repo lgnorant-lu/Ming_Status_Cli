@@ -9,8 +9,8 @@ Description:        字符串工具单元测试 (String utilities unit tests)
 ---------------------------------------------------------------
 */
 
-import 'package:test/test.dart';
 import 'package:ming_status_cli/ming_status_cli.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('StringUtils', () {
@@ -18,7 +18,8 @@ void main() {
       test('should convert to PascalCase correctly', () {
         expect(StringUtils.toPascalCase('hello_world'), equals('HelloWorld'));
         expect(StringUtils.toPascalCase('user-service'), equals('UserService'));
-        expect(StringUtils.toPascalCase('my_module_name'), equals('MyModuleName'));
+        expect(
+            StringUtils.toPascalCase('my_module_name'), equals('MyModuleName'));
         expect(StringUtils.toPascalCase('single'), equals('Single'));
         expect(StringUtils.toPascalCase(''), equals(''));
       });
@@ -26,7 +27,8 @@ void main() {
       test('should convert to camelCase correctly', () {
         expect(StringUtils.toCamelCase('hello_world'), equals('helloWorld'));
         expect(StringUtils.toCamelCase('user-service'), equals('userService'));
-        expect(StringUtils.toCamelCase('my_module_name'), equals('myModuleName'));
+        expect(
+            StringUtils.toCamelCase('my_module_name'), equals('myModuleName'));
         expect(StringUtils.toCamelCase('single'), equals('single'));
         expect(StringUtils.toCamelCase(''), equals(''));
       });
@@ -34,7 +36,8 @@ void main() {
       test('should convert to snake_case correctly', () {
         expect(StringUtils.toSnakeCase('HelloWorld'), equals('hello_world'));
         expect(StringUtils.toSnakeCase('userService'), equals('user_service'));
-        expect(StringUtils.toSnakeCase('MyModuleName'), equals('my_module_name'));
+        expect(
+            StringUtils.toSnakeCase('MyModuleName'), equals('my_module_name'));
         expect(StringUtils.toSnakeCase('single'), equals('single'));
         expect(StringUtils.toSnakeCase(''), equals(''));
       });
@@ -42,7 +45,8 @@ void main() {
       test('should convert to kebab-case correctly', () {
         expect(StringUtils.toKebabCase('HelloWorld'), equals('hello-world'));
         expect(StringUtils.toKebabCase('userService'), equals('user-service'));
-        expect(StringUtils.toKebabCase('MyModuleName'), equals('my-module-name'));
+        expect(
+            StringUtils.toKebabCase('MyModuleName'), equals('my-module-name'));
         expect(StringUtils.toKebabCase('single'), equals('single'));
         expect(StringUtils.toKebabCase(''), equals(''));
       });
@@ -54,7 +58,7 @@ void main() {
         expect(StringUtils.isValidIdentifier('valid_name'), isTrue);
         expect(StringUtils.isValidIdentifier('valid123'), isTrue);
         expect(StringUtils.isValidIdentifier('_validName'), isTrue);
-        
+
         expect(StringUtils.isValidIdentifier('123invalid'), isFalse);
         expect(StringUtils.isValidIdentifier('invalid-name'), isFalse);
         expect(StringUtils.isValidIdentifier('invalid name'), isFalse);
@@ -65,7 +69,7 @@ void main() {
         expect(StringUtils.isValidPackageName('valid_package'), isTrue);
         expect(StringUtils.isValidPackageName('my_module'), isTrue);
         expect(StringUtils.isValidPackageName('package123'), isTrue);
-        
+
         expect(StringUtils.isValidPackageName('Invalid_Package'), isFalse);
         expect(StringUtils.isValidPackageName('invalid-package'), isFalse);
         expect(StringUtils.isValidPackageName('123invalid'), isFalse);
@@ -76,7 +80,7 @@ void main() {
         expect(StringUtils.isValidClassName('ValidClass'), isTrue);
         expect(StringUtils.isValidClassName('MyModule'), isTrue);
         expect(StringUtils.isValidClassName('Class123'), isTrue);
-        
+
         expect(StringUtils.isValidClassName('invalidClass'), isFalse);
         expect(StringUtils.isValidClassName('invalid_class'), isFalse);
         expect(StringUtils.isValidClassName('123Invalid'), isFalse);
@@ -89,11 +93,10 @@ void main() {
         expect(StringUtils.isBlank(''), isTrue);
         expect(StringUtils.isBlank('   '), isTrue);
         expect(StringUtils.isBlank('\t\n'), isTrue);
-        
+
         expect(StringUtils.isBlank('hello'), isFalse);
         expect(StringUtils.isBlank(' hello '), isFalse);
       });
-
     });
 
     group('文本处理', () {
@@ -112,4 +115,4 @@ void main() {
       });
     });
   });
-} 
+}

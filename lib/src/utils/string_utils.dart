@@ -18,12 +18,13 @@ class StringUtils {
   /// 将字符串转换为 snake_case 格式
   static String toSnakeCase(String input) {
     if (input.isEmpty) return input;
-    
+
     return input
-        .replaceAllMapped(RegExp(r'[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}')
-        .replaceAll(RegExp(r'^_'), '')
-        .replaceAll(RegExp(r'[^a-z0-9_]'), '_')
-        .replaceAll(RegExp(r'_+'), '_')
+        .replaceAllMapped(
+            RegExp('[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}')
+        .replaceAll(RegExp('^_'), '')
+        .replaceAll(RegExp('[^a-z0-9_]'), '_')
+        .replaceAll(RegExp('_+'), '_')
         .toLowerCase();
   }
 
@@ -35,20 +36,20 @@ class StringUtils {
   /// 将字符串转换为 camelCase 格式
   static String toCamelCase(String input) {
     if (input.isEmpty) return input;
-    
+
     final parts = input.split(RegExp(r'[_\-\s]+'));
     if (parts.isEmpty) return input;
-    
+
     final first = parts.first.toLowerCase();
     final rest = parts.skip(1).map((part) => capitalize(part.toLowerCase()));
-    
+
     return first + rest.join();
   }
 
   /// 将字符串转换为 PascalCase 格式
   static String toPascalCase(String input) {
     if (input.isEmpty) return input;
-    
+
     final parts = input.split(RegExp(r'[_\-\s]+'));
     return parts.map((part) => capitalize(part.toLowerCase())).join();
   }
@@ -83,10 +84,10 @@ class StringUtils {
   /// 截断字符串到指定长度
   static String truncate(String input, int maxLength, {String suffix = '...'}) {
     if (input.length <= maxLength) return input;
-    
+
     final truncateLength = maxLength - suffix.length;
     if (truncateLength <= 0) return suffix.substring(0, maxLength);
-    
+
     return input.substring(0, truncateLength) + suffix;
   }
 
@@ -103,11 +104,11 @@ class StringUtils {
   /// 将字符串居中填充到指定长度
   static String padCenter(String input, int width, [String padding = ' ']) {
     if (input.length >= width) return input;
-    
+
     final totalPadding = width - input.length;
     final leftPadding = totalPadding ~/ 2;
     final rightPadding = totalPadding - leftPadding;
-    
+
     return padding * leftPadding + input + padding * rightPadding;
   }
 
@@ -178,12 +179,12 @@ class StringUtils {
   /// 格式化文件大小
   static String formatFileSize(int bytes) {
     const units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    
+
     if (bytes == 0) return '0 B';
-    
+
     final unitIndex = (bytes.bitLength - 1) ~/ 10;
     final size = bytes / (1 << (unitIndex * 10));
-    
+
     if (unitIndex < units.length) {
       return '${size.toStringAsFixed(size >= 10 ? 0 : 1)} ${units[unitIndex]}';
     } else {
@@ -197,27 +198,29 @@ class StringUtils {
     final hours = duration.inHours % 24;
     final minutes = duration.inMinutes % 60;
     final seconds = duration.inSeconds % 60;
-    
+
     final parts = <String>[];
-    
+
     if (days > 0) parts.add('${days}d');
     if (hours > 0) parts.add('${hours}h');
     if (minutes > 0) parts.add('${minutes}m');
     if (seconds > 0) parts.add('${seconds}s');
-    
+
     return parts.isEmpty ? '0s' : parts.join(' ');
   }
 
   /// 创建随机字符串
-  static String randomString(int length, {String chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'}) {
+  static String randomString(int length,
+      {String chars =
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'}) {
     final random = DateTime.now().millisecondsSinceEpoch;
     final result = StringBuffer();
-    
-    for (int i = 0; i < length; i++) {
+
+    for (var i = 0; i < length; i++) {
       final index = (random + i) % chars.length;
       result.write(chars[index]);
     }
-    
+
     return result.toString();
   }
-} 
+}

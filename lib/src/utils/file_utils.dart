@@ -33,7 +33,7 @@ class FileUtils {
   static Future<Directory> createDirectory(String dirPath) async {
     final dir = Directory(dirPath);
     if (!dir.existsSync()) {
-      return await dir.create(recursive: true);
+      return dir.create(recursive: true);
     }
     return dir;
   }
@@ -54,13 +54,13 @@ class FileUtils {
 
   /// 安全地写入文件内容
   static Future<bool> writeFileAsString(
-    String filePath, 
+    String filePath,
     String content, {
     bool createDirectories = true,
   }) async {
     try {
       final file = File(filePath);
-      
+
       // 创建父目录
       if (createDirectories) {
         final dir = Directory(path.dirname(filePath));
@@ -68,7 +68,7 @@ class FileUtils {
           await dir.create(recursive: true);
         }
       }
-      
+
       await file.writeAsString(content);
       return true;
     } catch (e) {
@@ -92,13 +92,13 @@ class FileUtils {
     try {
       final sourceFile = File(sourcePath);
       if (!sourceFile.existsSync()) return false;
-      
+
       // 创建目标目录
       final targetDir = Directory(path.dirname(targetPath));
       if (!targetDir.existsSync()) {
         await targetDir.create(recursive: true);
       }
-      
+
       await sourceFile.copy(targetPath);
       return true;
     } catch (e) {
@@ -120,7 +120,8 @@ class FileUtils {
   }
 
   /// 删除目录（递归删除）
-  static Future<bool> deleteDirectory(String dirPath, {bool recursive = false}) async {
+  static Future<bool> deleteDirectory(String dirPath,
+      {bool recursive = false}) async {
     try {
       final dir = Directory(dirPath);
       if (dir.existsSync()) {
@@ -177,7 +178,7 @@ class FileUtils {
 
   /// 查找文件
   static List<String> findFiles(
-    String dirPath, 
+    String dirPath,
     String pattern, {
     bool recursive = true,
   }) {
@@ -219,7 +220,7 @@ class FileUtils {
 
   /// 写入YAML文件
   static Future<bool> writeYamlFile(
-    String filePath, 
+    String filePath,
     Map<String, dynamic> data,
   ) async {
     try {
@@ -270,11 +271,11 @@ class FileUtils {
   static String _formatAsYaml(Map<String, dynamic> data, {int indent = 0}) {
     final buffer = StringBuffer();
     final indentStr = '  ' * indent;
-    
+
     for (final entry in data.entries) {
       final key = entry.key;
       final value = entry.value;
-      
+
       if (value is Map<String, dynamic>) {
         buffer.writeln('$indentStr$key:');
         buffer.write(_formatAsYaml(value, indent: indent + 1));
@@ -282,18 +283,55 @@ class FileUtils {
         buffer.writeln('$indentStr$key:');
         for (final item in value) {
           if (item is Map<String, dynamic>) {
-            buffer.writeln('${indentStr}  -');
+            buffer.writeln('$indentStr  -');
             buffer.write(_formatAsYaml(item, indent: indent + 2));
           } else {
-            buffer.writeln('${indentStr}  - $item');
+            buffer.writeln('$indentStr  - $item');
           }
         }
       } else {
-        buffer.writeln('$indentStr$key: $value');
+        // 尝试调用toJson方法处理对象
+        if (value != null && _hasToJsonMethod(value)) {
+          try {
+            final jsonValue = (value as dynamic).toJson();
+            if (jsonValue is Map<String, dynamic>) {
+              buffer.writeln('$indentStr$key:');
+              buffer.write(_formatAsYaml(jsonValue, indent: indent + 1));
+            } else {
+              buffer.writeln('$indentStr$key: $jsonValue');
+            }
+          } catch (e) {
+            buffer.writeln('$indentStr$key: $value');
+          }
+        } else {
+          // 处理字符串值的YAML转义
+          if (value is String &&
+              (value.contains('\\') ||
+                  value.contains('"') ||
+                  value.contains('\''))) {
+            // 对于包含特殊字符的字符串，使用双引号包围并转义
+            final escapedValue =
+                value.replaceAll('\\', '').replaceAll('"', '\\"');
+            buffer.writeln('$indentStr$key: "$escapedValue"');
+          } else {
+            buffer.writeln('$indentStr$key: $value');
+          }
+        }
       }
     }
-    
+
     return buffer.toString();
+  }
+
+  /// 检查对象是否有toJson方法
+  static bool _hasToJsonMethod(dynamic value) {
+    try {
+      // 尝试获取toJson方法，如果没有会抛出异常
+      final toJsonMethod = (value as dynamic).toJson;
+      return toJsonMethod is Function;
+    } catch (e) {
+      return false;
+    }
   }
 
   /// 确保路径安全（防止路径遍历攻击）
@@ -307,16 +345,16 @@ class FileUtils {
   static Future<File> createTempFile({String? prefix, String? suffix}) async {
     final tempDir = Directory.systemTemp;
     final tempDirCreated = await tempDir.createTemp(prefix);
-    final tempFilePath = suffix != null 
+    final tempFilePath = suffix != null
         ? '${tempDirCreated.path}$suffix'
         : '${tempDirCreated.path}.tmp';
-    
+
     final tempFile = File(tempFilePath);
     await tempFile.create();
-    
+
     // 清理临时目录
     await tempDirCreated.delete();
-    
+
     return tempFile;
   }
-} 
+}

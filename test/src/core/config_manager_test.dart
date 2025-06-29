@@ -10,8 +10,9 @@ Description:        配置管理器单元测试 (Config manager unit tests)
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
+
 import 'package:ming_status_cli/ming_status_cli.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('ConfigManager', () {
@@ -73,4 +74,4 @@ void main() {
       expect(() => configManager.clearCache(), returnsNormally);
     });
   });
-} 
+}

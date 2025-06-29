@@ -1,0 +1,80 @@
+# Ming Status CLI 企业级工作空间配置模板
+# 版本: 2.0.0
+# 适用场景: 企业开发、团队协作、生产级项目
+
+workspace:
+  name: "enterprise_modules"
+  version: "2.0.0"
+  description: "企业级模块化开发工作空间"
+  type: "enterprise"
+
+# 模板配置
+templates:
+  source: "hybrid"
+  localPath: "./templates"
+  remoteRegistry: "https://templates.ming.dev"
+  cacheTimeout: 1800
+  autoUpdate: true
+
+# 默认设置
+defaults:
+  author: "企业开发团队"
+  license: "MIT"
+  dartVersion: "^3.2.0"
+  description: "Enterprise Flutter module for scalable applications"
+
+# 验证规则
+validation:
+  strictMode: true
+  requireTests: true
+  minCoverage: 90
+
+# 环境配置
+environments:
+  development:
+    description: "开发环境配置"
+    debug: true
+    hotReload: true
+    optimize: false
+    minify: false
+  staging:
+    description: "预发布环境配置"
+    debug: false
+    hotReload: false
+    optimize: true
+    minify: false
+  production:
+    description: "生产环境配置"
+    debug: false
+    hotReload: false
+    optimize: true
+    minify: true
+
+# 团队协作配置
+collaboration:
+  teamName: "Flutter开发团队"
+  sharedSettings: true
+  configSync: "git"
+  reviewRequired: true
+
+# 质量保障配置
+quality:
+  codeAnalysis:
+    enabled: true
+    rules: "strict"
+  testing:
+    minCoverage: 90
+    requiredTests: true
+  documentation:
+    required: true
+    format: "dartdoc"
+
+# 集成配置
+integrations:
+  ide:
+    vscode:
+      extensions: ["dart-code", "flutter"]
+      settings: "./vscode/settings.json"
+  ci:
+    platform: "github_actions"
+    configFile: ".github/workflows/ci.yml" 

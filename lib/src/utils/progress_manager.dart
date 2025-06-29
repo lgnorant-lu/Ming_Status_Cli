@@ -13,27 +13,19 @@ Change History:
 */
 
 import 'dart:io';
-import 'logger.dart';
+import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 任务状态枚举
 enum TaskStatus {
-  pending,    // 待执行
-  running,    // 执行中
-  completed,  // 已完成
-  failed,     // 失败
-  skipped,    // 跳过
+  pending, // 待执行
+  running, // 执行中
+  completed, // 已完成
+  failed, // 失败
+  skipped, // 跳过
 }
 
 /// 进度任务
 class ProgressTask {
-  final String id;
-  final String name;
-  final String description;
-  TaskStatus status;
-  String? errorMessage;
-  DateTime? startTime;
-  DateTime? endTime;
-
   ProgressTask({
     required this.id,
     required this.name,
@@ -43,6 +35,13 @@ class ProgressTask {
     this.startTime,
     this.endTime,
   });
+  final String id;
+  final String name;
+  final String description;
+  TaskStatus status;
+  String? errorMessage;
+  DateTime? startTime;
+  DateTime? endTime;
 
   /// 任务执行时长
   Duration? get duration {
@@ -87,30 +86,31 @@ class ProgressTask {
 /// 进度管理器
 /// 提供CLI操作的进度跟踪和反馈
 class ProgressManager {
-  final List<ProgressTask> _tasks = [];
-  final bool _showProgressBar;
-  final bool _showTaskDetails;
-  final bool _showTimestamp;
-  
-  int _currentTaskIndex = -1;
-  DateTime? _startTime;
-  DateTime? _endTime;
-
   ProgressManager({
     bool showProgressBar = true,
     bool showTaskDetails = true,
     bool showTimestamp = false,
-  }) : _showProgressBar = showProgressBar,
-       _showTaskDetails = showTaskDetails,
-       _showTimestamp = showTimestamp;
+  })  : _showProgressBar = showProgressBar,
+        _showTaskDetails = showTaskDetails,
+        _showTimestamp = showTimestamp;
+  final List<ProgressTask> _tasks = [];
+  final bool _showProgressBar;
+  final bool _showTaskDetails;
+  final bool _showTimestamp;
+
+  int _currentTaskIndex = -1;
+  DateTime? _startTime;
+  DateTime? _endTime;
 
   /// 添加任务
   void addTask(String id, String name, String description) {
-    _tasks.add(ProgressTask(
-      id: id,
-      name: name,
-      description: description,
-    ));
+    _tasks.add(
+      ProgressTask(
+        id: id,
+        name: name,
+        description: description,
+      ),
+    );
   }
 
   /// 批量添加任务
@@ -129,23 +129,24 @@ class ProgressManager {
     if (title != null) {
       Logger.title(title);
     }
-    
+
     _startTime = DateTime.now();
     Logger.info('开始执行 ${_tasks.length} 个任务...');
-    
+
     if (_showProgressBar) {
       _showInitialProgress();
     }
-    
+
     Logger.newLine();
   }
 
   /// 执行下一个任务
-  Future<T> executeTask<T>(Future<T> Function() taskFunction, {
+  Future<T> executeTask<T>(
+    Future<T> Function() taskFunction, {
     bool canFail = false,
   }) async {
     _currentTaskIndex++;
-    
+
     if (_currentTaskIndex >= _tasks.length) {
       throw StateError('没有更多任务可执行');
     }
@@ -163,35 +164,34 @@ class ProgressManager {
     try {
       // 执行任务
       final result = await taskFunction();
-      
+
       // 任务成功
       task.status = TaskStatus.completed;
       task.endTime = DateTime.now();
-      
+
       if (_showTaskDetails) {
         _showTaskCompleted(task);
       }
-      
+
       if (_showProgressBar) {
         _updateProgressBar();
       }
-      
+
       return result;
-      
     } catch (e) {
       // 任务失败
       task.status = TaskStatus.failed;
       task.endTime = DateTime.now();
       task.errorMessage = e.toString();
-      
+
       if (_showTaskDetails) {
         _showTaskFailed(task, e);
       }
-      
+
       if (_showProgressBar) {
         _updateProgressBar();
       }
-      
+
       if (!canFail) {
         rethrow;
       } else {
@@ -224,7 +224,7 @@ class ProgressManager {
   /// 完成所有任务
   void complete({String? summary}) {
     _endTime = DateTime.now();
-    
+
     Logger.newLine();
     _showFinalSummary(summary);
   }
@@ -238,38 +238,42 @@ class ProgressManager {
   /// 显示任务开始
   void _showTaskStart(ProgressTask task) {
     final timestamp = _showTimestamp ? '[${_formatTime(DateTime.now())}] ' : '';
-    Logger.progress('${timestamp}🔄 ${task.name}', newLine: false);
+    Logger.progress('$timestamp🔄 ${task.name}', newLine: false);
   }
 
   /// 显示任务完成
   void _showTaskCompleted(ProgressTask task) {
     final timestamp = _showTimestamp ? '[${_formatTime(DateTime.now())}] ' : '';
-    final duration = task.duration != null ? ' (${_formatDuration(task.duration!)})' : '';
-    stdout.write('\r${timestamp}✅ ${task.name}$duration\n');
+    final duration =
+        task.duration != null ? ' (${_formatDuration(task.duration!)})' : '';
+    stdout.write('\r$timestamp✅ ${task.name}$duration\n');
   }
 
   /// 显示任务失败
   void _showTaskFailed(ProgressTask task, Object error) {
     final timestamp = _showTimestamp ? '[${_formatTime(DateTime.now())}] ' : '';
-    stdout.write('\r${timestamp}❌ ${task.name} - 失败\n');
+    stdout.write('\r$timestamp❌ ${task.name} - 失败\n');
     if (_showTaskDetails) {
-      Logger.error('   错误: ${error.toString()}');
+      Logger.error('   错误: $error');
     }
   }
 
   /// 更新进度条
   void _updateProgressBar() {
     if (!_showProgressBar) return;
-    
-    final completed = _tasks.where((t) => 
-        t.status == TaskStatus.completed || 
-        t.status == TaskStatus.failed || 
-        t.status == TaskStatus.skipped
-    ).length;
-    
+
+    final completed = _tasks
+        .where(
+          (t) =>
+              t.status == TaskStatus.completed ||
+              t.status == TaskStatus.failed ||
+              t.status == TaskStatus.skipped,
+        )
+        .length;
+
     final progressBar = _buildProgressBar(completed, _tasks.length);
     stdout.write('\r$progressBar');
-    
+
     // 如果全部完成，换行
     if (completed == _tasks.length) {
       stdout.write('\n');
@@ -281,24 +285,25 @@ class ProgressManager {
     const barLength = 30;
     final percentage = total > 0 ? (current / total * 100).round() : 0;
     final filledLength = (current / total * barLength).round();
-    
+
     final bar = '█' * filledLength + '░' * (barLength - filledLength);
     return '进度: [$bar] $percentage% ($current/$total)';
   }
 
   /// 显示最终总结
   void _showFinalSummary(String? customSummary) {
-    final completed = _tasks.where((t) => t.status == TaskStatus.completed).length;
+    final completed =
+        _tasks.where((t) => t.status == TaskStatus.completed).length;
     final failed = _tasks.where((t) => t.status == TaskStatus.failed).length;
     final skipped = _tasks.where((t) => t.status == TaskStatus.skipped).length;
-    
+
     Logger.subtitle('执行总结');
-    
+
     if (customSummary != null) {
       Logger.info(customSummary);
       Logger.newLine();
     }
-    
+
     Logger.keyValue('总任务数', '${_tasks.length}');
     Logger.keyValue('成功完成', '$completed');
     if (failed > 0) {
@@ -307,14 +312,14 @@ class ProgressManager {
     if (skipped > 0) {
       Logger.keyValue('跳过执行', '$skipped');
     }
-    
+
     if (_startTime != null && _endTime != null) {
       final totalDuration = _endTime!.difference(_startTime!);
       Logger.keyValue('总耗时', _formatDuration(totalDuration));
     }
-    
+
     Logger.newLine();
-    
+
     // 显示失败任务详情
     if (failed > 0) {
       Logger.subtitle('失败任务详情');
@@ -328,8 +333,8 @@ class ProgressManager {
   /// 格式化时间
   String _formatTime(DateTime time) {
     return '${time.hour.toString().padLeft(2, '0')}:'
-           '${time.minute.toString().padLeft(2, '0')}:'
-           '${time.second.toString().padLeft(2, '0')}';
+        '${time.minute.toString().padLeft(2, '0')}:'
+        '${time.second.toString().padLeft(2, '0')}';
   }
 
   /// 格式化持续时间
@@ -341,7 +346,7 @@ class ProgressManager {
     } else {
       final hours = duration.inHours;
       final minutes = duration.inMinutes % 60;
-      return '${hours}时${minutes}分';
+      return '$hours时$minutes分';
     }
   }
 
@@ -373,4 +378,4 @@ class ProgressManager {
     final end = _endTime ?? DateTime.now();
     return end.difference(_startTime!);
   }
-} 
+}
