@@ -1,7 +1,7 @@
 /*
 ---------------------------------------------------------------
 File name:          error_handler.dart
-Author:             Ignorant-lu
+Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.32.4
@@ -34,11 +34,11 @@ enum ErrorType {
 class ErrorHandler {
   /// 基础文档URL
   static const String baseDocUrl =
-      'https://github.com/ignorant-lu/ming-status-cli/wiki';
+      'https://github.com/lgnorant-lu/Ming_Status_Cli/wiki';
 
   /// 问题反馈URL
   static const String issueUrl =
-      'https://github.com/ignorant-lu/ming-status-cli/issues';
+      'https://github.com/lgnorant-lu/Ming_Status_Cli/issues';
 
   /// 处理任意异常
   static void handleException(Object exception, {String? context}) {

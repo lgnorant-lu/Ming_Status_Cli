@@ -1,7 +1,7 @@
 /*
 ---------------------------------------------------------------
 File name:          init_command.dart
-Author:             Ignorant-lu
+Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.2+
@@ -40,7 +40,7 @@ class InitCommand extends BaseCommand {
       'author',
       abbr: 'a',
       help: '默认作者名称',
-      defaultsTo: 'Ignorant-lu',
+      defaultsTo: 'lgnorant-lu',
     );
 
     argParser.addFlag(
@@ -311,9 +311,9 @@ class InitCommand extends BaseCommand {
 
     return getUserInput(
           '请输入默认作者名称',
-          defaultValue: 'Ignorant-lu',
+          defaultValue: 'lgnorant-lu',
         ) ??
-        'Ignorant-lu';
+        'lgnorant-lu';
   }
 
   /// 验证工作空间名称格式

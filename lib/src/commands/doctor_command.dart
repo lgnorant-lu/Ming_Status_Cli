@@ -1,7 +1,7 @@
 /*
 ---------------------------------------------------------------
 File name:          doctor_command.dart
-Author:             Ignorant-lu
+Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.32.4
@@ -266,7 +266,7 @@ class DoctorCommand extends BaseCommand {
       Logger.info('• 使用 "ming doctor --detailed" 查看详细信息');
       Logger.info('• 使用 "ming doctor --fix" 尝试自动修复');
       Logger.info(
-          '• 参考文档: https://github.com/ignorant-lu/ming-status-cli/wiki');
+          '• 参考文档: https://github.com/lgnorant-lu/Ming_Status_Cli/wiki');
     }
   }
 }

@@ -7,7 +7,7 @@ templates:
   localPath: ./templates
   remoteRegistry: null
 defaults:
-  author: Ignorant-lu
+  author: lgnorant-lu
   license: MIT
   dartVersion: ^3.2.0
 validation:

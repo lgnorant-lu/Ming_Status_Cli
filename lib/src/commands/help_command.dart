@@ -1,7 +1,7 @@
 /*
 ---------------------------------------------------------------
 File name:          help_command.dart
-Author:             Ignorant-lu
+Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.32.4
@@ -96,9 +96,9 @@ class HelpCommand {
     // 获取更多帮助的信息
     Logger.subtitle('📚 获取更多帮助');
     Logger.listItem('查看所有命令: ming help');
-    Logger.listItem('项目主页: https://github.com/ignorant-lu/ming-status-cli');
+    Logger.listItem('项目主页: https://github.com/lgnorant-lu/Ming_Status_Cli');
     Logger.listItem(
-        '问题反馈: https://github.com/ignorant-lu/ming-status-cli/issues');
+            '问题反馈: https://github.com/lgnorant-lu/Ming_Status_Cli/issues');
   }
 
   /// 显示命令示例

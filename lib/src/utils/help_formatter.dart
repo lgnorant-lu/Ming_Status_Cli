@@ -1,7 +1,7 @@
 /*
 ---------------------------------------------------------------
 File name:          help_formatter.dart
-Author:             Ignorant-lu
+Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.32.4
@@ -134,11 +134,9 @@ class HelpFormatter {
   /// 显示获取更多帮助的信息
   static void _showMoreHelp() {
     Logger.subtitle('📚 获取更多帮助');
-    Logger.keyValue('项目主页', 'https://github.com/ignorant-lu/ming-status-cli');
-    Logger.keyValue(
-        '文档', 'https://github.com/ignorant-lu/ming-status-cli/wiki');
-    Logger.keyValue(
-        '问题反馈', 'https://github.com/ignorant-lu/ming-status-cli/issues');
+    Logger.keyValue('项目主页', 'https://github.com/lgnorant-lu/Ming_Status_Cli');
+    Logger.keyValue('文档', 'https://github.com/lgnorant-lu/Ming_Status_Cli/wiki');
+    Logger.keyValue('问题反馈', 'https://github.com/lgnorant-lu/Ming_Status_Cli/issues');
     Logger.newLine();
 
     Logger.info('💬 提示：使用 --verbose 选项获取更详细的执行信息');

@@ -1,7 +1,7 @@
 /*
 ---------------------------------------------------------------
 File name:          template_engine.dart
-Author:             Ignorant-lu
+Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.2+
@@ -235,7 +235,7 @@ class TemplateEngine {
       // 默认作者信息
       if (!processed.containsKey('author') ||
           StringUtils.isBlank(processed['author']?.toString())) {
-        processed['author'] = 'Ignorant-lu';
+        processed['author'] = 'lgnorant-lu';
       }
 
       // 默认版本
@@ -298,7 +298,7 @@ vars:
   author:
     type: string
     description: 作者名称
-    default: Ignorant-lu
+    default: lgnorant-lu
   description:
     type: string
     description: 模块描述

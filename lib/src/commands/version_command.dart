@@ -1,7 +1,7 @@
 /*
 ---------------------------------------------------------------
 File name:          version_command.dart
-Author:             Ignorant-lu
+Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.32.4
@@ -94,7 +94,7 @@ class VersionCommand extends Command<int> {
     Logger.keyValue('内存使用', _getMemoryUsage());
     Logger.newLine();
 
-    Logger.info('如需更多信息，请访问: https://github.com/ignorant-lu/ming-status-cli');
+    Logger.info('如需更多信息，请访问: https://github.com/lgnorant-lu/Ming_Status_Cli');
   }
 
   /// 从pubspec.yaml获取版本信息（缓存结果）

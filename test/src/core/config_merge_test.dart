@@ -1,7 +1,7 @@
 /*
 * ---------------------------------------------------------------
 * File name:          config_merge_test.dart
-* Author:             Ignorant-lu
+* Author:             lgnorant-lu
 * Date created:       2025/06/29
 * Last modified:      2025/06/29
 * Dart Version:       3.2+
