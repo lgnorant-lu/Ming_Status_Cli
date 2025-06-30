@@ -22,9 +22,9 @@ import 'package:ming_status_cli/src/models/user_config.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerForCommand extends UserConfigManager {
-  final String _testDir;
 
   TestUserConfigManagerForCommand(this._testDir);
+  final String _testDir;
 
   @override
   String get userConfigDir => _testDir;
@@ -94,18 +94,17 @@ void main() {
     group('用户配置管理器集成测试', () {
       test('用户配置CRUD操作集成', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(
+        const userConfig = UserConfig(
+          user: UserInfo(
             name: 'Integration Test User',
             email: 'test@integration.com',
             company: 'Test Company',
           ),
-          preferences: const UserPreferences(
+          preferences: UserPreferences(
             defaultTemplate: 'enterprise',
-            coloredOutput: true,
             autoUpdateCheck: false,
           ),
-          defaults: const UserDefaults(
+          defaults: UserDefaults(
             author: 'Integration Test Author',
             license: 'Apache-2.0',
             dartVersion: '^3.2.0',
@@ -132,7 +131,7 @@ void main() {
 
         // 测试配置值设置
         await userConfigManager.setConfigValue(
-            'user.email', 'updated@integration.com');
+            'user.email', 'updated@integration.com',);
         final updatedEmail =
             await userConfigManager.getConfigValue('user.email');
         expect(updatedEmail, equals('updated@integration.com'));
@@ -149,10 +148,10 @@ void main() {
         // 设置一些配置
         await userConfigManager.setConfigValue('user.name', 'Test User');
         await userConfigManager.setConfigValue(
-            'user.email', 'test@example.com');
+            'user.email', 'test@example.com',);
 
         // 验证配置已设置
-        var userName = await userConfigManager.getConfigValue('user.name');
+        final userName = await userConfigManager.getConfigValue('user.name');
         expect(userName, equals('Test User'));
 
         // 重置配置
@@ -175,7 +174,6 @@ void main() {
           workspaceName: 'Integration Test Workspace',
           description: 'Integration test workspace',
           author: 'Integration Test Author',
-          templateType: 'basic',
         );
         expect(initSuccess, isTrue);
 
@@ -194,7 +192,6 @@ void main() {
         // 初始化基础工作空间
         await configManager.initializeWorkspace(
           workspaceName: 'Template Test Workspace',
-          templateType: 'basic',
         );
 
         // 列出可用模板
@@ -224,14 +221,13 @@ void main() {
       test('用户配置与工作空间配置的独立性', () async {
         // 设置用户配置
         await userConfigManager.setConfigValue(
-            'defaults.author', 'Global Author');
+            'defaults.author', 'Global Author',);
         await userConfigManager.setConfigValue('user.name', 'Global User');
 
         // 初始化工作空间配置
         await configManager.initializeWorkspace(
           workspaceName: 'Independence Test Workspace',
           author: 'Local Author',
-          templateType: 'basic',
         );
 
         // 验证用户配置独立存在
@@ -253,7 +249,6 @@ void main() {
         // 初始化工作空间
         await configManager.initializeWorkspace(
           workspaceName: 'Validation Test',
-          templateType: 'basic',
         );
 
         // 验证配置文件存在性
@@ -290,10 +285,10 @@ void main() {
 
       test('处理无效的配置键路径', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'Test User'),
-          preferences: const UserPreferences(),
-          defaults: const UserDefaults(
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'Test User'),
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -320,11 +315,11 @@ void main() {
 
         // 执行多个配置操作
         await userConfigManager.setConfigValue(
-            'user.name', 'Performance Test User');
+            'user.name', 'Performance Test User',);
         await userConfigManager.setConfigValue(
-            'user.email', 'performance@test.com');
+            'user.email', 'performance@test.com',);
         await userConfigManager.setConfigValue(
-            'defaults.author', 'Performance Author');
+            'defaults.author', 'Performance Author',);
 
         // 读取配置
         await userConfigManager.getConfigValue('user.name');
@@ -334,7 +329,6 @@ void main() {
         // 初始化工作空间
         await configManager.initializeWorkspace(
           workspaceName: 'Performance Test',
-          templateType: 'basic',
         );
 
         stopwatch.stop();
@@ -347,15 +341,16 @@ void main() {
     group('配置系统稳定性测试', () {
       test('并发配置操作安全性', () async {
         // 串行设置配置以避免文件操作竞争条件
-        for (int i = 0; i < 5; i++) {
+        // 使用integrations字段进行测试，这是允许的自定义配置区域
+        for (var i = 0; i < 5; i++) {
           await userConfigManager.setConfigValue(
-              'test.concurrent$i', 'value$i');
+              'integrations.test.concurrent$i', 'value$i',);
         }
 
         // 验证所有配置都正确设置
-        for (int i = 0; i < 5; i++) {
+        for (var i = 0; i < 5; i++) {
           final value =
-              await userConfigManager.getConfigValue('test.concurrent$i');
+              await userConfigManager.getConfigValue('integrations.test.concurrent$i');
           expect(value, equals('value$i'));
         }
       });

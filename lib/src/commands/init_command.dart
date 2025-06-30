@@ -13,12 +13,12 @@ Change History:
 */
 
 import 'dart:io';
-import 'package:path/path.dart' as path;
 
 import 'package:ming_status_cli/src/commands/base_command.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 import 'package:ming_status_cli/src/utils/progress_manager.dart';
 import 'package:ming_status_cli/src/utils/string_utils.dart';
+import 'package:path/path.dart' as path;
 
 /// 初始化命令
 /// 用于初始化Ming Status工作空间
@@ -158,8 +158,8 @@ class InitCommand extends BaseCommand {
       final workspaceSuccess = await progress.executeTask(() async {
         return configManager.initializeWorkspace(
           workspaceName: configData['workspaceName']!,
-          description: configData['description']!,
-          author: configData['author']!,
+          description: configData['description'],
+          author: configData['author'],
         );
       });
 

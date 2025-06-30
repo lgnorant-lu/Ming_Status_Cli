@@ -1,0 +1,248 @@
+# =============================================================================
+# Ming Status CLI 模板配置文件 (brick.yaml)
+# 版本: 2.0
+# 符合Mason v0.1.1+规范，扩展Ming Status CLI特有功能
+# =============================================================================
+
+# 基本信息 (必需字段)
+name: basic
+description: 基础Flutter模块模板，适用于快速创建标准化的Flutter项目结构
+version: 2.0.0
+repository: https://github.com/lgnorant-lu/ming_status_cli.git
+
+# 模板变量定义
+vars:
+  # 核心变量 - 项目基础信息
+  module_name:
+    type: string
+    description: 模块名称，将用作项目名称和主要类名
+    prompt: 请输入模块名称
+    validation:
+      pattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
+      message: 模块名称必须以字母开头，只能包含字母、数字和下划线
+
+  description:
+    type: string
+    description: 模块描述信息
+    default: "A new Flutter project created with Ming Status CLI"
+    optional: true
+
+  # 作者和版权信息
+  author:
+    type: string
+    description: 作者名称
+    default: lgnorant-lu
+    optional: true
+
+  author_email:
+    type: string
+    description: 作者邮箱地址
+    default: ""
+    prompt: 请输入作者邮箱 (可选)
+    optional: true
+    validation:
+      pattern: "^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}$|^$"
+      message: "请输入有效的邮箱地址或留空"
+
+  # 技术配置
+  dart_version:
+    type: string
+    description: Dart SDK版本要求
+    default: ">=3.2.0"
+    optional: true
+
+  license:
+    type: enum
+    description: 开源许可证类型
+    values: ["MIT", "Apache-2.0", "BSD-3-Clause", "GPL-3.0", "None"]
+    default: MIT
+    optional: true
+
+  # 功能开关
+  use_analysis:
+    type: boolean
+    description: 是否使用Very Good Analysis代码规范
+    default: true
+    optional: true
+
+  use_provider:
+    type: boolean
+    description: 是否包含Provider状态管理
+    default: false
+    optional: true
+
+  use_http:
+    type: boolean
+    description: 是否包含HTTP网络请求支持
+    default: false
+    optional: true
+
+  use_dio:
+    type: boolean
+    description: 是否使用Dio网络库（替代http）
+    default: false
+    optional: true
+
+  use_shared_preferences:
+    type: boolean
+    description: 是否包含SharedPreferences本地存储
+    default: false
+    optional: true
+
+  use_build_runner:
+    type: boolean
+    description: 是否包含build_runner代码生成工具
+    default: false
+    optional: true
+
+  use_mockito:
+    type: boolean
+    description: 是否包含Mockito测试模拟框架
+    default: false
+    optional: true
+
+  has_assets:
+    type: boolean
+    description: 是否包含资源文件（图片、图标等）
+    default: true
+    optional: true
+
+  has_fonts:
+    type: boolean
+    description: 是否包含自定义字体
+    default: false
+    optional: true
+
+  custom_package_name:
+    type: string
+    description: 自定义包名（如果不指定则使用module_name）
+    optional: true
+
+# 文件输出配置
+output:
+  # 包含的文件路径模式
+  include_paths:
+    - "__brick__/**/*"
+  
+  # 排除的文件路径模式
+  exclude_paths:
+    - "__brick__/**/.DS_Store"
+    - "__brick__/**/Thumbs.db"
+  
+  # 条件输出配置
+  conditional_outputs:
+    - condition: "use_provider == true"
+      include:
+        - "__brick__/lib/src/providers/**/*"
+    - condition: "use_analysis == false"
+      exclude:
+        - "__brick__/analysis_options.yaml"
+    - condition: "has_assets == false"
+      exclude:
+        - "__brick__/assets/**/*"
+
+# 生成钩子配置
+hooks:
+  # 生成前钩子
+  pre_gen:
+    - run: echo "开始生成{{module_name}}模块..."
+      description: 显示生成开始信息
+    - run: dart --version
+      description: 验证Dart环境
+      condition: "dart_version != null"
+    - run: flutter --version
+      description: 验证Flutter环境
+
+  # 生成后钩子
+  post_gen:
+    - run: cd {{output.path}} && dart pub get
+      description: 安装依赖包
+      timeout: 60
+      on_failure: warn
+    - run: cd {{output.path}} && dart analyze
+      description: 代码静态分析
+      condition: "use_analysis == true"
+      on_failure: warn
+    - run: cd {{output.path}} && dart format .
+      description: 格式化代码
+    - run: echo "✅ {{module_name}}模块生成完成！"
+      description: 显示生成完成信息
+
+# 模板元数据和兼容性
+metadata:
+  # 分类和标签
+  category: "basic"
+  tags: 
+    - "dart"
+    - "module" 
+    - "basic"
+    - "package"
+    - "template"
+  
+  # 版本兼容性
+  min_dart_version: "3.2.0"
+  max_dart_version: "4.0.0"
+  min_mason_version: "0.1.0"
+  
+  # 平台支持
+  platforms:
+    supported:
+      - "windows"
+      - "macos"
+      - "linux"
+    required_features: ["file_system", "console"]
+    optional_features:
+      - "git"
+      - "dart_analyzer"
+  
+  # 创建信息
+  created_by: "Ming Status CLI"
+  maintainer: "Ming Status CLI Team"
+  homepage: "https://github.com/ming-status/cli"
+  documentation: "https://docs.ming-status.dev/templates/basic"
+  last_updated: "2025-06-30"
+  
+  # 模板统计
+  estimated_generation_time: "< 3 seconds"
+  estimated_file_count: 12
+  estimated_size: "< 50KB"
+
+# Ming Status CLI 扩展配置
+ming_config:
+  # 模板特定配置
+  template_version: "2.0"
+  compatibility_check: true
+  auto_format: true
+  auto_analyze: true
+  
+  # 集成功能
+  integrations:
+    config_manager: true
+    doctor_command: true
+    validation_system: true
+    doctor_check: true
+    config_integration: true
+    template_inheritance: false
+  
+  # 自定义字段处理
+  custom_processors:
+    - type: snake_case_converter
+      target: module_name
+    - type: pascal_case_converter  
+      target: module_name
+    - type: kebab_case_converter
+      target: module_name
+    - type: timestamp_generator
+      target: generated_date
+  
+  # 模板继承 (为高级模板预留)
+  inheritance:
+    base_template: null
+    override_files: []
+    merge_strategy: "replace"
+  
+  # 质量保障
+  quality_assurance:
+    enable_code_generation_validation: true
+    enable_dependency_conflict_check: true
+    enable_platform_compatibility_check: true 

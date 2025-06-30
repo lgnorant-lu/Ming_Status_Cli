@@ -19,7 +19,7 @@ void main() {
         expect(StringUtils.toPascalCase('hello_world'), equals('HelloWorld'));
         expect(StringUtils.toPascalCase('user-service'), equals('UserService'));
         expect(
-            StringUtils.toPascalCase('my_module_name'), equals('MyModuleName'));
+            StringUtils.toPascalCase('my_module_name'), equals('MyModuleName'),);
         expect(StringUtils.toPascalCase('single'), equals('Single'));
         expect(StringUtils.toPascalCase(''), equals(''));
       });
@@ -28,7 +28,7 @@ void main() {
         expect(StringUtils.toCamelCase('hello_world'), equals('helloWorld'));
         expect(StringUtils.toCamelCase('user-service'), equals('userService'));
         expect(
-            StringUtils.toCamelCase('my_module_name'), equals('myModuleName'));
+            StringUtils.toCamelCase('my_module_name'), equals('myModuleName'),);
         expect(StringUtils.toCamelCase('single'), equals('single'));
         expect(StringUtils.toCamelCase(''), equals(''));
       });
@@ -37,7 +37,7 @@ void main() {
         expect(StringUtils.toSnakeCase('HelloWorld'), equals('hello_world'));
         expect(StringUtils.toSnakeCase('userService'), equals('user_service'));
         expect(
-            StringUtils.toSnakeCase('MyModuleName'), equals('my_module_name'));
+            StringUtils.toSnakeCase('MyModuleName'), equals('my_module_name'),);
         expect(StringUtils.toSnakeCase('single'), equals('single'));
         expect(StringUtils.toSnakeCase(''), equals(''));
       });
@@ -46,7 +46,7 @@ void main() {
         expect(StringUtils.toKebabCase('HelloWorld'), equals('hello-world'));
         expect(StringUtils.toKebabCase('userService'), equals('user-service'));
         expect(
-            StringUtils.toKebabCase('MyModuleName'), equals('my-module-name'));
+            StringUtils.toKebabCase('MyModuleName'), equals('my-module-name'),);
         expect(StringUtils.toKebabCase('single'), equals('single'));
         expect(StringUtils.toKebabCase(''), equals(''));
       });

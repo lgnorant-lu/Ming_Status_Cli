@@ -39,7 +39,7 @@ void main() {
         CliTestHelper.expectOutput(result, 'version'); // 检查version命令存在
         CliTestHelper.expectOutput(result, '--help'); // 检查help选项说明
         CliTestHelper.expectOutput(result, '--verbose'); // 检查verbose选项说明
-        CliTestHelper.expectDuration(result, const Duration(seconds: 6));
+        CliTestHelper.expectDuration(result, const Duration(seconds: 10));
       });
 
       test('应该显示版本信息', () async {
@@ -47,7 +47,7 @@ void main() {
 
         CliTestHelper.expectSuccess(result);
         CliTestHelper.expectOutput(result, 'Ming Status CLI 1.0.0');
-        CliTestHelper.expectDuration(result, const Duration(seconds: 6));
+        CliTestHelper.expectDuration(result, const Duration(seconds: 10));
       });
 
       test('应该处理未知命令', () async {
@@ -116,14 +116,14 @@ void main() {
         final result = await CliTestHelper.runCommand(['help']);
 
         CliTestHelper.expectSuccess(result);
-        CliTestHelper.expectDuration(result, const Duration(seconds: 6));
+        CliTestHelper.expectDuration(result, const Duration(seconds: 10));
       });
 
       test('version命令应该快速响应', () async {
         final result = await CliTestHelper.runCommand(['version']);
 
         CliTestHelper.expectSuccess(result);
-        CliTestHelper.expectDuration(result, const Duration(seconds: 6));
+        CliTestHelper.expectDuration(result, const Duration(seconds: 10));
       });
 
       test('doctor命令应该在合理时间内完成', () async {

@@ -12,7 +12,6 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:args/args.dart';
 import 'package:ming_status_cli/src/commands/base_command.dart';
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/core/user_config_manager.dart';
@@ -275,7 +274,7 @@ class ConfigCommand extends BaseCommand {
       final value = parts[1].trim();
       final isGlobal = argResults?['global'] == true;
 
-      bool success = false;
+      var success = false;
       if (isGlobal) {
         success = await _userConfigManager.setConfigValue(key, value);
       } else {

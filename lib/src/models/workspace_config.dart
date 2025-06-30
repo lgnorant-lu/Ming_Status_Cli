@@ -39,31 +39,27 @@ class WorkspaceConfig {
 
   /// 创建默认配置
   factory WorkspaceConfig.defaultConfig() {
-    return WorkspaceConfig(
-      workspace: const WorkspaceInfo(
+    return const WorkspaceConfig(
+      workspace: WorkspaceInfo(
         name: 'my_modules',
         version: '1.0.0',
         description: 'Ming Status模块工作空间',
-        type: WorkspaceType.basic,
       ),
-      templates: const TemplateConfig(
+      templates: TemplateConfig(
         source: TemplateSource.local,
         localPath: './templates',
-        cacheTimeout: 3600,
-        autoUpdate: false,
       ),
-      defaults: const DefaultSettings(
+      defaults: DefaultSettings(
         author: '开发者名称',
         license: 'MIT',
         dartVersion: '^3.2.0',
-        description: 'A Flutter module created by Ming Status CLI',
       ),
-      validation: const ValidationConfig(
+      validation: ValidationConfig(
         strictMode: false,
         requireTests: true,
         minCoverage: 80,
       ),
-      environments: const {
+      environments: {
         'development': EnvironmentConfig(
           description: '开发环境配置',
           debug: true,
@@ -71,7 +67,6 @@ class WorkspaceConfig {
         ),
         'testing': EnvironmentConfig(
           description: '测试环境配置',
-          debug: false,
           optimize: true,
         ),
         'production': EnvironmentConfig(
@@ -85,38 +80,38 @@ class WorkspaceConfig {
 
   /// 创建企业级配置
   factory WorkspaceConfig.enterpriseConfig() {
-    return WorkspaceConfig(
-      workspace: const WorkspaceInfo(
+    return const WorkspaceConfig(
+      workspace: WorkspaceInfo(
         name: 'enterprise_modules',
         version: '2.0.0',
         description: '企业级模块化开发工作空间',
         type: WorkspaceType.enterprise,
       ),
-      templates: const TemplateConfig(
+      templates: TemplateConfig(
         source: TemplateSource.hybrid,
         localPath: './templates',
         remoteRegistry: 'https://templates.ming.dev',
         cacheTimeout: 1800,
         autoUpdate: true,
       ),
-      defaults: const DefaultSettings(
+      defaults: DefaultSettings(
         author: '企业开发团队',
         license: 'MIT',
         dartVersion: '^3.2.0',
         description: 'Enterprise Flutter module for scalable applications',
       ),
-      validation: const ValidationConfig(
+      validation: ValidationConfig(
         strictMode: true,
         requireTests: true,
         minCoverage: 90,
       ),
-      collaboration: const CollaborationConfig(
+      collaboration: CollaborationConfig(
         teamName: 'Flutter开发团队',
         sharedSettings: true,
         configSync: ConfigSyncType.git,
         reviewRequired: true,
       ),
-      quality: const QualityConfig(
+      quality: QualityConfig(
         codeAnalysis: CodeAnalysisConfig(
           enabled: true,
           rules: AnalysisRules.strict,
@@ -203,7 +198,7 @@ class WorkspaceConfig {
   WorkspaceConfig _applyEnvironmentOverrides(EnvironmentConfig envConfig) {
     // 根据环境配置调整工作空间配置
     var updatedValidation = validation;
-    var updatedTemplates = templates;
+    final updatedTemplates = templates;
 
     // 如果是开发环境，可能需要不同的验证规则
     if (envConfig.debug) {
@@ -216,7 +211,7 @@ class WorkspaceConfig {
 
     // 如果是生产环境，应用优化设置
     if (envConfig.optimize) {
-      updatedValidation = ValidationConfig(
+      updatedValidation = const ValidationConfig(
         strictMode: true,
         requireTests: true,
         minCoverage: 90, // 生产环境提高覆盖率要求
@@ -231,7 +226,7 @@ class WorkspaceConfig {
 
   /// 与另一个配置合并
   WorkspaceConfig mergeWith(WorkspaceConfig other,
-      {ConfigMergeStrategy strategy = ConfigMergeStrategy.override}) {
+      {ConfigMergeStrategy strategy = ConfigMergeStrategy.override,}) {
     switch (strategy) {
       case ConfigMergeStrategy.override:
         return _mergeOverride(other);
@@ -322,7 +317,7 @@ class WorkspaceConfig {
 
   /// 合并验证配置
   ValidationConfig _mergeValidation(
-      ValidationConfig base, ValidationConfig other) {
+      ValidationConfig base, ValidationConfig other,) {
     return ValidationConfig(
       strictMode: other.strictMode || base.strictMode, // 采用更严格的设置
       requireTests: other.requireTests || base.requireTests,
@@ -500,6 +495,59 @@ class EnvironmentConfig {
     this.performanceSettings,
   });
 
+  /// 创建开发环境配置
+  factory EnvironmentConfig.development() {
+    return const EnvironmentConfig(
+      description: '开发环境 - 快速迭代与调试',
+      debug: true,
+      hotReload: true,
+      buildMode: BuildMode.debug,
+      validationOverrides: ValidationOverrideConfig(
+        strictMode: false,
+        minCoverage: 70,
+        allowWarnings: true,
+      ),
+      performanceSettings: PerformanceSettings(
+        cacheEnabled: true,
+      ),
+    );
+  }
+
+  /// 创建测试环境配置
+  factory EnvironmentConfig.testing() {
+    return const EnvironmentConfig(
+      description: '测试环境 - 质量保障与验证',
+      optimize: true,
+      buildMode: BuildMode.profile,
+      validationOverrides: ValidationOverrideConfig(
+        strictMode: true,
+        minCoverage: 85,
+      ),
+      performanceSettings: PerformanceSettings(
+        cacheEnabled: true,
+        maxMemoryUsage: 4096,
+      ),
+    );
+  }
+
+  /// 创建生产环境配置
+  factory EnvironmentConfig.production() {
+    return const EnvironmentConfig(
+      description: '生产环境 - 性能优化与稳定性',
+      optimize: true,
+      minify: true,
+      buildMode: BuildMode.release,
+      validationOverrides: ValidationOverrideConfig(
+        strictMode: true,
+        minCoverage: 90,
+      ),
+      performanceSettings: PerformanceSettings(
+        cacheEnabled: false, // 生产环境确保最新构建
+        maxMemoryUsage: 8192,
+      ),
+    );
+  }
+
   factory EnvironmentConfig.fromJson(Map<String, dynamic> json) =>
       _$EnvironmentConfigFromJson(json);
 
@@ -534,72 +582,6 @@ class EnvironmentConfig {
   final PerformanceSettings? performanceSettings;
 
   Map<String, dynamic> toJson() => _$EnvironmentConfigToJson(this);
-
-  /// 创建开发环境配置
-  factory EnvironmentConfig.development() {
-    return const EnvironmentConfig(
-      description: '开发环境 - 快速迭代与调试',
-      debug: true,
-      hotReload: true,
-      optimize: false,
-      minify: false,
-      buildMode: BuildMode.debug,
-      validationOverrides: ValidationOverrideConfig(
-        strictMode: false,
-        minCoverage: 70,
-        allowWarnings: true,
-      ),
-      performanceSettings: PerformanceSettings(
-        parallelBuild: true,
-        cacheEnabled: true,
-        maxMemoryUsage: 2048,
-      ),
-    );
-  }
-
-  /// 创建测试环境配置
-  factory EnvironmentConfig.testing() {
-    return const EnvironmentConfig(
-      description: '测试环境 - 质量保障与验证',
-      debug: false,
-      hotReload: false,
-      optimize: true,
-      minify: false,
-      buildMode: BuildMode.profile,
-      validationOverrides: ValidationOverrideConfig(
-        strictMode: true,
-        minCoverage: 85,
-        allowWarnings: false,
-      ),
-      performanceSettings: PerformanceSettings(
-        parallelBuild: true,
-        cacheEnabled: true,
-        maxMemoryUsage: 4096,
-      ),
-    );
-  }
-
-  /// 创建生产环境配置
-  factory EnvironmentConfig.production() {
-    return const EnvironmentConfig(
-      description: '生产环境 - 性能优化与稳定性',
-      debug: false,
-      hotReload: false,
-      optimize: true,
-      minify: true,
-      buildMode: BuildMode.release,
-      validationOverrides: ValidationOverrideConfig(
-        strictMode: true,
-        minCoverage: 90,
-        allowWarnings: false,
-      ),
-      performanceSettings: PerformanceSettings(
-        parallelBuild: true,
-        cacheEnabled: false, // 生产环境确保最新构建
-        maxMemoryUsage: 8192,
-      ),
-    );
-  }
 }
 
 /// 团队协作配置

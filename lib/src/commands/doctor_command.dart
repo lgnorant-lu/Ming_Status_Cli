@@ -266,7 +266,7 @@ class DoctorCommand extends BaseCommand {
       Logger.info('• 使用 "ming doctor --detailed" 查看详细信息');
       Logger.info('• 使用 "ming doctor --fix" 尝试自动修复');
       Logger.info(
-          '• 参考文档: https://github.com/lgnorant-lu/Ming_Status_Cli/wiki');
+          '• 参考文档: https://github.com/lgnorant-lu/Ming_Status_Cli/wiki',);
     }
   }
 }
@@ -507,17 +507,17 @@ class ConfigDeepChecker extends HealthChecker {
             
             if (errors != null && errors is Iterable) {
               for (final error in errors) {
-                result.addError('验证错误: ${error.toString()}');
+                result.addError('验证错误: $error');
               }
             }
             if (warnings != null && warnings is Iterable) {
               for (final warning in warnings) {
-                result.addWarning('验证警告: ${warning.toString()}');
+                result.addWarning('验证警告: $warning');
               }
             }
             if (suggestions != null && suggestions is Iterable) {
               for (final suggestion in suggestions) {
-                result.addInfo('建议: ${suggestion.toString()}');
+                result.addInfo('建议: $suggestion');
               }
             }
           }
@@ -579,7 +579,7 @@ class ConfigDeepChecker extends HealthChecker {
         // 检查缓存设置
         final cacheTimeout = config?.templates?.cacheTimeout;
         if (cacheTimeout != null && cacheTimeout is int && cacheTimeout > 0) {
-          result.addInfo('模板缓存超时: ${cacheTimeout}秒');
+          result.addInfo('模板缓存超时: $cacheTimeout秒');
         }
       } else {
         result.addWarning('模板配置未设置');

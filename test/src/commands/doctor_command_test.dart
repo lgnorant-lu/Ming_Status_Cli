@@ -13,12 +13,11 @@ Change History:
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
+
 import 'package:ming_status_cli/src/commands/doctor_command.dart';
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
-import 'package:ming_status_cli/src/models/workspace_config.dart';
-import 'package:ming_status_cli/src/utils/file_utils.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('DoctorCommand', () {
@@ -84,7 +83,7 @@ void main() {
         
         // 应该检测到已初始化的工作空间
         final hasSuccessMessage = result.messages.any(
-          (msg) => msg.message.contains('工作空间已初始化')
+          (msg) => msg.message.contains('工作空间已初始化'),
         );
         expect(hasSuccessMessage, isTrue);
       });
@@ -123,7 +122,7 @@ void main() {
         // 应该包含基础配置检查结果
         final hasConfigCheck = result.messages.any(
           (msg) => msg.message.contains('工作空间名称已设置') ||
-                   msg.message.contains('模板配置已启用')
+                   msg.message.contains('模板配置已启用'),
         );
         expect(hasConfigCheck, isTrue);
       });
@@ -139,7 +138,7 @@ void main() {
         // 应该包含用户配置功能状态信息
         final hasUserConfigInfo = result.messages.any(
           (msg) => msg.message.contains('用户配置管理功能') ||
-                   msg.message.contains('Phase 1')
+                   msg.message.contains('Phase 1'),
         );
         expect(hasUserConfigInfo, isTrue);
       });
@@ -155,7 +154,7 @@ void main() {
         // 应该检测到可用的配置模板
         final hasTemplateInfo = result.messages.any(
           (msg) => msg.message.contains('可用配置模板') ||
-                   msg.message.contains('模板验证')
+                   msg.message.contains('模板验证'),
         );
         expect(hasTemplateInfo, isTrue);
       });
@@ -185,7 +184,7 @@ void main() {
       test('默认模式应该执行完整环境检查', () async {
         // 创建DoctorCommand实例
         final defaultDoctorCommand = DoctorCommand();
-        final checkers = defaultDoctorCommand.getCheckersForTest(configOnly: false);
+        final checkers = defaultDoctorCommand.getCheckersForTest();
         
         // 应该包含系统环境检查器
         expect(checkers.any((c) => c.name == 'Dart环境'), isTrue);
@@ -274,7 +273,6 @@ Future<void> _setupTestEnvironment(Directory tempDir, ConfigManager configManage
   // 初始化工作空间配置
   await configManager.initializeWorkspace(
     workspaceName: 'test_workspace',
-    templateType: 'basic',
     description: 'Test workspace for doctor command',
     author: 'Test Author',
   );
@@ -288,7 +286,7 @@ Future<void> _setupTestEnvironment(Directory tempDir, ConfigManager configManage
   await Directory('${tempDir.path}/templates/workspace').create(recursive: true);
   
   // 创建基础配置模板文件
-  final basicTemplate = '''
+  const basicTemplate = '''
 workspace:
   name: "test_basic"
   version: "1.0.0"

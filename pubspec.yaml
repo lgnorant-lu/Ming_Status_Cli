@@ -11,8 +11,8 @@ dependencies:
   args: ^2.4.2
   
   # 模板引擎
-  mason: ^0.1.0-dev.51
-  mason_api: ^0.1.0-dev.51
+  mason: ^0.1.1
+  mason_api: ^0.1.1
   
   # 配置和数据
   yaml: ^3.1.2

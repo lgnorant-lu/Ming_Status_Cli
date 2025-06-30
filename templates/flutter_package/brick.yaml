@@ -1,0 +1,394 @@
+# =============================================================================
+# Flutter Package 模板配置文件 - 高级配置示例
+# 版本: 2.0
+# 展示复杂变量类型、条件输出、钩子系统等高级功能
+# =============================================================================
+
+name: flutter_package
+description: 专业的Flutter包开发模板 - 支持多平台、完整测试、CI/CD集成
+version: 2.0.0
+
+# 复杂变量定义 - 展示所有支持的变量类型
+vars:
+  # 核心包信息
+  package_name:
+    type: string
+    description: Flutter包名称
+    default: my_flutter_package
+    prompt: 请输入包名称
+    validation:
+      pattern: "^[a-z][a-z0-9_]*$"
+      min_length: 3
+      max_length: 50
+      message: "包名称必须以小写字母开头，只能包含小写字母、数字和下划线"
+
+  description:
+    type: string
+    description: 包功能描述
+    default: A new Flutter package
+    prompt: 请输入包描述
+    validation:
+      min_length: 15
+      max_length: 300
+
+  # 作者信息
+  author:
+    type: string
+    description: 包作者姓名
+    default: Flutter Developer
+    prompt: 请输入作者姓名
+
+  author_email:
+    type: string
+    description: 作者邮箱
+    default: ""
+    prompt: 请输入作者邮箱 (可选)
+    optional: true
+    validation:
+      pattern: "^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9.-]*\\.[a-zA-Z]{2,}$|^$"
+
+  # 版本信息
+  initial_version:
+    type: string
+    description: 初始版本号
+    default: "0.1.0"
+    prompt: 请输入初始版本号
+    validation:
+      pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+.*$"
+
+  # 技术配置
+  flutter_version:
+    type: string
+    description: Flutter版本约束
+    default: ">=3.16.0"
+    prompt: 请输入Flutter版本约束
+
+  dart_version:
+    type: string
+    description: Dart版本约束
+    default: ">=3.2.0 <4.0.0"
+    prompt: 请输入Dart版本约束
+
+  # 许可证枚举
+  license:
+    type: enum
+    description: 开源许可证类型
+    default: MIT
+    prompt: 请选择开源许可证
+    values:
+      - MIT
+      - Apache-2.0
+      - BSD-3-Clause
+      - GPL-3.0
+      - LGPL-3.0
+      - Proprietary
+
+  # 平台支持 - 多选列表
+  supported_platforms:
+    type: list
+    description: 支持的平台列表
+    default: ["android", "ios"]
+    prompt: 请选择支持的平台 (多选)
+    values:
+      - android
+      - ios
+      - web
+      - windows
+      - macos
+      - linux
+    validation:
+      min_length: 1
+      max_length: 6
+
+  # 功能开关
+  include_example:
+    type: boolean
+    description: 是否包含示例应用
+    default: true
+    prompt: 是否包含示例应用?
+
+  include_tests:
+    type: boolean
+    description: 是否包含单元测试
+    default: true
+    prompt: 是否包含单元测试?
+
+  include_integration_tests:
+    type: boolean
+    description: 是否包含集成测试
+    default: false
+    prompt: 是否包含集成测试?
+
+  use_null_safety:
+    type: boolean
+    description: 是否启用空安全
+    default: true
+    prompt: 是否启用空安全?
+
+  include_ci_cd:
+    type: boolean
+    description: 是否包含CI/CD配置
+    default: true
+    prompt: 是否包含CI/CD配置?
+
+  # 数值配置
+  min_coverage:
+    type: number
+    description: 最小测试覆盖率百分比
+    default: 80
+    prompt: 请输入最小测试覆盖率
+    validation:
+      min_value: 50
+      max_value: 100
+
+  # 依赖管理
+  additional_dependencies:
+    type: list
+    description: 额外依赖包列表
+    default: []
+    prompt: 请输入额外依赖 (可选)
+    optional: true
+    validation:
+      max_length: 10
+
+# 复杂输出配置 - 条件文件生成
+output:
+  include_paths:
+    - "**/*"
+  
+  exclude_paths:
+    - ".git/**"
+    - ".dart_tool/**"
+    - "build/**"
+    - ".vscode/**"
+    - ".idea/**"
+    - "*.iml"
+    - ".gradle/**"
+    - "android/.gradle/**"
+    - "ios/.symlinks/**"
+
+  # 条件输出配置
+  conditional:
+    # 示例应用
+    - condition: "{{include_example}}"
+      include_paths:
+        - "example/**"
+    
+    # 测试文件
+    - condition: "{{include_tests}}"
+      include_paths:
+        - "test/**"
+    
+    # 集成测试
+    - condition: "{{include_integration_tests}}"
+      include_paths:
+        - "integration_test/**"
+    
+    # CI/CD配置
+    - condition: "{{include_ci_cd}}"
+      include_paths:
+        - ".github/**"
+        - "codemagic.yaml"
+    
+    # 平台特定文件
+    - condition: "'android' in {{supported_platforms}}"
+      include_paths:
+        - "android/**"
+    
+    - condition: "'ios' in {{supported_platforms}}"
+      include_paths:
+        - "ios/**"
+    
+    - condition: "'web' in {{supported_platforms}}"
+      include_paths:
+        - "web/**"
+    
+    - condition: "'windows' in {{supported_platforms}}"
+      include_paths:
+        - "windows/**"
+    
+    - condition: "'macos' in {{supported_platforms}}"
+      include_paths:
+        - "macos/**"
+    
+    - condition: "'linux' in {{supported_platforms}}"
+      include_paths:
+        - "linux/**"
+
+# 复杂钩子配置
+hooks:
+  # 生成前验证
+  pre_gen:
+    - description: "检查Flutter环境"
+      script: "flutter --version"
+      timeout: 10000
+      ignore_errors: false
+    
+    - description: "验证包名称可用性"
+      script: "echo '验证包名称: {{package_name}}'"
+      condition: "true"
+    
+    - description: "检查平台支持"
+      script: "echo '支持平台: {{supported_platforms}}'"
+      condition: "{{supported_platforms|length > 0}}"
+    
+    - description: "验证版本格式"
+      script: "echo '初始版本: {{initial_version}}'"
+      condition: "{{initial_version}}"
+
+  # 生成后处理
+  post_gen:
+    - description: "创建包目录"
+      script: "echo '包目录: {{package_name}}'"
+      condition: "success"
+    
+    - description: "安装依赖"
+      script: "cd {{package_name}} && flutter pub get"
+      condition: "success"
+      timeout: 60000
+    
+    - description: "生成平台代码"
+      script: "cd {{package_name}} && flutter create --platforms={{supported_platforms|join(',')}} ."
+      condition: "success && {{include_example}}"
+      timeout: 30000
+    
+    - description: "运行代码分析"
+      script: "cd {{package_name}} && flutter analyze"
+      condition: "success"
+      timeout: 30000
+      ignore_errors: true
+    
+    - description: "运行测试"
+      script: "cd {{package_name}} && flutter test"
+      condition: "success && {{include_tests}}"
+      timeout: 60000
+      ignore_errors: true
+    
+    - description: "生成文档"
+      script: "cd {{package_name}} && dart doc"
+      condition: "success"
+      timeout: 30000
+      ignore_errors: true
+    
+    - description: "初始化Git仓库"
+      script: "cd {{package_name}} && git init && git add . && git commit -m 'Initial commit'"
+      condition: "success && {{include_ci_cd}}"
+      timeout: 15000
+      ignore_errors: true
+
+# 扩展元数据
+metadata:
+  category: "flutter"
+  tags:
+    - "flutter"
+    - "package"
+    - "library"
+    - "dart"
+    - "mobile"
+    - "cross-platform"
+  
+  # 兼容性要求
+  min_dart_version: "3.0.0"
+  max_dart_version: "4.0.0"
+  min_flutter_version: "3.16.0"
+  min_mason_version: "0.1.0"
+  
+  # 平台支持详情
+  platforms:
+    supported:
+      - "windows"
+      - "macos" 
+      - "linux"
+    required_features:
+      - "flutter"
+      - "dart"
+    optional_features:
+      - "git"
+      - "android_studio"
+      - "vscode"
+      - "xcode"
+  
+  # 维护信息
+  created_by: "Ming Status CLI"
+  maintainer: "Flutter Package Team"
+  homepage: "https://github.com/ming-status/cli"
+  documentation: "https://docs.ming-status.dev/templates/flutter_package"
+  repository: "https://github.com/ming-status/flutter-package-template"
+  issue_tracker: "https://github.com/ming-status/cli/issues"
+  last_updated: "2025-06-30"
+  
+  # 性能指标
+  estimated_generation_time: "< 30 seconds"
+  estimated_file_count: 25
+  estimated_size: "< 200KB"
+  
+  # 质量指标
+  test_coverage_target: "{{min_coverage}}%"
+  complexity_target: "low"
+  maintainability_index: "high"
+
+# Ming Status CLI 扩展配置
+ming_config:
+  # 模板特定配置
+  template_version: "2.0"
+  template_complexity: "advanced"
+  compatibility_check: true
+  auto_format: true
+  auto_analyze: true
+  performance_monitoring: true
+  
+  # 深度集成功能
+  integrations:
+    config_manager: true
+    doctor_command: true
+    validation_system: true
+    performance_tracking: true
+    error_reporting: true
+  
+  # 高级处理器
+  custom_processors:
+    - type: "snake_case_converter"
+      target: "package_name"
+    - type: "title_case_converter"
+      target: "description"
+    - type: "platform_validator"
+      target: "supported_platforms"
+    - type: "dependency_validator"
+      target: "additional_dependencies"
+    - type: "semver_validator"
+      target: "initial_version"
+  
+  # 质量保障
+  quality_gates:
+    - type: "lint_check"
+      enabled: true
+    - type: "test_coverage"
+      threshold: "{{min_coverage}}"
+    - type: "security_scan"
+      enabled: "{{include_ci_cd}}"
+    - type: "dependency_audit"
+      enabled: true
+  
+  # 模板继承系统
+  inheritance:
+    base_template: null
+    extends: ["dart_package_base"]
+    override_vars: 
+      - "supported_platforms"
+      - "include_integration_tests"
+    merge_hooks: true
+    merge_metadata: true
+  
+  # 生成后优化
+  post_generation:
+    auto_format_code: true
+    optimize_imports: true
+    remove_unused_files: true
+    validate_pubspec: true
+    
+  # 错误恢复
+  error_recovery:
+    enable_rollback: true
+    backup_on_failure: true
+    retry_failed_hooks: true
+    max_retries: 3 

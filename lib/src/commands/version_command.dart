@@ -75,7 +75,7 @@ class VersionCommand extends Command<int> {
     // 运行环境
     Logger.subtitle('🖥️  运行环境');
     Logger.keyValue('操作系统',
-        '${Platform.operatingSystem} ${Platform.operatingSystemVersion}');
+        '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',);
     Logger.keyValue('架构', _getArchitecture());
     Logger.keyValue('Dart版本', Platform.version);
     Logger.newLine();
@@ -85,7 +85,7 @@ class VersionCommand extends Command<int> {
     Logger.keyValue('当前目录', Directory.current.path);
     Logger.keyValue('可执行文件', Platform.resolvedExecutable);
     Logger.keyValue(
-        '环境变量PATH', Platform.environment['PATH'] != null ? '已设置' : '未设置');
+        '环境变量PATH', Platform.environment['PATH'] != null ? '已设置' : '未设置',);
     Logger.newLine();
 
     // 性能信息

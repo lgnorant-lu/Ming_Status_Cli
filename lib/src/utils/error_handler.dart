@@ -303,7 +303,7 @@ class ErrorHandler {
     Logger.usageTip('ming doctor', '检查环境状态', example: 'ming doctor --detailed');
     Logger.usageTip('ming init', '初始化工作空间', example: 'ming init my-project');
     Logger.usageTip('ming version', '显示版本信息',
-        example: 'ming version --detailed');
+        example: 'ming version --detailed',);
   }
 
   /// 显示快速修复建议

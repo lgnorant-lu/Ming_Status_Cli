@@ -1,0 +1,55 @@
+name: {{module_name.snakeCase()}}
+description: {{description}}
+version: 1.0.0+1
+
+environment:
+  sdk: '{{dart_version}} <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+{{#use_http}}
+  http: ^1.2.0
+{{/use_http}}
+{{#use_provider}}
+  provider: ^6.1.1
+{{/use_provider}}
+{{#use_dio}}
+  dio: ^5.4.0
+{{/use_dio}}
+{{#use_shared_preferences}}
+  shared_preferences: ^2.2.2
+{{/use_shared_preferences}}
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+{{#use_analysis}}
+  very_good_analysis: ^5.1.0
+{{/use_analysis}}
+{{#use_build_runner}}
+  build_runner: ^2.4.7
+{{/use_build_runner}}
+{{#use_mockito}}
+  mockito: ^5.4.4
+{{/use_mockito}}
+
+flutter:
+  uses-material-design: true
+{{#has_assets}}
+
+  assets:
+    - assets/images/
+    - assets/icons/
+{{/has_assets}}
+{{#has_fonts}}
+
+  fonts:
+    - family: {{font_family}}
+      fonts:
+        - asset: assets/fonts/{{font_family}}-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/{{font_family}}-Bold.ttf
+          weight: 700
+{{/has_fonts}} 

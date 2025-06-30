@@ -121,7 +121,7 @@ class FileUtils {
 
   /// 删除目录（递归删除）
   static Future<bool> deleteDirectory(String dirPath,
-      {bool recursive = false}) async {
+      {bool recursive = false,}) async {
     try {
       final dir = Directory(dirPath);
       if (dir.existsSync()) {
@@ -306,12 +306,12 @@ class FileUtils {
         } else {
           // 处理字符串值的YAML转义
           if (value is String &&
-              (value.contains('\\') ||
+              (value.contains(r'\') ||
                   value.contains('"') ||
-                  value.contains('\''))) {
+                  value.contains("'"))) {
             // 对于包含特殊字符的字符串，使用双引号包围并转义
             final escapedValue =
-                value.replaceAll('\\', '').replaceAll('"', '\\"');
+                value.replaceAll(r'\', '').replaceAll('"', r'\"');
             buffer.writeln('$indentStr$key: "$escapedValue"');
           } else {
             buffer.writeln('$indentStr$key: $value');

@@ -21,10 +21,10 @@ import 'package:ming_status_cli/src/models/workspace_config.dart';
 
 /// 测试用的临时配置管理器，使用隔离的临时目录
 class TestConfigManagerForValidation extends ConfigManager {
-  final String testWorkingDirectory;
 
   TestConfigManagerForValidation(this.testWorkingDirectory)
       : super(workingDirectory: testWorkingDirectory);
+  final String testWorkingDirectory;
 }
 
 void main() {
@@ -66,11 +66,10 @@ void main() {
 
       test('基础验证 - 空名称配置', () async {
         final config = WorkspaceConfig.defaultConfig().copyWith(
-          workspace: WorkspaceInfo(
+          workspace: const WorkspaceInfo(
             name: '',
             version: '1.0.0',
             description: '测试工作空间',
-            type: WorkspaceType.basic,
           ),
         );
 
@@ -85,38 +84,34 @@ void main() {
 
       test('标准验证 - 版本格式检查', () async {
         final config = WorkspaceConfig.defaultConfig().copyWith(
-          workspace: WorkspaceInfo(
+          workspace: const WorkspaceInfo(
             name: '测试工作空间',
             version: 'invalid-version',
             description: '测试工作空间',
-            type: WorkspaceType.basic,
           ),
         );
 
         final result = await configManager.validateWorkspaceConfig(
           config,
-          strictness: ValidationStrictness.standard,
         );
 
         expect(result.isValid, isTrue, reason: '仅版本格式警告不影响整体验证通过');
         expect(
             result.warnings,
             contains(predicate<String>(
-                (warning) => warning.contains('版本号建议使用语义版本格式'))));
+                (warning) => warning.contains('版本号建议使用语义版本格式'),),),);
       });
 
       test('严格验证 - 语义约束检查', () async {
         final config = WorkspaceConfig.defaultConfig().copyWith(
-          workspace: WorkspaceInfo(
+          workspace: const WorkspaceInfo(
             name: '测试工作空间',
             version: '1.0.0',
             description: '测试工作空间',
-            type: WorkspaceType.basic,
           ),
-          templates: TemplateConfig(
+          templates: const TemplateConfig(
             source: TemplateSource.remote,
             localPath: 'templates',
-            remoteRegistry: null, // 使用远程源但未配置注册表
           ),
         );
 
@@ -131,13 +126,13 @@ void main() {
 
       test('企业级验证 - 安全检查', () async {
         final config = WorkspaceConfig.defaultConfig().copyWith(
-          workspace: WorkspaceInfo(
+          workspace: const WorkspaceInfo(
             name: '测试工作空间',
             version: '1.0.0',
             description: '测试工作空间',
             type: WorkspaceType.enterprise,
           ),
-          templates: TemplateConfig(
+          templates: const TemplateConfig(
             source: TemplateSource.remote,
             localPath: 'templates',
             remoteRegistry: 'http://insecure.example.com', // 使用HTTP协议
@@ -153,7 +148,7 @@ void main() {
         expect(
             result.warnings,
             contains(predicate<String>(
-                (warning) => warning.contains('HTTP协议，存在安全风险'))));
+                (warning) => warning.contains('HTTP协议，存在安全风险'),),),);
       });
     });
 
@@ -161,7 +156,6 @@ void main() {
       test('内置模板验证 - basic', () async {
         final result = await configManager.validateConfigTemplateEnhanced(
           'basic',
-          strictness: ValidationStrictness.standard,
         );
 
         expect(result.isValid, isTrue, reason: 'basic内置模板应该验证通过');
@@ -171,7 +165,6 @@ void main() {
       test('内置模板验证 - enterprise', () async {
         final result = await configManager.validateConfigTemplateEnhanced(
           'enterprise',
-          strictness: ValidationStrictness.standard,
         );
 
         expect(result.isValid, isTrue, reason: 'enterprise内置模板应该验证通过');
@@ -181,7 +174,6 @@ void main() {
       test('不存在模板验证', () async {
         final result = await configManager.validateConfigTemplateEnhanced(
           'non_existent_template',
-          strictness: ValidationStrictness.standard,
         );
 
         expect(result.isValid, isFalse, reason: '不存在的模板应该验证失败');
@@ -192,7 +184,6 @@ void main() {
     group('配置完整性检查测试', () {
       test('未初始化工作空间检查', () async {
         final result = await configManager.checkConfigIntegrity(
-          checkWorkspace: true,
           checkModules: false,
           checkTemplates: false,
         );
@@ -205,13 +196,10 @@ void main() {
         // 先初始化工作空间
         await configManager.initializeWorkspace(
           workspaceName: '测试工作空间',
-          templateType: 'basic',
         );
 
         final result = await configManager.checkConfigIntegrity(
-          checkWorkspace: true,
-          checkModules: true,
-          checkTemplates: true,
+          
         );
 
         expect(result.isValid, isTrue, reason: '已初始化的工作空间完整性检查应该通过');
@@ -224,16 +212,14 @@ void main() {
 
       setUp(() {
         testConfig = WorkspaceConfig.defaultConfig().copyWith(
-          workspace: WorkspaceInfo(
+          workspace: const WorkspaceInfo(
             name: 'test',
             version: 'invalid',
             description: '测试工作空间',
-            type: WorkspaceType.basic,
           ),
-          templates: TemplateConfig(
+          templates: const TemplateConfig(
             source: TemplateSource.remote,
             localPath: 'templates',
-            remoteRegistry: null, // 使用远程源但未配置注册表 - 这将触发语义错误
           ),
         );
       });
@@ -251,12 +237,11 @@ void main() {
       test('标准验证级别', () async {
         final result = await configManager.validateWorkspaceConfig(
           testConfig,
-          strictness: ValidationStrictness.standard,
         );
 
         // 标准验证检查更多字段
         expect(result.warnings.length, greaterThanOrEqualTo(1),
-            reason: '标准验证应该有更多警告');
+            reason: '标准验证应该有更多警告',);
       });
 
       test('严格验证级别', () async {
@@ -273,13 +258,12 @@ void main() {
       test('企业级验证级别', () async {
         // 企业级验证需要单独的配置来触发安全检查
         final enterpriseTestConfig = WorkspaceConfig.defaultConfig().copyWith(
-          workspace: WorkspaceInfo(
+          workspace: const WorkspaceInfo(
             name: 'test',
             version: 'invalid',
             description: '测试工作空间',
-            type: WorkspaceType.basic,
           ),
-          templates: TemplateConfig(
+          templates: const TemplateConfig(
             source: TemplateSource.remote,
             localPath: 'templates',
             remoteRegistry: 'http://insecure.example.com', // 使用HTTP协议触发安全警告
@@ -295,7 +279,7 @@ void main() {
         expect(
             result.warnings,
             contains(predicate<String>(
-                (warning) => warning.contains('HTTP协议，存在安全风险'))));
+                (warning) => warning.contains('HTTP协议，存在安全风险'),),),);
       });
     });
 

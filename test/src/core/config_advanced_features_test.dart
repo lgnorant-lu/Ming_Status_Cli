@@ -44,7 +44,6 @@ void main() {
           workspaceName: 'test_workspace',
           description: '测试工作空间',
           author: '测试作者',
-          templateType: 'basic',
         );
 
         // 测试加载具有继承功能的配置
@@ -58,14 +57,13 @@ void main() {
         // 初始化工作空间
         await configManager.initializeWorkspace(
           workspaceName: 'test_workspace',
-          templateType: 'basic',
         );
 
         final environments = await configManager.getAvailableEnvironments();
 
         expect(environments, isNotEmpty);
         expect(environments,
-            containsAll(['development', 'testing', 'production']));
+            containsAll(['development', 'testing', 'production']),);
       });
 
       test('应该能够清除配置缓存', () {
@@ -113,14 +111,12 @@ void main() {
         // 初始化工作空间
         await configManager.initializeWorkspace(
           workspaceName: 'test_workspace',
-          templateType: 'basic',
         );
 
         // 创建自定义环境配置
-        final customEnvConfig = EnvironmentConfig(
+        const customEnvConfig = EnvironmentConfig(
           description: '自定义测试环境',
           debug: true,
-          hotReload: false,
           buildMode: BuildMode.debug,
           validationOverrides: ValidationOverrideConfig(
             strictMode: false,
@@ -147,8 +143,7 @@ void main() {
         final baseConfig = WorkspaceConfig.defaultConfig();
         final otherConfig = WorkspaceConfig.enterpriseConfig();
 
-        final merged = baseConfig.mergeWith(otherConfig,
-            strategy: ConfigMergeStrategy.override);
+        final merged = baseConfig.mergeWith(otherConfig,);
 
         expect(merged.workspace.type, equals(WorkspaceType.enterprise));
         expect(merged.workspace.name, equals(otherConfig.workspace.name));
@@ -159,7 +154,7 @@ void main() {
         final otherConfig = WorkspaceConfig.enterpriseConfig();
 
         final merged = baseConfig.mergeWith(otherConfig,
-            strategy: ConfigMergeStrategy.merge);
+            strategy: ConfigMergeStrategy.merge,);
 
         // 验证默认设置合并
         expect(merged.defaults.author, isNotEmpty);
@@ -171,7 +166,7 @@ void main() {
         final otherConfig = WorkspaceConfig.enterpriseConfig();
 
         final merged = baseConfig.mergeWith(otherConfig,
-            strategy: ConfigMergeStrategy.preserve);
+            strategy: ConfigMergeStrategy.preserve,);
 
         // 验证原有值被保留
         expect(merged.workspace.name, equals(baseConfig.workspace.name));
@@ -193,7 +188,7 @@ void main() {
 
         // 验证环境配置影响了验证规则
         expect(devConfig.validation.minCoverage,
-            lessThan(prodConfig.validation.minCoverage));
+            lessThan(prodConfig.validation.minCoverage),);
       });
 
       test('应该能够处理不存在的环境', () {
@@ -208,10 +203,9 @@ void main() {
 
     group('配置继承设置测试', () {
       test('应该能够创建配置继承设置', () {
-        final inheritance = ConfigInheritance(
+        const inheritance = ConfigInheritance(
           baseConfig: './base-config.yaml',
           inheritsFrom: ['./parent1.yaml', './parent2.yaml'],
-          mergeStrategy: ConfigMergeStrategy.merge,
           overrides: {
             'workspace': {
               'name': 'override-name',
@@ -244,9 +238,7 @@ void main() {
 
     group('性能设置测试', () {
       test('应该能够创建性能设置', () {
-        final settings = PerformanceSettings(
-          parallelBuild: true,
-          cacheEnabled: true,
+        const settings = PerformanceSettings(
           maxMemoryUsage: 4096,
           buildTimeout: 600,
           optimizationLevel: OptimizationLevel.advanced,
@@ -276,7 +268,7 @@ void main() {
 
     group('模板覆盖配置测试', () {
       test('应该能够创建模板覆盖配置', () {
-        final override = TemplateOverrideConfig(
+        const override = TemplateOverrideConfig(
           templatePath: './custom-template',
           customVariables: {
             'APP_NAME': 'MyApp',
@@ -295,10 +287,9 @@ void main() {
 
     group('验证规则覆盖测试', () {
       test('应该能够创建验证规则覆盖', () {
-        final override = ValidationOverrideConfig(
+        const override = ValidationOverrideConfig(
           strictMode: true,
           minCoverage: 95,
-          allowWarnings: false,
           customRules: ['rule1', 'rule2'],
         );
 

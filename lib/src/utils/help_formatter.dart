@@ -3,11 +3,12 @@
 File name:          help_formatter.dart
 Author:             lgnorant-lu
 Date created:       2025/06/29
-Last modified:      2025/06/29
+Last modified:      2025/06/30
 Dart Version:       3.32.4
 Description:        帮助文本格式化器 (Help text formatter)
 ---------------------------------------------------------------
 Change History:
+    2025/06/30: Add create command - 添加create命令;
     2025/06/29: Initial creation - 增强帮助系统的显示格式;
 ---------------------------------------------------------------
 */
@@ -83,6 +84,9 @@ class HelpFormatter {
     Logger.info('💼 核心命令：');
     if (commands.containsKey('init')) {
       Logger.listItem('init     - 初始化Ming Status模块工作空间', indent: 1);
+    }
+    if (commands.containsKey('create')) {
+      Logger.listItem('create   - 基于模板创建新的模块或项目', indent: 1);
     }
     if (commands.containsKey('config')) {
       Logger.listItem('config   - 管理全局和工作空间配置', indent: 1);
@@ -195,7 +199,7 @@ class HelpFormatter {
 
   /// 格式化选项帮助
   static void formatOption(String option, String description,
-      {String? defaultValue}) {
+      {String? defaultValue,}) {
     if (defaultValue != null) {
       Logger.keyValue(option, '$description (默认: $defaultValue)');
     } else {

@@ -1,0 +1,39 @@
+{{#use_analysis}}
+include: package:very_good_analysis/analysis_options.yaml
+
+linter:
+  rules:
+    # Custom rules for {{module_name}}
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false
+    avoid_print: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_locals: true
+    unnecessary_const: true
+    unnecessary_new: true
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - build/**
+    - lib/generated/**
+  
+  strong-mode:
+    implicit-casts: false
+    implicit-dynamic: false
+  
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+  errors:
+    # Treat missing required parameters as errors
+    missing_required_param: error
+    # Treat missing returns as errors
+    missing_return: error
+    # Treat invalid assignments as errors
+    invalid_assignment: error
+{{/use_analysis}} 

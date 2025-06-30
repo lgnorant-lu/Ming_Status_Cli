@@ -40,7 +40,6 @@ class UserConfig {
           license: 'MIT',
           dartVersion: '^3.2.0',
         ),
-        security: null,
       );
     }
     try {
@@ -55,7 +54,6 @@ class UserConfig {
           license: 'MIT',
           dartVersion: '^3.2.0',
         ),
-        security: null,
       );
     }
   }
@@ -65,25 +63,17 @@ class UserConfig {
     return const UserConfig(
       user: UserInfo(
         name: '开发者名称',
-        email: '',
-        company: '',
       ),
       preferences: UserPreferences(
-        defaultTemplate: 'basic',
-        coloredOutput: true,
-        autoUpdateCheck: true,
-        verboseLogging: false,
-        preferredIde: 'vscode',
+        
       ),
       defaults: UserDefaults(
         author: '开发者名称',
         license: 'MIT',
         dartVersion: '^3.2.0',
-        description: 'A Flutter module created by Ming Status CLI',
       ),
       security: SecuritySettings(
-        encryptedCredentials: false,
-        strictPermissions: true,
+        
       ),
     );
   }

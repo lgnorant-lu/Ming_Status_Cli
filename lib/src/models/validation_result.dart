@@ -129,7 +129,7 @@ class ValidationResult {
       buffer.writeln('❌ ERROR: ${error.message}');
       if (error.file != null) {
         buffer.writeln(
-            '   📁 ${error.file}${error.line != null ? ':${error.line}' : ''}');
+            '   📁 ${error.file}${error.line != null ? ':${error.line}' : ''}',);
       }
       if (error.code != null) {
         buffer.writeln('   🔍 Code: ${error.code}');
@@ -141,7 +141,7 @@ class ValidationResult {
       buffer.writeln('⚠️  WARNING: ${warning.message}');
       if (warning.file != null) {
         buffer.writeln(
-            '   📁 ${warning.file}${warning.line != null ? ':${warning.line}' : ''}');
+            '   📁 ${warning.file}${warning.line != null ? ':${warning.line}' : ''}',);
       }
     }
 

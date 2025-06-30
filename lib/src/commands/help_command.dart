@@ -98,7 +98,7 @@ class HelpCommand {
     Logger.listItem('查看所有命令: ming help');
     Logger.listItem('项目主页: https://github.com/lgnorant-lu/Ming_Status_Cli');
     Logger.listItem(
-            '问题反馈: https://github.com/lgnorant-lu/Ming_Status_Cli/issues');
+            '问题反馈: https://github.com/lgnorant-lu/Ming_Status_Cli/issues',);
   }
 
   /// 显示命令示例
@@ -108,7 +108,7 @@ class HelpCommand {
         Logger.listItem('基本初始化: ming init');
         Logger.listItem('指定名称: ming init my-project');
         Logger.listItem(
-            '完整配置: ming init --name "我的项目" --author "开发者" --description "项目描述"');
+            '完整配置: ming init --name "我的项目" --author "开发者" --description "项目描述"',);
         Logger.listItem('强制重新初始化: ming init --force');
 
       case 'doctor':

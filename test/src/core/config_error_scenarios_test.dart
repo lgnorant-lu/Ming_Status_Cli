@@ -12,31 +12,30 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:convert';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
+import 'dart:io';
 
+import 'package:ming_status_cli/src/commands/config_command.dart';
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/core/user_config_manager.dart';
-import 'package:ming_status_cli/src/commands/config_command.dart';
-import 'package:ming_status_cli/src/models/workspace_config.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
-import 'package:ming_status_cli/src/utils/file_utils.dart';
+import 'package:ming_status_cli/src/models/workspace_config.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 /// 测试用的临时配置管理器，使用隔离的临时目录
 class TestConfigManagerForErrors extends ConfigManager {
-  final String testWorkingDirectory;
 
   TestConfigManagerForErrors(this.testWorkingDirectory)
       : super(workingDirectory: testWorkingDirectory);
+  final String testWorkingDirectory;
 }
 
 /// 测试用的用户配置管理器，使用隔离的临时目录
 class TestUserConfigManagerForErrors extends UserConfigManager {
-  final String testUserConfigDir;
 
   TestUserConfigManagerForErrors(this.testUserConfigDir);
+  final String testUserConfigDir;
 
   @override
   String get userConfigDir => testUserConfigDir;
@@ -206,9 +205,9 @@ workspace:
 
         // 模拟并发写入
         final futures = <Future<bool>>[];
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
           futures.add(userConfigManager.setConfigValue(
-              'user.name', 'concurrent_user_$i'));
+              'user.name', 'concurrent_user_$i',),);
         }
 
         final results = await Future.wait(futures);
@@ -290,7 +289,7 @@ workspace:
         await userConfigManager.initializeUserConfig();
 
         // 测试超过允许深度的嵌套路径（integrations最多3层：integrations.key1.key2）
-        final deepPath = 'integrations.level1.level2.level3'; // 4层，应该被拒绝
+        const deepPath = 'integrations.level1.level2.level3'; // 4层，应该被拒绝
 
         final success =
             await userConfigManager.setConfigValue(deepPath, 'deep_test');
@@ -312,7 +311,7 @@ workspace:
 
         for (final specialValue in specialCharacters) {
           final success = await userConfigManager.setConfigValue(
-              'user.company', specialValue);
+              'user.company', specialValue,);
           final displayValue = specialValue.length > 20
               ? '${specialValue.substring(0, 20)}...'
               : specialValue;
@@ -332,9 +331,9 @@ workspace:
         // 创建大量配置来测试性能
         final startTime = DateTime.now();
 
-        for (int i = 0; i < 100; i++) {
+        for (var i = 0; i < 100; i++) {
           await userConfigManager.setConfigValue(
-              'integrations.test_key_$i', 'test_value_$i');
+              'integrations.test_key_$i', 'test_value_$i',);
         }
 
         final endTime = DateTime.now();
@@ -349,7 +348,7 @@ workspace:
         await userConfigManager.initializeUserConfig();
 
         // 重复加载配置以测试内存泄漏
-        for (int i = 0; i < 50; i++) {
+        for (var i = 0; i < 50; i++) {
           await userConfigManager.loadUserConfig();
           await configManager.loadWorkspaceConfig();
         }
@@ -388,7 +387,7 @@ workspace:
         final configPath =
             path.join(userConfigManager.userConfigDir, 'config.json');
         final modifiedConfig = UserConfig.defaultConfig().copyWith(
-          user: UserInfo(name: 'external_modified', email: 'test@example.com'),
+          user: const UserInfo(name: 'external_modified', email: 'test@example.com'),
         );
         await File(configPath)
             .writeAsString(jsonEncode(modifiedConfig.toJson()));
@@ -398,7 +397,7 @@ workspace:
         final config2 =
             await userConfigManager.loadUserConfig(useCache: false); // 强制不使用缓存
         expect(config2?.user.name, equals('external_modified'),
-            reason: '应该检测到外部配置变化');
+            reason: '应该检测到外部配置变化',);
       });
     });
   });

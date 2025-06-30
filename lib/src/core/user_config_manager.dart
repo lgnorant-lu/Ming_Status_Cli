@@ -12,8 +12,8 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:ming_status_cli/src/models/user_config.dart';
 import 'package:ming_status_cli/src/models/workspace_config.dart';
@@ -74,7 +74,6 @@ class UserConfigManager {
           author: userName ?? '开发者名称',
           license: 'MIT',
           dartVersion: '^3.2.0',
-          description: 'A Flutter module created by Ming Status CLI',
         ),
       );
 
@@ -210,19 +209,14 @@ class UserConfigManager {
           switch (k) {
             case 'user':
               value = value.user;
-              break;
             case 'preferences':
               value = value.preferences;
-              break;
             case 'defaults':
               value = value.defaults;
-              break;
             case 'integrations':
               value = value.integrations;
-              break;
             case 'security':
               value = value.security;
-              break;
             default:
               // 如果不匹配预定义字段，尝试从integrations中查找
               if (value.integrations != null &&
@@ -235,13 +229,10 @@ class UserConfigManager {
           switch (k) {
             case 'name':
               value = value.name;
-              break;
             case 'email':
               value = value.email;
-              break;
             case 'company':
               value = value.company;
-              break;
             default:
               return null;
           }
@@ -249,19 +240,14 @@ class UserConfigManager {
           switch (k) {
             case 'defaultTemplate':
               value = value.defaultTemplate;
-              break;
             case 'coloredOutput':
               value = value.coloredOutput;
-              break;
             case 'autoUpdateCheck':
               value = value.autoUpdateCheck;
-              break;
             case 'verboseLogging':
               value = value.verboseLogging;
-              break;
             case 'preferredIde':
               value = value.preferredIde;
-              break;
             default:
               return null;
           }
@@ -269,16 +255,12 @@ class UserConfigManager {
           switch (k) {
             case 'author':
               value = value.author;
-              break;
             case 'license':
               value = value.license;
-              break;
             case 'dartVersion':
               value = value.dartVersion;
-              break;
             case 'description':
               value = value.description;
-              break;
             default:
               return null;
           }
@@ -286,10 +268,8 @@ class UserConfigManager {
           switch (k) {
             case 'encryptedCredentials':
               value = value.encryptedCredentials;
-              break;
             case 'strictPermissions':
               value = value.strictPermissions;
-              break;
             default:
               return null;
           }
@@ -344,21 +324,17 @@ class UserConfigManager {
               updatedConfig = config.copyWith(
                 user: userInfo.copyWith(name: value),
               );
-              break;
             case 'email':
               updatedConfig = config.copyWith(
                 user: userInfo.copyWith(email: value),
               );
-              break;
             case 'company':
               updatedConfig = config.copyWith(
                 user: userInfo.copyWith(company: value),
               );
-              break;
             default:
               return false; // 无效的用户字段
           }
-          break;
         case 'preferences':
           final prefs = config.preferences;
           switch (keys[1]) {
@@ -366,34 +342,28 @@ class UserConfigManager {
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(defaultTemplate: value),
               );
-              break;
             case 'coloredOutput':
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(
-                    coloredOutput: value.toLowerCase() == 'true'),
+                    coloredOutput: value.toLowerCase() == 'true',),
               );
-              break;
             case 'autoUpdateCheck':
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(
-                    autoUpdateCheck: value.toLowerCase() == 'true'),
+                    autoUpdateCheck: value.toLowerCase() == 'true',),
               );
-              break;
             case 'verboseLogging':
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(
-                    verboseLogging: value.toLowerCase() == 'true'),
+                    verboseLogging: value.toLowerCase() == 'true',),
               );
-              break;
             case 'preferredIde':
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(preferredIde: value),
               );
-              break;
             default:
               return false; // 无效的偏好字段
           }
-          break;
         case 'defaults':
           final defaults = config.defaults;
           switch (keys[1]) {
@@ -401,26 +371,21 @@ class UserConfigManager {
               updatedConfig = config.copyWith(
                 defaults: defaults.copyWith(author: value),
               );
-              break;
             case 'license':
               updatedConfig = config.copyWith(
                 defaults: defaults.copyWith(license: value),
               );
-              break;
             case 'dartVersion':
               updatedConfig = config.copyWith(
                 defaults: defaults.copyWith(dartVersion: value),
               );
-              break;
             case 'description':
               updatedConfig = config.copyWith(
                 defaults: defaults.copyWith(description: value),
               );
-              break;
             default:
               return false; // 无效的默认值字段
           }
-          break;
         default:
           // 验证键路径格式 - 只有有效的顶级键才被接受
           if (keys.length < 2 ||
@@ -447,17 +412,30 @@ class UserConfigManager {
             }
             final integrations =
                 Map<String, dynamic>.from(config.integrations ?? {});
-            integrations[keys.sublist(1).join('.')] = value;
+            
+            // 创建嵌套结构而不是使用点号连接的键
+            final integrationKeys = keys.sublist(1);
+            var current = integrations;
+            
+            // 导航到正确的嵌套位置
+            for (var i = 0; i < integrationKeys.length - 1; i++) {
+              final key = integrationKeys[i];
+              if (!current.containsKey(key)) {
+                current[key] = <String, dynamic>{};
+              }
+              if (current[key] is! Map<String, dynamic>) {
+                current[key] = <String, dynamic>{};
+              }
+              current = current[key] as Map<String, dynamic>;
+            }
+            
+            // 设置最终值
+            current[integrationKeys.last] = value;
+            
             updatedConfig = config.copyWith(integrations: integrations);
           } else {
             return false; // 其他不识别的有效顶级键但无法处理的情况
           }
-          break;
-      }
-
-      // 如果没有匹配到有效的字段，返回false
-      if (updatedConfig == null) {
-        return false;
       }
 
       return await saveUserConfig(updatedConfig);
@@ -471,7 +449,7 @@ class UserConfigManager {
   /// 优先级：命令行参数 > 工作空间配置 > 用户配置
   Future<WorkspaceConfig?> mergeWithWorkspaceConfig(
       WorkspaceConfig workspaceConfig,
-      {Map<String, String>? overrides}) async {
+      {Map<String, String>? overrides,}) async {
     try {
       final userConfig = await loadUserConfig();
       if (userConfig == null) {
@@ -496,7 +474,7 @@ class UserConfigManager {
       );
 
       // 应用命令行覆盖
-      DefaultSettings finalDefaults = mergedDefaults;
+      var finalDefaults = mergedDefaults;
       if (overrides != null) {
         finalDefaults = mergedDefaults.copyWith(
           author: overrides['author'] ?? mergedDefaults.author,

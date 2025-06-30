@@ -66,18 +66,18 @@ void main() {
 
     group('Configuration File Operations', () {
       test('should save and load user config correctly', () async {
-        final testConfig = UserConfig(
-          user: const UserInfo(
+        const testConfig = UserConfig(
+          user: UserInfo(
             name: '测试用户',
             email: 'test@example.com',
             company: '测试公司',
           ),
-          preferences: const UserPreferences(
+          preferences: UserPreferences(
             defaultTemplate: 'advanced',
             coloredOutput: false,
             verboseLogging: true,
           ),
-          defaults: const UserDefaults(
+          defaults: UserDefaults(
             author: '测试用户',
             license: 'Apache-2.0',
             dartVersion: '^3.3.0',
@@ -247,7 +247,7 @@ void main() {
         expect(config1!.user.name, equals('缓存测试用户'));
 
         // 第二次加载（从缓存）
-        final config2 = await manager.loadUserConfig(useCache: true);
+        final config2 = await manager.loadUserConfig();
         expect(config2!.user.name, equals('缓存测试用户'));
 
         // 验证是同一个对象（从缓存加载）
@@ -368,9 +368,9 @@ void main() {
 
 /// 测试专用的UserConfigManager，支持自定义配置目录
 class TestUserConfigManager extends UserConfigManager {
-  final String _testConfigDir;
 
   TestUserConfigManager(this._testConfigDir);
+  final String _testConfigDir;
 
   @override
   String get userConfigDir => _testConfigDir;

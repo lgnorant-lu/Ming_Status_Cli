@@ -13,11 +13,12 @@ Change History:
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
+
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/core/user_config_manager.dart';
-import 'package:ming_status_cli/src/models/workspace_config.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
+import 'package:ming_status_cli/src/models/workspace_config.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('配置系统性能测试', () {
@@ -36,7 +37,6 @@ void main() {
       // 预先初始化工作空间
       await configManager.initializeWorkspace(
         workspaceName: 'performance_test_workspace',
-        templateType: 'basic',
         description: 'Performance test workspace',
         author: 'Performance Tester',
       );
@@ -60,14 +60,14 @@ void main() {
         final stopwatch = Stopwatch()..start();
         
         // 执行多次读取操作以获得平均性能
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
           final config = await configManager.loadWorkspaceConfig();
           expect(config, isNotNull);
         }
         
         stopwatch.stop();
         final averageDuration = Duration(
-          microseconds: stopwatch.elapsed.inMicroseconds ~/ 10
+          microseconds: stopwatch.elapsed.inMicroseconds ~/ 10,
         );
         
         print('工作空间配置平均读取时间: ${averageDuration.inMilliseconds}ms');
@@ -85,7 +85,7 @@ void main() {
         final stopwatch = Stopwatch()..start();
         
         // 执行多次写入操作
-        for (int i = 0; i < 5; i++) {
+        for (var i = 0; i < 5; i++) {
           final updatedConfig = baseConfig!.copyWith(
             workspace: WorkspaceInfo(
               name: '${baseConfig.workspace.name}_$i',
@@ -101,7 +101,7 @@ void main() {
         
         stopwatch.stop();
         final averageDuration = Duration(
-          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5
+          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5,
         );
         
         print('工作空间配置平均写入时间: ${averageDuration.inMilliseconds}ms');
@@ -115,7 +115,7 @@ void main() {
         final stopwatch = Stopwatch()..start();
         
         // 执行多次配置更新操作
-        for (int i = 0; i < 5; i++) {
+        for (var i = 0; i < 5; i++) {
           final success = await configManager.updateWorkspaceConfig((config) {
             return config.copyWith(
               workspace: WorkspaceInfo(
@@ -131,7 +131,7 @@ void main() {
         
         stopwatch.stop();
         final averageDuration = Duration(
-          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5
+          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5,
         );
         
         print('配置更新平均时间: ${averageDuration.inMilliseconds}ms');
@@ -153,14 +153,14 @@ void main() {
         final stopwatch = Stopwatch()..start();
         
         // 执行多次读取操作
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
           final config = await userConfigManager.loadUserConfig();
           expect(config, isNotNull);
         }
         
         stopwatch.stop();
         final averageDuration = Duration(
-          microseconds: stopwatch.elapsed.inMicroseconds ~/ 10
+          microseconds: stopwatch.elapsed.inMicroseconds ~/ 10,
         );
         
         print('用户配置平均读取时间: ${averageDuration.inMilliseconds}ms');
@@ -179,7 +179,7 @@ void main() {
         final stopwatch = Stopwatch()..start();
         
         // 执行多次写入操作
-        for (int i = 0; i < 5; i++) {
+        for (var i = 0; i < 5; i++) {
           final updatedConfig = baseConfig!.copyWith(
             user: UserInfo(
               name: '性能测试用户_$i',
@@ -194,7 +194,7 @@ void main() {
         
         stopwatch.stop();
         final averageDuration = Duration(
-          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5
+          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5,
         );
         
         print('用户配置平均写入时间: ${averageDuration.inMilliseconds}ms');
@@ -213,10 +213,9 @@ void main() {
         final stopwatch = Stopwatch()..start();
         
         // 执行多次验证操作
-        for (int i = 0; i < 5; i++) {
+        for (var i = 0; i < 5; i++) {
           final validationResult = await configManager.validateWorkspaceConfig(
             config!,
-            strictness: ValidationStrictness.standard,
             checkDependencies: false, // 关闭依赖检查以专注于配置验证性能
             checkFileSystem: false,   // 关闭文件系统检查以专注于配置验证性能
           );
@@ -225,7 +224,7 @@ void main() {
         
         stopwatch.stop();
         final averageDuration = Duration(
-          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5
+          microseconds: stopwatch.elapsed.inMicroseconds ~/ 5,
         );
         
         print('配置验证平均时间: ${averageDuration.inMilliseconds}ms');
@@ -240,7 +239,7 @@ void main() {
         
         // 测试内置模板验证
         for (final templateType in ['basic', 'enterprise']) {
-          for (int i = 0; i < 3; i++) {
+          for (var i = 0; i < 3; i++) {
             final isValid = await configManager.validateConfigTemplate(templateType);
             expect(isValid, isTrue);
           }
@@ -248,7 +247,7 @@ void main() {
         
         stopwatch.stop();
         final averageDuration = Duration(
-          microseconds: stopwatch.elapsed.inMicroseconds ~/ 6
+          microseconds: stopwatch.elapsed.inMicroseconds ~/ 6,
         );
         
         print('模板验证平均时间: ${averageDuration.inMilliseconds}ms');
@@ -266,7 +265,7 @@ void main() {
         final futures = <Future>[];
         
         // 创建10个并发读取操作
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
           futures.add(configManager.loadWorkspaceConfig());
         }
         
@@ -299,7 +298,7 @@ void main() {
         
         // 测试缓存读取时间
         final stopwatchCached = Stopwatch()..start();
-        final cachedLoad = await configManager.loadWorkspaceConfig(useCache: true);
+        final cachedLoad = await configManager.loadWorkspaceConfig();
         stopwatchCached.stop();
         
         expect(cachedLoad, isNotNull);
@@ -309,7 +308,7 @@ void main() {
         expect(
           stopwatchCached.elapsed.inMicroseconds * 2, 
           lessThan(stopwatchFirst.elapsed.inMicroseconds),
-          reason: '缓存读取应该比首次读取快至少50%'
+          reason: '缓存读取应该比首次读取快至少50%',
         );
       });
     });
@@ -325,7 +324,7 @@ void main() {
         final largeEnvironments = <String, EnvironmentConfig>{};
         
         // 添加50个环境配置
-        for (int i = 0; i < 50; i++) {
+        for (var i = 0; i < 50; i++) {
           largeEnvironments['env_$i'] = EnvironmentConfig(
             description: '环境配置 $i - 用于性能测试的大型配置',
             debug: i % 2 == 0,

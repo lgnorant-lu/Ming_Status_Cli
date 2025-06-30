@@ -21,7 +21,7 @@ class StringUtils {
 
     return input
         .replaceAllMapped(
-            RegExp('[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}')
+            RegExp('[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}',)
         .replaceAll(RegExp('^_'), '')
         .replaceAll(RegExp('[^a-z0-9_]'), '_')
         .replaceAll(RegExp('_+'), '_')
@@ -37,6 +37,17 @@ class StringUtils {
   static String toCamelCase(String input) {
     if (input.isEmpty) return input;
 
+    // 处理已经是PascalCase或camelCase的情况
+    if (RegExp(r'^[a-zA-Z][a-zA-Z0-9]*$').hasMatch(input)) {
+      // 如果已经是camelCase格式，直接返回
+      if (input[0] == input[0].toLowerCase()) {
+        return input;
+      }
+      // 如果是PascalCase，首字母小写即可
+      return uncapitalize(input);
+    }
+
+    // 处理snake_case, kebab-case, 或包含空格的情况
     final parts = input.split(RegExp(r'[_\-\s]+'));
     if (parts.isEmpty) return input;
 
@@ -50,6 +61,17 @@ class StringUtils {
   static String toPascalCase(String input) {
     if (input.isEmpty) return input;
 
+    // 处理已经是PascalCase或camelCase的情况
+    if (RegExp(r'^[a-zA-Z][a-zA-Z0-9]*$').hasMatch(input)) {
+      // 如果已经是PascalCase格式，直接返回
+      if (input[0] == input[0].toUpperCase()) {
+        return input;
+      }
+      // 如果是camelCase，首字母大写即可
+      return capitalize(input);
+    }
+
+    // 处理snake_case, kebab-case, 或包含空格的情况
     final parts = input.split(RegExp(r'[_\-\s]+'));
     return parts.map((part) => capitalize(part.toLowerCase())).join();
   }
@@ -212,7 +234,7 @@ class StringUtils {
   /// 创建随机字符串
   static String randomString(int length,
       {String chars =
-          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'}) {
+          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',}) {
     final random = DateTime.now().millisecondsSinceEpoch;
     final result = StringBuffer();
 

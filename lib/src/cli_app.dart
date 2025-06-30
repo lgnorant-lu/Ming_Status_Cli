@@ -15,6 +15,7 @@ Change History:
 
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/commands/config_command.dart';
+import 'package:ming_status_cli/src/commands/create_command.dart';
 import 'package:ming_status_cli/src/commands/doctor_command.dart';
 import 'package:ming_status_cli/src/commands/help_command.dart';
 import 'package:ming_status_cli/src/commands/init_command.dart';
@@ -72,6 +73,7 @@ class MingStatusCliApp {
 
     // 核心命令
     _runner.addCommand(InitCommand());
+    _runner.addCommand(CreateCommand());
     _runner.addCommand(ConfigCommand());
     _runner.addCommand(VersionCommand());
     _runner.addCommand(DoctorCommand());

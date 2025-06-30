@@ -22,9 +22,9 @@ import 'package:ming_status_cli/src/models/user_config.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerSimple extends UserConfigManager {
-  final String _testDir;
 
   TestUserConfigManagerSimple(this._testDir);
+  final String _testDir;
 
   @override
   String get userConfigDir => _testDir;
@@ -60,16 +60,15 @@ void main() {
     group('基础功能验证', () {
       test('用户配置基本读写', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(
+        const userConfig = UserConfig(
+          user: UserInfo(
             name: 'Test User',
             email: 'test@example.com',
           ),
-          preferences: const UserPreferences(
-            defaultTemplate: 'basic',
-            coloredOutput: true,
+          preferences: UserPreferences(
+            
           ),
-          defaults: const UserDefaults(
+          defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -93,7 +92,6 @@ void main() {
           workspaceName: 'Test Workspace',
           description: 'Test Description',
           author: 'Test Author',
-          templateType: 'basic',
         );
 
         expect(success, isTrue);
@@ -107,10 +105,10 @@ void main() {
 
       test('用户配置值获取', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'Test User'),
-          preferences: const UserPreferences(defaultTemplate: 'basic'),
-          defaults: const UserDefaults(
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'Test User'),
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -121,25 +119,25 @@ void main() {
 
         // 测试配置值获取
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'));
+            equals('Test User'),);
         expect(
             await userConfigManager
                 .getConfigValue('preferences.defaultTemplate'),
-            equals('basic'));
+            equals('basic'),);
         expect(await userConfigManager.getConfigValue('defaults.author'),
-            equals('Test Author'));
+            equals('Test Author'),);
         expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals('MIT'));
+            equals('MIT'),);
         expect(
-            await userConfigManager.getConfigValue('nonexistent.key'), isNull);
+            await userConfigManager.getConfigValue('nonexistent.key'), isNull,);
       });
 
       test('用户配置值设置', () async {
         // 创建基础用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'Original User'),
-          preferences: const UserPreferences(),
-          defaults: const UserDefaults(
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'Original User'),
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'Original Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -151,27 +149,27 @@ void main() {
         // 设置新值
         await userConfigManager.setConfigValue('user.name', 'Updated User');
         await userConfigManager.setConfigValue(
-            'defaults.author', 'Updated Author');
+            'defaults.author', 'Updated Author',);
 
         // 验证设置生效
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Updated User'));
+            equals('Updated User'),);
         expect(await userConfigManager.getConfigValue('defaults.author'),
-            equals('Updated Author'));
+            equals('Updated Author'),);
 
         // 验证其他值不受影响
         expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals('MIT'));
+            equals('MIT'),);
       });
     });
 
     group('配置优先级基础验证', () {
       test('用户配置和工作空间配置共存', () async {
         // 1. 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'User Name'),
-          preferences: const UserPreferences(defaultTemplate: 'basic'),
-          defaults: const UserDefaults(
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'User Name'),
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -184,7 +182,6 @@ void main() {
           workspaceName: 'Workspace Name',
           description: 'Workspace Description',
           author: 'Workspace Author',
-          templateType: 'basic',
         );
         expect(workspaceSuccess, isTrue);
 
@@ -201,7 +198,7 @@ void main() {
 
         expect(loadedWorkspaceConfig!.workspace.name, equals('Workspace Name'));
         expect(
-            loadedWorkspaceConfig.defaults.author, equals('Workspace Author'));
+            loadedWorkspaceConfig.defaults.author, equals('Workspace Author'),);
       });
     });
 

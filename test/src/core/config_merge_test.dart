@@ -22,9 +22,9 @@ import 'package:ming_status_cli/src/models/user_config.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerForMerge extends UserConfigManager {
-  final String _testDir;
 
   TestUserConfigManagerForMerge(this._testDir);
+  final String _testDir;
 
   @override
   String get userConfigDir => _testDir;
@@ -63,18 +63,16 @@ void main() {
     group('配置优先级处理', () {
       test('用户配置作为基础配置', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(
+        const userConfig = UserConfig(
+          user: UserInfo(
             name: 'User Name',
             email: 'user@example.com',
             company: 'User Company',
           ),
-          preferences: const UserPreferences(
-            defaultTemplate: 'basic',
-            coloredOutput: true,
-            autoUpdateCheck: true,
+          preferences: UserPreferences(
+            
           ),
-          defaults: const UserDefaults(
+          defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -93,14 +91,14 @@ void main() {
 
       test('工作空间配置覆盖用户配置的默认值', () async {
         // 创建用户配置（基础层）
-        final userConfig = UserConfig(
-          user: const UserInfo(
+        const userConfig = UserConfig(
+          user: UserInfo(
             name: 'User Name',
             email: 'user@example.com',
             company: 'User Company',
           ),
-          preferences: const UserPreferences(),
-          defaults: const UserDefaults(
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -113,7 +111,6 @@ void main() {
           workspaceName: 'Test Workspace',
           description: 'Test workspace',
           author: 'Workspace Author',
-          templateType: 'basic',
         );
         expect(initSuccess, isTrue);
 
@@ -133,10 +130,10 @@ void main() {
 
       test('配置值获取的优先级处理', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'Test User'),
-          preferences: const UserPreferences(),
-          defaults: const UserDefaults(
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'Test User'),
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -146,15 +143,15 @@ void main() {
         await userConfigManager.saveUserConfig(userConfig);
 
         // 测试getConfigValue方法的优先级处理
-        var authorValue =
+        final authorValue =
             await userConfigManager.getConfigValue('defaults.author');
         expect(authorValue, equals('User Author'));
 
-        var licenseValue =
+        final licenseValue =
             await userConfigManager.getConfigValue('defaults.license');
         expect(licenseValue, equals('MIT'));
 
-        var nonExistentValue =
+        final nonExistentValue =
             await userConfigManager.getConfigValue('nonexistent.key');
         expect(nonExistentValue, isNull);
       });
@@ -163,15 +160,12 @@ void main() {
     group('配置合并逻辑', () {
       test('合并用户偏好和工作空间设置', () async {
         // 创建包含偏好设置的用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'Test User'),
-          preferences: const UserPreferences(
-            defaultTemplate: 'basic',
-            coloredOutput: true,
-            autoUpdateCheck: true,
-            verboseLogging: false,
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'Test User'),
+          preferences: UserPreferences(
+            
           ),
-          defaults: const UserDefaults(
+          defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -212,17 +206,16 @@ void main() {
 
       test('嵌套配置键值的获取和设置', () async {
         // 创建复杂的用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(
+        const userConfig = UserConfig(
+          user: UserInfo(
             name: 'Test User',
             email: 'test@example.com',
             company: 'Test Company',
           ),
-          preferences: const UserPreferences(
-            defaultTemplate: 'basic',
-            coloredOutput: true,
+          preferences: UserPreferences(
+            
           ),
-          defaults: const UserDefaults(
+          defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -232,45 +225,45 @@ void main() {
 
         // 测试嵌套键值获取
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'));
+            equals('Test User'),);
         expect(await userConfigManager.getConfigValue('user.email'),
-            equals('test@example.com'));
+            equals('test@example.com'),);
         expect(
             await userConfigManager
                 .getConfigValue('preferences.defaultTemplate'),
-            equals('basic'));
+            equals('basic'),);
         final coloredOutput =
             await userConfigManager.getConfigValue('preferences.coloredOutput');
         expect(coloredOutput == true || coloredOutput == 'true', isTrue);
         expect(await userConfigManager.getConfigValue('defaults.author'),
-            equals('Test Author'));
+            equals('Test Author'),);
 
         // 测试嵌套键值设置
         await userConfigManager.setConfigValue('user.name', 'Updated User');
         await userConfigManager.setConfigValue(
-            'preferences.defaultTemplate', 'enterprise');
+            'preferences.defaultTemplate', 'enterprise',);
         await userConfigManager.setConfigValue(
-            'defaults.license', 'Apache-2.0');
+            'defaults.license', 'Apache-2.0',);
 
         // 验证设置后的值
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Updated User'));
+            equals('Updated User'),);
         expect(
             await userConfigManager
                 .getConfigValue('preferences.defaultTemplate'),
-            equals('enterprise'));
+            equals('enterprise'),);
         expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals('Apache-2.0'));
+            equals('Apache-2.0'),);
       });
     });
 
     group('配置冲突解决', () {
       test('处理同名配置字段的覆盖', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'Test User'),
-          preferences: const UserPreferences(),
-          defaults: const UserDefaults(
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'Test User'),
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -285,7 +278,6 @@ void main() {
           description:
               'Workspace description that conflicts with user description',
           author: 'Workspace Author that conflicts with user author',
-          templateType: 'basic',
         );
         expect(initSuccess, isTrue);
 
@@ -308,14 +300,13 @@ void main() {
 
       test('处理空值和null值的合并', () async {
         // 创建用户配置（包含一些空值）
-        final userConfig = UserConfig(
-          user: const UserInfo(
+        const userConfig = UserConfig(
+          user: UserInfo(
             name: 'Test User',
-            email: '', // 空字符串
             company: 'Test Company',
           ),
-          preferences: const UserPreferences(),
-          defaults: const UserDefaults(
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'Test Author',
             license: '', // 空字符串
             dartVersion: '^3.2.0',
@@ -325,40 +316,39 @@ void main() {
 
         // 测试空值的处理
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'));
+            equals('Test User'),);
         expect(
-            await userConfigManager.getConfigValue('user.email'), equals(''));
+            await userConfigManager.getConfigValue('user.email'), equals(''),);
         expect(await userConfigManager.getConfigValue('user.company'),
-            equals('Test Company'));
+            equals('Test Company'),);
         expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals(''));
+            equals(''),);
 
         // 测试设置空字符串值
         await userConfigManager.setConfigValue('user.email', '');
         expect(
-            await userConfigManager.getConfigValue('user.email'), equals(''));
+            await userConfigManager.getConfigValue('user.email'), equals(''),);
 
         // 验证其他字段不受影响
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'));
+            equals('Test User'),);
         expect(await userConfigManager.getConfigValue('user.company'),
-            equals('Test Company'));
+            equals('Test Company'),);
       });
     });
 
     group('配置路径解析', () {
       test('处理复杂的配置路径', () async {
         // 创建用户配置
-        final userConfig = UserConfig(
-          user: const UserInfo(
+        const userConfig = UserConfig(
+          user: UserInfo(
             name: 'Test User',
             email: 'test@example.com',
           ),
-          preferences: const UserPreferences(
-            defaultTemplate: 'basic',
-            coloredOutput: true,
+          preferences: UserPreferences(
+            
           ),
-          defaults: const UserDefaults(
+          defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -368,29 +358,29 @@ void main() {
 
         // 测试各种路径格式
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'));
+            equals('Test User'),);
         expect(
             await userConfigManager
                 .getConfigValue('preferences.defaultTemplate'),
-            equals('basic'));
+            equals('basic'),);
         final coloredOutputValue =
             await userConfigManager.getConfigValue('preferences.coloredOutput');
         // 处理可能的字符串形式布尔值
         expect(
-            coloredOutputValue == true || coloredOutputValue == 'true', isTrue);
+            coloredOutputValue == true || coloredOutputValue == 'true', isTrue,);
 
         // 测试无效路径
         expect(await userConfigManager.getConfigValue('invalid.path'), isNull);
         expect(
-            await userConfigManager.getConfigValue('user.nonexistent'), isNull);
+            await userConfigManager.getConfigValue('user.nonexistent'), isNull,);
         expect(await userConfigManager.getConfigValue(''), isNull);
       });
 
       test('大小写敏感的路径处理', () async {
-        final userConfig = UserConfig(
-          user: const UserInfo(name: 'Test User'),
-          preferences: const UserPreferences(),
-          defaults: const UserDefaults(
+        const userConfig = UserConfig(
+          user: UserInfo(name: 'Test User'),
+          preferences: UserPreferences(),
+          defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
             dartVersion: '^3.2.0',
@@ -400,7 +390,7 @@ void main() {
 
         // 验证路径大小写敏感性
         expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'));
+            equals('Test User'),);
         expect(await userConfigManager.getConfigValue('User.name'), isNull);
         expect(await userConfigManager.getConfigValue('user.Name'), isNull);
       });

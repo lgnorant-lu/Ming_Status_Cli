@@ -13,13 +13,14 @@ Change History:
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
-import 'package:ming_status_cli/src/core/config_manager.dart';
-import 'package:ming_status_cli/src/core/user_config_manager.dart';
+
 import 'package:ming_status_cli/src/commands/config_command.dart';
 import 'package:ming_status_cli/src/commands/doctor_command.dart';
-import 'package:ming_status_cli/src/models/workspace_config.dart';
+import 'package:ming_status_cli/src/core/config_manager.dart';
+import 'package:ming_status_cli/src/core/user_config_manager.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
+import 'package:ming_status_cli/src/models/workspace_config.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('配置系统最终集成测试', () {
@@ -45,7 +46,6 @@ void main() {
       // 初始化基础工作空间配置
       await configManager.initializeWorkspace(
         workspaceName: 'integration_test_workspace',
-        templateType: 'basic',
         description: '集成测试工作空间',
         author: '集成测试员',
       );
@@ -86,7 +86,7 @@ void main() {
         // 5. 配置合并测试
         print('📋 5. 配置合并测试');
         final updatedConfig = config.copyWith(
-          validation: ValidationConfig(
+          validation: const ValidationConfig(
             strictMode: true,
             requireTests: true,
             minCoverage: 90,
@@ -102,8 +102,6 @@ void main() {
         final validationResult = await configManager.validateWorkspaceConfig(
           mergedConfig,
           strictness: ValidationStrictness.enterprise,
-          checkDependencies: true,
-          checkFileSystem: true,
         );
         expect(validationResult.isValid, isTrue);
 
@@ -121,17 +119,15 @@ void main() {
         expect(userConfig, isNotNull);
         
         final updatedUserConfig = userConfig!.copyWith(
-          user: UserInfo(
+          user: const UserInfo(
             name: '集成测试用户',
             email: 'integration@test.com',
             company: '测试公司',
           ),
-          preferences: UserPreferences(
+          preferences: const UserPreferences(
             defaultTemplate: 'enterprise',
-            coloredOutput: true,
             autoUpdateCheck: false,
             verboseLogging: true,
-            preferredIde: 'vscode',
           ),
         );
         
@@ -252,7 +248,6 @@ void main() {
         try {
           final rebuildSuccess = await configManager.initializeWorkspace(
             workspaceName: 'recovered_workspace',
-            templateType: 'basic',
             description: '恢复的工作空间',
             author: '恢复测试',
           );
@@ -276,7 +271,7 @@ void main() {
         final futures = <Future>[];
         
         // 创建多个并发操作
-        for (int i = 0; i < 5; i++) {
+        for (var i = 0; i < 5; i++) {
           // 并发读取
           futures.add(configManager.loadWorkspaceConfig());
           
@@ -291,12 +286,12 @@ void main() {
                   type: config.workspace.type,
                 ),
               );
-            })
+            }),
           );
         }
         
         // 等待所有操作完成
-        final results = await Future.wait(futures, eagerError: false);
+        final results = await Future.wait(futures);
         
         // 验证至少大部分操作成功
         var successCount = 0;
@@ -307,7 +302,7 @@ void main() {
         }
         
         expect(successCount, greaterThan(results.length ~/ 2));
-        print('  ✅ ${successCount}/${results.length} 并发操作成功');
+        print('  ✅ $successCount/${results.length} 并发操作成功');
 
         print('✅ 并发访问安全性测试通过');
       });
@@ -318,7 +313,7 @@ void main() {
         print('📋 向后兼容性测试');
 
         // 创建模拟的旧版本配置文件格式
-        final oldConfigContent = '''
+        const oldConfigContent = '''
 workspace:
   name: "legacy_workspace"
   version: "1.0.0"

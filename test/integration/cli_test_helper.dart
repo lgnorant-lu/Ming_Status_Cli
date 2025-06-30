@@ -12,10 +12,11 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:async';
-import 'package:test/test.dart';
+import 'dart:io';
+
 import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 /// CLI测试结果
 class CliTestResult {
