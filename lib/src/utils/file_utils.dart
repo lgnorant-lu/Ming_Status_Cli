@@ -277,14 +277,16 @@ class FileUtils {
       final value = entry.value;
 
       if (value is Map<String, dynamic>) {
-        buffer.writeln('$indentStr$key:');
-        buffer.write(_formatAsYaml(value, indent: indent + 1));
+        buffer
+          ..writeln('$indentStr$key:')
+          ..write(_formatAsYaml(value, indent: indent + 1));
       } else if (value is List) {
         buffer.writeln('$indentStr$key:');
         for (final item in value) {
           if (item is Map<String, dynamic>) {
-            buffer.writeln('$indentStr  -');
-            buffer.write(_formatAsYaml(item, indent: indent + 2));
+            buffer
+              ..writeln('$indentStr  -')
+              ..write(_formatAsYaml(item, indent: indent + 2));
           } else {
             buffer.writeln('$indentStr  - $item');
           }
@@ -295,8 +297,9 @@ class FileUtils {
           try {
             final jsonValue = (value as dynamic).toJson();
             if (jsonValue is Map<String, dynamic>) {
-              buffer.writeln('$indentStr$key:');
-              buffer.write(_formatAsYaml(jsonValue, indent: indent + 1));
+              buffer
+                ..writeln('$indentStr$key:')
+                ..write(_formatAsYaml(jsonValue, indent: indent + 1));
             } else {
               buffer.writeln('$indentStr$key: $jsonValue');
             }

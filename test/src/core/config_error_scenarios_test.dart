@@ -5,7 +5,9 @@ Author:             lgnorant-lu
 Date created:       2025/06/29
 Last modified:      2025/06/29
 Dart Version:       3.32.4
-Description:        配置系统错误场景和边界条件测试 (Config system error scenarios and boundary conditions tests)
+Description:        配置系统错误场景和边界条件测试 
+                      (Config system error scenarios and 
+                      boundary conditions tests)
 ---------------------------------------------------------------
 Change History:
     2025/06/29: Initial creation - 配置系统健壮性测试;
@@ -67,7 +69,7 @@ void main() {
 
     tearDown(() async {
       // 清理临时目录
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });
@@ -387,7 +389,10 @@ workspace:
         final configPath =
             path.join(userConfigManager.userConfigDir, 'config.json');
         final modifiedConfig = UserConfig.defaultConfig().copyWith(
-          user: const UserInfo(name: 'external_modified', email: 'test@example.com'),
+          user: const UserInfo(
+            name: 'external_modified', 
+            email: 'test@example.com',
+          ),
         );
         await File(configPath)
             .writeAsString(jsonEncode(modifiedConfig.toJson()));

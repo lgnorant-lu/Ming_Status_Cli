@@ -5,7 +5,8 @@ Author:             lgnorant-lu
 Date created:       2025/06/30
 Last modified:      2025/06/30
 Dart Version:       3.2+
-Description:        进度指示器和用户交互工具测试 (Progress indicator and user interaction utilities tests)
+Description:        进度指示器和用户交互工具测试
+                      (Progress indicator and user interaction utilities tests);
 ---------------------------------------------------------------
 */
 
@@ -62,8 +63,8 @@ void main() {
       });
 
       test('应该正确处理进度更新', () {
-        final indicator = ProgressIndicator(title: 'Test Progress');
-        indicator.start();
+        final indicator = ProgressIndicator(title: 'Test Progress')
+          ..start();
         
         // 测试各种进度值
         expect(() => indicator.update(0), returnsNormally);
@@ -76,8 +77,8 @@ void main() {
       });
 
       test('应该正确处理失败状态', () {
-        final indicator = ProgressIndicator(title: 'Test Progress');
-        indicator.start();
+        final indicator = ProgressIndicator(title: 'Test Progress')
+          ..start();
         
         expect(indicator.fail, returnsNormally);
         expect(() => indicator.fail(message: 'Custom error'), returnsNormally);
@@ -104,10 +105,14 @@ void main() {
           showPercentage: false,
         );
         
-        final indicator = ProgressIndicator(title: 'Spinner Test', config: config);
+        final indicator = ProgressIndicator(
+          title: 'Spinner Test', config: config,
+        );
         
         expect(indicator.start, returnsNormally);
-        expect(() => indicator.update(0.3, status: 'Processing...'), returnsNormally);
+        expect(
+          () => indicator.update(0.3, status: 'Processing...'), returnsNormally,
+        );
         expect(indicator.complete, returnsNormally);
       });
 
@@ -117,10 +122,14 @@ void main() {
           showElapsedTime: false,
         );
         
-        final indicator = ProgressIndicator(title: 'Simple Test', config: config);
+        final indicator = ProgressIndicator(
+          title: 'Simple Test', config: config,
+        );
         
         expect(indicator.start, returnsNormally);
-        expect(() => indicator.update(0.7, status: 'Almost done'), returnsNormally);
+        expect(
+          () => indicator.update(0.7, status: 'Almost done'), returnsNormally,
+        );
         expect(indicator.complete, returnsNormally);
       });
     });
@@ -132,7 +141,9 @@ void main() {
         expect(UserInteraction.confirm, isA<Function>());
         
         // 测试基本调用结构（不实际交互）
-        expect(UserInteraction.confirm.runtimeType.toString(), contains('bool'));
+        expect(
+          UserInteraction.confirm.runtimeType.toString(), contains('bool'),
+        );
       });
 
       test('choice方法应该存在并具有正确签名', () {
@@ -184,14 +195,26 @@ void main() {
 
     test('应该正确执行格式化方法', () {
       // 测试静态方法调用不会抛出异常
-      expect(() => StatusFormatter.step('Test step'), returnsNormally);
-      expect(() => StatusFormatter.step('Test step', stepNumber: 1, totalSteps: 5), returnsNormally);
+      expect(
+        () => StatusFormatter.step('Test step'), returnsNormally,
+      );
+      expect(
+        () => StatusFormatter.step(
+          'Test step', stepNumber: 1, totalSteps: 5,
+        ), returnsNormally,
+      );
     });
 
     test('应该正确格式化完成消息', () {
       const duration = Duration(milliseconds: 1500);
-      expect(() => StatusFormatter.completed('Task completed'), returnsNormally);
-      expect(() => StatusFormatter.completed('Task completed', duration: duration), returnsNormally);
+      expect(
+        () => StatusFormatter.completed('Task completed'), returnsNormally,
+      );
+      expect(
+        () => StatusFormatter.completed(
+          'Task completed', duration: duration,
+        ), returnsNormally,
+      );
     });
     
     test('应该正确执行其他格式化方法', () {
@@ -228,8 +251,9 @@ void main() {
       expect(() => indicator.update(0.5), returnsNormally);
       
       // 完成后更新
-      indicator.start();
-      indicator.complete();
+      indicator
+        ..start()
+        ..complete();
       expect(() => indicator.update(0.8), returnsNormally);
     });
   });

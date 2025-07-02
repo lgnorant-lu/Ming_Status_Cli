@@ -27,10 +27,13 @@ void main() {
 
     setUpAll(() async {
       // 创建测试目录
-      testDir = path.join(Directory.systemTemp.path, 'template_optimization_test');
+      testDir = path.join(
+        Directory.systemTemp.path, 
+        'template_optimization_test',
+      );
       templatesDir = path.join(testDir, 'templates');
       
-      if (await Directory(testDir).exists()) {
+      if (Directory(testDir).existsSync()) {
         await Directory(testDir).delete(recursive: true);
       }
       
@@ -46,7 +49,7 @@ void main() {
     });
 
     tearDownAll(() async {
-      if (await Directory(testDir).exists()) {
+      if (Directory(testDir).existsSync()) {
         await Directory(testDir).delete(recursive: true);
       }
     });
@@ -170,8 +173,8 @@ void main() {
         
         expect(health['status'], isIn(['healthy', 'warning', 'unhealthy']));
         expect(health['checks'], isA<Map<String, dynamic>>());
-        expect(health['warnings'], isA<List>());
-        expect(health['errors'], isA<List>());
+        expect(health['warnings'], isA<List<String>>());
+        expect(health['errors'], isA<List<String>>());
       });
 
       test('健康检查应该发现问题', () async {
@@ -264,7 +267,10 @@ void main() {
 }
 
 /// 创建测试模板
-Future<void> _createTestTemplate(String templatesDir, String templateName) async {
+Future<void> _createTestTemplate(
+  String templatesDir,
+  String templateName,
+) async {
   final templateDir = path.join(templatesDir, templateName);
   await Directory(templateDir).create(recursive: true);
   
@@ -312,7 +318,9 @@ class {{#pascalCase}}{{module_id}}{{/pascalCase}} {
 }
 
 /// 创建无效模板（用于测试错误处理）
-Future<void> _createInvalidTemplate(String templatesDir, String templateName) async {
+Future<void> _createInvalidTemplate(
+  String templatesDir, String templateName,
+) async {
   final templateDir = path.join(templatesDir, templateName);
   await Directory(templateDir).create(recursive: true);
   
@@ -322,7 +330,9 @@ description: 无效模板
 # 缺少name字段
 ''';
   
-  await File(path.join(templateDir, 'brick.yaml')).writeAsString(invalidBrickYaml);
+  await File(
+    path.join(templateDir, 'brick.yaml'),
+  ).writeAsString(invalidBrickYaml);
   
   // 创建__brick__目录但不添加文件
   final moduleDir = path.join(templateDir, '__brick__');

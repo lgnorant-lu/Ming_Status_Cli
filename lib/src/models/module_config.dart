@@ -15,6 +15,7 @@ Change History:
 /// 模块配置类
 /// 管理单个模块的配置信息和元数据
 class ModuleConfig {
+  /// 创建模块配置实例
   const ModuleConfig({
     required this.module,
     required this.classification,
@@ -71,6 +72,7 @@ class ModuleConfig {
 
 /// 模块基本信息
 class ModuleInfo {
+  /// 创建模块基本信息实例
   const ModuleInfo({
     required this.id,
     required this.name,
@@ -97,6 +99,7 @@ class ModuleInfo {
 
 /// 模块分类信息
 class ModuleClassification {
+  /// 创建模块分类信息实例
   const ModuleClassification({
     required this.type,
     required this.categories,
@@ -111,15 +114,21 @@ class ModuleClassification {
 
 /// 模块类型枚举
 enum ModuleType {
-  core, // 核心模块
-  business, // 业务模块
-  system, // 系统模块
-  extension, // 扩展模块
-  theme, // 主题模块
+  /// 核心模块
+  core,
+  /// 业务模块
+  business,
+  /// 系统模块
+  system,
+  /// 扩展模块
+  extension,
+  /// 主题模块
+  theme,
 }
 
 /// 模块依赖关系
 class ModuleDependencies {
+  /// 创建模块依赖关系实例
   const ModuleDependencies({
     required this.required,
     required this.optional,
@@ -134,6 +143,7 @@ class ModuleDependencies {
 
 /// 模块导出信息
 class ModuleExports {
+  /// 创建模块导出信息实例
   const ModuleExports({
     required this.services,
     required this.widgets,
@@ -148,6 +158,7 @@ class ModuleExports {
 
 /// 导出的服务信息
 class ExportedService {
+  /// 创建导出的服务信息实例
   const ExportedService({
     required this.name,
     this.interface,
@@ -162,6 +173,7 @@ class ExportedService {
 
 /// 导出的组件信息
 class ExportedWidget {
+  /// 创建导出的组件信息实例
   const ExportedWidget({
     required this.name,
     this.description,

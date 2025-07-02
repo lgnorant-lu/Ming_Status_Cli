@@ -18,8 +18,46 @@ import 'package:ming_status_cli/src/core/user_config_manager.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 配置管理命令
-/// 支持查看、设置、列出和重置用户配置
+/// 
+/// 提供完整的配置管理功能，支持全局用户配置和本地工作空间配置：
+/// 
+/// **支持的操作**：
+/// - 列出配置：`--list` 显示所有配置项
+/// - 获取配置：`--get key` 获取指定配置项的值  
+/// - 设置配置：`--set key=value` 设置配置项的值
+/// - 重置配置：`--reset` 重置配置为默认值
+/// - 编辑配置：`--edit` 获取配置文件路径用于手动编辑
+/// - 配置模板：`--template basic|enterprise` 应用预设配置模板
+/// 
+/// **配置作用域**：
+/// - 全局配置：`--global` 操作用户级配置，影响所有项目
+/// - 本地配置：`--local` 操作当前工作空间配置（仅读取）
+/// 
+/// **配置层次结构**：
+/// - `user.*`: 用户信息 (name, email, company)
+/// - `preferences.*`: 用户偏好 (defaultTemplate, coloredOutput, autoUpdateCheck等)
+/// - `defaults.*`: 默认值 (author, license, dartVersion, description)  
+/// - `security.*`: 安全设置 (加密、访问控制等)
+/// 
+/// **使用示例**：
+/// ```bash
+/// # 查看所有配置
+/// ming config --list
+/// 
+/// # 设置用户信息
+/// ming config --global --set user.name="张三"
+/// ming config --global --set user.email="zhang@example.com"
+/// 
+/// # 应用企业级配置模板
+/// ming config --template enterprise
+/// 
+/// # 获取特定配置
+/// ming config --get user.name
+/// ```
+/// 
+/// 集成UserConfigManager和ConfigManager，提供统一的配置管理体验。
 class ConfigCommand extends BaseCommand {
+  /// 创建配置命令实例，初始化命令参数
   ConfigCommand() {
     argParser
       // 配置操作选项

@@ -44,7 +44,7 @@ class TestScriptHook extends TemplateHook {
     lastContext = context;
 
     if (shouldTimeout) {
-      await Future.delayed(const Duration(seconds: 10));
+      await Future<void>.delayed(const Duration(seconds: 10));
     }
 
     if (shouldFail) {
@@ -70,7 +70,7 @@ void main() {
       try {
         if (tempDir.existsSync()) {
           // 增加延迟让系统释放文件句柄
-          await Future.delayed(const Duration(milliseconds: 100));
+          await Future<void>.delayed(const Duration(milliseconds: 100));
           
           // 尝试递归删除，如果失败则忽略（Windows文件句柄问题）
           try {
@@ -78,10 +78,14 @@ void main() {
           } catch (e) {
             // 如果删除失败，尝试重命名然后删除
             try {
-              final renamedDir = Directory('${tempDir.path}_tobedeleted_${DateTime.now().millisecondsSinceEpoch}');
+              final renamedDir = Directory(
+                '${tempDir.path}_tobedeleted_${
+                  DateTime.now().millisecondsSinceEpoch
+                }',
+              );
               await tempDir.rename(renamedDir.path);
               // 异步删除，不等待结果
-              renamedDir.delete(recursive: true).catchError((_) {});
+              renamedDir.delete(recursive: true).catchError((_) => tempDir);
             } catch (_) {
               // 如果重命名也失败，就忽略（临时文件会被系统清理）
             }
@@ -143,7 +147,9 @@ void main() {
       test('应该处理脚本执行超时', () async {
         final config = ScriptHookConfig(
           description: '超时测试',
-          script: Platform.isWindows ? 'ping 127.0.0.1 -n 10' : 'sleep 10', // Windows兼容的超时命令
+          script: Platform.isWindows ?
+            'ping 127.0.0.1 -n 10' :
+            'sleep 10', // Windows兼容的超时命令
           timeout: 1000, // 1秒超时
         );
 
@@ -255,10 +261,11 @@ hooks:
 ''');
 
         // 创建模板引擎并加载钩子
-        final testEngine = TemplateEngine(workingDirectory: tempDir.path);
+        final testEngine = TemplateEngine(workingDirectory: tempDir.path)
         
-        // 先注册默认钩子，因为加载会在现有基础上添加
-        testEngine.registerDefaultHooks();
+          // 先注册默认钩子，因为加载会在现有基础上添加
+          ..registerDefaultHooks();
+
         final initialStats = testEngine.getHookStatistics();
         
         await testEngine.loadTemplateHooks('test_template');
@@ -266,9 +273,17 @@ hooks:
         final finalStats = testEngine.getHookStatistics();
         
         // 检查钩子数量是否增加（而不是具体数量）
-        expect(finalStats['pre_generation_hooks'] as int, greaterThanOrEqualTo(initialStats['pre_generation_hooks'] as int));
-        expect(finalStats['post_generation_hooks'] as int, greaterThanOrEqualTo(initialStats['post_generation_hooks'] as int));
-        expect(finalStats['script_hooks'] as int, greaterThanOrEqualTo(0)); // 应该有脚本钩子或没有（因为可能加载失败）
+        expect(
+          finalStats['pre_generation_hooks'] as int,
+          greaterThanOrEqualTo(initialStats['pre_generation_hooks'] as int),
+        );
+        expect(
+          finalStats['post_generation_hooks'] as int,
+          greaterThanOrEqualTo(initialStats['post_generation_hooks'] as int),
+        );
+        expect(
+          finalStats['script_hooks'] as int, greaterThanOrEqualTo(0),
+        ); // 应该有脚本钩子或没有（因为可能加载失败）
       });
 
       test('应该验证钩子配置', () {
@@ -469,8 +484,9 @@ version: 1.0.0
           script: 'echo "生成完成"',
         );
         
-        testEngine.registerScriptHook(preHookConfig, HookType.preGeneration);
-        testEngine.registerScriptHook(postHookConfig, HookType.postGeneration);
+        testEngine
+          ..registerScriptHook(preHookConfig, HookType.preGeneration)
+          ..registerScriptHook(postHookConfig, HookType.postGeneration);
 
         final outputPath = '${tempDir.path}/output';
 
@@ -515,9 +531,9 @@ version: 1.0.0
         final details = engine.getHookDetails();
         expect(details, containsPair('total_hooks', greaterThan(0)));
         expect(details, containsPair('script_hooks', greaterThan(0)));
-        expect(details['pre_generation_hook_names'], isA<List>());
-        expect(details['post_generation_hook_names'], isA<List>());
-        expect(details['script_execution_hooks'], isA<List>());
+        expect(details['pre_generation_hook_names'], isA<List<String>>());
+        expect(details['post_generation_hook_names'], isA<List<String>>());
+        expect(details['script_execution_hooks'], isA<List<dynamic>>());
       });
 
       test('应该支持钩子清理', () {
@@ -534,12 +550,16 @@ version: 1.0.0
         engine.hookRegistry.register(hook1);
         engine.hookRegistry.register(hook2);
 
-        expect(engine.getHookStatistics()['total_hooks'] as int, greaterThan(0));
+        expect(
+          engine.getHookStatistics()['total_hooks'] as int, greaterThan(0),
+        );
 
         // 清理所有钩子
         engine.clearAllHooks();
 
-        expect(engine.getHookStatistics()['total_hooks'] as int, equals(0));
+        expect(
+          engine.getHookStatistics()['total_hooks'] as int, equals(0),
+        );
       });
     });
 

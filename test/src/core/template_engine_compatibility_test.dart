@@ -87,8 +87,12 @@ compatibility:
         );
 
         expect(result.metadata['versionInfo'], isNotNull);
-        expect(result.metadata['versionInfo']['templateVersion'], equals('1.2.3'));
-        expect(result.metadata['versionInfo']['minCliVersion'], equals('1.0.0'));
+        expect(
+          result.metadata['versionInfo']['templateVersion'], equals('1.2.3'),
+        );
+        expect(
+          result.metadata['versionInfo']['minCliVersion'], equals('1.0.0'),
+        );
       });
 
       test('处理缺失版本信息', () async {
@@ -107,7 +111,9 @@ description: 测试模板
         );
 
         expect(result.metadata['versionInfo'], isNotNull);
-        expect(result.metadata['versionInfo']['templateVersion'], equals('0.1.0'));
+        expect(
+          result.metadata['versionInfo']['templateVersion'], equals('0.1.0'),
+        );
       });
     });
 
@@ -132,7 +138,10 @@ dependencies:
         );
 
         expect(result.metadata['dependencyInfo'], isNotNull);
-        expect(result.metadata['dependencyInfo']['requiredDependencies'], isNotEmpty);
+        expect(
+          result.metadata['dependencyInfo']['requiredDependencies'],
+          isNotEmpty,
+        );
       });
 
       test('检查冲突依赖', () async {
@@ -232,8 +241,14 @@ name: test_template
 
         expect(result.isCompatible, isFalse);
         expect(result.errors, isNotEmpty);
-        expect(result.errors.any((error) => error.contains('description')), isTrue);
-        expect(result.errors.any((error) => error.contains('version')), isTrue);
+        expect(
+          result.errors.any((error) => error.contains('description')),
+          isTrue,
+        );
+        expect(
+          result.errors.any((error) => error.contains('version')),
+          isTrue,
+        );
       });
 
       test('检查版本格式', () async {
@@ -277,8 +292,14 @@ vars:
           checkPlatform: false,
         );
 
-        expect(result.warnings.any((warning) => warning.contains('缺少类型定义')), isTrue);
-        expect(result.warnings.any((warning) => warning.contains('缺少描述')), isTrue);
+        expect(
+          result.warnings.any((warning) => warning.contains('缺少类型定义')),
+          isTrue,
+        );
+        expect(
+          result.warnings.any((warning) => warning.contains('缺少描述')),
+          isTrue,
+        );
       });
 
       test('检查文档文件', () async {
@@ -296,9 +317,18 @@ version: 1.0.0
           checkPlatform: false,
         );
 
-        expect(result.warnings.any((warning) => warning.contains('README.md')), isTrue);
-        expect(result.warnings.any((warning) => warning.contains('LICENSE')), isTrue);
-        expect(result.warnings.any((warning) => warning.contains('CHANGELOG.md')), isTrue);
+        expect(
+          result.warnings.any((warning) => warning.contains('README.md')),
+          isTrue,
+        );
+        expect(
+          result.warnings.any((warning) => warning.contains('LICENSE')),
+          isTrue,
+        );
+        expect(
+          result.warnings.any((warning) => warning.contains('CHANGELOG.md')),
+          isTrue,
+        );
       });
     });
 
@@ -324,7 +354,8 @@ name: template2
 # 缺少必需字段
 ''');
 
-        final results = await templateEngine.validateAllTemplatesCompatibility();
+        final results = await templateEngine
+          .validateAllTemplatesCompatibility();
 
         expect(results, hasLength(2));
         expect(results['template1']?.isCompatible, isTrue);
@@ -387,7 +418,9 @@ void main() {
 
 /// 创建临时目录
 Future<String> _createTempDirectory() async {
-  final tempDir = await Directory.systemTemp.createTemp('template_engine_test_');
+  final tempDir = await Directory.systemTemp.createTemp(
+    'template_engine_test_',
+  );
   return tempDir.path;
 }
 
@@ -395,7 +428,7 @@ Future<String> _createTempDirectory() async {
 Future<void> _cleanupTempDirectory(String dirPath) async {
   try {
     final dir = Directory(dirPath);
-    if (await dir.exists()) {
+    if (dir.existsSync()) {
       await dir.delete(recursive: true);
     }
   } catch (e) {

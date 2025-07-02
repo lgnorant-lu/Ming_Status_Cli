@@ -181,17 +181,17 @@ void main() {
         final originalState = ColorOutput.isSupported;
         
         // 测试禁用彩色输出
-        ColorOutput.setEnabled(false);
+        ColorOutput.setEnabled(enabled: false);
         final disabledResult = ColorOutput.success('Test');
         expect(disabledResult, equals('Test')); // 应该没有颜色代码
         
         // 测试启用彩色输出
-        ColorOutput.setEnabled(true);
+        ColorOutput.setEnabled(enabled: true);
         final enabledResult = ColorOutput.success('Test');
         expect(enabledResult, isA<String>());
         
         // 恢复原始状态
-        ColorOutput.setEnabled(originalState);
+        ColorOutput.setEnabled(enabled: originalState);
       });
     });
 

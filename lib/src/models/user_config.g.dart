@@ -9,14 +9,14 @@ part of 'user_config.dart';
 UserConfig _$UserConfigFromJson(Map<String, dynamic> json) => UserConfig(
       user: UserInfo.fromJson(json['user'] as Map<String, dynamic>?),
       preferences: UserPreferences.fromJson(
-          json['preferences'] as Map<String, dynamic>?),
+          json['preferences'] as Map<String, dynamic>?,),
       defaults:
           UserDefaults.fromJson(json['defaults'] as Map<String, dynamic>?),
       integrations: json['integrations'] as Map<String, dynamic>?,
       security: json['security'] == null
           ? null
           : SecuritySettings.fromJson(
-              json['security'] as Map<String, dynamic>?),
+              json['security'] as Map<String, dynamic>?,),
     );
 
 Map<String, dynamic> _$UserConfigToJson(UserConfig instance) =>

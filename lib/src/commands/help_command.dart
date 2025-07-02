@@ -19,11 +19,15 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 /// 增强的帮助命令
 /// 提供更友好和详细的帮助信息显示（轻量级实现）
 class HelpCommand {
+  /// 创建帮助命令实例，需要命令运行器实例来获取命令信息
   HelpCommand(this._runner);
-  final CommandRunner _runner;
+  final CommandRunner<int> _runner;
 
   /// 显示特定命令的帮助信息
-  Future<int> showSpecificCommandHelp(String commandName, bool verbose) async {
+  Future<int> showSpecificCommandHelp(
+    String commandName, {
+    bool verbose = false,
+  }) async {
     final command = _runner.commands[commandName];
 
     if (command == null) {
@@ -41,7 +45,7 @@ class HelpCommand {
   }
 
   /// 显示命令的详细帮助信息
-  void _showCommandDetailedHelp(Command command, bool verbose) {
+  void _showCommandDetailedHelp(Command<int> command, bool verbose) {
     Logger.title('📖 ${command.name} 命令帮助');
     Logger.newLine();
 
@@ -108,7 +112,8 @@ class HelpCommand {
         Logger.listItem('基本初始化: ming init');
         Logger.listItem('指定名称: ming init my-project');
         Logger.listItem(
-            '完整配置: ming init --name "我的项目" --author "开发者" --description "项目描述"',);
+            '完整配置: ming init --name "我的项目" --author "开发者" '
+            '--description "项目描述"',);
         Logger.listItem('强制重新初始化: ming init --force');
 
       case 'doctor':

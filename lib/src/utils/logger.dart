@@ -16,47 +16,62 @@ import 'dart:io';
 import 'package:ansi_styles/ansi_styles.dart';
 
 /// 日志级别枚举
+/// 包含调试、信息、成功、警告和错误级别
 enum LogLevel {
-  debug, // 调试信息 - 灰色
-  info, // 一般信息 - 蓝色
-  success, // 成功信息 - 绿色
-  warning, // 警告信息 - 黄色
-  error, // 错误信息 - 红色
+  /// 调试信息 - 灰色
+  debug,
+  /// 一般信息 - 蓝色
+  info,
+  /// 成功信息 - 绿色
+  success,
+  /// 警告信息 - 黄色
+  warning,
+  /// 错误信息 - 红色
+  error,
 }
 
 /// 彩色日志工具类
 /// 提供统一的日志输出接口，支持颜色和格式化
+/// 包含调试、信息、成功、警告和错误级别
 class Logger {
   /// 是否启用彩色输出（自动检测终端支持）
+  /// 如果终端支持ANSI转义序列，则返回true
   static bool get _supportsColor => stdout.supportsAnsiEscapes;
 
   /// 是否启用详细模式
+  /// 如果为true，则输出详细信息
   static bool verbose = false;
 
   /// 最小日志级别
+  /// 默认情况下，只输出info级别及以上的日志
   static LogLevel minLevel = LogLevel.info;
 
   /// 输出调试信息
+  /// 输出调试信息，通常用于开发和调试阶段
   static void debug(String message, {String? prefix}) {
     _log(LogLevel.debug, message, prefix: prefix);
   }
 
   /// 输出一般信息
+  /// 输出一般信息，通常用于正常运行时的状态报告
   static void info(String message, {String? prefix}) {
     _log(LogLevel.info, message, prefix: prefix);
   }
 
   /// 输出成功信息
+  /// 输出成功信息，通常用于表示操作成功
   static void success(String message, {String? prefix}) {
     _log(LogLevel.success, message, prefix: prefix);
   }
 
   /// 输出警告信息
+  /// 输出警告信息，通常用于表示操作可能存在问题
   static void warning(String message, {String? prefix}) {
     _log(LogLevel.warning, message, prefix: prefix);
   }
 
   /// 输出错误信息
+  /// 输出错误信息，通常用于表示操作失败
   static void error(String message, {String? prefix, Object? error}) {
     _log(LogLevel.error, message, prefix: prefix);
     if (error != null && verbose) {
@@ -65,13 +80,14 @@ class Logger {
   }
 
   /// 输出进度信息
+  /// 输出进度信息，通常用于表示操作正在进行
   static void progress(String message, {bool newLine = true}) {
     if (_shouldLog(LogLevel.info)) {
       final styled =
           _supportsColor ? AnsiStyles.blue('⏳ $message') : '⏳ $message';
 
       if (newLine) {
-        print(styled);
+        stdout.writeln(styled);
       } else {
         stdout.write('\r$styled');
       }
@@ -79,18 +95,19 @@ class Logger {
   }
 
   /// 输出完成信息
+  /// 输出完成信息，通常用于表示操作完成
   static void complete(String message) {
     if (_shouldLog(LogLevel.success)) {
       final styled =
           _supportsColor ? AnsiStyles.green('✅ $message') : '✅ $message';
-      print(styled);
+      stdout.writeln(styled);
     }
   }
 
   /// 输出分隔线
   static void separator({String char = '-', int length = 50}) {
     if (_shouldLog(LogLevel.info)) {
-      print(char * length);
+      stdout.writeln(char * length);
     }
   }
 
@@ -101,7 +118,7 @@ class Logger {
       final styled = _supportsColor
           ? AnsiStyles.bold(AnsiStyles.cyan('🎯 $title'))
           : '🎯 $title';
-      print(styled);
+      stdout.writeln(styled);
       separator();
     }
   }
@@ -112,7 +129,7 @@ class Logger {
       final styled = _supportsColor
           ? AnsiStyles.bold(AnsiStyles.blue('📋 $subtitle'))
           : '📋 $subtitle';
-      print(styled);
+      stdout.writeln(styled);
     }
   }
 
@@ -120,7 +137,7 @@ class Logger {
   static void listItem(String item, {int indent = 0}) {
     if (_shouldLog(LogLevel.info)) {
       final prefix = '  ' * indent + '• ';
-      print('$prefix$item');
+      stdout.writeln('$prefix$item');
     }
   }
 
@@ -131,14 +148,14 @@ class Logger {
       final styled = _supportsColor
           ? '$prefix${AnsiStyles.cyan(key)}: $value'
           : '$prefix$key: $value';
-      print(styled);
+      stdout.writeln(styled);
     }
   }
 
   /// 输出空行
   static void newLine() {
     if (_shouldLog(LogLevel.info)) {
-      print('');
+      stdout.writeln();
     }
   }
 
@@ -225,50 +242,50 @@ class Logger {
     final styledTitle = _supportsColor
         ? AnsiStyles.yellow(AnsiStyles.bold('⚠️  $title'))
         : '⚠️  $title';
-    print(styledTitle);
+    stdout.writeln(styledTitle);
 
     // 警告描述
     final styledDesc = _supportsColor
         ? AnsiStyles.yellow('   $description')
         : '   $description';
-    print(styledDesc);
+    stdout.writeln(styledDesc);
 
     // 上下文信息
     if (context != null && context.isNotEmpty) {
-      print('');
+      stdout.writeln();
       final styledContext = _supportsColor
           ? AnsiStyles.gray('   📍 上下文: $context')
           : '   📍 上下文: $context';
-      print(styledContext);
+      stdout.writeln(styledContext);
     }
 
     // 建议
     if (suggestions != null && suggestions.isNotEmpty) {
-      print('');
+      stdout.writeln();
       final suggestionHeader = _supportsColor
           ? AnsiStyles.cyan(AnsiStyles.bold('   💡 建议:'))
           : '   💡 建议:';
-      print(suggestionHeader);
+      stdout.writeln(suggestionHeader);
 
       for (var i = 0; i < suggestions.length; i++) {
         final suggestion = suggestions[i];
         final styledSuggestion = _supportsColor
             ? AnsiStyles.cyan('      ${i + 1}. $suggestion')
             : '      ${i + 1}. $suggestion';
-        print(styledSuggestion);
+        stdout.writeln(styledSuggestion);
       }
     }
 
     // 文档链接
     if (docLink != null && docLink.isNotEmpty) {
-      print('');
+      stdout.writeln();
       final styledLink = _supportsColor
           ? AnsiStyles.blue('   📚 相关文档: $docLink')
           : '   📚 相关文档: $docLink';
-      print(styledLink);
+      stdout.writeln(styledLink);
     }
 
-    print(''); // 空行分隔
+    stdout.writeln(); // 空行分隔
   }
 
   /// 输出使用提示
@@ -278,13 +295,13 @@ class Logger {
     final styledCmd =
         _supportsColor ? AnsiStyles.green(AnsiStyles.bold(command)) : command;
 
-    print('💬 $styledCmd - $description');
+    stdout.writeln('💬 $styledCmd - $description');
 
     if (example != null) {
       final styledExample = _supportsColor
           ? AnsiStyles.gray('   示例: $example')
           : '   示例: $example';
-      print(styledExample);
+      stdout.writeln(styledExample);
     }
   }
 
@@ -311,7 +328,7 @@ class Logger {
     if (level == LogLevel.error) {
       stderr.writeln(output);
     } else {
-      print(output);
+      stdout.writeln(output);
     }
   }
 

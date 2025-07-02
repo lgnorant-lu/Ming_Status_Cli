@@ -9,11 +9,15 @@ Description:        模板参数系统 (Template parameter system)
 ---------------------------------------------------------------
 */
 
-import 'package:ming_status_cli/src/models/template_variable.dart';
 import 'package:ming_status_cli/src/core/template_variable_processor.dart';
+import 'package:ming_status_cli/src/models/template_variable.dart';
 
 /// 模板参数系统
 class TemplateParameterSystem {
+  /// 创建模板参数系统实例
+  /// 
+  /// [variables] 可选的初始变量定义映射
+  /// [processor] 可选的变量处理器实例
   TemplateParameterSystem({
     Map<String, TemplateVariable>? variables,
     TemplateVariableProcessor? processor,
@@ -57,7 +61,9 @@ class TemplateParameterSystem {
     // 加载自定义处理器配置
     if (brickData.containsKey('ming_config') && 
         brickData['ming_config'] is Map) {
-      final mingConfig = Map<String, dynamic>.from(brickData['ming_config'] as Map);
+      final mingConfig = Map<String, dynamic>.from(
+        brickData['ming_config'] as Map,
+      );
       _loadProcessorConfig(mingConfig);
     }
   }
@@ -109,7 +115,8 @@ class TemplateParameterSystem {
 
       // 使用有效值或默认值
       if (result.isValid || variable.optional) {
-        validatedVars[variable.name] = value ?? variable.getEffectiveDefaultValue();
+        final effectiveValue = value ?? variable.getEffectiveDefaultValue();
+        validatedVars[variable.name] = effectiveValue;
       }
     }
 
@@ -152,13 +159,19 @@ class TemplateParameterSystem {
       if (!processingResult.success) {
         return TemplateParameterProcessingResult.failure(
           processingResult.errors,
-          warnings: [...validationResult.warnings, ...processingResult.warnings],
+          warnings: [
+            ...validationResult.warnings,
+            ...processingResult.warnings,
+          ],
         );
       }
 
       return TemplateParameterProcessingResult.success(
         processingResult.variables,
-        warnings: [...validationResult.warnings, ...processingResult.warnings],
+        warnings: [
+          ...validationResult.warnings,
+          ...processingResult.warnings,
+        ],
         generatedVariables: processingResult.generatedVariables,
         originalVariables: inputVariables,
       );
@@ -287,6 +300,12 @@ class TemplateParameterSystem {
 
 /// 参数验证结果
 class TemplateParameterValidationResult {
+  /// 创建参数验证结果实例
+  /// 
+  /// [isValid] 验证是否通过
+  /// [errors] 错误信息列表
+  /// [warnings] 警告信息列表
+  /// [validatedVariables] 验证后的变量值映射
   const TemplateParameterValidationResult({
     required this.isValid,
     required this.errors,
@@ -315,6 +334,14 @@ class TemplateParameterValidationResult {
 
 /// 参数处理结果
 class TemplateParameterProcessingResult {
+  /// 创建参数处理结果实例
+  /// 
+  /// [success] 处理是否成功
+  /// [processedVariables] 处理后的变量映射
+  /// [errors] 错误信息列表
+  /// [warnings] 警告信息列表
+  /// [generatedVariables] 生成的派生变量
+  /// [originalVariables] 原始输入变量
   const TemplateParameterProcessingResult({
     required this.success,
     required this.processedVariables,
@@ -380,16 +407,19 @@ class TemplateParameterProcessingResult {
 
   /// 获取所有变量（原始 + 处理后 + 生成的）
   Map<String, dynamic> getAllVariables() {
-    final allVars = <String, dynamic>{};
-    allVars.addAll(originalVariables);
-    allVars.addAll(processedVariables);
-    allVars.addAll(generatedVariables);
-    return allVars;
+    return <String, dynamic>{}
+      ..addAll(originalVariables)
+      ..addAll(processedVariables)
+      ..addAll(generatedVariables);
   }
 }
 
 /// 模板参数异常
 class TemplateParameterException implements Exception {
+  /// 创建模板参数异常实例
+  /// 
+  /// [message] 错误消息
+  /// [details] 可选的详细信息映射
   const TemplateParameterException(this.message, [this.details]);
 
   /// 错误消息
@@ -405,4 +435,4 @@ class TemplateParameterException implements Exception {
     }
     return 'TemplateParameterException: $message';
   }
-} 
+}

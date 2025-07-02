@@ -27,7 +27,7 @@ void main() {
 
     tearDown(() async {
       // 清理临时目录
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });

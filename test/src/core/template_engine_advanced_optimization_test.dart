@@ -5,36 +5,34 @@ Author:             lgnorant-lu
 Date created:       2025/06/30
 Last modified:      2025/06/30
 Dart Version:       3.2+
-Description:        Task 36.* 模板系统最终优化测试 (Template system final optimization tests)
+Description:        Task 36.* 模板系统最终优化测试
+                    (Template system final optimization tests)
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:async';
-import 'package:test/test.dart';
+import 'dart:io';
+
 import 'package:ming_status_cli/src/core/template_engine.dart';
-import 'package:ming_status_cli/src/core/config_manager.dart';
-import 'package:ming_status_cli/src/utils/logger.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('Task 36.* 模板系统最终优化测试', () {
     late TemplateEngine templateEngine;
     late Directory tempDir;
     late String templatesPath;
-    late ConfigManager configManager;
 
     setUpAll(() async {
       // 设置临时目录和测试环境
-      tempDir = await Directory.systemTemp.createTemp('template_optimization_test');
+      tempDir = await Directory.systemTemp.createTemp(
+        'template_optimization_test',
+      );
       templatesPath = '${tempDir.path}/templates';
       await Directory(templatesPath).create(recursive: true);
       
       // 创建测试模板
       await _createTestTemplate(templatesPath, 'test_template');
       await _createTestTemplate(templatesPath, 'cache_template');
-      
-      // 初始化配置管理器
-      configManager = ConfigManager();
       
       // 初始化模板引擎（使用实际的构造函数）
       templateEngine = TemplateEngine(workingDirectory: tempDir.path);
@@ -53,12 +51,17 @@ void main() {
         
         // 测试缓存配置
         expect(AdvancedTemplateCacheManager.maxCacheSize, equals(50));
-        expect(AdvancedTemplateCacheManager.cacheExpiry, equals(const Duration(hours: 2)));
+        expect(
+          AdvancedTemplateCacheManager.cacheExpiry,
+          equals(const Duration(hours: 2)),
+        );
       });
 
       test('应该支持模板预编译缓存', () async {
         // 预编译模板
-        final result = await templateEngine.cacheManager.precompileTemplate('test_template');
+        final result = await templateEngine.cacheManager.precompileTemplate(
+          'test_template',
+        );
         expect(result, isNotNull);
         
         // 验证预编译缓存
@@ -118,13 +121,20 @@ void main() {
         expect(asyncManager, isNotNull);
         
         // 测试并发配置
-        expect(AsyncTemplateGenerationManager.maxConcurrentGenerations, equals(5));
-        expect(AsyncTemplateGenerationManager.generationTimeout, equals(const Duration(minutes: 10)));
+        expect(
+          AsyncTemplateGenerationManager.maxConcurrentGenerations,
+          equals(5),
+        );
+        expect(
+          AsyncTemplateGenerationManager.generationTimeout,
+          equals(const Duration(minutes: 10)),
+        );
       });
 
       test('应该支持异步模板生成', () async {
         // 使用异步生成管理器进行异步生成
-        final result = await templateEngine.asyncManager.generateTemplateAsync(
+        final result = 
+            await templateEngine.asyncManager.generateTemplateAsync(
           templateName: 'test_template',
           outputPath: '${tempDir.path}/async_test_1',
           variables: {'module_name': 'AsyncTest1'},
@@ -146,7 +156,8 @@ void main() {
         }
         
         // 批量异步生成
-        final results = await templateEngine.asyncManager.generateMultipleTemplatesAsync(
+        final results = 
+            await templateEngine.asyncManager.generateMultipleTemplatesAsync(
           specs: specs,
         );
         
@@ -158,14 +169,16 @@ void main() {
 
       test('应该支持任务优先级管理', () async {
         // 创建不同优先级的任务
-        final highPriorityResult = await templateEngine.asyncManager.generateTemplateAsync(
+        final highPriorityResult = 
+            await templateEngine.asyncManager.generateTemplateAsync(
           templateName: 'test_template',
           outputPath: '${tempDir.path}/high_priority',
           variables: {'module_name': 'HighPriority'},
           priority: 10,
         );
         
-        final lowPriorityResult = await templateEngine.asyncManager.generateTemplateAsync(
+        final lowPriorityResult = 
+            await templateEngine.asyncManager.generateTemplateAsync(
           templateName: 'test_template',
           outputPath: '${tempDir.path}/low_priority',
           variables: {'module_name': 'LowPriority'},
@@ -190,7 +203,8 @@ void main() {
         
         // 使用流式生成
         final results = <GenerationResult>[];
-        await for (final result in templateEngine.asyncManager.generateTemplatesStream(specs: specs)) {
+        await for (final result in templateEngine.asyncManager
+            .generateTemplatesStream(specs: specs)) {
           results.add(result);
         }
         
@@ -246,8 +260,10 @@ void main() {
         }
         
         // 获取性能统计
-        final cacheStats = templateEngine.cacheManager.getCacheStatistics();
-        final asyncStats = templateEngine.asyncManager.getGenerationStatistics();
+        final cacheStats = templateEngine
+            .cacheManager.getCacheStatistics();
+        final asyncStats = templateEngine
+            .asyncManager.getGenerationStatistics();
         
         expect(cacheStats, isNotNull);
         expect(asyncStats, isNotNull);
@@ -269,7 +285,8 @@ void main() {
         }
         
         // 3. 批量异步生成
-        final results = await templateEngine.asyncManager.generateMultipleTemplatesAsync(
+        final results = 
+            await templateEngine.asyncManager.generateMultipleTemplatesAsync(
           specs: specs,
         );
         
@@ -280,8 +297,10 @@ void main() {
         }
         
         // 5. 检查统计信息
-        final cacheStats = templateEngine.cacheManager.getCacheStatistics();
-        final asyncStats = templateEngine.asyncManager.getGenerationStatistics();
+        final cacheStats = 
+            templateEngine.cacheManager.getCacheStatistics();
+        final asyncStats = 
+            templateEngine.asyncManager.getGenerationStatistics();
         
         expect(cacheStats['total_hits'], greaterThanOrEqualTo(0));
         expect(asyncStats['max_concurrent_generations'], equals(5));
@@ -302,9 +321,11 @@ void main() {
 
       test('应该支持错误模式分析', () async {
         // 模拟错误
-        final error = TemplateEngineException.templateNotFound('nonexistent_template');
+        final error = TemplateEngineException
+            .templateNotFound('nonexistent_template');
         
-        final recoveryResult = await templateEngine.intelligentErrorRecoveryManager
+        final recoveryResult = await templateEngine
+            .intelligentErrorRecoveryManager
             .intelligentRecover(error, null);
             
         expect(recoveryResult, isNotNull);
@@ -338,9 +359,11 @@ void main() {
       test('应该支持变量验证错误恢复', () async {
         // 创建一个变量验证错误
         final validationErrors = {'module_id': '必需变量未提供'};
-        final error = TemplateEngineException.variableValidationError(validationErrors);
+        final error = TemplateEngineException
+            .variableValidationError(validationErrors);
         
-        final recoveryResult = await templateEngine.intelligentErrorRecoveryManager
+        final recoveryResult = await templateEngine
+            .intelligentErrorRecoveryManager
             .intelligentRecover(error, null);
             
         expect(recoveryResult, isNotNull);
@@ -370,9 +393,7 @@ void main() {
             'module_id': 'ux_test',
             'module_name': 'UXTest',
           },
-          onProgress: (update) {
-            progressUpdates.add(update);
-          },
+          onProgress: progressUpdates.add,
         );
         
         expect(result.success, isTrue);
@@ -413,7 +434,8 @@ void main() {
       });
 
       test('应该支持增强的用户体验生成', () async {
-        final result = await templateEngine.userExperienceManager.generateWithEnhancedUX(
+        final result = await templateEngine
+            .userExperienceManager.generateWithEnhancedUX(
           templateName: 'test_template',
           outputPath: '${tempDir.path}/enhanced_ux',
           variables: {
@@ -423,7 +445,7 @@ void main() {
         );
         
         expect(result.success, isTrue);
-        expect(result.metadata['enhanced'], isTrue);
+        expect((result.metadata as Map)['enhanced'], isTrue);
       });
     });
 
@@ -434,12 +456,30 @@ void main() {
         final report = await templateEngine.getTask36CompleteReport();
         
         expect(report, isNotNull);
-        expect(report['task_36_1_cache_optimization']['status'], equals('completed'));
-        expect(report['task_36_2_async_generation']['status'], equals('completed'));
-        expect(report['task_36_3_error_recovery']['status'], equals('completed'));
-        expect(report['task_36_4_ux_optimization']['status'], equals('completed'));
-        expect(report['integration']['all_features_integrated'], isTrue);
-        expect(report['summary']['completion_rate'], equals(1.0));
+        expect(
+          (report['task_36_1_cache_optimization'] as Map)['status'], 
+          equals('completed'),
+        );
+        expect(
+          (report['task_36_2_async_generation'] as Map)['status'], 
+          equals('completed'),
+        );
+        expect(
+          (report['task_36_3_error_recovery'] as Map)['status'], 
+          equals('completed'),
+        );
+        expect(
+          (report['task_36_4_ux_optimization'] as Map)['status'], 
+          equals('completed'),
+        );
+        expect(
+          (report['integration'] as Map)['all_features_integrated'], 
+          isTrue,
+        );
+        expect(
+          (report['summary'] as Map)['completion_rate'], 
+          equals(1.0),
+        );
       });
 
       test('应该支持所有Task 36功能的协同工作', () async {
@@ -464,14 +504,16 @@ void main() {
         
         // 3. 验证各种统计和报告
         final cacheStats = templateEngine.cacheManager.getCacheStatistics();
-        final asyncStats = templateEngine.asyncManager.getGenerationStatistics();
+        final asyncStats = templateEngine
+            .asyncManager.getGenerationStatistics();
         final recoveryStats = templateEngine.getErrorRecoveryStatistics();
         final uxReport = templateEngine.getUserExperienceReport();
         
         expect(cacheStats['cache_size'], greaterThanOrEqualTo(0));
         expect(asyncStats['active_generations'], greaterThanOrEqualTo(0));
         expect(recoveryStats['total_attempts'], greaterThanOrEqualTo(0));
-        expect(uxReport['summary']['total_interactions'], greaterThanOrEqualTo(0));
+        expect((uxReport['summary'] as Map)['total_interactions'], 
+            greaterThanOrEqualTo(0),);
       });
 
       test('应该支持完整的错误恢复和UX优化工作流', () async {
@@ -491,7 +533,8 @@ void main() {
         
         // 使用完整的优化工作流
         final results = <GenerationResult>[];
-        await for (final result in templateEngine.asyncManager.generateTemplatesStream(specs: specs)) {
+        await for (final result in templateEngine.asyncManager
+            .generateTemplatesStream(specs: specs)) {
           results.add(result);
         }
         
@@ -501,41 +544,43 @@ void main() {
         
         // 获取最终报告
         final finalReport = await templateEngine.getTask36CompleteReport();
-        expect(finalReport['summary']['completed_tasks'], equals(4));
+        expect((finalReport['summary'] as Map)['completed_tasks'], 
+            equals(4),);
       });
     });
   });
 }
 
 // 辅助方法：创建测试模板
-Future<void> _createTestTemplate(String templatesPath, String templateName) async {
-  final templateDir = Directory('$templatesPath/$templateName');
-  await templateDir.create(recursive: true);
-  
-  // 创建 brick.yaml
-  final brickYamlFile = File('${templateDir.path}/brick.yaml');
-  await brickYamlFile.writeAsString('''
-name: $templateName
-description: Test template for $templateName
-version: 1.0.0
+Future<void> _createTestTemplate
+    (String templatesPath, String templateName) async {
+      final templateDir = Directory('$templatesPath/$templateName');
+      await templateDir.create(recursive: true);
+      
+      // 创建 brick.yaml
+      final brickYamlFile = File('${templateDir.path}/brick.yaml');
+      await brickYamlFile.writeAsString('''
+    name: $templateName
+    description: Test template for $templateName
+    version: 1.0.0
 
-vars:
-  module_name:
-    type: string
-    description: The name of the module
-    default: DefaultModule
-''');
-  
-  // 创建模板文件
-  final brickDir = Directory('${templateDir.path}/__brick__');
-  await brickDir.create(recursive: true);
-  
-  final mainFile = File('${brickDir.path}/lib/{{module_name.snakeCase()}}.dart');
-  await mainFile.parent.create(recursive: true);
-  await mainFile.writeAsString('''
-// {{module_name}} module
-class {{module_name.pascalCase()}} {
-  // Implementation
-}
-''');
+    vars:
+      module_name:
+        type: string
+        description: The name of the module
+        default: DefaultModule
+    ''');
+      
+      // 创建模板文件
+      final brickDir = Directory('${templateDir.path}/__brick__');
+      await brickDir.create(recursive: true);
+      
+      final mainFile = File('${brickDir.path}/lib/{{module_name.snakeCase()}}.dart');
+      await mainFile.parent.create(recursive: true);
+      await mainFile.writeAsString('''
+    // {{module_name}} module
+    class {{module_name.pascalCase()}} {
+      // Implementation
+    }
+    ''');
 } 

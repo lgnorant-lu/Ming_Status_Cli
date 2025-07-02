@@ -41,7 +41,7 @@ void main() {
 
     tearDown(() async {
       // 清理临时目录
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });
@@ -166,7 +166,8 @@ void main() {
         final configDoctorCommand = DoctorCommand();
         
         // 使用测试专用方法获取配置专用检查器
-        final checkers = configDoctorCommand.getCheckersForTest(configOnly: true);
+        final checkers = 
+          configDoctorCommand.getCheckersForTest(configOnly: true);
         
         // 验证检查器数量和类型
         expect(checkers.length, equals(4), reason: '配置专用模式应该只有4个检查器');
@@ -213,7 +214,8 @@ void main() {
       test('WorkspaceConfigChecker自动修复应该处理未初始化状态', () async {
         // 创建未初始化的临时目录
         final uninitDir = await Directory.systemTemp.createTemp('ming_uninit_');
-        final uninitConfigManager = ConfigManager(workingDirectory: uninitDir.path);
+        final uninitConfigManager = 
+          ConfigManager(workingDirectory: uninitDir.path);
         
         try {
           final checker = WorkspaceConfigChecker(uninitConfigManager);
@@ -222,7 +224,7 @@ void main() {
           // 对于未初始化的工作空间，自动修复应该返回false（需要用户确认）
           expect(canFix, isFalse);
         } finally {
-          if (await uninitDir.exists()) {
+          if (uninitDir.existsSync()) {
             await uninitDir.delete(recursive: true);
           }
         }
@@ -253,11 +255,11 @@ void main() {
 
     group('消息图标测试', () {
       test('应该为不同严重级别返回正确图标', () {
-        final result = ValidationResult();
-        result.addError('错误信息');
-        result.addWarning('警告信息');
-        result.addInfo('信息');
-        result.addSuccess('成功信息');
+        final result = ValidationResult()
+          ..addError('错误信息')
+          ..addWarning('警告信息')
+          ..addInfo('信息')
+          ..addSuccess('成功信息');
         
         expect(result.errors.length, equals(1));
         expect(result.warnings.length, equals(1));
@@ -269,7 +271,10 @@ void main() {
 }
 
 /// 设置测试环境
-Future<void> _setupTestEnvironment(Directory tempDir, ConfigManager configManager) async {
+Future<void> _setupTestEnvironment(
+  Directory tempDir, 
+  ConfigManager configManager,
+) async {
   // 初始化工作空间配置
   await configManager.initializeWorkspace(
     workspaceName: 'test_workspace',

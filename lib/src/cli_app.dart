@@ -27,11 +27,14 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 /// CLI应用主类
 /// 负责注册命令、处理全局选项和应用程序生命周期
 class MingStatusCliApp {
+  /// 构造函数，初始化命令运行器。
   MingStatusCliApp() {
     _initializeRunner();
     // 不再立即注册命令，延迟到实际需要时
   }
+  /// 命令运行器实例
   late final CommandRunner<int> _runner;
+  /// 标志位，指示命令是否已注册
   bool _commandsRegistered = false;
 
   /// 应用名称
@@ -46,21 +49,20 @@ class MingStatusCliApp {
     _runner = CommandRunner<int>(appName, appDescription);
 
     // 添加全局选项
-    _runner.argParser.addFlag(
+    _runner.argParser
+      ..addFlag(
       'verbose',
       abbr: 'v',
       help: '显示详细输出信息',
       negatable: false,
-    );
-
-    _runner.argParser.addFlag(
+      )
+      ..addFlag(
       'quiet',
       abbr: 'q',
       help: '静默模式，仅显示错误信息',
       negatable: false,
-    );
-
-    _runner.argParser.addFlag(
+      )
+      ..addFlag(
       'version',
       help: '显示版本信息',
       negatable: false,
@@ -72,16 +74,17 @@ class MingStatusCliApp {
     if (_commandsRegistered) return;
 
     // 核心命令
-    _runner.addCommand(InitCommand());
-    _runner.addCommand(CreateCommand());
-    _runner.addCommand(ConfigCommand());
-    _runner.addCommand(VersionCommand());
-    _runner.addCommand(DoctorCommand());
+    _runner
+      ..addCommand(InitCommand())
+      ..addCommand(CreateCommand())
+      ..addCommand(ConfigCommand())
+      ..addCommand(VersionCommand())
+      ..addCommand(DoctorCommand());
 
     // 注意：使用自定义帮助处理而不是添加help命令
     // 因为CommandRunner已经有内置的help命令
 
-    // TODO: 在后续阶段添加更多命令
+    // TODO(future): 在后续阶段添加更多命令
     // _runner.addCommand(TemplateCommand());
     // _runner.addCommand(GenerateCommand());
     // _runner.addCommand(ValidateCommand());
@@ -92,28 +95,31 @@ class MingStatusCliApp {
   }
 
   /// 运行CLI应用
+  ///
+  /// [arguments] 命令行参数列表
+  /// 返回CLI应用的退出码
   Future<int> run(List<String> arguments) async {
     try {
       // 预处理参数
-      arguments = _preprocessArguments(arguments);
+      final processedArguments = _preprocessArguments(arguments);
 
       // 设置全局日志级别
-      _setupGlobalLogging(arguments);
+      _setupGlobalLogging(processedArguments);
 
       // 优先处理快速命令，避免注册所有命令
-      final quickResult = await _handleQuickCommands(arguments);
+      final quickResult = await _handleQuickCommands(processedArguments);
       if (quickResult != null) return quickResult;
 
       // 处理自定义帮助显示
-      if (_shouldShowCustomHelp(arguments)) {
-        return await _handleCustomHelp(arguments);
+      if (_shouldShowCustomHelp(processedArguments)) {
+        return await _handleCustomHelp(processedArguments);
       }
 
       // 只有在真正需要运行命令时才注册所有命令
       _ensureCommandsRegistered();
 
       // 运行命令
-      final result = await _runner.run(arguments);
+      final result = await _runner.run(processedArguments);
       return result ?? 0;
     } on UsageException catch (e) {
       // 使用增强的错误处理器
@@ -129,6 +135,9 @@ class MingStatusCliApp {
   }
 
   /// 处理快速命令（避免完整初始化）
+  ///
+  /// [arguments] 命令行参数列表
+  /// 返回快速命令的退出码，如果不是快速命令则返回null
   Future<int?> _handleQuickCommands(List<String> arguments) async {
     // 处理 --version 全局参数
     if (_shouldShowVersion(arguments)) {
@@ -150,6 +159,9 @@ class MingStatusCliApp {
   }
 
   /// 预处理命令行参数
+  ///
+  /// [arguments] 原始命令行参数列表
+  /// 返回处理后的参数列表
   List<String> _preprocessArguments(List<String> arguments) {
     final processed = <String>[];
 
@@ -174,6 +186,8 @@ class MingStatusCliApp {
   }
 
   /// 设置全局日志配置
+  ///
+  /// [arguments] 命令行参数列表
   void _setupGlobalLogging(List<String> arguments) {
     if (arguments.contains('--verbose') || arguments.contains('-v')) {
       Logger.verbose = true;
@@ -184,11 +198,17 @@ class MingStatusCliApp {
   }
 
   /// 检查是否应该显示版本信息
+  ///
+  /// [arguments] 命令行参数列表
+  /// 返回是否显示版本信息
   bool _shouldShowVersion(List<String> arguments) {
     return arguments.contains('--version');
   }
 
   /// 检查是否应该显示自定义帮助
+  ///
+  /// [arguments] 命令行参数列表
+  /// 返回是否显示自定义帮助
   bool _shouldShowCustomHelp(List<String> arguments) {
     if (arguments.isEmpty) return false;
 
@@ -198,6 +218,9 @@ class MingStatusCliApp {
   }
 
   /// 处理自定义帮助显示
+  ///
+  /// [arguments] 命令行参数列表
+  /// 返回帮助命令的退出码
   Future<int> _handleCustomHelp(List<String> arguments) async {
     // 提取help命令的参数
     String? commandName;
@@ -227,6 +250,8 @@ class MingStatusCliApp {
   }
 
   /// 显示主帮助信息
+  ///
+  /// [verbose] 是否显示详细信息
   void _showMainHelp(bool verbose) {
     // 确保命令已注册，这样才能在帮助中显示它们
     _ensureCommandsRegistered();
@@ -256,12 +281,16 @@ class MingStatusCliApp {
   }
 
   /// 显示特定命令的帮助
+  ///
+  /// [commandName] 命令名称
+  /// [verbose] 是否显示详细信息
+  /// 返回命令帮助的退出码
   Future<int> _showCommandHelp(String commandName, bool verbose) async {
     // 确保命令已注册
     _ensureCommandsRegistered();
     
     final helpCommand = HelpCommand(_runner);
-    return helpCommand.showSpecificCommandHelp(commandName, verbose);
+    return helpCommand.showSpecificCommandHelp(commandName, verbose: verbose);
   }
 
   /// 显示欢迎信息（可选）

@@ -13,12 +13,11 @@
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/core/user_config_manager.dart';
-import 'package:ming_status_cli/src/models/workspace_config.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerSimple extends UserConfigManager {
@@ -52,7 +51,7 @@ void main() {
     });
 
     tearDown(() async {
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });

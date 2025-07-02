@@ -23,27 +23,26 @@ import 'package:path/path.dart' as path;
 /// 初始化命令
 /// 用于初始化Ming Status工作空间
 class InitCommand extends BaseCommand {
+  /// 创建初始化命令实例，设置命令行参数配置
   InitCommand() {
-    argParser.addOption(
+    argParser
+      ..addOption(
       'name',
       abbr: 'n',
       help: '工作空间名称',
-    );
-
-    argParser.addOption(
+      )
+      ..addOption(
       'description',
       abbr: 'd',
       help: '工作空间描述',
-    );
-
-    argParser.addOption(
+      )
+      ..addOption(
       'author',
       abbr: 'a',
       help: '默认作者名称',
       defaultsTo: 'lgnorant-lu',
-    );
-
-    argParser.addFlag(
+      )
+      ..addFlag(
       'force',
       abbr: 'f',
       help: '强制初始化（覆盖现有配置）',
@@ -72,8 +71,9 @@ class InitCommand extends BaseCommand {
     // 创建进度管理器
     final progress = ProgressManager();
 
-    // 添加初始化任务
-    progress.addTasks([
+    // 添加初始化任务并开始进度跟踪
+    progress
+      ..addTasks([
       {
         'id': 'config_gathering',
         'name': '收集配置信息',
@@ -99,10 +99,8 @@ class InitCommand extends BaseCommand {
         'name': '完成初始化',
         'description': '生成示例文件和文档',
       },
-    ]);
-
-    // 开始进度跟踪
-    progress.start(title: 'Ming Status 工作空间初始化');
+      ])
+      ..start(title: 'Ming Status 工作空间初始化');
 
     try {
       // 步骤1：收集配置信息
@@ -208,24 +206,26 @@ class InitCommand extends BaseCommand {
     // 例如：src/, tests/, docs/ 等
     try {
       final srcDir = Directory('$workingDirectory/src');
-      if (!await srcDir.exists()) {
-        await srcDir.create(recursive: true);
+      if (!srcDir.existsSync()) {
+        srcDir.createSync(recursive: true);
       }
 
       final testsDir = Directory('$workingDirectory/tests');
-      if (!await testsDir.exists()) {
-        await testsDir.create(recursive: true);
+      if (!testsDir.existsSync()) {
+        testsDir.createSync(recursive: true);
       }
 
       final docsDir = Directory('$workingDirectory/docs');
-      if (!await docsDir.exists()) {
-        await docsDir.create(recursive: true);
+      if (!docsDir.existsSync()) {
+        docsDir.createSync(recursive: true);
       }
 
       // 创建README.md
       final readmeFile = File('$workingDirectory/README.md');
-      if (!await readmeFile.exists()) {
-        await readmeFile.writeAsString('''# ${path.basename(workingDirectory)}
+      if (!readmeFile.existsSync()) {
+        await readmeFile.writeAsString(
+'''
+# ${path.basename(workingDirectory)}
 
 这是一个使用 Ming Status CLI 创建的模块化项目。
 

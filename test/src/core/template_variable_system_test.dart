@@ -29,7 +29,7 @@ void main() {
     });
 
     tearDownAll(() async {
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });
@@ -117,11 +117,21 @@ void main() {
           variableDefinitions: definitions,
         );
 
-        expect(result.success, isTrue);
-        expect(result.variables['module_name_snake_case'], equals('user_manager'));
-        expect(result.variables['module_name_pascal_case'], equals('UserManager'));
-        expect(result.variables['module_name_camel_case'], equals('userManager'));
-        expect(result.variables['module_name_kebab_case'], equals('user-manager'));
+        expect(
+          result.success, isTrue,
+        );
+        expect(
+          result.variables['module_name_snake_case'], equals('user_manager'),
+        );
+        expect(
+          result.variables['module_name_pascal_case'], equals('UserManager'),
+        );
+        expect(
+          result.variables['module_name_camel_case'], equals('userManager'),
+        );
+        expect(
+          result.variables['module_name_kebab_case'], equals('user-manager'),
+        );
       });
 
       test('应该生成时间戳变量', () {
@@ -154,11 +164,15 @@ void main() {
         const template = '{{#if include_tests}}包含测试文件{{/if}}';
         
         // 条件为真
-        final resultTrue = processor.interpolateVariables(template, {'include_tests': true});
+        final resultTrue = processor.interpolateVariables(
+          template, {'include_tests': true},
+        );
         expect(resultTrue, equals('包含测试文件'));
 
         // 条件为假
-        final resultFalse = processor.interpolateVariables(template, {'include_tests': false});
+        final resultFalse = processor.interpolateVariables(
+          template, {'include_tests': false},
+        );
         expect(resultFalse, equals(''));
       });
     });
@@ -193,13 +207,17 @@ void main() {
       });
 
       test('应该正确验证变量值集合', () {
-        final parameterSystem = TemplateParameterSystem();
-        parameterSystem.loadFromBrickYaml({
-          'vars': {
-            'name': {'type': 'string'},
-            'version': {'type': 'string', 'default': '1.0.0', 'optional': true},
-          },
-        });
+        final parameterSystem = TemplateParameterSystem()
+          ..loadFromBrickYaml({
+            'vars': {
+              'name': {'type': 'string'},
+              'version': {
+                'type': 'string',
+                'default': '1.0.0',
+                'optional': true,
+              },
+            },
+          });
 
         final result = parameterSystem.validateVariables({
           'name': 'TestModule',
@@ -212,8 +230,8 @@ void main() {
       });
 
       test('应该处理变量并生成派生变量', () {
-        final parameterSystem = TemplateParameterSystem();
-        parameterSystem.loadFromBrickYaml({
+        final parameterSystem = TemplateParameterSystem()
+        ..loadFromBrickYaml({
           'vars': {
             'module_name': {'type': 'string'},
           },
@@ -224,21 +242,33 @@ void main() {
         });
 
         expect(result.success, isTrue);
-        expect(result.processedVariables['module_name'], equals('UserService'));
-        expect(result.generatedVariables.containsKey('module_name_snake_case'), isTrue);
-        expect(result.generatedVariables['module_name_snake_case'], equals('user_service'));
+        expect(
+          result.processedVariables['module_name'],
+          equals('UserService'),
+        );
+        expect(
+          result.generatedVariables.containsKey('module_name_snake_case'),
+          isTrue,
+        );
+        expect(
+          result.generatedVariables['module_name_snake_case'],
+          equals('user_service'),
+        );
       });
     });
 
     group('TemplateEngine 集成测试', () {
       setUp(() async {
         // 创建测试模板
-        final templateDir = Directory(path.join(tempDir.path, 'templates', 'test_template'));
+        final templateDir = Directory(
+          path.join(tempDir.path, 'templates', 'test_template'),
+        );
         await templateDir.create(recursive: true);
 
         // 创建brick.yaml
         final brickFile = File(path.join(templateDir.path, 'brick.yaml'));
-        await brickFile.writeAsString('''
+        await brickFile.writeAsString(
+'''
 name: test_template
 description: 测试模板
 version: 1.0.0
@@ -264,8 +294,11 @@ vars:
         final brickDir = Directory(path.join(templateDir.path, '__brick__'));
         await brickDir.create();
 
-        final templateFile = File(path.join(brickDir.path, '{{module_name}}.dart'));
-        await templateFile.writeAsString('''
+        final templateFile = File(
+          path.join(brickDir.path, '{{module_name}}.dart'),
+        );
+        await templateFile.writeAsString(
+'''
 /// {{module_name}} 模块
 /// 作者: {{author}}
 class {{module_name}} {
@@ -279,7 +312,8 @@ class {{module_name}} {
       });
 
       test('应该成功获取模板参数系统', () async {
-        final parameterSystem = await templateEngine.getParameterSystem('test_template');
+        final parameterSystem = await templateEngine
+          .getParameterSystem('test_template');
         
         expect(parameterSystem.variableCount, equals(3));
         expect(parameterSystem.hasVariables, isTrue);
@@ -297,13 +331,21 @@ class {{module_name}} {
         );
 
         expect(result.success, isTrue);
-        expect(result.processedVariables['module_name'], equals('TestService'));
-        expect(result.processedVariables['author'], equals('lgnorant-lu')); // 默认值
-        expect(result.generatedVariables.containsKey('module_name_snake_case'), isTrue);
+        expect(
+          result.processedVariables['module_name'], equals('TestService'),
+        );
+        expect(
+          result.processedVariables['author'], equals('lgnorant-lu'),
+        ); // 默认值
+        expect(
+          result.generatedVariables.containsKey('module_name_snake_case'),
+          isTrue,
+        );
       });
 
       test('应该正确获取模板默认值', () async {
-        final defaults = await templateEngine.getTemplateDefaultValues('test_template');
+        final defaults = await templateEngine
+          .getTemplateDefaultValues('test_template');
         
         expect(defaults['author'], equals('lgnorant-lu'));
         expect(defaults['include_tests'], equals(true));
@@ -311,7 +353,8 @@ class {{module_name}} {
       });
 
       test('应该正确获取模板提示信息', () async {
-        final prompts = await templateEngine.getTemplatePrompts('test_template');
+        final prompts = await templateEngine
+          .getTemplatePrompts('test_template');
         
         expect(prompts['module_name'], equals('请输入模块名称'));
         expect(prompts.containsKey('author'), isFalse); // 无提示
@@ -332,7 +375,8 @@ class {{module_name}} {
       });
 
       test('应该生成变量摘要', () async {
-        final summary = await templateEngine.getTemplateVariableSummary('test_template');
+        final summary = await templateEngine
+          .getTemplateVariableSummary('test_template');
         
         expect(summary['total_variables'], equals(3));
         expect(summary['required_variables'], equals(1)); // 只有module_name是必需的
@@ -343,17 +387,18 @@ class {{module_name}} {
 
     group('错误处理测试', () {
       test('应该处理不存在的模板', () async {
-        final future = templateEngine.getParameterSystem('non_existent_template');
+        final future = templateEngine
+          .getParameterSystem('non_existent_template');
         expect(future, throwsA(isA<Exception>()));
       });
 
       test('应该处理无效的变量值', () async {
-        final parameterSystem = TemplateParameterSystem();
-        parameterSystem.loadFromBrickYaml({
-          'vars': {
-            'required_field': {'type': 'string'}, // 必需字段
-          },
-        });
+        final parameterSystem = TemplateParameterSystem()
+          ..loadFromBrickYaml({
+            'vars': {
+              'required_field': {'type': 'string'}, // 必需字段
+            },
+          });
 
         final result = parameterSystem.validateVariables({
           // 缺少required_field

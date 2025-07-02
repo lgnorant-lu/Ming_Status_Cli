@@ -13,11 +13,10 @@ Change History:
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
-
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/models/workspace_config.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 /// 测试用的临时配置管理器，使用隔离的临时目录
 class TestConfigManagerForValidation extends ConfigManager {
@@ -46,7 +45,7 @@ void main() {
 
     tearDown(() async {
       // 清理临时目录
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });

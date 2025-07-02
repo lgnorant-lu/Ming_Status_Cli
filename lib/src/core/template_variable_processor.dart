@@ -38,6 +38,7 @@ enum VariableProcessorType {
 
 /// 变量处理器配置
 class VariableProcessorConfig {
+  /// 创建变量处理器配置实例
   const VariableProcessorConfig({
     required this.type,
     required this.target,
@@ -94,6 +95,7 @@ class VariableProcessorConfig {
 
 /// 变量处理结果
 class VariableProcessingResult {
+  /// 创建变量处理结果实例
   const VariableProcessingResult({
     required this.success,
     required this.variables,
@@ -148,6 +150,7 @@ class VariableProcessingResult {
 
 /// 模板变量处理器
 class TemplateVariableProcessor {
+  /// 创建模板变量处理器实例
   TemplateVariableProcessor({
     List<VariableProcessorConfig>? processors,
   }) : _processors = processors ?? [];
@@ -156,12 +159,13 @@ class TemplateVariableProcessor {
   final List<VariableProcessorConfig> _processors;
 
   /// 自定义处理器函数映射
-  final Map<String, Function(String, Map<String, dynamic>)> _customProcessors = {};
+  final Map<String, dynamic Function(String, Map<String, dynamic>)>
+      _customProcessors = {};
 
   /// 注册自定义处理器
   void registerCustomProcessor(
     String name,
-    Function(String, Map<String, dynamic>) processor,
+    dynamic Function(String, Map<String, dynamic>) processor,
   ) {
     _customProcessors[name] = processor;
   }
@@ -191,7 +195,8 @@ class TemplateVariableProcessor {
         }
 
         // 如果值为空且有默认值，使用默认值
-        if ((value == null || _isEmptyValue(value)) && varDef.defaultValue != null) {
+        if ((value == null || _isEmptyValue(value)) && 
+            varDef.defaultValue != null) {
           processed[varDef.name] = varDef.defaultValue;
         }
       }
@@ -272,7 +277,8 @@ class TemplateVariableProcessor {
         return value.replaceAll(RegExp(r'[^\w\-_.]'), '_');
       case VariableProcessorType.custom:
         final processorName = config.parameters['processor_name']?.toString();
-        if (processorName != null && _customProcessors.containsKey(processorName)) {
+        if (processorName != null && 
+            _customProcessors.containsKey(processorName)) {
           return _customProcessors[processorName]!(value, config.parameters);
         }
         return value;
@@ -303,8 +309,10 @@ class TemplateVariableProcessor {
         derived['${baseName}_lower_case'] = processedValue;
       case VariableProcessorType.titleCaseConverter:
         derived['${baseName}_title_case'] = processedValue;
-      default:
-        // 其他类型不生成派生变量
+      case VariableProcessorType.timestampGenerator:
+      case VariableProcessorType.pathConverter:
+      case VariableProcessorType.custom:
+        // 这些类型不生成派生变量
         break;
     }
 
@@ -408,7 +416,7 @@ class TemplateVariableProcessor {
       r'\{\{#each\s+([^}]+)\}\}(.*?)\{\{/each\}\}',
       dotAll: true,
     );
-    result = result.replaceAllMapped(eachPattern, (match) {
+    return result.replaceAllMapped(eachPattern, (match) {
       final varName = match.group(1)?.trim();
       final template = match.group(2) ?? '';
       
@@ -430,8 +438,6 @@ class TemplateVariableProcessor {
       }
       return '';
     });
-
-    return result;
   }
 
   /// 检查值是否为"真值"
@@ -463,7 +469,8 @@ class TemplateVariableProcessor {
   }
 
   /// 获取处理器配置
-  List<VariableProcessorConfig> get processors => List.unmodifiable(_processors);
+  List<VariableProcessorConfig> get processors => 
+      List.unmodifiable(_processors);
 
   /// 添加处理器配置
   void addProcessor(VariableProcessorConfig config) {

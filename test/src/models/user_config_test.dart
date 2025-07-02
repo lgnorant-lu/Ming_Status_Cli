@@ -12,9 +12,9 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:test/test.dart';
-import 'package:ming_status_cli/src/models/user_config.dart';
 import 'dart:convert';
+import 'package:ming_status_cli/src/models/user_config.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('UserInfo Tests', () {
@@ -358,7 +358,8 @@ void main() {
       expect(userConfig.preferences.defaultTemplate, equals('basic'));
       expect(userConfig.defaults.license, equals('MIT')); // 应该使用默认值
       expect(
-          userConfig.security?.encryptedCredentials, isNull,); // security字段为null
+          userConfig.security?.encryptedCredentials, isNull,
+      ); // security字段为null
     });
 
     test('should handle empty JSON gracefully', () {

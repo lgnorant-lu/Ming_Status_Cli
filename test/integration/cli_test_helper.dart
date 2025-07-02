@@ -46,9 +46,10 @@ class CliTestResult {
 
   @override
   String toString() {
-    return 'CliTestResult(exitCode: $exitCode, duration: ${duration.inMilliseconds}ms)\n'
-        'STDOUT:\n$stdout\n'
-        'STDERR:\n$stderr';
+    return
+      'CliTestResult(exitCode: $exitCode, duration: ${duration.inMilliseconds}ms)\n'
+      'STDOUT:\n$stdout\n'
+      'STDERR:\n$stderr';
   }
 }
 
@@ -72,14 +73,14 @@ class CliTestHelper {
 
     // 创建临时测试目录
     _tempDir = await Directory.systemTemp.createTemp('ming_cli_test_');
-    print('📁 测试临时目录: ${_tempDir.path}');
+    stderr.writeln('📁 测试临时目录: ${_tempDir.path}');
   }
 
   /// 清理测试环境
   static Future<void> tearDownAll() async {
     if (await _tempDir.exists()) {
       await _tempDir.delete(recursive: true);
-      print('🗑️  清理临时目录: ${_tempDir.path}');
+      stderr.writeln('🗑️  清理临时目录: ${_tempDir.path}');
     }
   }
 
@@ -95,8 +96,9 @@ class CliTestHelper {
 
     try {
       final workdir = workingDirectory ?? Directory.current.path;
-      print('🚀 执行命令: dart $_cliPath ${arguments.join(' ')}');
-      print('📁 工作目录: $workdir');
+      stderr
+        ..writeln('🚀 执行命令: dart $_cliPath ${arguments.join(' ')}')
+        ..writeln('📁 工作目录: $workdir');
 
       final process = await Process.start(
         'dart',
@@ -152,11 +154,13 @@ class CliTestHelper {
         duration: stopwatch.elapsed,
       );
 
-      print('✅ 命令完成: 退出码=$exitCode, 耗时=${result.duration.inMilliseconds}ms');
+      stderr.writeln(
+        '✅ 命令完成: 退出码=$exitCode, 耗时=${result.duration.inMilliseconds}ms',
+      );
       return result;
     } catch (e) {
       stopwatch.stop();
-      print('❌ 命令执行失败: $e');
+      stderr.writeln('❌ 命令执行失败: $e');
 
       return CliTestResult(
         exitCode: -1,

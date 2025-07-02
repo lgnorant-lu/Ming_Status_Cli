@@ -15,6 +15,7 @@ Change History:
 /// 验证结果类
 /// 存储模块验证过程的所有结果信息
 class ValidationResult {
+  /// 创建验证结果实例
   ValidationResult({this.strictMode = false}) : startTime = DateTime.now();
 
   /// 是否验证通过
@@ -129,7 +130,8 @@ class ValidationResult {
       buffer.writeln('❌ ERROR: ${error.message}');
       if (error.file != null) {
         buffer.writeln(
-            '   📁 ${error.file}${error.line != null ? ':${error.line}' : ''}',);
+            '   📁 ${error.file}'
+            '${error.line != null ? ':${error.line}' : ''}',);
       }
       if (error.code != null) {
         buffer.writeln('   🔍 Code: ${error.code}');
@@ -141,7 +143,8 @@ class ValidationResult {
       buffer.writeln('⚠️  WARNING: ${warning.message}');
       if (warning.file != null) {
         buffer.writeln(
-            '   📁 ${warning.file}${warning.line != null ? ':${warning.line}' : ''}',);
+            '   📁 ${warning.file}'
+            '${warning.line != null ? ':${warning.line}' : ''}',);
       }
     }
 
@@ -154,10 +157,10 @@ class ValidationResult {
 
     // 添加总结
     final summary = getSummary();
-    buffer.writeln('\n📊 验证总结:');
-    buffer.writeln('   状态: ${isValid ? '✅ 通过' : '❌ 失败'}');
-    buffer.writeln('   错误: ${summary.errorCount}');
-    buffer.writeln('   警告: ${summary.warningCount}');
+    buffer..writeln('\n📊 验证总结:')
+      ..writeln('   状态: ${isValid ? '✅ 通过' : '❌ 失败'}')
+      ..writeln('   错误: ${summary.errorCount}')
+      ..writeln('   警告: ${summary.warningCount}');
     if (summary.durationMs > 0) {
       buffer.writeln('   耗时: ${summary.durationMs}ms');
     }
@@ -168,6 +171,7 @@ class ValidationResult {
 
 /// 验证消息类
 class ValidationMessage {
+  /// 创建验证消息实例
   ValidationMessage({
     required this.severity,
     required this.message,
@@ -196,8 +200,8 @@ class ValidationMessage {
 
   @override
   String toString() {
-    final buffer = StringBuffer();
-    buffer.write('[${severity.name.toUpperCase()}] $message');
+    final buffer = StringBuffer()
+      ..write('[${severity.name.toUpperCase()}] $message');
     if (file != null) {
       buffer.write(' ($file');
       if (line != null) buffer.write(':$line');
@@ -210,14 +214,19 @@ class ValidationMessage {
 
 /// 验证消息严重程度
 enum ValidationSeverity {
-  error, // 错误：必须修复
-  warning, // 警告：建议修复
-  info, // 信息：仅供参考
-  success, // 成功：验证通过
+  /// 错误：必须修复
+  error,
+  /// 警告：建议修复
+  warning,
+  /// 信息：仅供参考
+  info,
+  /// 成功：验证通过
+  success,
 }
 
 /// 验证总结信息
 class ValidationSummary {
+  /// 创建验证总结信息实例
   const ValidationSummary({
     required this.isValid,
     required this.errorCount,

@@ -152,7 +152,7 @@ class ModuleValidator {
         if (!yamlData.containsKey(field) || yamlData[field] == null) {
           result.addError('缺少必需字段: $field', file: configPath);
         } else {
-          final value = yamlData[field].toString().trim();
+          final value = yamlData[field]?.toString().trim() ?? '';
           if (value.isEmpty) {
             result.addError('字段值为空: $field', file: configPath);
           }
@@ -212,7 +212,7 @@ class ModuleValidator {
       // 验证Dart SDK版本
       if (yamlData.containsKey('environment') &&
           yamlData['environment'] is Map &&
-          yamlData['environment']['sdk'] != null) {
+          (yamlData['environment'] as Map)['sdk'] != null) {
         result.addSuccess('Dart SDK版本已指定');
       } else {
         result.addWarning('建议指定Dart SDK版本约束', file: pubspecPath);

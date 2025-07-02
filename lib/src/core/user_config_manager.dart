@@ -24,6 +24,7 @@ import 'package:path/path.dart' as path;
 /// 用户配置管理器
 /// 负责用户全局配置的加载、保存和管理
 class UserConfigManager {
+  /// 创建用户配置管理器实例
   UserConfigManager();
 
   /// 用户配置目录名

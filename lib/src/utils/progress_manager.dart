@@ -17,15 +17,21 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 任务状态枚举
 enum TaskStatus {
+  /// 待执行状态
   pending, // 待执行
+  /// 执行中状态
   running, // 执行中
+  /// 已完成状态
   completed, // 已完成
+  /// 失败状态
   failed, // 失败
+  /// 跳过状态
   skipped, // 跳过
 }
 
 /// 进度任务
 class ProgressTask {
+  /// 创建进度任务实例
   ProgressTask({
     required this.id,
     required this.name,
@@ -35,12 +41,20 @@ class ProgressTask {
     this.startTime,
     this.endTime,
   });
+  
+  /// 任务唯一标识符
   final String id;
+  /// 任务名称
   final String name;
+  /// 任务描述
   final String description;
+  /// 任务状态
   TaskStatus status;
+  /// 错误信息（任务失败时）
   String? errorMessage;
+  /// 任务开始时间
   DateTime? startTime;
+  /// 任务结束时间
   DateTime? endTime;
 
   /// 任务执行时长
@@ -86,6 +100,7 @@ class ProgressTask {
 /// 进度管理器
 /// 提供CLI操作的进度跟踪和反馈
 class ProgressManager {
+  /// 创建进度管理器实例
   ProgressManager({
     bool showProgressBar = true,
     bool showTaskDetails = true,
@@ -151,11 +166,11 @@ class ProgressManager {
       throw StateError('没有更多任务可执行');
     }
 
-    final task = _tasks[_currentTaskIndex];
+    final task = _tasks[_currentTaskIndex]
 
-    // 开始任务
-    task.status = TaskStatus.running;
-    task.startTime = DateTime.now();
+      // 开始任务
+      ..status = TaskStatus.running
+      ..startTime = DateTime.now();
 
     if (_showTaskDetails) {
       _showTaskStart(task);
@@ -166,8 +181,9 @@ class ProgressManager {
       final result = await taskFunction();
 
       // 任务成功
-      task.status = TaskStatus.completed;
-      task.endTime = DateTime.now();
+      task
+        ..status = TaskStatus.completed
+        ..endTime = DateTime.now();
 
       if (_showTaskDetails) {
         _showTaskCompleted(task);
@@ -180,9 +196,10 @@ class ProgressManager {
       return result;
     } catch (e) {
       // 任务失败
-      task.status = TaskStatus.failed;
-      task.endTime = DateTime.now();
-      task.errorMessage = e.toString();
+      task
+        ..status = TaskStatus.failed
+        ..endTime = DateTime.now()
+        ..errorMessage = e.toString();
 
       if (_showTaskDetails) {
         _showTaskFailed(task, e);
@@ -208,9 +225,9 @@ class ProgressManager {
     }
 
     _currentTaskIndex++;
-    final task = _tasks[_currentTaskIndex];
-    task.status = TaskStatus.skipped;
-    task.errorMessage = reason;
+    final task = _tasks[_currentTaskIndex]
+      ..status = TaskStatus.skipped
+      ..errorMessage = reason;
 
     if (_showTaskDetails) {
       Logger.warning('⏭️  跳过任务: ${task.name} - $reason');

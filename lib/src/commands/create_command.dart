@@ -27,15 +27,45 @@ import 'package:path/path.dart' as path;
 
 /// Create命令 - 基于模板创建新的模块或项目
 /// 
-/// 支持的功能：
-/// - 模板选择和生成
-/// - 命令行参数解析
-/// - 用户配置集成
-/// - 交互式变量收集
-/// - 输出目录管理
+/// 企业级项目创建命令，提供完整的模板驱动开发体验：
 /// 
-/// Task 30.1-30.4 集成实现
+/// **核心功能**：
+/// - 智能模板选择和兼容性验证
+/// - 交互式或批量变量收集模式
+/// - 高性能并行文件生成
+/// - 实时进度显示和用户反馈
+/// - 智能错误恢复和重试机制
+/// - 灵活的输出目录管理
+/// 
+/// **支持的参数**：
+/// - `--template, -t`: 指定模板名称 (默认: basic)
+/// - `--output, -o`: 自定义输出目录
+/// - `--force, -f`: 强制覆盖现有文件
+/// - `--interactive, -i`: 启用交互式变量收集 (默认: true)
+/// - `--var`: 直接设置模板变量 (key=value格式)
+/// - `--author`: 覆盖默认作者信息
+/// - `--description, -d`: 设置项目描述
+/// - `--dry-run`: 预览模式，不实际创建文件
+/// - `--verbose, -v`: 详细输出模式
+/// 
+/// **使用示例**：
+/// ```bash
+/// # 基础用法
+/// ming create my_project
+/// 
+/// # 指定模板和输出目录
+/// ming create --template flutter_package --output ./packages my_package
+/// 
+/// # 批量设置变量
+/// ming create --var author="John Doe" --var use_provider=true my_app
+/// 
+/// # 预览模式
+/// ming create --dry-run --template enterprise my_enterprise_app
+/// ```
+/// 
+/// 集成ConfigManager用户配置和TemplateEngine高级功能，支持Task 30.1-30.4的完整实现。
 class CreateCommand extends BaseCommand {
+  /// 创建模板创建命令实例，可选注入配置管理器和模板引擎依赖
   CreateCommand({
     ConfigManager? configManager,
     TemplateEngine? templateEngine,
@@ -134,78 +164,68 @@ class CreateCommand extends BaseCommand {
   ArgParser get argParser {
     if (_argParser != null) return _argParser!;
     
-    final parser = super.argParser;
-    
     // 模板相关参数
-    parser.addOption(
-      'template',
-      abbr: 't',
-      help: '要使用的模板名称',
-      defaultsTo: 'basic',
-    );
-    
-    // 输出目录参数
-    parser.addOption(
-      'output',
-      abbr: 'o',
-      help: '输出目录路径',
-      valueHelp: 'path',
-    );
-    
-    // 强制覆盖参数
-    parser.addFlag(
-      'force',
-      abbr: 'f',
-      help: '强制覆盖已存在的文件',
-      negatable: false,
-    );
-    
-    // 交互模式参数
-    parser.addFlag(
-      'interactive',
-      abbr: 'i',
-      help: '启用交互式模式，逐步收集变量值',
-      defaultsTo: true,
-    );
-    
-    // 变量传递参数
-    parser.addMultiOption(
-      'var',
-      help: '设置模板变量 (格式: key=value)',
-      valueHelp: 'key=value',
-    );
-    
-    // 作者信息参数
-    parser.addOption(
-      'author',
-      help: '设置作者名称（覆盖配置文件设置）',
-      valueHelp: 'name',
-    );
-    
-    // 描述信息参数
-    parser.addOption(
-      'description',
-      abbr: 'd',
-      help: '项目描述信息',
-      valueHelp: 'description',
-    );
-    
-    // 干运行模式
-    parser.addFlag(
-      'dry-run',
-      help: '干运行模式，只显示会生成的文件而不实际创建',
-      negatable: false,
-    );
-    
-    // 详细输出模式
-    parser.addFlag(
-      'verbose',
-      abbr: 'v',
-      help: '启用详细输出模式',
-      negatable: false,
-    );
+    _argParser = super.argParser
+      ..addOption(
+        'template',
+        abbr: 't',
+        help: '要使用的模板名称',
+        defaultsTo: 'basic',
+      )
+      // 输出目录参数
+      ..addOption(
+        'output',
+        abbr: 'o',
+        help: '输出目录路径',
+        valueHelp: 'path',
+      )
+      // 强制覆盖参数
+      ..addFlag(
+        'force',
+        abbr: 'f',
+        help: '强制覆盖已存在的文件',
+        negatable: false,
+      )
+      // 交互模式参数
+      ..addFlag(
+        'interactive',
+        abbr: 'i',
+        help: '启用交互式模式，逐步收集变量值',
+        defaultsTo: true,
+      )
+      // 变量传递参数
+      ..addMultiOption(
+        'var',
+        help: '设置模板变量 (格式: key=value)',
+        valueHelp: 'key=value',
+      )
+      // 作者信息参数
+      ..addOption(
+        'author',
+        help: '设置作者名称（覆盖配置文件设置）',
+        valueHelp: 'name',
+      )
+      // 描述信息参数
+      ..addOption(
+        'description',
+        abbr: 'd',
+        help: '项目描述信息',
+        valueHelp: 'description',
+      )
+      // 干运行模式
+      ..addFlag(
+        'dry-run',
+        help: '干运行模式，只显示会生成的文件而不实际创建',
+        negatable: false,
+      )
+      // 详细输出模式
+      ..addFlag(
+        'verbose',
+        abbr: 'v',
+        help: '启用详细输出模式',
+        negatable: false,
+      );
 
-    _argParser = parser;
     return _argParser!;
   }
 
@@ -347,7 +367,8 @@ class CreateCommand extends BaseCommand {
 
     // 基础变量
     variables['module_name'] = projectName;
-    variables['generated_date'] = DateTime.now().toIso8601String().substring(0, 10);
+    variables['generated_date'] = 
+        DateTime.now().toIso8601String().substring(0, 10);
     
     // Task 30.4: 从用户配置获取默认值
     variables['author'] = results['author'] ?? userConfig.defaults.author;
@@ -394,7 +415,8 @@ class CreateCommand extends BaseCommand {
           if (!variables.containsKey(entry.key)) {
             stdout.write('${entry.value}: ');
             final input = stdin.readLineSync()?.trim().toLowerCase() ?? '';
-            variables[entry.key] = input == 'y' || input == 'yes' || input == 'true';
+            variables[entry.key] = 
+                input == 'y' || input == 'yes' || input == 'true';
           }
         }
       } catch (e) {
@@ -404,40 +426,6 @@ class CreateCommand extends BaseCommand {
 
     cli_logger.Logger.debug('准备的变量: ${variables.keys.join(', ')}');
     return variables;
-  }
-
-  /// 交互式变量收集（简化版本）
-  Future<dynamic> _promptForVariable(TemplateVariable variable) async {
-    final prompt = variable.prompt ?? '请输入 ${variable.name}';
-    
-    stdout.write(prompt);
-    if (variable.defaultValue != null) {
-      stdout.write(' (默认: ${variable.defaultValue})');
-    }
-    stdout.write(': ');
-    
-    final input = stdin.readLineSync()?.trim() ?? '';
-    
-    if (input.isEmpty && variable.defaultValue != null) {
-      return variable.defaultValue;
-    }
-    
-    if (input.isEmpty && !variable.optional) {
-      cli_logger.Logger.error('错误: ${variable.name} 是必需的');
-      return _promptForVariable(variable);
-    }
-    
-    // 根据变量类型转换值
-    switch (variable.type) {
-      case TemplateVariableType.boolean:
-        return input.toLowerCase() == 'true' || input.toLowerCase() == 'yes' || input == '1';
-      case TemplateVariableType.number:
-        return double.tryParse(input) ?? int.tryParse(input);
-      case TemplateVariableType.list:
-        return input.split(',').map((e) => e.trim()).toList();
-      default:
-        return input;
-    }
   }
 
   /// 确定输出目录
@@ -543,23 +531,36 @@ class CreateCommand extends BaseCommand {
   }
 
   /// 显示创建后的说明
-  void _showPostCreationInstructions(String projectName, String targetDirectory) {
+  void _showPostCreationInstructions(
+    String projectName, 
+    String targetDirectory,
+  ) {
     cli_logger.Logger.info('');
-    cli_logger.Logger.info('🎉 项目 "${ColorOutput.highlight(projectName)}" 创建完成!');
+    cli_logger.Logger.info(
+        '🎉 项目 "${ColorOutput.highlight(projectName)}" 创建完成!',
+    );
     cli_logger.Logger.info('');
     cli_logger.Logger.info('📋 下一步操作:');
-    cli_logger.Logger.info('   1. ${ColorOutput.command('cd ${path.basename(targetDirectory)}')}');
+    cli_logger.Logger.info(
+        '   1. ${ColorOutput.command('cd ${path.basename(targetDirectory)}')}',
+    );
     cli_logger.Logger.info('   2. ${ColorOutput.command('flutter pub get')}');
     cli_logger.Logger.info('   3. ${ColorOutput.command('flutter run')}');
     cli_logger.Logger.info('');
-    cli_logger.Logger.info('📚 更多信息请查看项目的 ${ColorOutput.filePath('README.md')} 文件');
+    cli_logger.Logger.info(
+        '📚 更多信息请查看项目的 ${ColorOutput.filePath('README.md')} 文件',
+    );
   }
 
   /// Task 32.1: 实现生成进度条和状态提示
   void _showProgress(String message, {double? progress}) {
     if (argResults!['verbose'] as bool) {
       if (progress != null) {
-        final progressBar = ColorOutput.progressBar((progress * 100).toInt(), 100, width: 30);
+        final progressBar = ColorOutput.progressBar(
+            (progress * 100).toInt(), 
+            100, 
+            width: 30,
+        );
         cli_logger.Logger.info('🔄 $message $progressBar');
       } else {
         cli_logger.Logger.info('🔄 $message');
@@ -571,7 +572,7 @@ class CreateCommand extends BaseCommand {
   bool _confirmAction(String message, {bool defaultValue = false}) {
     final defaultStr = defaultValue ? 'Y/n' : 'y/N';
     final coloredMessage = ColorOutput.warning(message);
-    print('$coloredMessage [${ColorOutput.highlight(defaultStr)}]: ');
+    stdout.write('$coloredMessage [${ColorOutput.highlight(defaultStr)}]: ');
     
     final input = stdin.readLineSync()?.trim().toLowerCase();
     
@@ -583,17 +584,26 @@ class CreateCommand extends BaseCommand {
   }
 
   /// Task 32.2: 获取用户输入
-  String? _getUserInput(String message, {String? defaultValue, bool required = false}) {
-    final defaultStr = defaultValue != null ? ' [${ColorOutput.highlight(defaultValue)}]' : '';
+  String? _getUserInput(
+    String message, {
+    String? defaultValue, 
+    bool required = false,
+  }) {
+    final defaultStr = defaultValue != null 
+        ? ' [${ColorOutput.highlight(defaultValue)}]' : '';
     final coloredMessage = ColorOutput.info(message);
-    print('$coloredMessage$defaultStr: ');
+    stdout.write('$coloredMessage$defaultStr: ');
     
     final input = stdin.readLineSync()?.trim();
     
     if (input == null || input.isEmpty) {
       if (required && defaultValue == null) {
         cli_logger.Logger.error('❌ 此字段为必需项');
-        return _getUserInput(message, defaultValue: defaultValue, required: required);
+        return _getUserInput(
+          message, 
+          defaultValue: defaultValue, 
+          required: required,
+        );
       }
       return defaultValue;
     }
@@ -617,7 +627,10 @@ class CreateCommand extends BaseCommand {
       }
       
       if (generatedFiles.length > 10) {
-        cli_logger.Logger.info('  ... 还有 ${ColorOutput.highlight('${generatedFiles.length - 10}')} 个文件');
+        cli_logger.Logger.info(
+          '  ... 还有 '
+          '${ColorOutput.highlight('${generatedFiles.length - 10}')} 个文件',
+        );
       }
       
       cli_logger.Logger.info('');
@@ -636,7 +649,10 @@ class CreateCommand extends BaseCommand {
   }
 
   /// Task 32.3: 执行回滚操作
-  Future<void> _rollbackGeneration(String targetDirectory, List<String> generatedFiles) async {
+  Future<void> _rollbackGeneration(
+    String targetDirectory, 
+    List<String> generatedFiles,
+  ) async {
     try {
       _showProgress('正在清理生成的文件...');
       
@@ -679,8 +695,12 @@ class CreateCommand extends BaseCommand {
     
     if (error.contains('模板不存在')) {
       cli_logger.Logger.info('  • 检查模板名称是否正确');
-      cli_logger.Logger.info('  • 运行 ${ColorOutput.command('"ming create --help"')} 查看可用模板');
-      cli_logger.Logger.info('  • 确保模板文件存在于 ${ColorOutput.filePath('templates/')} 目录中');
+      cli_logger.Logger.info(
+          '  • 运行 ${ColorOutput.command('"ming create --help"')} '
+          '查看可用模板',);
+      cli_logger.Logger.info(
+          '  • 确保模板文件存在于 '
+          '${ColorOutput.filePath('templates/')} 目录中',);
     } else if (error.contains('目录已存在')) {
       cli_logger.Logger.info('  • 使用 ${ColorOutput.command('--force')} 参数强制覆盖');
       cli_logger.Logger.info('  • 选择不同的输出目录');
@@ -691,7 +711,10 @@ class CreateCommand extends BaseCommand {
       cli_logger.Logger.info('  • 选择不同的输出目录');
     } else if (error.contains('变量')) {
       cli_logger.Logger.info('  • 检查提供的变量值是否正确');
-      cli_logger.Logger.info('  • 使用 ${ColorOutput.command('--interactive')} 模式逐步输入变量');
+      cli_logger.Logger.info(
+        '  • 使用 ${ColorOutput.command('--interactive')} '
+        '模式逐步输入变量',
+      );
       cli_logger.Logger.info('  • 查看模板文档了解必需变量');
     } else {
       cli_logger.Logger.info('  • 检查网络连接');
@@ -820,7 +843,8 @@ class CreateCommand extends BaseCommand {
     
     try {
       // 从模板引擎获取变量定义
-      final templateVariables = await _templateEngine.getTemplateVariableDefinitions(templateName);
+      final templateVariables = 
+          await _templateEngine.getTemplateVariableDefinitions(templateName);
       
       for (final variable in templateVariables) {
         final prompt = variable.prompt ?? '请输入 ${variable.name}';
@@ -830,7 +854,9 @@ class CreateCommand extends BaseCommand {
         
         switch (variable.type) {
           case TemplateVariableType.boolean:
-            value = _confirmAction(prompt, defaultValue: defaultValue == 'true').toString();
+            final boolDefault = defaultValue == 'true';
+            value = _confirmAction(prompt, defaultValue: boolDefault)
+                .toString();
           case TemplateVariableType.enumeration:
             if (variable.values != null && variable.values!.isNotEmpty) {
               cli_logger.Logger.info(prompt);
@@ -838,18 +864,33 @@ class CreateCommand extends BaseCommand {
                 cli_logger.Logger.info('  ${i + 1}. ${variable.values![i]}');
               }
               
-              final choice = _getUserInput('请选择 (1-${variable.values!.length})', defaultValue: '1');
+              final choice = _getUserInput(
+                '请选择 (1-${variable.values!.length})', 
+                defaultValue: '1',
+              );
               final index = int.tryParse(choice ?? '1');
-              if (index != null && index >= 1 && index <= variable.values!.length) {
+              if (index != null && 
+                  index >= 1 && 
+                  index <= variable.values!.length) {
                 value = variable.values![index - 1].toString();
               } else {
                 value = variable.values!.first.toString();
               }
             } else {
-              value = _getUserInput(prompt, defaultValue: defaultValue, required: !variable.optional);
+              value = _getUserInput(
+                prompt, 
+                defaultValue: defaultValue, 
+                required: !variable.optional,
+              );
             }
-          default:
-            value = _getUserInput(prompt, defaultValue: defaultValue, required: !variable.optional);
+          case TemplateVariableType.string:
+          case TemplateVariableType.number:
+          case TemplateVariableType.list:
+            value = _getUserInput(
+              prompt, 
+              defaultValue: defaultValue, 
+              required: !variable.optional,
+            );
         }
         
         if (value != null) {
@@ -867,7 +908,10 @@ class CreateCommand extends BaseCommand {
         variables['project_name'] = projectName;
       }
       
-      final description = _getUserInput('项目描述', defaultValue: '一个新的Flutter项目');
+      final description = _getUserInput(
+        '项目描述', 
+        defaultValue: '一个新的Flutter项目',
+      );
       if (description != null) {
         variables['description'] = description;
       }
@@ -885,7 +929,10 @@ class CreateCommand extends BaseCommand {
     }
     cli_logger.Logger.info('');
     
-    final confirmed = _confirmAction('确认使用以上变量继续？', defaultValue: true);
+    final confirmed = _confirmAction(
+      '确认使用以上变量继续？', 
+      defaultValue: true,
+    );
     if (!confirmed) {
       throw Exception('用户取消操作');
     }
@@ -909,7 +956,8 @@ class CreateCommand extends BaseCommand {
     variables['name'] = projectName;
     variables['project_name'] = projectName;
     variables['module_name'] = projectName;
-    variables['generated_date'] = DateTime.now().toIso8601String().substring(0, 10);
+    variables['generated_date'] = 
+        DateTime.now().toIso8601String().substring(0, 10);
     
     // 从命令行参数获取额外变量
     final varOptions = argResults!.multiOption('var');
@@ -939,12 +987,17 @@ class CreateCommand extends BaseCommand {
 
 /// 模板生成结果
 class TemplateGenerationResult {
+  /// 创建模板生成结果实例
   const TemplateGenerationResult({
     required this.success,
-    required this.generatedFiles, this.error,
+    required this.generatedFiles,
+    this.error,
   });
 
+  /// 生成是否成功
   final bool success;
+  /// 错误信息（如果生成失败）
   final String? error;
+  /// 已生成的文件列表
   final List<String> generatedFiles;
 }

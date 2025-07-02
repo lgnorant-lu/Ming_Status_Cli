@@ -12,11 +12,12 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:test/test.dart';
+import 'dart:io';
+
 import 'package:ming_status_cli/src/core/user_config_manager.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
 import 'package:ming_status_cli/src/models/workspace_config.dart';
-import 'dart:io';
+import 'package:test/test.dart';
 
 void main() {
   group('UserConfigManager Tests', () {

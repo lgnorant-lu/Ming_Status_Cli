@@ -23,6 +23,7 @@ import 'package:yaml/yaml.dart';
 /// 版本信息命令
 /// 显示Ming Status CLI的版本和系统信息（轻量级实现）
 class VersionCommand extends Command<int> {
+  /// 创建版本命令实例，配置命令行参数选项
   VersionCommand() {
     argParser.addFlag(
       'detailed',
@@ -57,7 +58,7 @@ class VersionCommand extends Command<int> {
   /// 显示简单版本信息
   Future<void> _showSimpleVersion() async {
     final version = await _getVersionFromPubspec();
-    print('Ming Status CLI $version');
+    Logger.info('Ming Status CLI $version');
   }
 
   /// 显示详细版本信息
@@ -110,7 +111,7 @@ class VersionCommand extends Command<int> {
       // 向上搜索pubspec.yaml
       for (var i = 0; i < 5; i++) {
         final candidate = File(path.join(currentDir.path, 'pubspec.yaml'));
-        if (await candidate.exists()) {
+        if (candidate.existsSync()) {
           pubspecPath = candidate.path;
           break;
         }
@@ -138,7 +139,8 @@ class VersionCommand extends Command<int> {
   String _getBuildInfo() {
     // 简化的构建信息
     final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-'
+        '${now.day.toString().padLeft(2, '0')}';
   }
 
   /// 获取系统架构信息

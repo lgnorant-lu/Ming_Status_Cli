@@ -5,7 +5,8 @@ Author:             lgnorant-lu
 Date created:       2025/06/30
 Last modified:      2025/06/30
 Dart Version:       3.2+
-Description:        模板变量定义和验证系统 (Template variable definition and validation system)
+Description:        模板变量定义和验证系统 
+                    (Template variable definition and validation system)
 ---------------------------------------------------------------
 */
 
@@ -25,6 +26,7 @@ enum TemplateVariableType {
 
 /// 模板变量验证规则
 class TemplateVariableValidation {
+  /// 创建模板变量验证规则实例
   const TemplateVariableValidation({
     this.pattern,
     this.minLength,
@@ -85,6 +87,7 @@ class TemplateVariableValidation {
 
 /// 模板变量定义
 class TemplateVariable {
+  /// 创建模板变量定义实例
   const TemplateVariable({
     required this.name,
     required this.type,
@@ -220,12 +223,14 @@ class TemplateVariable {
       // 枚举值验证
       if (type == TemplateVariableType.enumeration && values != null) {
         if (!values!.contains(value)) {
-          errors.add('变量 $name 的值必须是以下之一: ${values!.join(', ')}');
+          errors.add('变量 $name 的值必须是以下之一: '
+              '${values!.join(', ')}');
         }
       }
 
       // 列表类型验证
-      if (type == TemplateVariableType.list && values != null && value is List) {
+      if (type == TemplateVariableType.list && 
+          values != null && value is List) {
         final invalidValues = <dynamic>[];
         for (final item in value) {
           if (!values!.contains(item)) {
@@ -233,13 +238,17 @@ class TemplateVariable {
           }
         }
         if (invalidValues.isNotEmpty) {
-          errors.add('变量 $name 包含无效值: ${invalidValues.join(', ')}');
+          errors.add('变量 $name 包含无效值: '
+              '${invalidValues.join(', ')}');
         }
       }
 
       return errors.isEmpty 
           ? TemplateVariableValidationResult.valid(warnings: warnings)
-          : TemplateVariableValidationResult.invalid(errors, warnings: warnings);
+          : TemplateVariableValidationResult.invalid(
+              errors, 
+              warnings: warnings,
+          );
 
     } catch (e) {
       return TemplateVariableValidationResult.invalid(
@@ -347,7 +356,7 @@ class TemplateVariable {
       case TemplateVariableType.number:
         return 0;
       case TemplateVariableType.enumeration:
-        return values?.isNotEmpty == true ? values!.first : null;
+        return (values?.isNotEmpty ?? false) ? values!.first : null;
       case TemplateVariableType.list:
         return <dynamic>[];
     }
@@ -355,12 +364,14 @@ class TemplateVariable {
 
   @override
   String toString() {
-    return 'TemplateVariable(name: $name, type: ${type.name}, optional: $optional)';
+    return 'TemplateVariable(name: $name, type: ${type.name}, '
+        'optional: $optional)';
   }
 }
 
 /// 变量验证结果
 class TemplateVariableValidationResult {
+  /// 创建变量验证结果实例
   const TemplateVariableValidationResult({
     required this.isValid,
     this.errors = const [],

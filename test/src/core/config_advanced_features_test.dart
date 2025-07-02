@@ -17,7 +17,6 @@ import 'dart:io';
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/models/workspace_config.dart';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 
 void main() {
   group('ConfigManager 高级配置功能测试', () {

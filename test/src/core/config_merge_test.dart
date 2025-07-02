@@ -13,12 +13,11 @@
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 import 'package:ming_status_cli/src/core/config_manager.dart';
 import 'package:ming_status_cli/src/core/user_config_manager.dart';
-import 'package:ming_status_cli/src/models/workspace_config.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerForMerge extends UserConfigManager {
@@ -36,7 +35,6 @@ void main() {
     late TestUserConfigManagerForMerge userConfigManager;
     late ConfigManager configManager;
     late String workspaceDir;
-    late String workspaceConfigPath;
 
     setUp(() async {
       // 创建临时目录
@@ -47,15 +45,13 @@ void main() {
       workspaceDir = path.join(tempDir.path, 'workspace');
       await Directory(workspaceDir).create();
 
-      workspaceConfigPath = path.join(workspaceDir, 'ming_status.yaml');
-
       // 初始化管理器
       userConfigManager = TestUserConfigManagerForMerge(tempDir.path);
       configManager = ConfigManager(workingDirectory: workspaceDir);
     });
 
     tearDown(() async {
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });
@@ -197,7 +193,8 @@ void main() {
         // 2. 工作空间特定设置覆盖用户默认值
         // 注意：由于ConfigManager的参数应用问题，author和type可能是默认值
         expect(loadedWorkspaceConfig!.defaults.author, isNotEmpty);
-        // expect(loadedWorkspaceConfig.workspace.type, equals(WorkspaceType.enterprise));
+        // expect(loadedWorkspaceConfig.workspace.type, 
+        // equals(WorkspaceType.enterprise));
         expect(loadedWorkspaceConfig.workspace.type, isNotNull);
 
         // 3. 用户配置中未被工作空间配置覆盖的值仍然有效
@@ -234,7 +231,7 @@ void main() {
             equals('basic'),);
         final coloredOutput =
             await userConfigManager.getConfigValue('preferences.coloredOutput');
-        expect(coloredOutput == true || coloredOutput == 'true', isTrue);
+        expect(coloredOutput.toString() == 'true', isTrue);
         expect(await userConfigManager.getConfigValue('defaults.author'),
             equals('Test Author'),);
 
@@ -367,12 +364,12 @@ void main() {
             await userConfigManager.getConfigValue('preferences.coloredOutput');
         // 处理可能的字符串形式布尔值
         expect(
-            coloredOutputValue == true || coloredOutputValue == 'true', isTrue,);
+            coloredOutputValue.toString() == 'true', isTrue,);
 
         // 测试无效路径
         expect(await userConfigManager.getConfigValue('invalid.path'), isNull);
         expect(
-            await userConfigManager.getConfigValue('user.nonexistent'), isNull,);
+          await userConfigManager.getConfigValue('user.nonexistent'), isNull,);
         expect(await userConfigManager.getConfigValue(''), isNull);
       });
 
@@ -425,7 +422,7 @@ void main() {
         // 确保配置文件不存在
         final userConfigPath = path.join(tempDir.path, 'user_config.json');
         final configFile = File(userConfigPath);
-        if (await configFile.exists()) {
+        if (configFile.existsSync()) {
           await configFile.delete();
         }
 

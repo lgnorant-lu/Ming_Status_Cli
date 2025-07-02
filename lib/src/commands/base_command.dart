@@ -25,6 +25,7 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 /// 基础命令类
 /// 为所有CLI命令提供通用功能和依赖注入
 abstract class BaseCommand extends Command<int> {
+  /// 创建基础命令实例，初始化通用选项
   BaseCommand() {
     _setupCommonOptions();
   }
@@ -114,7 +115,7 @@ abstract class BaseCommand extends Command<int> {
 
   /// 显示命令帮助信息
   void showHelp() {
-    print(usage);
+    Logger.info(usage);
   }
 
   /// 显示错误信息并退出

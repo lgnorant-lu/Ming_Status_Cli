@@ -24,7 +24,8 @@ void main() {
     });
 
     setUp(() async {
-      tempTestDir = Directory.systemTemp.createTempSync('ming_performance_test');
+      tempTestDir = 
+        Directory.systemTemp.createTempSync('ming_performance_test');
     });
 
     tearDown(() async {
@@ -211,7 +212,8 @@ void main() {
         // 检查没有内存泄漏迹象 - 响应时间应该相对稳定
         final maxDuration = durations.reduce((a, b) => a > b ? a : b);
         final minDuration = durations.reduce((a, b) => a < b ? a : b);
-        final variance = maxDuration.inMilliseconds - minDuration.inMilliseconds;
+        final variance = 
+          maxDuration.inMilliseconds - minDuration.inMilliseconds;
         
         expect(variance, lessThan(5000), // 5秒差异
                reason: '响应时间方差应该较小，表明没有明显的性能退化',);
@@ -237,4 +239,4 @@ void main() {
       });
     });
   });
-} 
+}

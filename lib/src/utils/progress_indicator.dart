@@ -5,7 +5,8 @@ Author:             lgnorant-lu
 Date created:       2025/06/30
 Last modified:      2025/06/30
 Dart Version:       3.2+
-Description:        进度指示器和用户交互工具 (Progress indicator and user interaction utilities)
+Description:        进度指示器和用户交互工具 
+                    (Progress indicator and user interaction utilities)
 ---------------------------------------------------------------
 */
 
@@ -26,6 +27,7 @@ enum ProgressType {
 
 /// 进度指示器配置
 class ProgressConfig {
+  /// 创建进度指示器配置实例
   const ProgressConfig({
     this.type = ProgressType.progressBar,
     this.showPercentage = true,
@@ -33,26 +35,37 @@ class ProgressConfig {
     this.width = 50,
     this.completedChar = '█',
     this.remainingChar = '░',
-    this.spinnerChars = const ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'],
+    this.spinnerChars = const [
+      '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏',],
   });
 
+  /// 进度指示器类型
   final ProgressType type;
+  /// 是否显示百分比
   final bool showPercentage;
+  /// 是否显示已用时间
   final bool showElapsedTime;
+  /// 进度条宽度
   final int width;
+  /// 已完成字符
   final String completedChar;
+  /// 剩余字符
   final String remainingChar;
+  /// 旋转指示器字符数组
   final List<String> spinnerChars;
 }
 
 /// 进度指示器
 class ProgressIndicator {
+  /// 创建进度指示器实例
   ProgressIndicator({
     required this.title,
     this.config = const ProgressConfig(),
   }) : _startTime = DateTime.now();
 
+  /// 进度指示器标题
   final String title;
+  /// 进度指示器配置
   final ProgressConfig config;
   final DateTime _startTime;
   
@@ -173,7 +186,8 @@ class ProgressIndicator {
     
     final statusStr = status != null ? ' - $status' : '';
     
-    stdout.write('\r\x1B[2K[$progressBar]$percentage $title$elapsedStr$statusStr');
+    stdout.write('\r\x1B[2K[$progressBar]$percentage $title'
+        '$elapsedStr$statusStr');
   }
 
   /// 显示简单状态
@@ -210,7 +224,8 @@ class UserInteraction {
   }
 
   /// 获取用户选择
-  static int? choice(String message, List<String> options, {int? defaultValue}) {
+  static int? choice(
+      String message, List<String> options, {int? defaultValue,}) {
     cli_logger.Logger.info(message);
     
     for (var i = 0; i < options.length; i++) {
@@ -236,7 +251,8 @@ class UserInteraction {
   }
 
   /// 获取用户输入
-  static String? input(String message, {String? defaultValue, bool required = false}) {
+  static String? input(
+      String message, {String? defaultValue, bool required = false,}) {
     final defaultStr = defaultValue != null ? ' [$defaultValue]' : '';
     stdout.write('$message$defaultStr: ');
     
@@ -245,7 +261,9 @@ class UserInteraction {
     if (input == null || input.isEmpty) {
       if (required && defaultValue == null) {
         cli_logger.Logger.error('此字段为必需项');
-        return UserInteraction.input(message, defaultValue: defaultValue, required: required);
+        return UserInteraction.input(
+          message, defaultValue: defaultValue, required: required,
+        );
       }
       return defaultValue;
     }
@@ -262,7 +280,7 @@ class UserInteraction {
     stdin.echoMode = false;
     final password = stdin.readLineSync();
     stdin.echoMode = true;
-    print(''); // 换行
+    stdout.writeln(); // 换行
     
     if (required && (password == null || password.trim().isEmpty)) {
       cli_logger.Logger.error('密码为必需项');
@@ -273,16 +291,17 @@ class UserInteraction {
   }
 
   /// 多选输入
-  static List<int> multiChoice(String message, List<String> options, {List<int>? defaultValues}) {
+  static List<int> multiChoice(
+      String message, List<String> options, {List<int>? defaultValues,}) {
     cli_logger.Logger.info(message);
     cli_logger.Logger.info('（多选，使用逗号分隔，如：1,3,5）');
     
     for (var i = 0; i < options.length; i++) {
-      final marker = (defaultValues?.contains(i) == true) ? '●' : '○';
+      final marker = (defaultValues?.contains(i) ?? false) ? '●' : '○';
       cli_logger.Logger.info('  $marker ${i + 1}. ${options[i]}');
     }
     
-    final defaultStr = defaultValues?.isNotEmpty == true 
+    final defaultStr = (defaultValues?.isNotEmpty ?? false) 
         ? ' [${defaultValues!.map((i) => i + 1).join(',')}]'
         : '';
     stdout.write('请选择$defaultStr: ');

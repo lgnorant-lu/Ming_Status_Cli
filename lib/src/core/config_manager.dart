@@ -20,9 +20,18 @@ import 'package:ming_status_cli/src/utils/file_utils.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 import 'package:path/path.dart' as path;
 
-/// 配置验证结果
+/// 配置验证结果类
+/// 
+/// 封装配置验证过程的结果，包括验证状态、错误信息、警告和建议。
+/// 用于统一处理配置验证的反馈信息，支持层级化的问题分类。
 class ConfigValidationResult {
 
+  /// 创建配置验证结果实例
+  /// 
+  /// [isValid] 表示验证是否通过
+  /// [errors] 错误信息列表，阻止配置使用的严重问题
+  /// [warnings] 警告信息列表，不影响使用但建议修复的问题  
+  /// [suggestions] 建议信息列表，优化配置的推荐操作
   const ConfigValidationResult({
     required this.isValid,
     this.errors = const [],
@@ -55,9 +64,17 @@ class ConfigValidationResult {
       suggestions: suggestions ?? [],
     );
   }
+
+  /// 验证结果：true表示通过，false表示失败
   final bool isValid;
+  
+  /// 错误列表：阻止配置正常使用的严重问题
   final List<String> errors;
+  
+  /// 警告列表：不影响使用但建议修复的问题
   final List<String> warnings;
+  
+  /// 建议列表：优化配置的推荐操作
   final List<String> suggestions;
 
   /// 是否有任何问题
@@ -89,46 +106,82 @@ class ConfigValidationResult {
 }
 
 /// 配置验证规则严格程度
+/// 
+/// 定义配置验证的不同等级，从基础验证到企业级验证，
+/// 级别越高验证越严格，检查的方面越全面。
 enum ValidationStrictness {
   /// 基础验证：只检查必需字段和基本格式
+  /// 适用于快速验证和开发环境
   basic,
 
   /// 标准验证：基础验证 + 字段值有效性检查
+  /// 适用于一般生产环境
   standard,
 
   /// 严格验证：标准验证 + 语义约束和依赖关系检查
+  /// 适用于对质量要求较高的生产环境
   strict,
 
   /// 企业级验证：严格验证 + 安全性和合规性检查
+  /// 适用于企业级应用和安全敏感环境
   enterprise,
 }
 
 /// 配置管理器
-/// 负责工作空间和模块配置的加载、保存和管理
+/// 
+/// 负责工作空间和模块配置的完整生命周期管理，包括：
+/// - 工作空间初始化和配置加载/保存
+/// - 模块配置管理  
+/// - 模板管理和验证
+/// - 配置缓存和性能优化
+/// 
+/// 支持多种配置格式和验证级别，提供企业级的配置管理能力。
 class ConfigManager {
+  /// 创建配置管理器实例
+  /// 
+  /// [workingDirectory] 工作目录路径，默认为当前目录
   ConfigManager({String? workingDirectory}) 
       : workingDirectory = workingDirectory ?? Directory.current.path;
 
   /// 默认配置文件名
   static const String defaultConfigFileName = 'ming_status.yaml';
+  
+  /// 模块配置文件名
   static const String moduleConfigFileName = 'module.yaml';
   
-  /// 当前工作目录
+  /// 当前工作目录路径
   final String workingDirectory;
   
-  /// 缓存的工作空间配置
+  /// 缓存的工作空间配置，用于提升性能
   WorkspaceConfig? _cachedWorkspaceConfig;
   
-  /// 配置文件路径
+  /// 获取配置文件的完整路径
+  /// 
+  /// 返回当前工作目录下的配置文件路径
   String get configFilePath =>
       path.join(workingDirectory, defaultConfigFileName);
 
-  /// 检查是否已初始化工作空间
+  /// 检查当前目录是否已初始化为工作空间
+  /// 
+  /// 通过检查配置文件是否存在来判断工作空间初始化状态
+  /// 返回 true 表示已初始化，false 表示未初始化
   bool isWorkspaceInitialized() {
     return FileUtils.fileExists(configFilePath);
   }
 
-  /// 初始化工作空间
+  /// 初始化新的工作空间
+  /// 
+  /// 在当前目录创建新的工作空间配置和目录结构。
+  /// 
+  /// 参数：
+  /// - [workspaceName] 工作空间名称（必需）
+  /// - [description] 工作空间描述（可选）
+  /// - [author] 作者信息（可选）
+  /// - [templateType] 模板类型，支持 'basic' 和 'enterprise'（默认：'basic'）
+  /// 
+  /// 返回：
+  /// - true：初始化成功
+  /// - false：初始化失败（已存在配置或发生错误）
   Future<bool> initializeWorkspace({
     required String workspaceName,
     String? description,
@@ -176,6 +229,16 @@ class ConfigManager {
   }
 
   /// 加载工作空间配置
+  /// 
+  /// 从配置文件中读取并解析工作空间配置信息。
+  /// 支持配置缓存机制以提升性能。
+  /// 
+  /// 参数：
+  /// - [useCache] 是否使用缓存配置（默认：true）
+  /// 
+  /// 返回：
+  /// - WorkspaceConfig：成功加载的配置对象
+  /// - null：配置文件不存在或解析失败
   Future<WorkspaceConfig?> loadWorkspaceConfig({bool useCache = true}) async {
     try {
       // 使用缓存
@@ -210,6 +273,16 @@ class ConfigManager {
   }
 
   /// 保存工作空间配置
+  /// 
+  /// 将配置对象序列化为YAML格式并保存到配置文件。
+  /// 保存成功后会更新内部缓存。
+  /// 
+  /// 参数：
+  /// - [config] 要保存的工作空间配置对象
+  /// 
+  /// 返回：
+  /// - true：保存成功
+  /// - false：保存失败
   Future<bool> saveWorkspaceConfig(WorkspaceConfig config) async {
     try {
       // 转换为YAML数据
@@ -232,6 +305,16 @@ class ConfigManager {
   }
 
   /// 更新工作空间配置
+  /// 
+  /// 使用提供的更新函数修改现有配置，然后保存更新后的配置。
+  /// 该方法采用函数式编程方式，确保配置更新的原子性。
+  /// 
+  /// 参数：
+  /// - [updater] 配置更新函数，接收当前配置并返回更新后的配置
+  /// 
+  /// 返回：
+  /// - true：更新成功
+  /// - false：更新失败（无法加载当前配置或保存失败）
   Future<bool> updateWorkspaceConfig(
       WorkspaceConfig Function(WorkspaceConfig) updater,) async {
     try {
@@ -431,13 +514,15 @@ class ConfigManager {
         if (templateData != null) {
           // 应用用户自定义参数
           if (templateData['workspace'] != null) {
-            templateData['workspace']['name'] = workspaceName;
+            final workspace = templateData['workspace'] as Map<String, dynamic>;
+            workspace['name'] = workspaceName;
             if (description != null) {
-              templateData['workspace']['description'] = description;
+              workspace['description'] = description;
             }
           }
           if (templateData['defaults'] != null && author != null) {
-            templateData['defaults']['author'] = author;
+            final defaults = templateData['defaults'] as Map<String, dynamic>;
+            defaults['author'] = author;
           }
 
           // 验证并返回配置
@@ -512,7 +597,7 @@ class ConfigManager {
       if (templatePath == 'basic' || templatePath == 'enterprise') {
         Logger.debug('验证内置模板: $templatePath');
         try {
-          final testConfig = await _createConfigFromTemplate(
+          final _ = await _createConfigFromTemplate(
             templatePath,
             'Test Workspace',
             'Test description',
@@ -542,7 +627,7 @@ class ConfigManager {
           if (templateType == 'basic' || templateType == 'enterprise') {
             // 使用内置模板验证
             try {
-              final testConfig = await _createConfigFromTemplate(
+              final _ = await _createConfigFromTemplate(
                 templateType,
                 'Test Workspace',
                 'Test description',
@@ -655,10 +740,7 @@ class ConfigManager {
 
   /// 列出可用的配置模板
   List<String> listConfigTemplates() {
-    final configTemplates = <String>[];
-
-    // 检查内置模板
-    configTemplates.addAll(['basic', 'enterprise']);
+    final configTemplates = <String>['basic', 'enterprise'];
 
     // 检查本地模板文件
     final templatesPath = getTemplatesPath();
@@ -1128,7 +1210,7 @@ class ConfigManager {
       List<String> warnings,
       List<String> suggestions,) async {
     // 检查配置的内部一致性
-    if (config.collaboration?.sharedSettings == true &&
+    if (config.collaboration?.sharedSettings != null &&
         config.workspace.type == WorkspaceType.basic) {
       warnings.add('基础工作空间启用了共享设置，建议升级到企业级');
     }
@@ -1278,7 +1360,8 @@ class ConfigManager {
       _configCache[_getCacheKey(configPath, environment)] = resolvedConfig;
 
       Logger.info(
-          '已加载具有继承功能的工作空间配置 - 继承: ${baseConfig.inheritance != null}, 环境: $environment, 合并策略: $mergeStrategy',);
+          '已加载具有继承功能的工作空间配置 - 继承: ${baseConfig.inheritance != null}, '
+          '环境: $environment, 合并策略: $mergeStrategy',);
 
       return resolvedConfig;
     } catch (e) {
@@ -1502,8 +1585,8 @@ class ConfigManager {
       }
 
       final environments =
-          Map<String, EnvironmentConfig>.from(config.environments!);
-      environments.remove(environment);
+          Map<String, EnvironmentConfig>.from(config.environments!)
+            ..remove(environment);
 
       final updatedConfig = config.copyWith(
         environments: environments.isNotEmpty ? environments : null,
@@ -1542,7 +1625,10 @@ class ConfigManager {
         // 清除缓存
         _configCache.clear();
         Logger.info(
-            '成功设置配置继承 - 基础配置: ${inheritance.baseConfig}, 继承来源: ${inheritance.inheritsFrom}, 合并策略: ${inheritance.mergeStrategy}',);
+            '成功设置配置继承 - 基础配置: ${inheritance.baseConfig}, '
+            '继承来源: ${inheritance.inheritsFrom}, '
+            '合并策略: ${inheritance.mergeStrategy}',
+        );
       }
 
       return success;

@@ -12,20 +12,18 @@ Change History:
 ---------------------------------------------------------------
 */
 
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:convert';
-import 'dart:async';
 
 import 'package:mason/mason.dart';
+import 'package:ming_status_cli/src/core/template_parameter_system.dart';
+import 'package:ming_status_cli/src/models/template_variable.dart';
 import 'package:ming_status_cli/src/utils/file_utils.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:ming_status_cli/src/utils/string_utils.dart';
 import 'package:path/path.dart' as path;
-
-import 'package:ming_status_cli/src/models/template_variable.dart';
-import 'package:ming_status_cli/src/core/template_variable_processor.dart';
-import 'package:ming_status_cli/src/core/template_parameter_system.dart';
 
 /// 模板引擎错误类型枚举
 enum TemplateEngineErrorType {
@@ -60,7 +58,50 @@ enum TemplateEngineErrorType {
 }
 
 /// 模板兼容性检查结果
+/// 
+/// 封装模板兼容性检查的详细结果，提供多层次的反馈信息：
+/// - 总体兼容性状态
+/// - 阻塞性错误列表
+/// - 警告信息列表  
+/// - 优化建议列表
+/// - 检查过程的元数据
+/// 
+/// 用于帮助开发者了解模板在当前环境的可用性和潜在问题。
 class CompatibilityCheckResult {
+
+  /// 创建成功结果
+  CompatibilityCheckResult.success({
+    List<String> warnings = const [],
+    List<String> suggestions = const [],
+    Map<String, dynamic> metadata = const {},
+  }) : this(
+      isCompatible: true,
+      warnings: warnings,
+      suggestions: suggestions,
+      metadata: metadata,
+    );
+
+  /// 创建失败结果
+  CompatibilityCheckResult.failure({
+    required List<String> errors,
+    List<String> warnings = const [],
+    List<String> suggestions = const [],
+    Map<String, dynamic> metadata = const {},
+  }) : this(
+      isCompatible: false,
+      errors: errors,
+      warnings: warnings,
+      suggestions: suggestions,
+      metadata: metadata,
+    );
+  /// 创建兼容性检查结果
+  /// 
+  /// 参数：
+  /// - [isCompatible] 是否兼容
+  /// - [errors] 错误列表
+  /// - [warnings] 警告列表
+  /// - [suggestions] 建议列表
+  /// - [metadata] 元数据
   const CompatibilityCheckResult({
     required this.isCompatible,
     this.errors = const [],
@@ -79,40 +120,29 @@ class CompatibilityCheckResult {
   final List<String> suggestions;
   /// 元数据
   final Map<String, dynamic> metadata;
-
-  /// 创建成功结果
-  static CompatibilityCheckResult success({
-    List<String> warnings = const [],
-    List<String> suggestions = const [],
-    Map<String, dynamic> metadata = const {},
-  }) {
-    return CompatibilityCheckResult(
-      isCompatible: true,
-      warnings: warnings,
-      suggestions: suggestions,
-      metadata: metadata,
-    );
-  }
-
-  /// 创建失败结果
-  static CompatibilityCheckResult failure({
-    required List<String> errors,
-    List<String> warnings = const [],
-    List<String> suggestions = const [],
-    Map<String, dynamic> metadata = const {},
-  }) {
-    return CompatibilityCheckResult(
-      isCompatible: false,
-      errors: errors,
-      warnings: warnings,
-      suggestions: suggestions,
-      metadata: metadata,
-    );
-  }
 }
 
 /// 模板版本信息
+/// 
+/// 描述模板对各种工具和环境的版本要求。
+/// 用于版本兼容性检查，确保模板能在符合要求的环境中正常运行。
+/// 
+/// 支持的版本约束：
+/// - 模板自身版本标识
+/// - CLI工具版本范围
+/// - Dart SDK版本范围  
+/// - Mason构建工具版本范围
 class TemplateVersionInfo {
+  /// 创建模板版本信息
+  /// 
+  /// 参数：
+  /// - [version] 模板版本
+  /// - [minCliVersion] 最小CLI版本要求
+  /// - [maxCliVersion] 最大CLI版本要求
+  /// - [minDartVersion] 最小Dart版本要求
+  /// - [maxDartVersion] 最大Dart版本要求
+  /// - [minMasonVersion] 最小Mason版本要求
+  /// - [maxMasonVersion] 最大Mason版本要求
   const TemplateVersionInfo({
     required this.version,
     this.minCliVersion,
@@ -140,7 +170,23 @@ class TemplateVersionInfo {
 }
 
 /// 模板平台信息
+/// 
+/// 定义模板对操作系统平台和功能特性的支持情况。
+/// 用于平台兼容性检查，确保模板生成的代码能在目标平台正常运行。
+/// 
+/// 包含信息：
+/// - 支持的操作系统平台（Windows、macOS、Linux等）
+/// - 明确不支持的平台  
+/// - 必需的平台功能特性
+/// - 可选的增强功能特性
 class TemplatePlatformInfo {
+  /// 创建模板平台信息
+  /// 
+  /// 参数：
+  /// - [supportedPlatforms] 支持的平台列表
+  /// - [unsupportedPlatforms] 不支持的平台列表
+  /// - [requiredFeatures] 必需功能列表
+  /// - [optionalFeatures] 可选功能列表
   const TemplatePlatformInfo({
     this.supportedPlatforms = const [],
     this.unsupportedPlatforms = const [],
@@ -159,7 +205,23 @@ class TemplatePlatformInfo {
 }
 
 /// 模板依赖信息
+/// 
+/// 描述模板所需的外部依赖包和版本约束。
+/// 用于依赖兼容性检查，确保生成的项目具有正确的依赖配置。
+/// 
+/// 依赖类型：
+/// - 必需依赖：模板正常运行所必须的包和版本
+/// - 可选依赖：提供额外功能的可选包
+/// - 冲突依赖：与模板不兼容的包列表
+/// 
+/// 支持语义化版本约束（如 "^1.0.0", ">=2.0.0 <3.0.0"）
 class TemplateDependencyInfo {
+  /// 创建模板依赖信息
+  /// 
+  /// 参数：
+  /// - [requiredDependencies] 必需依赖映射
+  /// - [optionalDependencies] 可选依赖映射
+  /// - [conflictingDependencies] 冲突依赖列表
   const TemplateDependencyInfo({
     this.requiredDependencies = const {},
     this.optionalDependencies = const {},
@@ -176,6 +238,64 @@ class TemplateDependencyInfo {
 
 /// 模板引擎异常类
 class TemplateEngineException implements Exception {
+
+  /// 创建模板不存在错误
+  TemplateEngineException.templateNotFound(
+    String templateName, {
+    String? recovery,
+  }) : this(
+      type: TemplateEngineErrorType.templateNotFound,
+      message: '模板不存在: $templateName',
+      details: {'templateName': templateName},
+      recovery: recovery ?? 
+          '请检查模板名称是否正确，或使用 ming template list 查看可用模板',
+    );
+
+  /// 创建Mason包错误
+  TemplateEngineException.masonError(
+    String operation,
+    dynamic error, {
+    String? recovery,
+  }) : this(
+      type: TemplateEngineErrorType.masonError,
+      message: 'Mason包操作失败: $operation',
+      details: {'operation': operation},
+      innerException: error,
+      recovery: recovery ?? '请检查模板格式是否正确，或尝试重新安装模板',
+    );
+
+  /// 创建文件系统错误
+  TemplateEngineException.fileSystemError(
+    String operation,
+    String path,
+    dynamic error, {
+    String? recovery,
+  }) : this(
+      type: TemplateEngineErrorType.fileSystemError,
+      message: '文件系统操作失败: $operation',
+      details: {'operation': operation, 'path': path},
+      innerException: error,
+      recovery: recovery ?? '请检查文件路径和权限是否正确',
+    );
+
+  /// 创建变量验证错误
+  TemplateEngineException.variableValidationError(
+    Map<String, String> validationErrors, {
+    String? recovery,
+  }) : this(
+      type: TemplateEngineErrorType.variableValidationFailed,
+      message: '模板变量验证失败',
+      details: {'validationErrors': validationErrors},
+      recovery: recovery ?? '请检查并修正模板变量值',
+    );
+  /// 创建模板引擎异常
+  /// 
+  /// 参数：
+  /// - [type] 错误类型
+  /// - [message] 错误消息
+  /// - [details] 错误详情
+  /// - [innerException] 内部异常
+  /// - [recovery] 恢复建议
   const TemplateEngineException({
     required this.type,
     required this.message,
@@ -209,68 +329,31 @@ class TemplateEngineException implements Exception {
     }
     return result;
   }
-
-  /// 创建模板不存在错误
-  static TemplateEngineException templateNotFound(
-    String templateName, {
-    String? recovery,
-  }) {
-    return TemplateEngineException(
-      type: TemplateEngineErrorType.templateNotFound,
-      message: '模板不存在: $templateName',
-      details: {'templateName': templateName},
-      recovery: recovery ?? 
-          '请检查模板名称是否正确，或使用 ming template list 查看可用模板',
-    );
-  }
-
-  /// 创建Mason包错误
-  static TemplateEngineException masonError(
-    String operation,
-    dynamic error, {
-    String? recovery,
-  }) {
-    return TemplateEngineException(
-      type: TemplateEngineErrorType.masonError,
-      message: 'Mason包操作失败: $operation',
-      details: {'operation': operation},
-      innerException: error,
-      recovery: recovery ?? '请检查模板格式是否正确，或尝试重新安装模板',
-    );
-  }
-
-  /// 创建文件系统错误
-  static TemplateEngineException fileSystemError(
-    String operation,
-    String path,
-    dynamic error, {
-    String? recovery,
-  }) {
-    return TemplateEngineException(
-      type: TemplateEngineErrorType.fileSystemError,
-      message: '文件系统操作失败: $operation',
-      details: {'operation': operation, 'path': path},
-      innerException: error,
-      recovery: recovery ?? '请检查文件路径和权限是否正确',
-    );
-  }
-
-  /// 创建变量验证错误
-  static TemplateEngineException variableValidationError(
-    Map<String, String> validationErrors, {
-    String? recovery,
-  }) {
-    return TemplateEngineException(
-      type: TemplateEngineErrorType.variableValidationFailed,
-      message: '模板变量验证失败',
-      details: {'validationErrors': validationErrors},
-      recovery: recovery ?? '请检查并修正模板变量值',
-    );
-  }
 }
 
 /// 错误恢复结果
 class ErrorRecoveryResult {
+
+  /// 成功恢复
+  ErrorRecoveryResult.createSuccess({String? message, dynamic value}) 
+    : this(
+      success: true,
+      message: message,
+      recoveredValue: value,
+    );
+
+  /// 恢复失败
+  ErrorRecoveryResult.createFailure(String message)
+    : this(
+      success: false,
+      message: message,
+    );
+  /// 创建错误恢复结果
+  /// 
+  /// 参数：
+  /// - [success] 恢复是否成功
+  /// - [message] 恢复消息
+  /// - [recoveredValue] 恢复后的值
   const ErrorRecoveryResult({
     required this.success,
     this.message,
@@ -283,23 +366,6 @@ class ErrorRecoveryResult {
   final String? message;
   /// 恢复后的值
   final dynamic recoveredValue;
-
-  /// 成功恢复
-  static ErrorRecoveryResult createSuccess({String? message, dynamic value}) {
-    return ErrorRecoveryResult(
-      success: true,
-      message: message,
-      recoveredValue: value,
-    );
-  }
-
-  /// 恢复失败
-  static ErrorRecoveryResult createFailure(String message) {
-    return ErrorRecoveryResult(
-      success: false,
-      message: message,
-    );
-  }
 }
 
 /// 错误恢复策略接口
@@ -313,8 +379,13 @@ abstract class ErrorRecoveryStrategy {
 
 /// 模板不存在错误恢复策略
 class TemplateNotFoundRecoveryStrategy implements ErrorRecoveryStrategy {
+  /// 创建模板不存在错误恢复策略
+  /// 
+  /// 参数：
+  /// - [templateEngine] 模板引擎实例
   const TemplateNotFoundRecoveryStrategy(this.templateEngine);
   
+  /// 模板引擎实例引用
   final TemplateEngine templateEngine;
 
   @override
@@ -372,8 +443,8 @@ class FileSystemErrorRecoveryStrategy implements ErrorRecoveryStrategy {
       if (operation == 'createDirectory' && path != null) {
         // 尝试创建父目录
         final parentDir = Directory(path).parent;
-        if (!await parentDir.exists()) {
-          await parentDir.create(recursive: true);
+        if (!parentDir.existsSync()) {
+          parentDir.createSync(recursive: true);
           await Directory(path).create();
           return ErrorRecoveryResult.createSuccess(
             message: '成功创建目录: $path',
@@ -385,8 +456,8 @@ class FileSystemErrorRecoveryStrategy implements ErrorRecoveryStrategy {
         // 检查父目录是否存在
         final file = File(path);
         final parentDir = file.parent;
-        if (!await parentDir.exists()) {
-          await parentDir.create(recursive: true);
+        if (!parentDir.existsSync()) {
+          parentDir.createSync(recursive: true);
           return ErrorRecoveryResult.createSuccess(
             message: '成功创建父目录: ${parentDir.path}',
           );
@@ -402,6 +473,10 @@ class FileSystemErrorRecoveryStrategy implements ErrorRecoveryStrategy {
 
 /// 错误恢复管理器
 class ErrorRecoveryManager {
+  /// 创建错误恢复管理器
+  /// 
+  /// 参数：
+  /// - [templateEngine] 模板引擎实例
   ErrorRecoveryManager(this.templateEngine) {
     // 注册默认恢复策略
     _strategies.addAll([
@@ -410,6 +485,7 @@ class ErrorRecoveryManager {
     ]);
   }
   
+  /// 模板引擎实例引用，用于错误恢复策略
   final TemplateEngine templateEngine;
   final List<ErrorRecoveryStrategy> _strategies = [];
 
@@ -472,6 +548,18 @@ class HookContext {
 
 /// 钩子执行结果
 class HookResult {
+  
+  /// 创建失败结果
+  HookResult.failure(String message) : 
+      this(success: false, message: message);
+      
+  /// 创建停止结果
+  HookResult.stop(String message) : 
+      this(
+        success: true, 
+        message: message, 
+        shouldContinue: false,
+      );
   /// 创建钩子执行结果
   const HookResult({
     required this.success,
@@ -491,18 +579,6 @@ class HookResult {
 
   /// 成功结果的常量
   static const HookResult successResult = HookResult(success: true);
-  
-  /// 创建失败结果
-  static HookResult failure(String message) => 
-      HookResult(success: false, message: message);
-      
-  /// 创建停止结果
-  static HookResult stop(String message) => 
-      HookResult(
-        success: true, 
-        message: message, 
-        shouldContinue: false,
-      );
 }
 
 /// 抽象钩子基类
@@ -552,7 +628,23 @@ class HookRegistry {
 
 /// 模板生成结果
 class GenerationResult {
+
+  /// 创建失败结果
+  GenerationResult.failure(String message, {String? outputPath})
+    : this(
+      success: false,
+      outputPath: outputPath ?? '',
+      message: message,
+    );
   /// 创建模板生成结果
+  /// 
+  /// 参数：
+  /// - [success] 生成是否成功
+  /// - [outputPath] 输出路径
+  /// - [generatedFiles] 生成的文件列表
+  /// - [message] 结果消息
+  /// - [duration] 生成耗时
+  /// - [metadata] 结果元数据
   const GenerationResult({
     required this.success,
     required this.outputPath,
@@ -574,15 +666,6 @@ class GenerationResult {
   final Duration? duration;
   /// 结果元数据
   final Map<String, dynamic> metadata;
-
-  /// 创建失败结果
-  static GenerationResult failure(String message, {String? outputPath}) {
-    return GenerationResult(
-      success: false,
-      outputPath: outputPath ?? '',
-      message: message,
-    );
-  }
 }
 
 /// 模板继承配置
@@ -603,8 +686,23 @@ class TemplateInheritance {
 }
 
 /// 模板引擎管理器
-/// 负责模板的加载、处理和代码生成
+/// 
+/// 企业级模板引擎，负责模板的完整生命周期管理，包括：
+/// - 模板加载、验证和缓存管理
+/// - 高性能的代码生成和文件处理
+/// - 钩子系统支持，提供扩展能力
+/// - 错误恢复和重试机制
+/// - 异步生成和批量处理
+/// - 模板兼容性检查和版本管理
+/// - 用户体验优化和进度反馈
+/// 
+/// 支持Mason模板格式，提供丰富的变量处理、继承机制和插件扩展能力。
+/// 设计用于高频使用场景，具备完善的缓存策略和性能监控。
 class TemplateEngine {
+  /// 创建模板引擎实例
+  /// 
+  /// [workingDirectory] 工作目录路径，用于确定模板和输出文件的基础路径
+  /// 默认为当前目录
   TemplateEngine({String? workingDirectory})
       : workingDirectory = workingDirectory ?? Directory.current.path,
         hookRegistry = HookRegistry() {
@@ -656,6 +754,16 @@ class TemplateEngine {
   final Map<String, Duration> _performanceMetrics = {};
 
   /// 初始化模板引擎
+  /// 
+  /// 执行模板引擎的初始化流程，包括缓存预热、钩子注册等准备工作。
+  /// 建议在使用模板引擎功能前调用此方法以获得最佳性能。
+  /// 
+  /// 参数：
+  /// - [templatesPath] 模板目录路径（可选，默认使用工作目录下的templates文件夹）
+  /// - [configManager] 配置管理器实例（可选）
+  /// 
+  /// 抛出：
+  /// - [TemplateEngineException] 当初始化过程中发生错误时
   Future<void> initialize({
     String? templatesPath,
     dynamic configManager,
@@ -677,6 +785,18 @@ class TemplateEngine {
   }
 
   /// 获取可用模板列表
+  /// 
+  /// 扫描模板目录，返回所有有效的Mason模板名称列表。
+  /// 只返回包含有效brick.yaml文件的模板目录。
+  /// 
+  /// 返回：
+  /// - [List<String>] 可用模板名称列表，如果目录不存在或没有有效模板则返回空列表
+  /// 
+  /// 示例：
+  /// ```dart
+  /// final templates = await engine.getAvailableTemplates();
+  /// print('可用模板: ${templates.join(', ')}');
+  /// ```
   Future<List<String>> getAvailableTemplates() async {
     try {
       final templatesPath = path.join(workingDirectory, 'templates');
@@ -721,6 +841,32 @@ class TemplateEngine {
   }
 
   /// 加载模板生成器（优化版本）
+  /// 
+  /// 加载指定名称的模板并创建Mason生成器实例。
+  /// 包含智能缓存、重试机制和错误恢复功能。
+  /// 
+  /// 特性：
+  /// - 自动缓存已加载的生成器，提升后续访问性能
+  /// - 内置重试机制，提高加载成功率
+  /// - 智能错误恢复，提供模板建议和修复提示
+  /// - 性能监控和指标记录
+  /// 
+  /// 参数：
+  /// - [templateName] 模板名称，必须是有效的已存在模板
+  /// 
+  /// 返回：
+  /// - [MasonGenerator?] 模板生成器实例，加载失败时返回null
+  /// 
+  /// 抛出：
+  /// - [TemplateEngineException] 当模板不存在、格式无效或加载失败时
+  /// 
+  /// 示例：
+  /// ```dart
+  /// final generator = await engine.loadTemplate('flutter_package');
+  /// if (generator != null) {
+  ///   // 使用生成器进行代码生成
+  /// }
+  /// ```
   Future<MasonGenerator?> loadTemplate(String templateName) async {
     final stopwatch = Stopwatch()..start();
     
@@ -800,7 +946,9 @@ class TemplateEngine {
       await _cacheTemplateMetadata(templateName, templatePath);
 
       _recordPerformance('loadTemplate_new', stopwatch.elapsed);
-      cli_logger.Logger.success('模板加载成功: $templateName (${stopwatch.elapsedMilliseconds}ms)');
+      cli_logger.Logger.success(
+          '模板加载成功: $templateName (${stopwatch.elapsedMilliseconds}ms)',
+      );
       
       return generator;
 
@@ -869,6 +1017,35 @@ class TemplateEngine {
   }
 
   /// 全面的模板兼容性检查
+  /// 
+  /// 对指定模板进行多维度兼容性分析，确保模板能在当前环境正常运行。
+  /// 提供详细的检查报告，包含错误、警告和优化建议。
+  /// 
+  /// 检查维度：
+  /// - 版本兼容性：CLI、Dart、Mason版本要求
+  /// - 依赖兼容性：必需依赖可用性和冲突检测
+  /// - 平台兼容性：操作系统和架构支持
+  /// - 标准合规性：模板格式和最佳实践验证
+  /// 
+  /// 参数：
+  /// - [templateName] 要检查的模板名称
+  /// - [checkVersion] 是否进行版本兼容性检查（默认：true）
+  /// - [checkDependencies] 是否检查依赖兼容性（默认：true）
+  /// - [checkPlatform] 是否检查平台兼容性（默认：true）
+  /// - [checkCompliance] 是否检查标准合规性（默认：true）
+  /// 
+  /// 返回：
+  /// - [CompatibilityCheckResult] 包含详细检查结果的对象
+  /// 
+  /// 示例：
+  /// ```dart
+  /// final result = await engine.checkTemplateCompatibility('my_template');
+  /// if (result.isCompatible) {
+  ///   print('模板兼容');
+  /// } else {
+  ///   print('兼容性问题: ${result.errors.join(', ')}');
+  /// }
+  /// ```
   Future<CompatibilityCheckResult> checkTemplateCompatibility(
     String templateName, {
     bool checkVersion = true,
@@ -986,20 +1163,22 @@ class TemplateEngine {
       // 检查当前CLI版本兼容性
       const currentCliVersion = '1.0.0'; // 从pubspec.yaml读取实际版本
       if (versionInfo.minCliVersion != null) {
-        if (_compareVersions(currentCliVersion, versionInfo.minCliVersion!) < 0) {
+        if (_compareVersions(
+            currentCliVersion, versionInfo.minCliVersion!,) < 0) {
           errors.add(
             'CLI版本过低: 当前$currentCliVersion < 要求${versionInfo.minCliVersion}',
           );
-          suggestions.add('请升级CLI到${versionInfo.minCliVersion}或更高版本');
+          suggestions.add('请升级CLI到${versionInfo.minCliVersion}或更高版本',);
         }
       }
 
       if (versionInfo.maxCliVersion != null) {
-        if (_compareVersions(currentCliVersion, versionInfo.maxCliVersion!) > 0) {
+        if (_compareVersions(
+            currentCliVersion, versionInfo.maxCliVersion!,) > 0) {
           warnings.add(
             'CLI版本可能过高: 当前$currentCliVersion > 建议${versionInfo.maxCliVersion}',
           );
-          suggestions.add('考虑降级CLI或验证模板兼容性');
+          suggestions.add('考虑降级CLI或验证模板兼容性',);
         }
       }
 
@@ -1009,18 +1188,26 @@ class TemplateEngine {
         metadata['currentDartVersion'] = currentDartVersion;
         
         if (versionInfo.minDartVersion != null) {
-          if (_compareVersions(currentDartVersion, versionInfo.minDartVersion!) < 0) {
+          if (_compareVersions(
+                  currentDartVersion, versionInfo.minDartVersion!,
+                  ) < 0) {
             errors.add(
-              'Dart版本过低: 当前$currentDartVersion < 要求${versionInfo.minDartVersion}',
+              'Dart版本过低: 当前$currentDartVersion < '
+              '要求${versionInfo.minDartVersion}',
             );
-            suggestions.add('请升级Dart到${versionInfo.minDartVersion}或更高版本');
+            suggestions.add(
+              '请升级Dart到${versionInfo.minDartVersion}或更高版本',
+            );
           }
         }
 
         if (versionInfo.maxDartVersion != null) {
-          if (_compareVersions(currentDartVersion, versionInfo.maxDartVersion!) > 0) {
+          if (_compareVersions(
+                  currentDartVersion, versionInfo.maxDartVersion!,
+                  ) > 0) {
             warnings.add(
-              'Dart版本可能不兼容: 当前$currentDartVersion > 建议${versionInfo.maxDartVersion}',
+              'Dart版本可能不兼容: 当前$currentDartVersion > '
+              '建议${versionInfo.maxDartVersion}',
             );
           }
         }
@@ -1032,11 +1219,16 @@ class TemplateEngine {
         metadata['currentMasonVersion'] = currentMasonVersion;
         
         if (versionInfo.minMasonVersion != null) {
-          if (_compareVersions(currentMasonVersion, versionInfo.minMasonVersion!) < 0) {
+          if (_compareVersions(
+                  currentMasonVersion, versionInfo.minMasonVersion!,
+                  ) < 0) {
             errors.add(
-              'Mason版本过低: 当前$currentMasonVersion < 要求${versionInfo.minMasonVersion}',
+              'Mason版本过低: 当前$currentMasonVersion < '
+              '要求${versionInfo.minMasonVersion}',
             );
-            suggestions.add('请升级Mason到${versionInfo.minMasonVersion}或更高版本');
+            suggestions.add(
+              '请升级Mason到${versionInfo.minMasonVersion}或更高版本',
+            );
           }
         }
       }
@@ -1230,7 +1422,9 @@ class TemplateEngine {
         final vars = Map<String, dynamic>.from(yamlData['vars'] as Map? ?? {});
         for (final entry in vars.entries) {
           final varName = entry.key;
-          final varConfig = Map<String, dynamic>.from(entry.value as Map? ?? {});
+          final varConfig = Map<String, dynamic>.from(
+            entry.value as Map? ?? {},
+          );
           
           // 检查变量类型
           if (!varConfig.containsKey('type')) {
@@ -1293,7 +1487,10 @@ class TemplateEngine {
   }
 
   /// 缓存模板元数据
-  Future<void> _cacheTemplateMetadata(String templateName, String templatePath) async {
+  Future<void> _cacheTemplateMetadata(
+    String templateName,
+    String templatePath,
+  ) async {
     try {
       final brickPath = path.join(templatePath, 'brick.yaml');
       final yamlData = await FileUtils.readYamlFile(brickPath);
@@ -1879,7 +2076,8 @@ class {{class_name}} {
   }
 
   /// 批量兼容性检查模板（增强版本）
-  Future<Map<String, CompatibilityCheckResult>> validateAllTemplatesCompatibility({
+  Future<Map<String, CompatibilityCheckResult>> 
+      validateAllTemplatesCompatibility({
     bool checkVersion = true,
     bool checkDependencies = true,
     bool checkPlatform = true,
@@ -1904,7 +2102,9 @@ class {{class_name}} {
         if (result.isCompatible) {
           cli_logger.Logger.debug('✓ $templateName: 兼容性检查通过');
         } else {
-          cli_logger.Logger.warning('✗ $templateName: 兼容性检查失败 (${result.errors.length} 个错误)');
+          cli_logger.Logger.warning(
+            '✗ $templateName: 兼容性检查失败 (${result.errors.length} 个错误)',
+          );
         }
       } catch (e) {
         results[templateName] = CompatibilityCheckResult.failure(
@@ -1935,9 +2135,15 @@ class {{class_name}} {
     try {
       // 基础健康检查
       final basicHealth = await checkHealth();
-              health['checks'].addAll(Map<String, dynamic>.from(basicHealth['checks'] as Map? ?? {}));
-      health['warnings'].addAll(basicHealth['warnings'] as List<String>);
-      health['errors'].addAll(basicHealth['errors'] as List<String>);
+      health['checks'].addAll(
+        Map<String, dynamic>.from(basicHealth['checks'] as Map? ?? {}),
+      );
+      health['warnings'].addAll(
+        (basicHealth['warnings'] as List<dynamic>?)?.cast<String>() ?? [],
+      );
+      health['errors'].addAll(
+        (basicHealth['errors'] as List<dynamic>?)?.cast<String>() ?? [],
+      );
 
       // 模板兼容性健康检查
       final compatibilityResults = await validateAllTemplatesCompatibility();
@@ -1961,7 +2167,8 @@ class {{class_name}} {
           'compatible': result.isCompatible,
           'errors': result.errors.length,
           'warnings': result.warnings.length,
-          'platform_supported': result.metadata['currentPlatform'] != null,
+          'platform_supported': 
+              (result.metadata['currentPlatform'] as Object?) != null,
         };
       }
 
@@ -1969,8 +2176,10 @@ class {{class_name}} {
       health['checks']['template_compatibility'] = {
         'total_templates': compatibilityResults.length,
         'compatible_templates': compatibleCount,
-        'compatibility_rate': compatibilityResults.isEmpty ? 0.0 : 
-            (compatibleCount / compatibilityResults.length * 100).toStringAsFixed(1),
+        'compatibility_rate': compatibilityResults.isEmpty 
+            ? 0.0 
+            : (compatibleCount / compatibilityResults.length * 100)
+                .toStringAsFixed(1),
         'total_errors': totalErrors,
         'total_warnings': totalWarnings,
       };
@@ -1988,10 +2197,14 @@ class {{class_name}} {
       final compatibilityRate = compatibleCount / compatibilityResults.length;
       if (compatibilityRate < 0.8) {
         health['status'] = 'unhealthy';
-        health['errors'].add('模板兼容性率过低: ${(compatibilityRate * 100).toStringAsFixed(1)}%');
+        health['errors'].add(
+          '模板兼容性率过低: ${(compatibilityRate * 100).toStringAsFixed(1)}%',
+        );
       } else if (compatibilityRate < 0.9) {
         if (health['status'] == 'healthy') health['status'] = 'warning';
-        health['warnings'].add('模板兼容性率较低: ${(compatibilityRate * 100).toStringAsFixed(1)}%');
+        health['warnings'].add(
+          '模板兼容性率较低: ${(compatibilityRate * 100).toStringAsFixed(1)}%',
+        );
       }
 
     } catch (e) {
@@ -2024,7 +2237,9 @@ class {{class_name}} {
       final templatesPath = path.join(workingDirectory, 'templates');
       if (!FileUtils.directoryExists(templatesPath)) {
         health['warnings'].add('模板目录不存在: $templatesPath');
-        health['status'] = health['status'] == 'unhealthy' ? 'unhealthy' : 'warning';
+        health['status'] = health['status'] == 'unhealthy' 
+            ? 'unhealthy' 
+            : 'warning';
       } else {
         health['checks']['templates_directory'] = 'ok';
       }
@@ -2447,7 +2662,6 @@ class {{class_name}} {
   /// 解析依赖信息
   TemplateDependencyInfo _parseDependencyInfo(Map<String, dynamic> yamlData) {
     final dependencies = Map<String, dynamic>.from(yamlData['dependencies'] as Map? ?? {});
-    final devDependencies = Map<String, dynamic>.from(yamlData['dev_dependencies'] as Map? ?? {});
     final conflicts = (yamlData['conflicts'] as List?)?.cast<dynamic>() ?? [];
 
     final requiredDeps = <String, String>{};
@@ -2978,6 +3192,7 @@ class _DefaultLoggingHook extends TemplateHook {
 
 /// 脚本执行钩子配置
 class ScriptHookConfig {
+  /// 创建脚本钩子配置实例
   const ScriptHookConfig({
     required this.description,
     required this.script,
@@ -3021,14 +3236,18 @@ class ScriptHookConfig {
 
 /// 脚本执行钩子
 class ScriptExecutionHook extends TemplateHook {
+  /// 创建脚本执行钩子实例
   ScriptExecutionHook({
     required this.config,
     required this.hookType,
     this.hookPriority = 100,
   }) : super(name: '${hookType.toString().split('.').last}_script_${config.description.hashCode}');
 
+  /// 脚本钩子配置
   final ScriptHookConfig config;
+  /// 钩子类型
   final HookType hookType;
+  /// 钩子优先级
   final int hookPriority;
 
   @override
@@ -3151,7 +3370,7 @@ class ScriptExecutionHook extends TemplateHook {
       // 设置工作目录
       final workDir = Directory(workingDirectory);
       if (!workDir.existsSync()) {
-        await workDir.create(recursive: true);
+        workDir.createSync(recursive: true);
       }
 
       // 分解命令和参数
@@ -3194,29 +3413,36 @@ class ScriptExecutionHook extends TemplateHook {
 
 /// 脚本执行结果
 class ScriptExecutionResult {
+
+  /// 创建成功结果
+  ScriptExecutionResult.createSuccess(String output) 
+    : this(success: true, output: output);
+      
+  /// 创建失败结果
+  ScriptExecutionResult.createFailure(String error) 
+    : this(success: false, error: error);
+  /// 创建脚本执行结果实例
   const ScriptExecutionResult({
     required this.success,
     this.output,
     this.error,
   });
 
+  /// 执行是否成功
   final bool success;
+  /// 标准输出内容
   final String? output;
+  /// 错误信息
   final String? error;
-
-  static ScriptExecutionResult createSuccess(String output) => 
-      ScriptExecutionResult(success: true, output: output);
-      
-  static ScriptExecutionResult createFailure(String error) => 
-      ScriptExecutionResult(success: false, error: error);
 }
 
 /// 高级钩子管理器
 class AdvancedHookManager {
+  /// 创建高级钩子管理器实例
   AdvancedHookManager(this.templateEngine);
 
+  /// 模板引擎实例
   final TemplateEngine templateEngine;
-  final Map<String, List<ScriptHookConfig>> _templateHooks = {};
 
   /// 从brick.yaml配置加载钩子
   Future<void> loadHooksFromBrickConfig(String templateName) async {
@@ -3319,13 +3545,16 @@ class AdvancedHookManager {
 
 /// 条件钩子（基于表达式）
 class ConditionalHook extends TemplateHook {
+  /// 创建条件钩子实例
   ConditionalHook({
     required super.name,
     required this.condition,
     required this.wrappedHook,
   });
 
+  /// 执行条件表达式
   final String condition;
+  /// 被包装的钩子实例
   final TemplateHook wrappedHook;
 
   @override
@@ -3360,13 +3589,16 @@ class ConditionalHook extends TemplateHook {
 
 /// 超时钩子包装器
 class TimeoutHook extends TemplateHook {
+  /// 创建超时钩子实例
   TimeoutHook({
     required super.name,
     required this.timeout,
     required this.wrappedHook,
   });
 
+  /// 超时时长
   final Duration timeout;
+  /// 被包装的钩子实例
   final TemplateHook wrappedHook;
 
   @override
@@ -3388,6 +3620,7 @@ class TimeoutHook extends TemplateHook {
 
 /// 错误恢复钩子
 class ErrorRecoveryHook extends TemplateHook {
+  /// 创建错误恢复钩子实例
   ErrorRecoveryHook({
     required super.name,
     required this.wrappedHook,
@@ -3395,8 +3628,11 @@ class ErrorRecoveryHook extends TemplateHook {
     this.ignoreErrors = false,
   });
 
+  /// 被包装的钩子实例
   final TemplateHook wrappedHook;
+  /// 错误恢复操作
   final Future<HookResult> Function(HookResult failedResult) recoveryAction;
+  /// 是否忽略错误
   final bool ignoreErrors;
 
   @override
@@ -3432,6 +3668,7 @@ class ErrorRecoveryHook extends TemplateHook {
 
 /// 预编译模板数据结构
 class PrecompiledTemplate {
+  /// 创建预编译模板实例
   PrecompiledTemplate({
     required this.templateName,
     required this.generator,
@@ -3441,11 +3678,17 @@ class PrecompiledTemplate {
     required this.lastAccessed,
   });
 
+  /// 模板名称
   final String templateName;
+  /// Mason生成器实例
   final MasonGenerator generator;
+  /// 模板元数据
   final Map<String, dynamic> metadata;
+  /// 模板变量列表
   final List<String> variables;  // 修复类型错误：使用List<String>而不是List<BrickVariableProperties>
+  /// 编译时间
   final DateTime compilationTime;
+  /// 最后访问时间
   DateTime lastAccessed;
   
   /// 缓存过期时间
@@ -3458,24 +3701,31 @@ class PrecompiledTemplate {
 
 /// 缓存访问统计
 class CacheAccessStats {
+  /// 创建缓存访问统计实例
   CacheAccessStats({
     this.hitCount = 0,
     this.missCount = 0,
     this.precompileCount = 0,
   });
 
+  /// 缓存命中次数
   int hitCount;
+  /// 缓存未命中次数
   int missCount;
+  /// 预编译次数
   int precompileCount;
   
+  /// 缓存命中率（命中次数 / 总访问次数）
   double get hitRate => 
       hitCount + missCount > 0 ? hitCount / (hitCount + missCount) : 0.0;
 }
 
 /// Task 36.1: 高级模板缓存和预编译优化系统
 class AdvancedTemplateCacheManager {
+  /// 创建高级模板缓存管理器实例
   AdvancedTemplateCacheManager(this.templateEngine);
 
+  /// 模板引擎实例
   final TemplateEngine templateEngine;
   
   /// 预编译模板缓存
@@ -3488,8 +3738,11 @@ class AdvancedTemplateCacheManager {
   final Set<String> _preheatingQueue = {};
   
   /// 缓存配置
+  /// 最大缓存大小
   static const int maxCacheSize = 50;
+  /// 预热任务间隔时间
   static const Duration preheatingInterval = Duration(minutes: 5);
+  /// 缓存过期时间
   static const Duration cacheExpiry = Duration(hours: 2);
 
   /// 预编译单个模板
@@ -3737,6 +3990,7 @@ class AdvancedTemplateCacheManager {
 
 /// 生成任务数据结构
 class GenerationTask {
+  /// 创建生成任务实例
   GenerationTask({
     required this.id,
     required this.templateName,
@@ -3747,25 +4001,36 @@ class GenerationTask {
     this.hooks,
   });
 
+  /// 任务ID
   final String id;
+  /// 模板名称
   final String templateName;
+  /// 输出路径
   final String outputPath;
+  /// 模板变量
   final Map<String, dynamic> variables;
+  /// 异步完成器
   final Completer<GenerationResult> completer;
+  /// 任务优先级
   final int priority;
+  /// 钩子列表
   final List<TemplateHook>? hooks;
   
+  /// 任务创建时间
   DateTime get createdAt => DateTime.now();
 }
 
 /// Task 36.2: 异步生成和并发处理系统
 class AsyncTemplateGenerationManager {
+  /// 创建异步模板生成管理器实例
   AsyncTemplateGenerationManager(this.templateEngine);
 
+  /// 模板引擎实例
   final TemplateEngine templateEngine;
   
-  /// 并发生成配置
+  /// 最大并发生成数量
   static const int maxConcurrentGenerations = 5;
+  /// 单个生成任务超时时间
   static const Duration generationTimeout = Duration(minutes: 10);
   
   /// 当前正在执行的生成任务
@@ -3807,7 +4072,7 @@ class AsyncTemplateGenerationManager {
 
     if (skipQueue || _activeTasks < maxConcurrentGenerations) {
       // 直接执行
-      _executeGenerationTask(task);
+      unawaited(_executeGenerationTask(task));
     } else {
       // 加入队列
       _generationQueue.add(task);
@@ -3987,7 +4252,7 @@ class AsyncTemplateGenerationManager {
   void _processNextQueuedTask() {
     if (_generationQueue.isNotEmpty && _activeTasks < maxConcurrentGenerations) {
       final nextTask = _generationQueue.removeAt(0);
-      _executeGenerationTask(nextTask);
+      unawaited(_executeGenerationTask(nextTask));
     }
   }
 
@@ -3999,6 +4264,7 @@ class AsyncTemplateGenerationManager {
 
 /// 模板生成规格
 class TemplateGenerationSpec {
+  /// 创建模板生成规格实例
   const TemplateGenerationSpec({
     required this.templateName,
     required this.outputPath,
@@ -4007,19 +4273,28 @@ class TemplateGenerationSpec {
     this.priority = 0,
   });
 
+  /// 模板名称
   final String templateName;
+  /// 输出路径
   final String outputPath;
+  /// 模板变量映射
   final Map<String, dynamic> variables;
+  /// 可选的钩子列表
   final List<TemplateHook>? hooks;
+  /// 任务优先级
   final int priority;
 }
 
 /// 简单信号量实现
 class Semaphore {
+  /// 创建信号量实例，指定最大许可数量
   Semaphore(this.maxCount) : _currentCount = maxCount;
 
+  /// 最大许可数量
   final int maxCount;
+  /// 当前可用许可数量
   int _currentCount;
+  /// 等待队列
   final List<Completer<void>> _waitQueue = [];
 
   /// 获取许可
@@ -4049,8 +4324,10 @@ class Semaphore {
 
 /// 智能错误恢复管理器
 class IntelligentErrorRecoveryManager {
+  /// 创建智能错误恢复管理器实例
   IntelligentErrorRecoveryManager(this.templateEngine);
 
+  /// 模板引擎实例引用
   final TemplateEngine templateEngine;
   
   /// 错误恢复历史记录
@@ -4105,11 +4382,11 @@ class IntelligentErrorRecoveryManager {
   /// 获取错误恢复统计
   Map<String, dynamic> getRecoveryStatistics() {
     if (_recoveryHistory.isEmpty) {
-      return {
+      return <String, dynamic>{
         'total_attempts': 0,
         'success_rate': 0.0,
-        'common_errors': [],
-        'recovery_trends': {},
+        'common_errors': <Map<String, dynamic>>[],
+        'recovery_trends': <String, dynamic>{},
       };
     }
 
@@ -4131,12 +4408,12 @@ class IntelligentErrorRecoveryManager {
       }
     }
 
-    return {
+    return <String, dynamic>{
       'total_attempts': totalAttempts,
       'successful_recoveries': successfulRecoveries,
       'success_rate': successfulRecoveries / totalAttempts,
       'common_errors': errorTypeCounts.entries
-          .map((e) => {'type': e.key, 'count': e.value})
+          .map((e) => <String, dynamic>{'type': e.key, 'count': e.value})
           .toList()
         ..sort((a, b) => (b['count']! as int).compareTo(a['count']! as int)),
       'strategy_effectiveness': strategySuccess,
@@ -4193,7 +4470,7 @@ class IntelligentErrorRecoveryManager {
     
     for (final record in recentRecords) {
       final day = record.timestamp.toIso8601String().substring(0, 10);
-      dailyStats[day] ??= {'attempts': 0, 'successes': 0};
+      dailyStats[day] ??= <String, int>{'attempts': 0, 'successes': 0};
       dailyStats[day]!['attempts'] = dailyStats[day]!['attempts']! + 1;
       
       if (record.recoveryResult?.success == true) {
@@ -4202,7 +4479,7 @@ class IntelligentErrorRecoveryManager {
     }
     
     return dailyStats.entries
-        .map((e) => {
+        .map((e) => <String, dynamic>{
           'date': e.key,
           'attempts': e.value['attempts'],
           'successes': e.value['successes'],
@@ -4217,16 +4494,22 @@ class IntelligentErrorRecoveryManager {
 
 /// 错误恢复记录
 class ErrorRecoveryRecord {
+  /// 创建错误恢复记录实例
   ErrorRecoveryRecord({
     required this.error,
     required this.timestamp,
     this.context,
   });
 
+  /// 错误异常信息
   final TemplateEngineException error;
+  /// 错误发生时间戳
   final DateTime timestamp;
+  /// 钩子上下文（可选）
   final HookContext? context;
+  /// 恢复结果（可选）
   ErrorRecoveryResult? recoveryResult;
+  /// 恢复策略名称（可选）
   String? recoveryStrategy;
 }
 
@@ -4303,19 +4586,43 @@ class ErrorPattern {
     required this.suggestedApproach,
   });
 
+  /// 错误类型
   final TemplateEngineErrorType errorType;
+  /// 错误发生频率
   final int frequency;
+  /// 最近成功率
   final double recentSuccessRate;
+  /// 是否为重复发生的错误
   final bool isRecurring;
+  /// 错误严重程度
   final ErrorSeverity severity;
+  /// 建议的恢复方法
   final RecoveryApproach suggestedApproach;
 }
 
 /// 错误严重程度
-enum ErrorSeverity { low, medium, high, critical }
+enum ErrorSeverity { 
+  /// 低严重程度
+  low, 
+  /// 中等严重程度
+  medium, 
+  /// 高严重程度
+  high, 
+  /// 严重程度
+  critical 
+}
 
 /// 恢复方法
-enum RecoveryApproach { retry, adaptive, preventive, manual }
+enum RecoveryApproach { 
+  /// 重试方法
+  retry, 
+  /// 自适应方法
+  adaptive, 
+  /// 预防性方法
+  preventive, 
+  /// 手动方法
+  manual 
+}
 
 // ==================== 智能恢复策略实现 ====================
 
@@ -4323,7 +4630,9 @@ enum RecoveryApproach { retry, adaptive, preventive, manual }
 class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
   AdaptiveTemplateNotFoundStrategy(this.templateEngine, this.pattern);
 
+  /// 模板引擎实例
   final TemplateEngine templateEngine;
+  /// 错误模式
   final ErrorPattern pattern;
 
   @override
@@ -4381,6 +4690,7 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
       final availableTemplates = await templateEngine.getAvailableTemplates();
       final target = targetTemplate.toLowerCase();
       
+      
       // 使用多种匹配算法
       final suggestions = <String>[];
       
@@ -4410,9 +4720,9 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
 
   /// 计算编辑距离
   int _calculateEditDistance(String s1, String s2) {
-    final dp = List.generate(
+    final dp = List<List<int>>.generate(
       s1.length + 1,
-      (i) => List.filled(s2.length + 1, 0),
+      (i) => List<int>.filled(s2.length + 1, 0),
     );
 
     for (var i = 0; i <= s1.length; i++) {
@@ -4465,7 +4775,9 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
 class SmartVariableRecoveryStrategy implements ErrorRecoveryStrategy {
   SmartVariableRecoveryStrategy(this.templateEngine, this.pattern);
 
+  /// 模板引擎实例
   final TemplateEngine templateEngine;
+  /// 错误模式
   final ErrorPattern pattern;
 
   @override
@@ -4575,6 +4887,7 @@ class SmartVariableRecoveryStrategy implements ErrorRecoveryStrategy {
 class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
   IntelligentFileSystemRecoveryStrategy(this.pattern);
 
+  /// 错误模式
   final ErrorPattern pattern;
 
   @override
@@ -4642,8 +4955,8 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
     try {
       // 1. 检查并创建父目录
       final parentDir = Directory(path.dirname(filePath));
-      if (!await parentDir.exists()) {
-        await parentDir.create(recursive: true);
+      if (!parentDir.existsSync()) {
+        parentDir.createSync(recursive: true);
       }
 
       // 2. 尝试备用文件名
@@ -4697,7 +5010,7 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       cli_logger.Logger.info('尝试通用文件系统恢复: $operation -> $targetPath');
       
       // 基本的重试机制
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       
       return ErrorRecoveryResult.createSuccess(
         message: '完成通用文件系统恢复尝试',
@@ -4719,7 +5032,7 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       
       final altPath = path.join(parentDir, '${dirName}_$timestamp');
       
-      if (!await Directory(altPath).exists()) {
+      if (!Directory(altPath).existsSync()) {
         return altPath;
       }
       
@@ -4739,7 +5052,7 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       
       final altPath = path.join(dir, '${fileName}_$timestamp$extension');
       
-      if (!await File(altPath).exists()) {
+      if (!File(altPath).existsSync()) {
         return altPath;
       }
       
@@ -4766,7 +5079,7 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       final dir = Directory(path.dirname(targetPath));
       final targetName = path.basename(targetPath);
       
-      if (!await dir.exists()) return [];
+      if (!dir.existsSync()) return [];
       
       final files = <String>[];
       await for (final entity in dir.list()) {
@@ -4802,7 +5115,9 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
 class MasonErrorRecoveryStrategy implements ErrorRecoveryStrategy {
   MasonErrorRecoveryStrategy(this.templateEngine, this.pattern);
 
+  /// 模板引擎实例
   final TemplateEngine templateEngine;
+  /// 错误模式
   final ErrorPattern pattern;
 
   @override
@@ -4836,7 +5151,7 @@ class MasonErrorRecoveryStrategy implements ErrorRecoveryStrategy {
       templateEngine.clearCache();
       
       // 2. 等待一段时间后重试
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       
       return ErrorRecoveryResult.createSuccess(
         message: '清理缓存并准备重试Brick加载',
@@ -4907,7 +5222,7 @@ class NetworkErrorRecoveryStrategy implements ErrorRecoveryStrategy {
   Future<bool> _checkNetworkConnectivity() async {
     try {
       // 简单的网络检查实现
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       return true; // 假设网络正常
     } catch (e) {
       return false;
@@ -4951,7 +5266,7 @@ class UserExperienceManager {
   final TemplateEngine templateEngine;
   
   /// 进度反馈回调
-  Function(ProgressUpdate)? onProgressUpdate;
+  void Function(ProgressUpdate)? onProgressUpdate;
   
   /// 用户交互历史
   final List<UserInteraction> _interactionHistory = [];
@@ -5141,7 +5456,7 @@ class UserExperienceManager {
   }
 
   /// 设置进度回调
-  void setProgressCallback(Function(ProgressUpdate) callback) {
+  void setProgressCallback(void Function(ProgressUpdate) callback) {
     onProgressUpdate = callback;
   }
 
@@ -5286,7 +5601,7 @@ class UserExperienceManager {
   Future<void> _postGenerationValidation(String outputPath) async {
     try {
       // 验证生成的文件结构
-      if (!await Directory(outputPath).exists()) {
+      if (!Directory(outputPath).existsSync()) {
         throw Exception('输出目录不存在');
       }
       
@@ -5681,7 +5996,7 @@ extension TemplateEngineUXExtension on TemplateEngine {
     bool overwrite = false,
     List<TemplateHook>? hooks,
     TemplateInheritance? inheritance,
-    Function(ProgressUpdate)? onProgress,
+    void Function(ProgressUpdate)? onProgress,
   }) async {
     if (onProgress != null) {
       userExperienceManager.setProgressCallback(onProgress);

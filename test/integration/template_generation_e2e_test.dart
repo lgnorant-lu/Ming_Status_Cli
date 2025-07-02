@@ -45,10 +45,11 @@ void main() {
 
     group('完整Create命令工作流测试', () {
       test('应该成功执行完整的basic模板生成流程', () async {
-        final projectPath = path.join(projectsDir, 'test_basic_project');
-        
         // 执行create命令，使用不存在的输出目录
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         final result = await CliTestHelper.runCommand([
           'create',
           'test_basic_project',
@@ -75,7 +76,10 @@ void main() {
       });
 
       test('应该正确处理变量替换和文件内容生成', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -94,13 +98,22 @@ void main() {
         CliTestHelper.expectSuccess(result);
 
         // 由于使用干运行模式，验证输出信息包含变量
-        expect(result.stdout + result.stderr, contains('VariableTestModule'));
-        expect(result.stdout + result.stderr, contains('Variable Tester'));
-        expect(result.stdout + result.stderr, contains('Variable replacement test'));
+        expect(
+          result.stdout + result.stderr, contains('VariableTestModule'),
+        );
+        expect(
+          result.stdout + result.stderr, contains('Variable Tester'),
+        );
+        expect(
+          result.stdout + result.stderr, contains('Variable replacement test'),
+        );
       });
 
       test('应该支持条件文件生成（Provider支持）', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -124,7 +137,10 @@ void main() {
 
     group('多模板类型测试', () {
       test('应该支持flutter_package模板生成', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -147,7 +163,10 @@ void main() {
       });
 
       test('应该处理无效模板名称', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -163,7 +182,10 @@ void main() {
 
     group('生成代码质量验证', () {
       test('生成的Dart代码应该通过语法检查', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         // 生成项目
         final createResult = await CliTestHelper.runCommand([
@@ -182,11 +204,17 @@ void main() {
         CliTestHelper.expectSuccess(createResult);
 
         // 由于使用干运行模式，只验证命令成功执行
-        expect(createResult.stdout + createResult.stderr, contains('SyntaxCheck'));
+        expect(
+          createResult.stdout + createResult.stderr,
+          contains('SyntaxCheck'),
+        );
       });
 
       test('生成的pubspec.yaml应该是有效的', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final createResult = await CliTestHelper.runCommand([
           'create',
@@ -203,17 +231,24 @@ void main() {
         CliTestHelper.expectSuccess(createResult);
 
         // 由于使用干运行模式，只验证命令成功执行
-        expect(createResult.stdout + createResult.stderr, contains('PubspecTest'));
+        expect(
+          createResult.stdout + createResult.stderr,
+          contains('PubspecTest'),
+        );
       });
     });
 
     group('错误恢复和处理测试', () {
       test('应该处理输出目录已存在的情况', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         // 先创建目录
         await Directory(uniqueOutputDir).create(recursive: true);
-        await File(path.join(uniqueOutputDir, 'existing_file.txt')).writeAsString('test');
+        await File(path.join(uniqueOutputDir, 'existing_file.txt'))
+          .writeAsString('test');
 
         // 测试目录存在时的行为（不使用--dry-run以测试实际行为）
         final result = await CliTestHelper.runCommand([
@@ -233,11 +268,15 @@ void main() {
       });
 
       test('应该支持强制覆盖已存在的目录', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         // 先创建目录和文件
         await Directory(uniqueOutputDir).create(recursive: true);
-        await File(path.join(uniqueOutputDir, 'old_file.txt')).writeAsString('old content');
+        await File(path.join(uniqueOutputDir, 'old_file.txt'))
+          .writeAsString('old content');
 
         // 使用--force标志和--dry-run避免实际文件操作
         final result = await CliTestHelper.runCommand([
@@ -260,7 +299,10 @@ void main() {
       });
 
       test('应该处理无效的变量值', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -282,7 +324,10 @@ void main() {
 
     group('CLI用户体验测试', () {
       test('应该显示有用的进度信息', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -309,7 +354,10 @@ void main() {
       });
 
       test('应该支持干运行模式', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -333,7 +381,10 @@ void main() {
       });
 
       test('应该提供创建后的指导信息', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -356,7 +407,10 @@ void main() {
 
     group('跨平台生成测试', () {
       test('生成的项目应该支持多平台', () async {
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',
@@ -381,7 +435,10 @@ void main() {
     group('性能基准测试', () {
       test('基本模板生成应该在30秒内完成', () async {
         final startTime = DateTime.now();
-        final uniqueOutputDir = path.join(tempTestDir.path, 'unique_output_${DateTime.now().millisecondsSinceEpoch}');
+        final uniqueOutputDir = path.join(
+          tempTestDir.path,
+          'unique_output_${DateTime.now().millisecondsSinceEpoch}',
+        );
         
         final result = await CliTestHelper.runCommand([
           'create',

@@ -13,12 +13,12 @@
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 import 'package:ming_status_cli/src/commands/config_command.dart';
-import 'package:ming_status_cli/src/core/user_config_manager.dart';
 import 'package:ming_status_cli/src/core/config_manager.dart';
+import 'package:ming_status_cli/src/core/user_config_manager.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerForCommand extends UserConfigManager {
@@ -54,7 +54,7 @@ void main() {
     });
 
     tearDown(() async {
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });
@@ -206,10 +206,8 @@ void main() {
         expect(configManager.isTemplateAvailable('nonexistent'), isFalse);
 
         // 应用企业级模板
-        final applySuccess =
             await configManager.applyConfigTemplate('enterprise');
         // 注意：由于ConfigManager的_createConfigFromTemplate方法问题，这里可能失败
-        // expect(applySuccess, isTrue);
 
         // 验证模板应用后的配置
         final updatedConfig = await configManager.loadWorkspaceConfig();
@@ -350,7 +348,9 @@ void main() {
         // 验证所有配置都正确设置
         for (var i = 0; i < 5; i++) {
           final value =
-              await userConfigManager.getConfigValue('integrations.test.concurrent$i');
+              await userConfigManager.getConfigValue(
+                'integrations.test.concurrent$i',
+              );
           expect(value, equals('value$i'));
         }
       });

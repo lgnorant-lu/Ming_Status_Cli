@@ -12,53 +12,103 @@ Description:        彩色输出和格式化工具 (Color output and formatting 
 import 'dart:io';
 
 /// ANSI颜色代码
+/// 
+/// 提供标准ANSI转义序列常量，用于终端彩色输出和文本格式化。
+/// 包括前景色、背景色、文本样式等完整的ANSI颜色代码集。
 class AnsiColor {
-  /// 重置所有格式
+  /// 重置所有格式到默认状态
   static const String reset = '\x1B[0m';
   
-  /// 前景色
+  /// 前景色 - 基础颜色
+  /// 
+  /// 黑色前景色
   static const String black = '\x1B[30m';
+  
+  /// 红色前景色
   static const String red = '\x1B[31m';
+  
+  /// 绿色前景色
   static const String green = '\x1B[32m';
+  
+  /// 黄色前景色
   static const String yellow = '\x1B[33m';
+  
+  /// 蓝色前景色
   static const String blue = '\x1B[34m';
+  
+  /// 洋红色前景色
   static const String magenta = '\x1B[35m';
+  
+  /// 青色前景色
   static const String cyan = '\x1B[36m';
+  
+  /// 白色前景色
   static const String white = '\x1B[37m';
   
   /// 明亮前景色
+  /// 明亮黑色前景色（灰色）
   static const String brightBlack = '\x1B[90m';
+  /// 明亮红色前景色
   static const String brightRed = '\x1B[91m';
+  /// 明亮绿色前景色
   static const String brightGreen = '\x1B[92m';
+  /// 明亮黄色前景色
   static const String brightYellow = '\x1B[93m';
+  /// 明亮蓝色前景色
   static const String brightBlue = '\x1B[94m';
+  /// 明亮洋红色前景色
   static const String brightMagenta = '\x1B[95m';
+  /// 明亮青色前景色
   static const String brightCyan = '\x1B[96m';
+  /// 明亮白色前景色
   static const String brightWhite = '\x1B[97m';
   
   /// 背景色
+  /// 黑色背景色
   static const String bgBlack = '\x1B[40m';
+  /// 红色背景色
   static const String bgRed = '\x1B[41m';
+  /// 绿色背景色
   static const String bgGreen = '\x1B[42m';
+  /// 黄色背景色
   static const String bgYellow = '\x1B[43m';
+  /// 蓝色背景色
   static const String bgBlue = '\x1B[44m';
+  /// 洋红色背景色
   static const String bgMagenta = '\x1B[45m';
+  /// 青色背景色
   static const String bgCyan = '\x1B[46m';
+  /// 白色背景色
   static const String bgWhite = '\x1B[47m';
   
   /// 文本样式
+  /// 粗体样式
   static const String bold = '\x1B[1m';
+  /// 暗淡样式（变暗）
   static const String dim = '\x1B[2m';
+  /// 斜体样式
   static const String italic = '\x1B[3m';
+  /// 下划线样式
   static const String underline = '\x1B[4m';
+  /// 闪烁样式
   static const String blink = '\x1B[5m';
+  /// 反色样式（前景色和背景色互换）
   static const String reverse = '\x1B[7m';
+  /// 删除线样式
   static const String strikethrough = '\x1B[9m';
 }
 
 /// 彩色输出工具
+/// 
+/// 提供丰富的终端文本着色和格式化功能，支持：
+/// - 多种颜色和样式的文本输出
+/// - 进度条、状态指示器等UI组件
+/// - 表格、文本框等结构化显示
+/// - 光标控制和终端操作
+/// 
+/// 自动检测终端支持情况，优雅降级到普通文本输出。
 class ColorOutput {
-  /// 是否启用彩色输出
+  /// 是否启用彩色输出的内部状态标志
   static bool _enabled = true;
   
   /// 检查是否支持彩色输出
@@ -67,7 +117,7 @@ class ColorOutput {
   }
   
   /// 启用或禁用彩色输出
-  static void setEnabled(bool enabled) {
+  static void setEnabled({required bool enabled}) {
     _enabled = enabled && isSupported;
   }
   
@@ -180,20 +230,20 @@ class ColorOutput {
     }
     
     // 确保current在有效范围内
-    current = current.clamp(0, total);
+    final clampedCurrent = current.clamp(0, total);
     
-    final ratio = current / total;
+    final ratio = clampedCurrent / total;
     final completed = (ratio * width).round();
     final remaining = width - completed;
     
     final bar = '\x1B[32m${'█' * completed}\x1B[90m${'░' * remaining}\x1B[0m';
     final percentage = (ratio * 100).toInt();
     
-    return '[$bar] $percentage% ($current/$total)';
+    return '[$bar] $percentage% ($clampedCurrent/$total)';
   }
   
   /// 状态指示器
-  static String statusIndicator(String status, {bool success = true}) {
+  static String statusIndicator(String status, {required bool success}) {
     final color = success ? AnsiColor.green : AnsiColor.red;
     return _applyFormat(status, color);
   }
@@ -270,25 +320,29 @@ class ColorOutput {
     }
     
     final lines = content.split('\n');
-    final maxLength = lines.map((line) => line.length).reduce((a, b) => a > b ? a : b);
+    final maxLength = lines.map((line) => line.length)
+        .reduce((a, b) => a > b ? a : b);
     final width = maxLength + 4;
     
-    final buffer = StringBuffer();
+    final buffer = StringBuffer()
     
     // 顶部边框
-    buffer.writeln('${AnsiColor.cyan}╭${'─' * (width - 2)}╮${AnsiColor.reset}');
+      ..writeln('${AnsiColor.cyan}╭${'─' * (width - 2)}╮${AnsiColor.reset}');
     
     // 标题
     if (title != null) {
       final paddedTitle = ' $title '.padRight(width - 2);
-      buffer.writeln('${AnsiColor.cyan}│${AnsiColor.bold}$paddedTitle${AnsiColor.reset}${AnsiColor.cyan}│${AnsiColor.reset}');
-      buffer.writeln('${AnsiColor.cyan}├${'─' * (width - 2)}┤${AnsiColor.reset}');
+      buffer
+        ..writeln('${AnsiColor.cyan}│${AnsiColor.bold}$paddedTitle'
+            '${AnsiColor.reset}${AnsiColor.cyan}│${AnsiColor.reset}')
+        ..writeln('${AnsiColor.cyan}├${'─' * (width - 2)}┤${AnsiColor.reset}');
     }
     
     // 内容
     for (final line in lines) {
       final paddedLine = ' $line '.padRight(width - 2);
-      buffer.writeln('${AnsiColor.cyan}│${AnsiColor.reset}$paddedLine${AnsiColor.cyan}│${AnsiColor.reset}');
+      buffer.writeln('${AnsiColor.cyan}│${AnsiColor.reset}$paddedLine'
+          '${AnsiColor.cyan}│${AnsiColor.reset}');
     }
     
     // 底部边框
@@ -299,6 +353,13 @@ class ColorOutput {
 }
 
 /// 格式化工具
+/// 
+/// 提供各种数据的格式化和美化显示功能，包括：
+/// - 文件大小、时间持续时间的人性化显示
+/// - 百分比、列表、键值对的格式化
+/// - 表格数据的结构化输出
+/// 
+/// 与ColorOutput配合使用，提供美观的终端数据展示。
 class Formatter {
   /// 格式化字节大小
   static String fileSize(int bytes) {
@@ -370,19 +431,25 @@ class Formatter {
     
     // 标题行
     if (headers != null) {
-      buffer.writeln(_formatTableRow(headers, columnWidths, isHeader: true));
-      buffer.writeln(_formatTableSeparator(columnWidths));
+      buffer
+        ..writeln(_formatTableRow(headers, columnWidths, isHeader: true,))
+        ..writeln(_formatTableSeparator(columnWidths));
     }
     
     // 数据行
     for (var i = 0; i < rows.length; i++) {
-      buffer.writeln(_formatTableRow(rows[i], columnWidths, isEven: i % 2 == 0));
+      buffer
+        ..writeln(_formatTableRow(
+          rows[i], columnWidths, isEven: i.isEven,),)
+        ..writeln(_formatTableSeparator(columnWidths));
     }
     
     return buffer.toString();
   }
   
-  static String _formatTableRow(List<String> row, List<int> widths, {bool isHeader = false, bool isEven = false}) {
+  static String _formatTableRow(
+      List<String> row, List<int> widths, 
+      {bool isHeader = false, bool isEven = false,}) {
     final formattedCells = <String>[];
     
     for (var i = 0; i < row.length; i++) {
@@ -405,4 +472,4 @@ class Formatter {
     final segments = widths.map((width) => '─' * width).toList();
     return '├─${segments.join('─┼─')}─┤';
   }
-} 
+}

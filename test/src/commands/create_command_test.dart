@@ -48,7 +48,7 @@ void main() {
 
     tearDown(() async {
       // 清理临时目录
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });
@@ -57,7 +57,10 @@ void main() {
       test('应该正确定义命令名称和描述', () {
         expect(createCommand.name, equals('create'));
         expect(createCommand.description, contains('基于模板创建新的模块或项目'));
-        expect(createCommand.invocation, equals('ming create [options] <project_name>'));
+        expect(
+          createCommand.invocation, 
+          equals('ming create [options] <project_name>'),
+        );
       });
 
       test('应该支持所有必要的命令行参数', () {
@@ -144,7 +147,7 @@ void main() {
         
         // 验证输出目录是否创建
         final outputDir = Directory('${tempDir.path}/test_basic_project');
-        expect(await outputDir.exists(), isTrue);
+        expect(outputDir.existsSync(), isTrue);
       });
 
       test('应该支持自定义输出目录', () async {
@@ -160,7 +163,7 @@ void main() {
         
         // 验证自定义输出目录是否创建
         final outputDir = Directory('$customOutput/test_project');
-        expect(await outputDir.exists(), isTrue);
+        expect(outputDir.existsSync(), isTrue);
       });
 
       test('应该支持变量传递', () async {
@@ -204,7 +207,7 @@ void main() {
         
         // 验证实际文件未创建
         final outputDir = Directory('${tempDir.path}/test_dry_run');
-        expect(await outputDir.exists(), isFalse, reason: '干运行模式不应该创建实际文件');
+        expect(outputDir.existsSync(), isFalse, reason: '干运行模式不应该创建实际文件');
       });
     });
 
@@ -319,7 +322,10 @@ void main() {
       final tempDir = Directory.systemTemp.createTempSync('ming_progress_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, 
+          ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -338,10 +344,14 @@ void main() {
     });
 
     test('应该在非详细模式下隐藏进度信息', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_no_progress_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_no_progress_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, 
+          ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -361,10 +371,14 @@ void main() {
 
   group('Task 32.2: 用户交互功能测试', () {
     test('应该支持交互式模式', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_interactive_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_interactive_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, 
+          ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -384,10 +398,13 @@ void main() {
     });
 
     test('应该支持非交互式模式', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_non_interactive_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_non_interactive_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -408,10 +425,13 @@ void main() {
 
   group('Task 32.3: 错误处理和回滚机制测试', () {
     test('应该处理模板不存在的错误', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_template_error_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_template_error_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -428,10 +448,13 @@ void main() {
     });
 
     test('应该处理输出目录权限错误', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_permission_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_permission_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -454,7 +477,9 @@ void main() {
       final tempDir = Directory.systemTemp.createTempSync('ming_conflict_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         // 创建已存在的目录
         final existingDir = Directory('${tempDir.path}/existing_project');
@@ -480,7 +505,9 @@ void main() {
       final tempDir = Directory.systemTemp.createTempSync('ming_force_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         // 创建已存在的目录
         final existingDir = Directory('${tempDir.path}/existing_project');
@@ -510,7 +537,9 @@ void main() {
       final tempDir = Directory.systemTemp.createTempSync('ming_color_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -530,10 +559,13 @@ void main() {
     });
 
     test('应该在创建后显示美化的指令', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_instructions_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_instructions_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -557,7 +589,9 @@ void main() {
       final tempDir = Directory.systemTemp.createTempSync('ming_full_ux_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -579,10 +613,13 @@ void main() {
     });
 
     test('应该正确处理完整的错误恢复流程', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_error_recovery_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_error_recovery_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -601,10 +638,13 @@ void main() {
     });
 
     test('应该支持所有32.*功能的组合使用', () async {
-      final tempDir = Directory.systemTemp.createTempSync('ming_combined_features_test');
+      final tempDir = 
+        Directory.systemTemp.createTempSync('ming_combined_features_test');
       
       try {
-        await _setupTestEnvironment(tempDir, ConfigManager(workingDirectory: tempDir.path));
+        await _setupTestEnvironment(
+          tempDir, ConfigManager(workingDirectory: tempDir.path),
+        );
         
         final createCommand = CreateCommand();
         
@@ -630,7 +670,11 @@ void main() {
 }
 
 /// 运行create命令的辅助方法
-Future<int> _runCreateCommand(List<String> args, CreateCommand createCommand, Directory tempDir) async {
+Future<int> _runCreateCommand(
+  List<String> args,
+  CreateCommand createCommand,
+  Directory tempDir,
+) async {
   try {
     // 解析参数
     final argResults = createCommand.argParser.parse(args);
@@ -670,7 +714,7 @@ Future<int> _runCreateCommand(List<String> args, CreateCommand createCommand, Di
     
     // 检查目录是否已存在且不使用force
     final outputDir = Directory(actualOutputPath);
-    if (await outputDir.exists() && !force) {
+    if (outputDir.existsSync() && !force) {
       return 1; // 失败：目录已存在且不使用force
     }
     
@@ -704,7 +748,10 @@ environment:
 }
 
 /// 设置测试环境
-Future<void> _setupTestEnvironment(Directory tempDir, ConfigManager configManager) async {
+Future<void> _setupTestEnvironment(
+  Directory tempDir,
+  ConfigManager configManager,
+) async {
   // 初始化工作空间配置
   await configManager.initializeWorkspace(
     workspaceName: 'test_workspace',
@@ -836,4 +883,4 @@ class {{name.pascalCase()}} {
   static const String version = '0.0.1';
 }
 ''');
-} 
+}

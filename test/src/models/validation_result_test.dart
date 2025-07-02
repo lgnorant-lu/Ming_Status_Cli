@@ -26,10 +26,10 @@ void main() {
     });
 
     test('should add error messages correctly', () {
-      final result = ValidationResult();
+      final result = ValidationResult()
 
-      result.addError('Test error');
-      result.addError('Another error', file: 'test.dart');
+        ..addError('Test error')
+        ..addError('Another error', file: 'test.dart');
 
       expect(result.errors, hasLength(2));
       expect(result.isValid, isFalse);
@@ -38,10 +38,10 @@ void main() {
     });
 
     test('should add warning messages correctly', () {
-      final result = ValidationResult();
+      final result = ValidationResult()
 
-      result.addWarning('Test warning');
-      result.addWarning('Another warning', file: 'test.dart');
+        ..addWarning('Test warning')
+        ..addWarning('Another warning', file: 'test.dart');
 
       expect(result.warnings, hasLength(2));
       expect(result.isValid, isTrue); // warnings don't make it invalid
@@ -50,20 +50,20 @@ void main() {
     });
 
     test('should add success messages correctly', () {
-      final result = ValidationResult();
+      final result = ValidationResult()
 
-      result.addSuccess('Test success');
-      result.addSuccess('Another success');
+        ..addSuccess('Test success')
+        ..addSuccess('Another success');
 
       expect(result.successes, hasLength(2));
       expect(result.successes.first.message, equals('Test success'));
     });
 
     test('should add info messages correctly', () {
-      final result = ValidationResult();
+      final result = ValidationResult()
 
-      result.addInfo('Test info');
-      result.addInfo('Another info');
+        ..addInfo('Test info')
+        ..addInfo('Another info');
 
       expect(result.infos, hasLength(2));
       expect(result.infos.first.message, equals('Test info'));
@@ -80,12 +80,12 @@ void main() {
     });
 
     test('should generate summary correctly', () {
-      final result = ValidationResult();
+      final result = ValidationResult()
 
-      result.addError('Error 1');
-      result.addWarning('Warning 1');
-      result.addSuccess('Success 1');
-      result.addInfo('Info 1');
+      ..addError('Error 1')
+      ..addWarning('Warning 1')
+      ..addSuccess('Success 1')
+      ..addInfo('Info 1');
 
       final summary = result.getSummary();
 
@@ -96,10 +96,10 @@ void main() {
     });
 
     test('should be invalid when has errors', () {
-      final result = ValidationResult();
+      final result = ValidationResult()
 
-      result.addSuccess('Success');
-      result.addWarning('Warning');
+      ..addSuccess('Success')
+      ..addWarning('Warning');
       expect(result.isValid, isTrue);
 
       result.addError('Error');

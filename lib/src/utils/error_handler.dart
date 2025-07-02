@@ -19,14 +19,22 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 错误类型枚举
 enum ErrorType {
-  usage, // 用法错误
-  fileSystem, // 文件系统错误
-  permission, // 权限错误
-  network, // 网络错误
-  validation, // 验证错误
-  configuration, // 配置错误
-  dependency, // 依赖错误
-  unknown, // 未知错误
+  /// 用法错误
+  usage,
+  /// 文件系统错误
+  fileSystem,
+  /// 权限错误
+  permission,
+  /// 网络错误
+  network,
+  /// 验证错误
+  validation,
+  /// 配置错误
+  configuration,
+  /// 依赖错误
+  dependency,
+  /// 未知错误
+  unknown,
 }
 
 /// 错误处理器
@@ -83,7 +91,7 @@ class ErrorHandler {
     if (exception.usage.isNotEmpty) {
       Logger.newLine();
       Logger.info('用法信息:');
-      print(exception.usage);
+      Logger.info(exception.usage);
     }
   }
 

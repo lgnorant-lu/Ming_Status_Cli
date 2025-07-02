@@ -19,7 +19,9 @@ void main() {
         expect(StringUtils.toPascalCase('hello_world'), equals('HelloWorld'));
         expect(StringUtils.toPascalCase('user-service'), equals('UserService'));
         expect(
-            StringUtils.toPascalCase('my_module_name'), equals('MyModuleName'),);
+          StringUtils.toPascalCase('my_module_name'),
+          equals('MyModuleName'),
+        );
         expect(StringUtils.toPascalCase('single'), equals('Single'));
         expect(StringUtils.toPascalCase(''), equals(''));
       });

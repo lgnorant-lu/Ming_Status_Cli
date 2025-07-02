@@ -20,7 +20,7 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 /// 提供美化的CLI帮助文本显示
 class HelpFormatter {
   /// 格式化主帮助信息
-  static void showMainHelp(CommandRunner runner) {
+  static void showMainHelp(CommandRunner<int> runner) {
     // 标题和欢迎信息
     Logger.title('Ming Status CLI');
     Logger.subtitle('强大的模块化开发工具');
@@ -56,7 +56,7 @@ class HelpFormatter {
   }
 
   /// 显示用法信息
-  static void _showUsage(CommandRunner runner) {
+  static void _showUsage(CommandRunner<int> runner) {
     Logger.subtitle('📖 用法');
     Logger.keyValue('基本格式', 'ming <command> [arguments]');
     Logger.keyValue('查看命令帮助', 'ming help <command>');
@@ -64,7 +64,7 @@ class HelpFormatter {
   }
 
   /// 显示全局选项
-  static void _showGlobalOptions(CommandRunner runner) {
+  static void _showGlobalOptions(CommandRunner<int> runner) {
     Logger.subtitle('🌐 全局选项');
     Logger.keyValue('-h, --help', '显示帮助信息');
     Logger.keyValue('-v, --verbose', '显示详细输出信息');
@@ -74,7 +74,7 @@ class HelpFormatter {
   }
 
   /// 显示可用命令
-  static void _showAvailableCommands(CommandRunner runner) {
+  static void _showAvailableCommands(CommandRunner<int> runner) {
     Logger.subtitle('📋 可用命令');
 
     // 按类别组织命令

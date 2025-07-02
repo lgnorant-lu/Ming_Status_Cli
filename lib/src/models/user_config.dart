@@ -20,6 +20,7 @@ part 'user_config.g.dart';
 /// 管理用户的全局配置和偏好设置
 @JsonSerializable()
 class UserConfig {
+  /// 创建用户配置实例
   const UserConfig({
     required this.user,
     required this.preferences,
@@ -117,12 +118,14 @@ class UserConfig {
 /// 用户基本信息
 @JsonSerializable()
 class UserInfo {
+  /// 创建用户基本信息实例
   const UserInfo({
     required this.name,
     this.email = '',
     this.company = '',
   });
 
+  /// 从JSON创建用户基本信息实例
   factory UserInfo.fromJson(Map<String, dynamic>? json) {
     if (json == null || json.isEmpty) {
       return const UserInfo(name: '');
@@ -143,6 +146,7 @@ class UserInfo {
   /// 公司名称
   final String company;
 
+  /// 转换为JSON
   Map<String, dynamic> toJson() => _$UserInfoToJson(this);
 
   /// 拷贝并更新用户信息
@@ -162,6 +166,7 @@ class UserInfo {
 /// 用户偏好设置
 @JsonSerializable()
 class UserPreferences {
+  /// 创建用户偏好设置实例
   const UserPreferences({
     this.defaultTemplate = 'basic',
     this.coloredOutput = true,
@@ -170,6 +175,7 @@ class UserPreferences {
     this.preferredIde = 'vscode',
   });
 
+  /// 从JSON创建用户偏好设置实例
   factory UserPreferences.fromJson(Map<String, dynamic>? json) {
     if (json == null || json.isEmpty) {
       return const UserPreferences();
@@ -196,6 +202,7 @@ class UserPreferences {
   /// 首选IDE
   final String preferredIde;
 
+  /// 转换为JSON
   Map<String, dynamic> toJson() => _$UserPreferencesToJson(this);
 
   /// 拷贝并更新偏好设置
@@ -219,6 +226,7 @@ class UserPreferences {
 /// 用户默认值
 @JsonSerializable()
 class UserDefaults {
+  /// 创建用户默认值实例
   const UserDefaults({
     required this.author,
     required this.license,
@@ -226,6 +234,7 @@ class UserDefaults {
     this.description = 'A Flutter module created by Ming Status CLI',
   });
 
+  /// 从JSON创建用户默认值实例
   factory UserDefaults.fromJson(Map<String, dynamic>? json) {
     if (json == null || json.isEmpty) {
       return const UserDefaults(
@@ -257,6 +266,7 @@ class UserDefaults {
   /// 默认描述
   final String description;
 
+  /// 转换为JSON
   Map<String, dynamic> toJson() => _$UserDefaultsToJson(this);
 
   /// 拷贝并更新默认值
@@ -278,11 +288,13 @@ class UserDefaults {
 /// 安全设置
 @JsonSerializable()
 class SecuritySettings {
+  /// 创建安全设置实例
   const SecuritySettings({
     this.encryptedCredentials = false,
     this.strictPermissions = true,
   });
 
+  /// 从JSON创建安全设置实例
   factory SecuritySettings.fromJson(Map<String, dynamic>? json) {
     if (json == null || json.isEmpty) {
       return const SecuritySettings();
@@ -300,6 +312,7 @@ class SecuritySettings {
   /// 严格权限检查
   final bool strictPermissions;
 
+  /// 转换为JSON
   Map<String, dynamic> toJson() => _$SecuritySettingsToJson(this);
 
   /// 拷贝并更新安全设置
