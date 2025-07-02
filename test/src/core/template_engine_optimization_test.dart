@@ -15,6 +15,7 @@ Change History:
 import 'dart:io';
 
 import 'package:ming_status_cli/src/core/template_engine.dart';
+import 'package:ming_status_cli/src/core/template_exceptions.dart';
 import 'package:ming_status_cli/src/utils/file_utils.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';

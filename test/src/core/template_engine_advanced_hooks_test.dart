@@ -12,6 +12,9 @@ Description:        Task 33.* 高级钩子功能测试 (Advanced hooks functiona
 import 'dart:io';
 
 import 'package:ming_status_cli/src/core/template_engine.dart';
+import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/strategies/hook_implementations.dart' as hook_impl;
+import 'package:ming_status_cli/src/core/managers/hook_manager.dart' as hook_mgr;
 import 'package:test/test.dart';
 
 /// 测试用的简单脚本钩子
@@ -98,13 +101,14 @@ void main() {
 
     group('Task 33.1: ScriptExecutionHook 测试', () {
       test('应该成功执行简单脚本', () async {
-        const config = ScriptHookConfig(
+        const config = hook_impl.ScriptHookConfig(
           description: '测试脚本',
-          script: 'echo Hello World',
+          scriptPath: 'echo Hello World',
           timeout: 5000,
         );
 
-        final hook = ScriptExecutionHook(
+        final hook = hook_impl.ScriptExecutionHook(
+          name: 'test_script_hook',
           config: config,
           hookType: HookType.preGeneration,
         );
@@ -121,13 +125,14 @@ void main() {
       });
 
       test('应该处理脚本变量插值', () async {
-        const config = ScriptHookConfig(
+        const config = hook_impl.ScriptHookConfig(
           description: '变量插值测试',
-          script: 'echo {{module_name}} {{template_name}}',
+          scriptPath: 'echo {{module_name}} {{template_name}}',
           timeout: 5000,
         );
 
-        final hook = ScriptExecutionHook(
+        final hook = hook_impl.ScriptExecutionHook(
+          name: 'interpolation_test_hook',
           config: config,
           hookType: HookType.preGeneration,
         );
@@ -145,15 +150,16 @@ void main() {
       });
 
       test('应该处理脚本执行超时', () async {
-        final config = ScriptHookConfig(
+        final config = hook_impl.ScriptHookConfig(
           description: '超时测试',
-          script: Platform.isWindows ?
+          scriptPath: Platform.isWindows ?
             'ping 127.0.0.1 -n 10' :
             'sleep 10', // Windows兼容的超时命令
           timeout: 1000, // 1秒超时
         );
 
-        final hook = ScriptExecutionHook(
+        final hook = hook_impl.ScriptExecutionHook(
+          name: 'timeout_test_hook',
           config: config,
           hookType: HookType.preGeneration,
         );
@@ -176,24 +182,26 @@ void main() {
       });
 
       test('应该支持条件执行', () async {
-        const config1 = ScriptHookConfig(
+        const config1 = hook_impl.ScriptHookConfig(
           description: '条件为真',
-          script: 'echo condition true',
+          scriptPath: 'echo condition true',
           condition: 'true',
         );
 
-        const config2 = ScriptHookConfig(
+        const config2 = hook_impl.ScriptHookConfig(
           description: '条件为假',
-          script: 'echo condition false',
+          scriptPath: 'echo condition false',
           condition: 'false',
         );
 
-        final hook1 = ScriptExecutionHook(
+        final hook1 = hook_impl.ScriptExecutionHook(
+          name: 'condition_true_hook',
           config: config1,
           hookType: HookType.preGeneration,
         );
 
-        final hook2 = ScriptExecutionHook(
+        final hook2 = hook_impl.ScriptExecutionHook(
+          name: 'condition_false_hook',
           config: config2,
           hookType: HookType.preGeneration,
         );
@@ -214,13 +222,14 @@ void main() {
       });
 
       test('应该支持错误忽略', () async {
-        const config = ScriptHookConfig(
+        const config = hook_impl.ScriptHookConfig(
           description: '错误忽略测试',
-          script: 'non_existent_command',
+          scriptPath: 'non_existent_command',
           ignoreErrors: true,
         );
 
-        final hook = ScriptExecutionHook(
+        final hook = hook_impl.ScriptExecutionHook(
+          name: 'ignore_errors_hook',
           config: config,
           hookType: HookType.preGeneration,
         );
@@ -337,14 +346,14 @@ hooks:
         );
 
         // 条件为真的钩子
-        final conditionalHook1 = ConditionalHook(
+        final conditionalHook1 = hook_mgr.ConditionalHook(
           name: 'conditional_true',
           condition: 'true',
           wrappedHook: testHook,
         );
 
         // 条件为假的钩子
-        final conditionalHook2 = ConditionalHook(
+        final conditionalHook2 = hook_mgr.ConditionalHook(
           name: 'conditional_false',
           condition: 'false',
           wrappedHook: testHook,
@@ -376,7 +385,7 @@ hooks:
           shouldTimeout: true,
         );
 
-        final timeoutHook = TimeoutHook(
+        final timeoutHook = hook_mgr.TimeoutHook(
           name: 'timeout_wrapper',
           timeout: const Duration(milliseconds: 100),
           wrappedHook: testHook,
@@ -403,7 +412,7 @@ hooks:
         );
 
         var recoveryExecuted = false;
-        final recoveryHook = ErrorRecoveryHook(
+        final recoveryHook = hook_mgr.ErrorRecoveryHook(
           name: 'recovery_wrapper',
           wrappedHook: failingHook,
           recoveryAction: (failedResult) async {
@@ -434,7 +443,7 @@ hooks:
           shouldFail: true,
         );
 
-        final ignoreErrorsHook = ErrorRecoveryHook(
+        final ignoreErrorsHook = hook_mgr.ErrorRecoveryHook(
           name: 'ignore_errors_wrapper',
           wrappedHook: failingHook,
           ignoreErrors: true,
@@ -474,14 +483,14 @@ version: 1.0.0
         final testEngine = TemplateEngine(workingDirectory: tempDir.path);
         
         // 手动注册一些钩子来测试集成功能
-        const preHookConfig = ScriptHookConfig(
+        final preHookConfig = hook_impl.ScriptHookConfig(
           description: '集成测试预生成钩子',
-          script: 'echo "开始生成"',
+          scriptPath: 'echo "开始生成"',
         );
         
-        const postHookConfig = ScriptHookConfig(
+        final postHookConfig = hook_impl.ScriptHookConfig(
           description: '集成测试后生成钩子',
-          script: 'echo "生成完成"',
+          scriptPath: 'echo "生成完成"',
         );
         
         testEngine
@@ -512,9 +521,9 @@ version: 1.0.0
 
       test('应该提供详细的钩子信息', () {
         // 注册各种类型的钩子
-        const scriptConfig = ScriptHookConfig(
+        final scriptConfig = hook_impl.ScriptHookConfig(
           description: '测试脚本钩子',
-          script: 'echo test',
+          scriptPath: 'echo test',
         );
         engine.registerScriptHook(scriptConfig, HookType.preGeneration);
 
@@ -575,10 +584,10 @@ version: 1.0.0
           'environment': {'TEST_VAR': 'test_value'},
         };
 
-        final config = ScriptHookConfig.fromMap(configMap);
+        final config = hook_impl.ScriptHookConfig.fromMap(configMap);
 
         expect(config.description, equals('测试钩子'));
-        expect(config.script, equals('echo test'));
+        expect(config.scriptPath, equals('echo test'));
         expect(config.condition, equals('true'));
         expect(config.timeout, equals(10000));
         expect(config.ignoreErrors, isTrue);
@@ -592,7 +601,7 @@ version: 1.0.0
           'script': 'echo test',
         };
 
-        final config = ScriptHookConfig.fromMap(configMap);
+        final config = hook_impl.ScriptHookConfig.fromMap(configMap);
 
         expect(config.timeout, equals(30000));
         expect(config.ignoreErrors, isFalse);
