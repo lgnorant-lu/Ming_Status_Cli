@@ -12,7 +12,6 @@ Description:        模板兼容性检查功能测试 (Template compatibility ch
 import 'dart:io';
 
 import 'package:ming_status_cli/src/core/template_engine.dart';
-import 'package:ming_status_cli/src/core/template_exceptions.dart';
 import 'package:ming_status_cli/src/core/template_models.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';

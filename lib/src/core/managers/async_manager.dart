@@ -15,7 +15,6 @@ Change History:
 import 'dart:async';
 
 import 'package:ming_status_cli/src/core/template_models.dart';
-import 'package:ming_status_cli/src/core/template_exceptions.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 用于避免unawaited警告的工具函数

@@ -139,10 +139,72 @@ Ming_Status_Cli/
 
 ## 贡献指南
 
+### Git提交规范
+
+本项目采用**约定式提交规范 (Conventional Commits)**，支持中文描述：
+
+#### 提交格式
+```
+<type>(<scope>): <中文简短描述>
+
+[可选的正文]
+
+[可选的页脚]
+```
+
+#### 类型定义 (type)
+- **feat**: 新功能
+- **fix**: Bug修复
+- **docs**: 仅文档内容的变更
+- **style**: 不影响代码含义的格式更改
+- **refactor**: 代码重构
+- **perf**: 提升性能的代码更改
+- **test**: 添加或修正测试
+- **build**: 影响构建系统或外部依赖的更改
+- **ci**: 更改CI配置文件和脚本
+- **chore**: 其他不修改src或test文件的更改
+
+#### 范围定义 (scope) - 可选
+- **core**: 核心服务和验证系统
+- **cli**: 命令行接口
+- **validators**: 验证器相关
+- **templates**: 模板系统
+- **config**: 配置管理
+- **test**: 测试相关
+- **docs**: 文档相关
+
+#### 示例提交信息
+```bash
+# 简单提交
+git commit -m "feat(core): 添加模块验证功能"
+
+# 复杂提交
+git commit -m "feat(validators): 实现企业级验证系统" -m "
+实现了完整的四层验证架构：
+- StructureValidator: 模块结构验证
+- QualityValidator: 代码质量验证
+- DependencyValidator: 依赖关系验证
+- PlatformComplianceValidator: 平台规范验证
+
+包含自动修复、CI/CD集成、多格式报告等企业级功能。
+
+Closes: #123"
+```
+
+### 开发流程
+
 1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 创建Pull Request
+2. 创建功能分支 (`git checkout -b feat/amazing-feature`)
+3. 按照提交规范提交更改 (`git commit -m "feat(core): 添加新功能"`)
+4. 推送到分支 (`git push origin feat/amazing-feature`)
+5. 创建Pull Request
+
+### 代码质量要求
+
+- 所有新功能必须包含单元测试
+- 测试覆盖率应保持在90%以上
+- 代码必须通过 `dart analyze` 检查
+- 遵循Dart官方代码风格指南
 
 ## 许可证
 

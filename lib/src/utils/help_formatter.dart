@@ -94,6 +94,9 @@ class HelpFormatter {
     if (commands.containsKey('doctor')) {
       Logger.listItem('doctor   - 检查开发环境和工作空间状态', indent: 1);
     }
+    if (commands.containsKey('validate')) {
+      Logger.listItem('validate - 验证模块的结构、质量、依赖关系和平台规范', indent: 1);
+    }
     if (commands.containsKey('version')) {
       Logger.listItem('version  - 显示版本信息', indent: 1);
     }
@@ -127,6 +130,20 @@ class HelpFormatter {
     Logger.listItem('ming config --get user.name    # 获取配置值', indent: 1);
     Logger.listItem('ming config --set user.name=值 # 设置配置值', indent: 1);
     Logger.listItem('ming config --global --set key=value # 设置全局配置', indent: 1);
+    Logger.newLine();
+
+    Logger.info('🔍 模块验证：');
+    Logger.listItem('ming validate                  # 验证当前模块或项目', indent: 1);
+    Logger.listItem('ming validate --health-check   # 检查验证器健康状态', indent: 1);
+    Logger.listItem('ming validate --fix            # 自动修复可修复的问题', indent: 1);
+    Logger.listItem(
+      'ming validate --watch          # 监控模式，文件变化时自动验证',
+      indent: 1,
+    );
+    Logger.listItem(
+      'ming validate --output json    # 以JSON格式输出验证结果',
+      indent: 1,
+    );
     Logger.newLine();
 
     Logger.info('ℹ️  版本信息：');

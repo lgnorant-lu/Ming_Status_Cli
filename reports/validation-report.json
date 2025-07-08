@@ -1,0 +1,1164 @@
+{
+  "metadata": {
+    "generated_at": "2025-07-08T19:21:04.074590",
+    "generator": "Ming Status CLI",
+    "version": "1.0.0",
+    "project_path": "test/integration/test_modules/valid_module",
+    "command_line": "D:\\Coding\\Flutter\\flutter\\bin\\cache\\dart-sdk\\bin\\dart.exe ",
+    "ci_cd_environment": "CiCdEnvironment.local",
+    "is_ci": "false",
+    "environment": "CiCdEnvironment.local"
+  },
+  "summary": {
+    "is_valid": false,
+    "total_messages": 127,
+    "error_count": 9,
+    "warning_count": 34,
+    "success_count": 69
+  },
+  "messages": [
+    {
+      "severity": "success",
+      "message": "必需目录存在: lib/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "推荐目录存在: test/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "缺少推荐目录: doc/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建 doc 目录"
+    },
+    {
+      "severity": "warning",
+      "message": "缺少推荐目录: example/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建 example 目录"
+    },
+    {
+      "severity": "success",
+      "message": "必需文件存在: pubspec.yaml",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "推荐文件存在: README.md",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "缺少推荐文件: CHANGELOG.md",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建 CHANGELOG.md 文件"
+    },
+    {
+      "severity": "success",
+      "message": "pubspec.yaml包含必需字段: name",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "pubspec.yaml包含必需字段: version",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "pubspec.yaml包含必需字段: description",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "pubspec.yaml包含SDK约束",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "lib/src/ 目录结构规范",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "良好的目录组织: src/models/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "良好的目录组织: src/services/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "良好的目录组织: src/utils/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "良好的目录组织: src/widgets/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "主库文件存在: valid_module.dart",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "包含测试文件",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "README.md 内容充实",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "目录命名规范: src",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "目录命名规范: models",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "目录命名规范: services",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "目录命名规范: utils",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "目录命名规范: widgets",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "文件命名规范: user.dart",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "文件命名规范: user_service.dart",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "文件命名规范: string_utils.dart",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "文件命名规范: user_widget.dart",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "文件命名规范: valid_module.dart",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "缺少 .gitignore 文件",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建 .gitignore 文件"
+    },
+    {
+      "severity": "info",
+      "message": "可选的Pet App模块配置文件: module.yaml",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建module.yaml配置文件"
+    },
+    {
+      "severity": "success",
+      "message": "Pet App平台标准目录: src/services/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "Pet App平台标准目录: src/widgets/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "Pet App平台标准目录: src/models/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "Pet App平台标准目录: src/utils/",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "可添加国际化支持(lib/l10n/)",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "建议添加使用示例(example/)",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建example目录和示例文件"
+    },
+    {
+      "severity": "info",
+      "message": "可添加资源目录(assets/)",
+      "validator": "structure",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "Dart分析错误: Directory or file doesn't exist: test/integration/test_modules/valid_module",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "Dart分析错误: Usage: dart analyze [arguments] [<directory>]",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "Dart分析错误: -h, --help                   Print this usage information.",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "Dart分析错误:     --fatal-infos            Treat info level issues as fatal.",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "Dart分析错误:     --[no-]fatal-warnings    Treat warning level issues as fatal.",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "Dart分析错误:                              (defaults to on)",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "Dart分析错误: Run \"dart help\" to see global options.",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "缺少文件头注释",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "导入语句顺序正确",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "缺少文件头注释",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "导入语句顺序正确",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "行长度超过80字符",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": 68,
+      "code": null,
+      "fix_suggestion": "将长行拆分为多行"
+    },
+    {
+      "severity": "success",
+      "message": "包含文件头注释",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "缺少文件头注释",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "导入语句顺序正确",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "包含文件头注释",
+      "validator": "quality",
+      "file_path": "lib\\valid_module.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "类文档覆盖率偏低: 0%",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "方法文档覆盖率偏低: 50%",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "类文档覆盖率良好: 100%",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "方法文档覆盖率偏低: 21%",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "类文档覆盖率良好: 100%",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "方法文档覆盖率偏低: 26%",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "类文档覆盖率良好: 100%",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "方法文档覆盖率偏低: 6%",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "类文档覆盖率良好: 100%",
+      "validator": "quality",
+      "file_path": "lib\\valid_module.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "方法文档覆盖率良好: 100%",
+      "validator": "quality",
+      "file_path": "lib\\valid_module.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "方法 isNullOrEmpty 过长 (65行)",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": 12,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "使用const关键字优化性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "正确使用@override注解",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "使用const关键字优化性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "正确使用@override注解",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "使用const关键字优化性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "使用const关键字优化性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "正确使用@override注解",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "缺少analysis_options.yaml配置文件",
+      "validator": "quality",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建analysis_options.yaml文件"
+    },
+    {
+      "severity": "warning",
+      "message": "发现过长的参数列表，建议使用参数对象",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "使用参数对象或命名参数重构长参数列表"
+    },
+    {
+      "severity": "success",
+      "message": "正确使用命名参数",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "代码嵌套层次过深(5层)，建议重构",
+      "validator": "quality",
+      "file_path": "lib\\src\\models\\user.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "提取方法或使用early return减少嵌套"
+    },
+    {
+      "severity": "success",
+      "message": "正确使用命名参数",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "代码嵌套层次过深(6层)，建议重构",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "提取方法或使用early return减少嵌套"
+    },
+    {
+      "severity": "success",
+      "message": "正确使用命名参数",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "方法包含多个return语句(13个)，考虑重构",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "发现过长的参数列表，建议使用参数对象",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "使用参数对象或命名参数重构长参数列表"
+    },
+    {
+      "severity": "success",
+      "message": "正确使用命名参数",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "代码嵌套层次过深(8层)，建议重构",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "提取方法或使用early return减少嵌套"
+    },
+    {
+      "severity": "warning",
+      "message": "循环中创建对象，可能影响性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\services\\user_service.dart",
+      "line_number": 13,
+      "code": null,
+      "fix_suggestion": "将对象创建移到循环外部"
+    },
+    {
+      "severity": "info",
+      "message": "频繁字符串拼接，考虑使用StringBuffer",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "使用StringBuffer进行大量字符串拼接"
+    },
+    {
+      "severity": "warning",
+      "message": "循环中创建对象，可能影响性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": 7,
+      "code": null,
+      "fix_suggestion": "将对象创建移到循环外部"
+    },
+    {
+      "severity": "warning",
+      "message": "循环中创建对象，可能影响性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\utils\\string_utils.dart",
+      "line_number": 13,
+      "code": null,
+      "fix_suggestion": "将对象创建移到循环外部"
+    },
+    {
+      "severity": "warning",
+      "message": "循环中创建对象，可能影响性能",
+      "validator": "quality",
+      "file_path": "lib\\src\\widgets\\user_widget.dart",
+      "line_number": 10,
+      "code": null,
+      "fix_suggestion": "将对象创建移到循环外部"
+    },
+    {
+      "severity": "info",
+      "message": "pubspec.yaml建议添加字段: homepage",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "pubspec.yaml建议添加字段: repository",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "pubspec.yaml格式验证通过",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "http 使用兼容版本约束: ^1.1.0",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "json_annotation 使用兼容版本约束: ^4.8.1",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "test 使用兼容版本约束: ^1.24.9",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "build_runner 使用兼容版本约束: ^2.4.8",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "json_serializable 使用兼容版本约束: ^6.7.1",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "very_good_analysis 使用兼容版本约束: ^5.1.0",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "指定了Flutter SDK约束",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "http: 建议关注dart:io或dio的最新发展",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "flutter_test已废弃，建议使用: 使用package:flutter_test",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "替换为推荐的包"
+    },
+    {
+      "severity": "warning",
+      "message": "build_runner已废弃，建议使用: 考虑使用build_web_compilers",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "替换为推荐的包"
+    },
+    {
+      "severity": "info",
+      "message": "建议定期运行\"dart pub outdated\"检查包更新",
+      "validator": "dependency",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "运行pub outdated检查包更新"
+    },
+    {
+      "severity": "success",
+      "message": "发现 3 个被使用的依赖包",
+      "validator": "dependency",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "http 存在安全风险: HTTP请求伪造漏洞，升级到>=0.13.0",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "立即升级到安全版本 (避免<0.13.0)"
+    },
+    {
+      "severity": "warning",
+      "message": "flutter_test: 测试包可能包含调试信息，不应在生产环境使用",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "test: 测试包可能包含调试信息，不应在生产环境使用",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "已集成安全工具: very_good_analysis",
+      "validator": "dependency",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "建议定期运行安全扫描和依赖更新检查",
+      "validator": "dependency",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "运行dart pub audit检查安全漏洞"
+    },
+    {
+      "severity": "warning",
+      "message": "缺少 pubspec.lock 文件，建议运行 pub get",
+      "validator": "dependency",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "运行 pub get 生成锁文件"
+    },
+    {
+      "severity": "warning",
+      "message": "无法检测依赖冲突：缺少pubspec.lock文件",
+      "validator": "dependency",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "error",
+      "message": "缺少模块定义文件: valid_module_module.dart",
+      "validator": "platform",
+      "file_path": "lib/valid_module_module.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": "创建模块定义文件并实现ModuleInterface"
+    },
+    {
+      "severity": "warning",
+      "message": "缺少module.yaml配置文件",
+      "validator": "platform",
+      "file_path": "module.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "模块版本符合API兼容性要求: 1.0.0",
+      "validator": "platform",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "建议依赖core_services确保API兼容性",
+      "validator": "platform",
+      "file_path": "pubspec.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "接口签名兼容性检查完成",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "未找到models目录，跳过数据模型兼容性检查",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "模块未使用事件系统，如需模块间通信建议集成EventBus",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "公共接口导出规范正确",
+      "validator": "platform",
+      "file_path": "lib/valid_module.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "接口文档覆盖率良好: 80%",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "模块定义了适当的异常类型",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "模块实现了错误处理机制",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "建议添加module.yaml配置文件",
+      "validator": "platform",
+      "file_path": "module.yaml",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "模块导出了 4 个公共接口",
+      "validator": "platform",
+      "file_path": "lib/valid_module.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "主文件包含文档说明",
+      "validator": "platform",
+      "file_path": "lib/valid_module.dart",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "warning",
+      "message": "README.md建议包含更多标准章节",
+      "validator": "platform",
+      "file_path": "README.md",
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "success",
+      "message": "模块包含 1 个测试文件",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    },
+    {
+      "severity": "info",
+      "message": "模块未配置国际化支持",
+      "validator": "platform",
+      "file_path": null,
+      "line_number": null,
+      "code": null,
+      "fix_suggestion": null
+    }
+  ]
+}

@@ -14,12 +14,11 @@ Change History:
 
 import 'dart:io';
 import 'dart:math' as math;
-import 'package:path/path.dart' as path;
 
-import 'package:ming_status_cli/src/core/template_models.dart';
 import 'package:ming_status_cli/src/core/template_exceptions.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:ming_status_cli/src/utils/string_utils.dart';
+import 'package:path/path.dart' as path;
 
 /// 错误模式
 class ErrorPattern {

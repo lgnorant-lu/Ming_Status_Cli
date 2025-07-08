@@ -363,15 +363,19 @@ class ModuleValidator {
     try {
       // 检查基本结构
       if (!FileUtils.directoryExists(modulePath)) return false;
-      if (!FileUtils.fileExists(path.join(modulePath, 'module.yaml'))) {
-        return false;
-      }
+      
+      // pubspec.yaml是必需的（Dart项目基本要求）
       if (!FileUtils.fileExists(path.join(modulePath, 'pubspec.yaml'))) {
         return false;
       }
+      
+      // lib目录是必需的
       if (!FileUtils.directoryExists(path.join(modulePath, 'lib'))) {
         return false;
       }
+
+      // module.yaml是可选的（仅针对特定模块化项目）
+      // 不再强制要求module.yaml文件
 
       return true;
     } catch (e) {

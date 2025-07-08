@@ -321,7 +321,7 @@ class UserExperienceManager {
       final templateInfo = templateInfoResult as Map<String, dynamic>?;
       final hasVars = templateInfo != null && (templateInfo.containsKey('vars') as bool? ?? false);
       if (hasVars) {
-        final templateVars = Map<String, dynamic>.from(templateInfo!['vars'] as Map? ?? {});
+        final templateVars = Map<String, dynamic>.from(templateInfo['vars'] as Map? ?? {});
         
         for (final entry in templateVars.entries) {
           final varName = entry.key;

@@ -1,0 +1,51 @@
+name: Ming Status CLI Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Dart
+      uses: dart-lang/setup-dart@v1
+      with:
+        sdk: stable
+
+    - name: Install dependencies
+      run: dart pub get
+
+    - name: Install Ming Status CLI
+      run: dart pub global activate --source path .
+
+    - name: Run validation
+      run: |
+        ming validate . \
+          --output=json \
+          --output-file=validation-report.json \
+          --junit-output=test-results.xml \
+          --strict \
+          --parallel
+
+    - name: Upload validation report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: validation-report
+        path: |
+          validation-report.json
+          test-results.xml
+
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Validation Results
+        path: test-results.xml
+        reporter: java-junit

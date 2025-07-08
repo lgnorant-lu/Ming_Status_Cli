@@ -168,9 +168,9 @@ class AdvancedHookManager {
     
     // 统计所有类型的脚本钩子（包括两个不同命名空间的ScriptExecutionHook）
     final scriptHooksCount = preHooks.where((hook) => 
-      hook.runtimeType.toString().contains('ScriptExecutionHook')).length +
+      hook.runtimeType.toString().contains('ScriptExecutionHook'),).length +
       postHooks.where((hook) => 
-      hook.runtimeType.toString().contains('ScriptExecutionHook')).length;
+      hook.runtimeType.toString().contains('ScriptExecutionHook'),).length;
 
     return {
       'pre_generation_hooks': preHooks.length,
@@ -350,10 +350,10 @@ class ScriptHookConfig {
 class ScriptExecutionHook extends TemplateHook {
   /// 创建脚本执行钩子
   ScriptExecutionHook({
-    required String name,
+    required super.name,
     required this.config,
     required this.hookType,
-  }) : super(name: name);
+  });
 
   /// 配置
   final ScriptHookConfig config;

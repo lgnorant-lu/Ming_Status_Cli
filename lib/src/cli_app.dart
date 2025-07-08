@@ -19,6 +19,7 @@ import 'package:ming_status_cli/src/commands/create_command.dart';
 import 'package:ming_status_cli/src/commands/doctor_command.dart';
 import 'package:ming_status_cli/src/commands/help_command.dart';
 import 'package:ming_status_cli/src/commands/init_command.dart';
+import 'package:ming_status_cli/src/commands/validate_command.dart';
 import 'package:ming_status_cli/src/commands/version_command.dart';
 import 'package:ming_status_cli/src/utils/error_handler.dart';
 import 'package:ming_status_cli/src/utils/help_formatter.dart';
@@ -79,7 +80,8 @@ class MingStatusCliApp {
       ..addCommand(CreateCommand())
       ..addCommand(ConfigCommand())
       ..addCommand(VersionCommand())
-      ..addCommand(DoctorCommand());
+      ..addCommand(DoctorCommand())
+      ..addCommand(ValidateCommand()); // Phase 1 Week 5: 验证系统命令
 
     // 注意：使用自定义帮助处理而不是添加help命令
     // 因为CommandRunner已经有内置的help命令
@@ -87,7 +89,6 @@ class MingStatusCliApp {
     // TODO(future): 在后续阶段添加更多命令
     // _runner.addCommand(TemplateCommand());
     // _runner.addCommand(GenerateCommand());
-    // _runner.addCommand(ValidateCommand());
     // _runner.addCommand(StatusCommand());
     // _runner.addCommand(CleanCommand());
 
@@ -275,8 +276,20 @@ class MingStatusCliApp {
     Logger.listItem('✅ 工作空间初始化和配置管理');
     Logger.listItem('✅ 环境检查和诊断工具');
     Logger.listItem('✅ 模块化项目结构创建');
+    Logger.listItem('✅ 企业级验证系统 - 结构/质量/依赖/平台规范验证');
+    Logger.listItem('✅ 智能自动修复 - 代码格式化/导入排序/配置修正');
+    Logger.listItem('✅ 多格式输出 - console/json/junit/compact');
+    Logger.listItem('✅ 监控模式 - 文件变化实时验证');
     Logger.listItem('🚧 模板系统（开发中）');
     Logger.listItem('🚧 代码生成工具（计划中）');
+    Logger.newLine();
+
+    Logger.subtitle('🔍 验证系统特性');
+    Logger.listItem('• StructureValidator - 模块结构和命名规范验证');
+    Logger.listItem('• QualityValidator - 代码质量和最佳实践检查（含dart analyze集成）');
+    Logger.listItem('• DependencyValidator - 依赖安全和版本兼容性管理');
+    Logger.listItem('• PlatformComplianceValidator - Pet App平台规范验证');
+    Logger.listItem('• AutoFixManager - 智能问题识别和自动修复');
     Logger.newLine();
   }
 

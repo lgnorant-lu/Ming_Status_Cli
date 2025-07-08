@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ming Status CLI 验证报告</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; }
+        .header h1 { margin: 0; font-size: 2.5em; }
+        .header .subtitle { opacity: 0.9; margin-top: 10px; }
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 30px; }
+        .summary-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #007bff; }
+        .summary-card.error { border-left-color: #dc3545; }
+        .summary-card.warning { border-left-color: #ffc107; }
+        .summary-card.success { border-left-color: #28a745; }
+        .summary-card h3 { margin: 0; font-size: 2em; }
+        .summary-card p { margin: 10px 0 0; color: #6c757d; }
+        .status { display: inline-block; padding: 8px 16px; border-radius: 20px; color: white; font-weight: bold; background: #dc3545; }
+        .messages { padding: 0 30px 30px; }
+        .message { margin: 10px 0; padding: 15px; border-radius: 6px; border-left: 4px solid #007bff; }
+        .message.error { background: #f8d7da; border-left-color: #dc3545; color: #721c24; }
+        .message.warning { background: #fff3cd; border-left-color: #ffc107; color: #856404; }
+        .message.success { background: #d4edda; border-left-color: #28a745; color: #155724; }
+        .message-header { font-weight: bold; margin-bottom: 5px; }
+        .message-file { font-family: monospace; font-size: 0.9em; color: #6c757d; }
+        .footer { padding: 20px 30px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 0.9em; }
+        .metadata { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .metadata-item { display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 验证报告</h1>
+            <div class="subtitle">
+                <span class="status">失败</span>
+                <span style="margin-left: 20px;">生成时间: 2025-07-08T19:21:04.074590</span>
+            </div>
+        </div>
+        
+        <div class="summary">
+            <div class="summary-card error">
+                <h3>9</h3>
+                <p>错误</p>
+            </div>
+            <div class="summary-card warning">
+                <h3>34</h3>
+                <p>警告</p>
+            </div>
+            <div class="summary-card success">
+                <h3>69</h3>
+                <p>成功</p>
+            </div>
+            <div class="summary-card">
+                <h3>127</h3>
+                <p>总计</p>
+            </div>
+        </div>
+        
+        <div class="messages">
+            <h2>验证详情</h2>
+                        <div class="message success">
+                <div class="message-header">必需目录存在: lib/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">推荐目录存在: test/</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少推荐目录: doc/</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少推荐目录: example/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">必需文件存在: pubspec.yaml</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">推荐文件存在: README.md</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少推荐文件: CHANGELOG.md</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">pubspec.yaml包含必需字段: name</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">pubspec.yaml包含必需字段: version</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">pubspec.yaml包含必需字段: description</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">pubspec.yaml包含SDK约束</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">lib/src/ 目录结构规范</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">良好的目录组织: src/models/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">良好的目录组织: src/services/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">良好的目录组织: src/utils/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">良好的目录组织: src/widgets/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">主库文件存在: valid_module.dart</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">包含测试文件</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">README.md 内容充实</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">目录命名规范: src</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">目录命名规范: models</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">目录命名规范: services</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">目录命名规范: utils</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">目录命名规范: widgets</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">文件命名规范: user.dart</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">文件命名规范: user_service.dart</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">文件命名规范: string_utils.dart</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">文件命名规范: user_widget.dart</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">文件命名规范: valid_module.dart</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少 .gitignore 文件</div>
+                
+            </div>
+                        <div class="message info">
+                <div class="message-header">可选的Pet App模块配置文件: module.yaml</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">Pet App平台标准目录: src/services/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">Pet App平台标准目录: src/widgets/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">Pet App平台标准目录: src/models/</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">Pet App平台标准目录: src/utils/</div>
+                
+            </div>
+                        <div class="message info">
+                <div class="message-header">可添加国际化支持(lib/l10n/)</div>
+                
+            </div>
+                        <div class="message info">
+                <div class="message-header">建议添加使用示例(example/)</div>
+                
+            </div>
+                        <div class="message info">
+                <div class="message-header">可添加资源目录(assets/)</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">Dart分析错误: Directory or file doesn't exist: test/integration/test_modules/valid_module</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">Dart分析错误: Usage: dart analyze [arguments] [<directory>]</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">Dart分析错误: -h, --help                   Print this usage information.</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">Dart分析错误:     --fatal-infos            Treat info level issues as fatal.</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">Dart分析错误:     --[no-]fatal-warnings    Treat warning level issues as fatal.</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">Dart分析错误:                              (defaults to on)</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">Dart分析错误: Run "dart help" to see global options.</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少文件头注释</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">导入语句顺序正确</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少文件头注释</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">导入语句顺序正确</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">行长度超过80字符</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">包含文件头注释</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少文件头注释</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">导入语句顺序正确</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">包含文件头注释</div>
+                <div class="message-file">📁 lib\valid_module.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">类文档覆盖率偏低: 0%</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">方法文档覆盖率偏低: 50%</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">类文档覆盖率良好: 100%</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">方法文档覆盖率偏低: 21%</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">类文档覆盖率良好: 100%</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">方法文档覆盖率偏低: 26%</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">类文档覆盖率良好: 100%</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">方法文档覆盖率偏低: 6%</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">类文档覆盖率良好: 100%</div>
+                <div class="message-file">📁 lib\valid_module.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">方法文档覆盖率良好: 100%</div>
+                <div class="message-file">📁 lib\valid_module.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">方法 isNullOrEmpty 过长 (65行)</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">使用const关键字优化性能</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">正确使用@override注解</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">使用const关键字优化性能</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">正确使用@override注解</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">使用const关键字优化性能</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">使用const关键字优化性能</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">正确使用@override注解</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少analysis_options.yaml配置文件</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">发现过长的参数列表，建议使用参数对象</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">正确使用命名参数</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">代码嵌套层次过深(5层)，建议重构</div>
+                <div class="message-file">📁 lib\src\models\user.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">正确使用命名参数</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">代码嵌套层次过深(6层)，建议重构</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">正确使用命名参数</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">方法包含多个return语句(13个)，考虑重构</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">发现过长的参数列表，建议使用参数对象</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">正确使用命名参数</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">代码嵌套层次过深(8层)，建议重构</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">循环中创建对象，可能影响性能</div>
+                <div class="message-file">📁 lib\src\services\user_service.dart</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">频繁字符串拼接，考虑使用StringBuffer</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">循环中创建对象，可能影响性能</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">循环中创建对象，可能影响性能</div>
+                <div class="message-file">📁 lib\src\utils\string_utils.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">循环中创建对象，可能影响性能</div>
+                <div class="message-file">📁 lib\src\widgets\user_widget.dart</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">pubspec.yaml建议添加字段: homepage</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">pubspec.yaml建议添加字段: repository</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">pubspec.yaml格式验证通过</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">http 使用兼容版本约束: ^1.1.0</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">json_annotation 使用兼容版本约束: ^4.8.1</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">test 使用兼容版本约束: ^1.24.9</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">build_runner 使用兼容版本约束: ^2.4.8</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">json_serializable 使用兼容版本约束: ^6.7.1</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">very_good_analysis 使用兼容版本约束: ^5.1.0</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">指定了Flutter SDK约束</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">http: 建议关注dart:io或dio的最新发展</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">flutter_test已废弃，建议使用: 使用package:flutter_test</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">build_runner已废弃，建议使用: 考虑使用build_web_compilers</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">建议定期运行"dart pub outdated"检查包更新</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">发现 3 个被使用的依赖包</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">http 存在安全风险: HTTP请求伪造漏洞，升级到>=0.13.0</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">flutter_test: 测试包可能包含调试信息，不应在生产环境使用</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">test: 测试包可能包含调试信息，不应在生产环境使用</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">已集成安全工具: very_good_analysis</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message info">
+                <div class="message-header">建议定期运行安全扫描和依赖更新检查</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少 pubspec.lock 文件，建议运行 pub get</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">无法检测依赖冲突：缺少pubspec.lock文件</div>
+                
+            </div>
+                        <div class="message error">
+                <div class="message-header">缺少模块定义文件: valid_module_module.dart</div>
+                <div class="message-file">📁 lib/valid_module_module.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">缺少module.yaml配置文件</div>
+                <div class="message-file">📁 module.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">模块版本符合API兼容性要求: 1.0.0</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">建议依赖core_services确保API兼容性</div>
+                <div class="message-file">📁 pubspec.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">接口签名兼容性检查完成</div>
+                
+            </div>
+                        <div class="message info">
+                <div class="message-header">未找到models目录，跳过数据模型兼容性检查</div>
+                
+            </div>
+                        <div class="message info">
+                <div class="message-header">模块未使用事件系统，如需模块间通信建议集成EventBus</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">公共接口导出规范正确</div>
+                <div class="message-file">📁 lib/valid_module.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">接口文档覆盖率良好: 80%</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">模块定义了适当的异常类型</div>
+                
+            </div>
+                        <div class="message success">
+                <div class="message-header">模块实现了错误处理机制</div>
+                
+            </div>
+                        <div class="message warning">
+                <div class="message-header">建议添加module.yaml配置文件</div>
+                <div class="message-file">📁 module.yaml</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">模块导出了 4 个公共接口</div>
+                <div class="message-file">📁 lib/valid_module.dart</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">主文件包含文档说明</div>
+                <div class="message-file">📁 lib/valid_module.dart</div>
+            </div>
+                        <div class="message warning">
+                <div class="message-header">README.md建议包含更多标准章节</div>
+                <div class="message-file">📁 README.md</div>
+            </div>
+                        <div class="message success">
+                <div class="message-header">模块包含 1 个测试文件</div>
+                
+            </div>
+                        <div class="message info">
+                <div class="message-header">模块未配置国际化支持</div>
+                
+            </div>
+            
+        </div>
+        
+        <div class="footer">
+            <h3>元数据</h3>
+            <div class="metadata">
+                                <div class="metadata-item">
+                    <span><strong>generated_at:</strong></span>
+                    <span>2025-07-08T19:21:04.074590</span>
+                </div>
+                                <div class="metadata-item">
+                    <span><strong>generator:</strong></span>
+                    <span>Ming Status CLI</span>
+                </div>
+                                <div class="metadata-item">
+                    <span><strong>version:</strong></span>
+                    <span>1.0.0</span>
+                </div>
+                                <div class="metadata-item">
+                    <span><strong>project_path:</strong></span>
+                    <span>test/integration/test_modules/valid_module</span>
+                </div>
+                                <div class="metadata-item">
+                    <span><strong>command_line:</strong></span>
+                    <span>D:\Coding\Flutter\flutter\bin\cache\dart-sdk\bin\dart.exe </span>
+                </div>
+                                <div class="metadata-item">
+                    <span><strong>ci_cd_environment:</strong></span>
+                    <span>CiCdEnvironment.local</span>
+                </div>
+                                <div class="metadata-item">
+                    <span><strong>is_ci:</strong></span>
+                    <span>false</span>
+                </div>
+                                <div class="metadata-item">
+                    <span><strong>environment:</strong></span>
+                    <span>CiCdEnvironment.local</span>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</body>
+</html>

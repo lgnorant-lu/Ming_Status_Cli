@@ -703,32 +703,32 @@ class ConfigDeepChecker extends HealthChecker {
         }
       } else {
         // 兼容性处理：如果是Map格式（向后兼容）
-        final configMap = config is Map ? 
-            config : <String, dynamic>{};
-        final workspaceData = configMap['workspace'] is Map ? 
-            configMap['workspace'] as Map : <String, dynamic>{};
-        
-        final workspaceName = workspaceData['name']?.toString();
-        if (workspaceName?.isNotEmpty ?? false) {
-          result.addSuccess('工作空间名称已设置: $workspaceName');
-        } else {
+      final configMap = config is Map ? 
+          config : <String, dynamic>{};
+      final workspaceData = configMap['workspace'] is Map ? 
+          configMap['workspace'] as Map : <String, dynamic>{};
+      
+      final workspaceName = workspaceData['name']?.toString();
+      if (workspaceName?.isNotEmpty ?? false) {
+        result.addSuccess('工作空间名称已设置: $workspaceName');
+      } else {
           result.addWarning('工作空间名称未设置或为空');
-        }
+      }
 
-        final workspaceVersion = workspaceData['version']?.toString();
-        if (workspaceVersion?.isNotEmpty ?? false) {
-          result.addSuccess('工作空间版本已设置: $workspaceVersion');
-        } else {
-          result.addWarning('工作空间版本未设置');
-        }
+      final workspaceVersion = workspaceData['version']?.toString();
+      if (workspaceVersion?.isNotEmpty ?? false) {
+        result.addSuccess('工作空间版本已设置: $workspaceVersion');
+      } else {
+        result.addWarning('工作空间版本未设置');
+      }
 
-        // 检查默认设置
-        final defaultsData = configMap['defaults'] is Map ? 
-            configMap['defaults'] as Map : <String, dynamic>{};
-        final defaultAuthor = defaultsData['author']?.toString();
-        if (defaultAuthor?.isNotEmpty ?? false) {
-          result.addSuccess('默认作者已设置: $defaultAuthor');
-        } else {
+      // 检查默认设置
+      final defaultsData = configMap['defaults'] is Map ? 
+          configMap['defaults'] as Map : <String, dynamic>{};
+      final defaultAuthor = defaultsData['author']?.toString();
+      if (defaultAuthor?.isNotEmpty ?? false) {
+        result.addSuccess('默认作者已设置: $defaultAuthor');
+      } else {
           result.addWarning('默认作者未设置，建议设置以便自动填充');
         }
       }
@@ -763,32 +763,32 @@ class ConfigDeepChecker extends HealthChecker {
         }
       } else {
         // 兼容性处理：如果是Map格式（向后兼容）
-        final configMap = config is Map ? config : <String, dynamic>{};
-        final templatesData = configMap['templates'] is Map ? 
-            configMap['templates'] as Map : null;
-        
-        if (templatesData != null) {
-          result.addSuccess('模板配置已启用');
+      final configMap = config is Map ? config : <String, dynamic>{};
+      final templatesData = configMap['templates'] is Map ? 
+          configMap['templates'] as Map : null;
+      
+      if (templatesData != null) {
+        result.addSuccess('模板配置已启用');
 
-          // 检查模板路径
-          final localPath = templatesData['localPath']?.toString();
-          if (localPath?.isNotEmpty ?? false) {
-            if (Directory(localPath!).existsSync()) {
-              result.addSuccess('模板目录存在: $localPath');
-            } else {
-              result.addWarning('模板目录不存在: $localPath');
-            }
+        // 检查模板路径
+        final localPath = templatesData['localPath']?.toString();
+        if (localPath?.isNotEmpty ?? false) {
+          if (Directory(localPath!).existsSync()) {
+            result.addSuccess('模板目录存在: $localPath');
+          } else {
+            result.addWarning('模板目录不存在: $localPath');
           }
+        }
 
-          // 检查缓存设置
-          final cacheTimeout = templatesData['cacheTimeout'];
-          if (cacheTimeout != null && 
-              cacheTimeout is int && 
-              cacheTimeout > 0) {
-            result.addInfo('模板缓存超时: $cacheTimeout秒');
-          }
-        } else {
-          result.addWarning('模板配置未设置');
+        // 检查缓存设置
+        final cacheTimeout = templatesData['cacheTimeout'];
+        if (cacheTimeout != null && 
+            cacheTimeout is int && 
+            cacheTimeout > 0) {
+          result.addInfo('模板缓存超时: $cacheTimeout秒');
+        }
+      } else {
+        result.addWarning('模板配置未设置');
         }
       }
     } catch (e) {
@@ -849,28 +849,28 @@ class ConfigDeepChecker extends HealthChecker {
         }
       } else {
         // 兼容性处理：如果是Map格式（向后兼容）
-        final configMap = config is Map ? config : <String, dynamic>{};
-        final validationData = configMap['validation'] is Map ? 
-            configMap['validation'] as Map : null;
-        
-        if (validationData != null) {
-          result.addSuccess('验证规则已配置');
+      final configMap = config is Map ? config : <String, dynamic>{};
+      final validationData = configMap['validation'] is Map ? 
+          configMap['validation'] as Map : null;
+      
+      if (validationData != null) {
+        result.addSuccess('验证规则已配置');
 
-          final strictMode = validationData['strictMode'];
-          if (strictMode == true) {
-            result.addInfo('严格模式已启用');
-          }
+        final strictMode = validationData['strictMode'];
+        if (strictMode == true) {
+          result.addInfo('严格模式已启用');
+        }
 
-          final minCoverage = validationData['minCoverage'];
-          if (minCoverage != null && minCoverage is int) {
-            if (minCoverage >= 80) {
-              result.addSuccess('测试覆盖率要求: $minCoverage%');
-            } else {
+        final minCoverage = validationData['minCoverage'];
+        if (minCoverage != null && minCoverage is int) {
+          if (minCoverage >= 80) {
+            result.addSuccess('测试覆盖率要求: $minCoverage%');
+          } else {
               result.addWarning('测试覆盖率要求较低: $minCoverage%，建议至少80%');
-            }
           }
-        } else {
-          result.addWarning('验证规则未配置');
+        }
+      } else {
+        result.addWarning('验证规则未配置');
         }
       }
     } catch (e) {

@@ -23,6 +23,21 @@ Change History:
 /// 
 /// 用于帮助开发者了解模板在当前环境的可用性和潜在问题。
 class CompatibilityCheckResult {
+  /// 创建兼容性检查结果
+  /// 
+  /// 参数：
+  /// - [isCompatible] 是否兼容
+  /// - [errors] 错误列表
+  /// - [warnings] 警告列表
+  /// - [suggestions] 建议列表
+  /// - [metadata] 元数据
+  const CompatibilityCheckResult({
+    required this.isCompatible,
+    this.errors = const [],
+    this.warnings = const [],
+    this.suggestions = const [],
+    this.metadata = const {},
+  });
 
   /// 创建成功结果
   CompatibilityCheckResult.success({
@@ -49,21 +64,6 @@ class CompatibilityCheckResult {
       suggestions: suggestions,
       metadata: metadata,
     );
-  /// 创建兼容性检查结果
-  /// 
-  /// 参数：
-  /// - [isCompatible] 是否兼容
-  /// - [errors] 错误列表
-  /// - [warnings] 警告列表
-  /// - [suggestions] 建议列表
-  /// - [metadata] 元数据
-  const CompatibilityCheckResult({
-    required this.isCompatible,
-    this.errors = const [],
-    this.warnings = const [],
-    this.suggestions = const [],
-    this.metadata = const {},
-  });
 
   /// 是否兼容
   final bool isCompatible;
@@ -213,6 +213,13 @@ class HookContext {
 
 /// 钩子执行结果
 class HookResult {
+  /// 创建钩子执行结果
+  const HookResult({
+    required this.success,
+    this.message,
+    this.modifiedVariables,
+    this.shouldContinue = true,
+  });
   
   /// 创建失败结果
   HookResult.failure(String message) : 
@@ -225,13 +232,6 @@ class HookResult {
         message: message, 
         shouldContinue: false,
       );
-  /// 创建钩子执行结果
-  const HookResult({
-    required this.success,
-    this.message,
-    this.modifiedVariables,
-    this.shouldContinue = true,
-  });
 
   /// 执行是否成功
   final bool success;
@@ -248,14 +248,6 @@ class HookResult {
 
 /// 模板生成结果
 class GenerationResult {
-
-  /// 创建失败结果
-  GenerationResult.failure(String message, {String? outputPath})
-    : this(
-      success: false,
-      outputPath: outputPath ?? '',
-      message: message,
-    );
   /// 创建模板生成结果
   /// 
   /// 参数：
@@ -273,6 +265,14 @@ class GenerationResult {
     this.duration,
     this.metadata = const {},
   });
+
+  /// 创建失败结果
+  GenerationResult.failure(String message, {String? outputPath})
+    : this(
+      success: false,
+      outputPath: outputPath ?? '',
+      message: message,
+    );
 
   /// 生成是否成功
   final bool success;

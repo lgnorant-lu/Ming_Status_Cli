@@ -483,12 +483,12 @@ version: 1.0.0
         final testEngine = TemplateEngine(workingDirectory: tempDir.path);
         
         // 手动注册一些钩子来测试集成功能
-        final preHookConfig = hook_impl.ScriptHookConfig(
+        const preHookConfig = hook_impl.ScriptHookConfig(
           description: '集成测试预生成钩子',
           scriptPath: 'echo "开始生成"',
         );
         
-        final postHookConfig = hook_impl.ScriptHookConfig(
+        const postHookConfig = hook_impl.ScriptHookConfig(
           description: '集成测试后生成钩子',
           scriptPath: 'echo "生成完成"',
         );
@@ -521,7 +521,7 @@ version: 1.0.0
 
       test('应该提供详细的钩子信息', () {
         // 注册各种类型的钩子
-        final scriptConfig = hook_impl.ScriptHookConfig(
+        const scriptConfig = hook_impl.ScriptHookConfig(
           description: '测试脚本钩子',
           scriptPath: 'echo test',
         );

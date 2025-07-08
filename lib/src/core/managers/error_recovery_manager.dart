@@ -215,7 +215,7 @@ class IntelligentErrorRecoveryManager {
           'success_rate': e.value['attempts']! > 0 
               ? e.value['successes']! / e.value['attempts']!
               : 0.0,
-        })
+        },)
         .toList()
       ..sort((a, b) => (a['date']! as String).compareTo(b['date']! as String));
   }

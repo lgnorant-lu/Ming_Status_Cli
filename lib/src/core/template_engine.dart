@@ -81,9 +81,11 @@ class TemplateEngine implements BaseTemplateEngine {
   late final AdvancedHookManager advancedHookManager;
 
   /// 高级缓存管理器
+  @override
   late final AdvancedTemplateCacheManager cacheManager;
 
   /// 异步生成管理器
+  @override
   late final AsyncTemplateGenerationManager asyncManager;
 
   /// Mason生成器缓存
@@ -1657,6 +1659,7 @@ class {{class_name}} {
   // ==================== 高级特性方法 ====================
 
   /// 带钩子支持的高级生成方法
+  @override
   Future<GenerationResult> generateWithHooks({
     required String templateName,
     required String outputPath,

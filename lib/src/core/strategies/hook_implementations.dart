@@ -69,11 +69,11 @@ class ScriptHookConfig {
 class ScriptExecutionHook extends TemplateHook {
   /// 创建脚本执行钩子实例
   ScriptExecutionHook({
-    required String name,
+    required super.name,
     required this.config,
     required this.hookType,
     this.hookPriority = 100,
-  }) : super(name: name);
+  });
 
   /// 脚本钩子配置
   final ScriptHookConfig config;
@@ -245,6 +245,12 @@ class ScriptExecutionHook extends TemplateHook {
 
 /// 脚本执行结果
 class ScriptExecutionResult {
+  /// 创建脚本执行结果实例
+  const ScriptExecutionResult({
+    required this.success,
+    this.output,
+    this.error,
+  });
 
   /// 创建成功结果
   ScriptExecutionResult.createSuccess(String output) 
@@ -253,12 +259,6 @@ class ScriptExecutionResult {
   /// 创建失败结果
   ScriptExecutionResult.createFailure(String error) 
     : this(success: false, error: error);
-  /// 创建脚本执行结果实例
-  const ScriptExecutionResult({
-    required this.success,
-    this.output,
-    this.error,
-  });
 
   /// 执行是否成功
   final bool success;
