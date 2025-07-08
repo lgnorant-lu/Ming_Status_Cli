@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 
 /// Widget for displaying user information.
-/// 
+///
 /// This widget shows user details in a card format
 /// with proper Material Design styling.
 class UserWidget extends StatelessWidget {
@@ -20,7 +20,6 @@ class UserWidget extends StatelessWidget {
   /// Callback when the widget is tapped.
   final VoidCallback? onTap;
 
-  @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.all(8),

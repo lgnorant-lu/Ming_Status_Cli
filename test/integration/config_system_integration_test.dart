@@ -31,15 +31,15 @@ void main() {
     setUp(() async {
       // 创建临时测试目录
       tempDir = await Directory.systemTemp.createTemp('ming_final_test_');
-      
+
       // 初始化所有组件
       configManager = ConfigManager(workingDirectory: tempDir.path);
       userConfigManager = UserConfigManager();
       doctorCommand = DoctorCommand();
-      
+
       // 预先设置测试环境
       await _setupCompleteTestEnvironment(tempDir, configManager);
-      
+
       // 初始化基础工作空间配置
       await configManager.initializeWorkspace(
         workspaceName: 'integration_test_workspace',
@@ -66,19 +66,19 @@ void main() {
 
         // 3. 高级配置功能测试
         stderr.writeln('📋 3. 高级配置功能测试');
-        
+
         // 验证环境配置功能
         final environments = await configManager.getAvailableEnvironments();
         expect(environments, contains('development'));
         expect(environments, contains('production'));
-        
+
         // 验证环境配置存在
         expect(environments.length, greaterThanOrEqualTo(2));
 
         // 4. 配置继承测试
         stderr.writeln('📋 4. 配置继承测试');
-        final configWithInheritance = 
-          await configManager.loadWorkspaceConfigWithInheritance();
+        final configWithInheritance =
+            await configManager.loadWorkspaceConfigWithInheritance();
         expect(configWithInheritance, isNotNull);
 
         // 5. 配置合并测试
@@ -90,9 +90,10 @@ void main() {
             minCoverage: 90,
           ),
         );
-        
+
         final mergedConfig = config.mergeWith(
-          updatedConfig, strategy: ConfigMergeStrategy.merge,
+          updatedConfig,
+          strategy: ConfigMergeStrategy.merge,
         );
         expect(mergedConfig.validation.strictMode, isTrue);
         expect(mergedConfig.validation.minCoverage, equals(90));
@@ -113,11 +114,11 @@ void main() {
 
         // 1. 初始化用户配置
         await userConfigManager.initializeUserConfig();
-        
+
         // 2. 设置用户全局配置
         final userConfig = await userConfigManager.loadUserConfig();
         expect(userConfig, isNotNull);
-        
+
         final updatedUserConfig = userConfig!.copyWith(
           user: const UserInfo(
             name: '集成测试用户',
@@ -130,18 +131,18 @@ void main() {
             verboseLogging: true,
           ),
         );
-        
-        final saveSuccess = 
-          await userConfigManager.saveUserConfig(updatedUserConfig);
+
+        final saveSuccess =
+            await userConfigManager.saveUserConfig(updatedUserConfig);
         expect(saveSuccess, isTrue);
 
         // 3. 验证配置集成
         final workspaceConfig = await configManager.loadWorkspaceConfig();
         expect(workspaceConfig, isNotNull);
-        
+
         // 用户偏好应该影响工作空间配置的默认值
         expect(workspaceConfig!.workspace.name, isNotEmpty);
-        
+
         stderr.writeln('✅ 用户配置与工作空间配置集成测试通过');
       });
     });
@@ -152,29 +153,29 @@ void main() {
 
         // 由于ConfigCommand需要CLI参数，我们模拟其核心功能
         // 实际测试应该通过进程调用进行，这里测试核心逻辑
-        
+
         // 1. 测试配置列表功能
         final config = await configManager.loadWorkspaceConfig();
         expect(config, isNotNull);
-        
+
         // 2. 测试配置获取功能
         final workspaceName = config!.workspace.name;
         expect(workspaceName, isNotEmpty);
-        
+
         // 3. 测试配置设置功能
-        final updateSuccess = 
-          await configManager.updateWorkspaceConfig((config) {
-            return config.copyWith(
-              workspace: WorkspaceInfo(
-                name: config.workspace.name,
-                version: '2.0.0',
-                description: '${config.workspace.description} - 已更新',
-                type: config.workspace.type,
-              ),
-            );
-          });
+        final updateSuccess =
+            await configManager.updateWorkspaceConfig((config) {
+          return config.copyWith(
+            workspace: WorkspaceInfo(
+              name: config.workspace.name,
+              version: '2.0.0',
+              description: '${config.workspace.description} - 已更新',
+              type: config.workspace.type,
+            ),
+          );
+        });
         expect(updateSuccess, isTrue);
-        
+
         // 4. 验证更新结果
         final updatedConfig = await configManager.loadWorkspaceConfig();
         expect(updatedConfig!.workspace.version, equals('2.0.0'));
@@ -189,16 +190,16 @@ void main() {
         stderr.writeln('📋 DoctorCommand配置深度检查集成测试');
 
         // 1. 测试配置专用检查器
-        final configCheckers = 
-          doctorCommand.getCheckersForTest(configOnly: true);
+        final configCheckers =
+            doctorCommand.getCheckersForTest(configOnly: true);
         expect(configCheckers.length, equals(4));
-        
+
         // 2. 逐个执行配置检查器
         for (final checker in configCheckers) {
           stderr.writeln('  🔍 执行检查器: ${checker.name}');
           final result = await checker.check();
           expect(result, isNotNull);
-          
+
           // 基本检查应该通过（没有严重错误）
           final hasErrors = result.errors.isNotEmpty;
           if (hasErrors) {
@@ -214,10 +215,10 @@ void main() {
         }
 
         // 3. 测试自动修复功能
-        final fixableCheckers = 
-          configCheckers.where((c) => c.canAutoFix).toList();
+        final fixableCheckers =
+            configCheckers.where((c) => c.canAutoFix).toList();
         stderr.writeln('  🛠️  可自动修复的检查器: ${fixableCheckers.length}个');
-        
+
         for (final checker in fixableCheckers) {
           try {
             final fixResult = await checker.autoFix();
@@ -240,7 +241,7 @@ void main() {
         // 1. 创建损坏的配置文件
         final configFile = File('${tempDir.path}/ming_status.yaml');
         await configFile.writeAsString('invalid: yaml: content: [broken');
-        
+
         // 2. 尝试加载损坏的配置
         try {
           await configManager.loadWorkspaceConfig();
@@ -252,7 +253,7 @@ void main() {
           stderr.writeln('  ⚠️  配置加载失败（预期行为）: $e');
         }
 
-        // 3. 测试配置重建  
+        // 3. 测试配置重建
         try {
           final rebuildSuccess = await configManager.initializeWorkspace(
             workspaceName: 'recovered_workspace',
@@ -264,7 +265,7 @@ void main() {
         } catch (e) {
           stderr.writeln('  ⚠️  配置重建遇到预期问题: $e');
         }
-        
+
         final recoveredConfig = await configManager.loadWorkspaceConfig();
         expect(recoveredConfig, isNotNull);
         // 验证配置恢复后可以正常加载（工作空间名称可能保持原值）
@@ -277,13 +278,13 @@ void main() {
         stderr.writeln('📋 并发访问安全性测试');
 
         final futures = <Future<dynamic>>[];
-        
+
         // 创建多个并发操作
         for (var i = 0; i < 5; i++) {
           // 并发读取
           futures
             ..add(configManager.loadWorkspaceConfig())
-          
+
             // 并发更新
             ..add(
               configManager.updateWorkspaceConfig((config) {
@@ -294,14 +295,14 @@ void main() {
                     description: config.workspace.description,
                     type: config.workspace.type,
                   ),
-                );  
+                );
               }),
             );
         }
-        
+
         // 等待所有操作完成
         final results = await Future.wait(futures);
-        
+
         // 验证至少大部分操作成功
         var successCount = 0;
         for (final result in results) {
@@ -309,7 +310,7 @@ void main() {
             successCount++;
           }
         }
-        
+
         expect(successCount, greaterThan(results.length ~/ 2));
         stderr
           ..writeln('  ✅ $successCount/${results.length} 并发操作成功')
@@ -360,20 +361,21 @@ void main() {
 
 /// 设置完整的测试环境
 Future<void> _setupCompleteTestEnvironment(
-    Directory tempDir,
-    ConfigManager configManager,
-  ) async {
-    // 创建完整的目录结构
-    await Directory('${tempDir.path}/templates').create(recursive: true);
-    await Directory('${tempDir.path}/templates/workspace').create(recursive: true);
-    await Directory('${tempDir.path}/modules').create(recursive: true);
-    await Directory('${tempDir.path}/output').create(recursive: true);
-    await Directory('${tempDir.path}/src').create(recursive: true);
-    await Directory('${tempDir.path}/test').create(recursive: true);
-    await Directory('${tempDir.path}/docs').create(recursive: true);
-    
-    // 创建基础配置模板
-    const basicTemplate = '''
+  Directory tempDir,
+  ConfigManager configManager,
+) async {
+  // 创建完整的目录结构
+  await Directory('${tempDir.path}/templates').create(recursive: true);
+  await Directory('${tempDir.path}/templates/workspace')
+      .create(recursive: true);
+  await Directory('${tempDir.path}/modules').create(recursive: true);
+  await Directory('${tempDir.path}/output').create(recursive: true);
+  await Directory('${tempDir.path}/src').create(recursive: true);
+  await Directory('${tempDir.path}/test').create(recursive: true);
+  await Directory('${tempDir.path}/docs').create(recursive: true);
+
+  // 创建基础配置模板
+  const basicTemplate = '''
   workspace:
     name: "test_basic"
     version: "1.0.0"
@@ -408,11 +410,11 @@ Future<void> _setupCompleteTestEnvironment(
       optimize: true
   ''';
 
-    await File('${tempDir.path}/templates/workspace/ming_workspace_basic.yaml')
-        .writeAsString(basicTemplate);
+  await File('${tempDir.path}/templates/workspace/ming_workspace_basic.yaml')
+      .writeAsString(basicTemplate);
 
-    // 创建企业版模板
-    const enterpriseTemplate = '''
+  // 创建企业版模板
+  const enterpriseTemplate = '''
   workspace:
     name: "test_enterprise"
     version: "1.0.0"
@@ -456,11 +458,12 @@ Future<void> _setupCompleteTestEnvironment(
       minify: true
   ''';
 
-    await File('${tempDir.path}/templates/workspace/ming_workspace_enterprise.yaml')
+  await File(
+          '${tempDir.path}/templates/workspace/ming_workspace_enterprise.yaml',)
       .writeAsString(enterpriseTemplate);
 
-    // 创建README文件
-    const readmeContent = '''
+  // 创建README文件
+  const readmeContent = '''
   # 集成测试工作空间
 
   这是一个用于配置系统集成测试的工作空间。
@@ -484,5 +487,5 @@ Future<void> _setupCompleteTestEnvironment(
   - [x] 大型配置处理 < 2s
   ''';
 
-    await File('${tempDir.path}/README.md').writeAsString(readmeContent);
-} 
+  await File('${tempDir.path}/README.md').writeAsString(readmeContent);
+}

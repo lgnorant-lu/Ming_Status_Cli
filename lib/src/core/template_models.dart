@@ -13,18 +13,18 @@ Change History:
 */
 
 /// 模板兼容性检查结果
-/// 
+///
 /// 封装模板兼容性检查的详细结果，提供多层次的反馈信息：
 /// - 总体兼容性状态
 /// - 阻塞性错误列表
-/// - 警告信息列表  
+/// - 警告信息列表
 /// - 优化建议列表
 /// - 检查过程的元数据
-/// 
+///
 /// 用于帮助开发者了解模板在当前环境的可用性和潜在问题。
 class CompatibilityCheckResult {
   /// 创建兼容性检查结果
-  /// 
+  ///
   /// 参数：
   /// - [isCompatible] 是否兼容
   /// - [errors] 错误列表
@@ -45,11 +45,11 @@ class CompatibilityCheckResult {
     List<String> suggestions = const [],
     Map<String, dynamic> metadata = const {},
   }) : this(
-      isCompatible: true,
-      warnings: warnings,
-      suggestions: suggestions,
-      metadata: metadata,
-    );
+          isCompatible: true,
+          warnings: warnings,
+          suggestions: suggestions,
+          metadata: metadata,
+        );
 
   /// 创建失败结果
   CompatibilityCheckResult.failure({
@@ -58,38 +58,42 @@ class CompatibilityCheckResult {
     List<String> suggestions = const [],
     Map<String, dynamic> metadata = const {},
   }) : this(
-      isCompatible: false,
-      errors: errors,
-      warnings: warnings,
-      suggestions: suggestions,
-      metadata: metadata,
-    );
+          isCompatible: false,
+          errors: errors,
+          warnings: warnings,
+          suggestions: suggestions,
+          metadata: metadata,
+        );
 
   /// 是否兼容
   final bool isCompatible;
+
   /// 错误列表
   final List<String> errors;
+
   /// 警告列表
   final List<String> warnings;
+
   /// 建议列表
   final List<String> suggestions;
+
   /// 元数据
   final Map<String, dynamic> metadata;
 }
 
 /// 模板版本信息
-/// 
+///
 /// 描述模板对各种工具和环境的版本要求。
 /// 用于版本兼容性检查，确保模板能在符合要求的环境中正常运行。
-/// 
+///
 /// 支持的版本约束：
 /// - 模板自身版本标识
 /// - CLI工具版本范围
-/// - Dart SDK版本范围  
+/// - Dart SDK版本范围
 /// - Mason构建工具版本范围
 class TemplateVersionInfo {
   /// 创建模板版本信息
-  /// 
+  ///
   /// 参数：
   /// - [version] 模板版本
   /// - [minCliVersion] 最小CLI版本要求
@@ -110,33 +114,39 @@ class TemplateVersionInfo {
 
   /// 模板版本
   final String version;
+
   /// 最小CLI版本要求
   final String? minCliVersion;
+
   /// 最大CLI版本要求
   final String? maxCliVersion;
+
   /// 最小Dart版本要求
   final String? minDartVersion;
+
   /// 最大Dart版本要求
   final String? maxDartVersion;
+
   /// 最小Mason版本要求
   final String? minMasonVersion;
+
   /// 最大Mason版本要求
   final String? maxMasonVersion;
 }
 
 /// 模板平台信息
-/// 
+///
 /// 定义模板对操作系统平台和功能特性的支持情况。
 /// 用于平台兼容性检查，确保模板生成的代码能在目标平台正常运行。
-/// 
+///
 /// 包含信息：
 /// - 支持的操作系统平台（Windows、macOS、Linux等）
-/// - 明确不支持的平台  
+/// - 明确不支持的平台
 /// - 必需的平台功能特性
 /// - 可选的增强功能特性
 class TemplatePlatformInfo {
   /// 创建模板平台信息
-  /// 
+  ///
   /// 参数：
   /// - [supportedPlatforms] 支持的平台列表
   /// - [unsupportedPlatforms] 不支持的平台列表
@@ -151,28 +161,31 @@ class TemplatePlatformInfo {
 
   /// 支持的平台列表
   final List<String> supportedPlatforms;
+
   /// 不支持的平台列表
   final List<String> unsupportedPlatforms;
+
   /// 必需功能列表
   final List<String> requiredFeatures;
+
   /// 可选功能列表
   final List<String> optionalFeatures;
 }
 
 /// 模板依赖信息
-/// 
+///
 /// 描述模板所需的外部依赖包和版本约束。
 /// 用于依赖兼容性检查，确保生成的项目具有正确的依赖配置。
-/// 
+///
 /// 依赖类型：
 /// - 必需依赖：模板正常运行所必须的包和版本
 /// - 可选依赖：提供额外功能的可选包
 /// - 冲突依赖：与模板不兼容的包列表
-/// 
+///
 /// 支持语义化版本约束（如 "^1.0.0", ">=2.0.0 <3.0.0"）
 class TemplateDependencyInfo {
   /// 创建模板依赖信息
-  /// 
+  ///
   /// 参数：
   /// - [requiredDependencies] 必需依赖映射
   /// - [optionalDependencies] 可选依赖映射
@@ -185,8 +198,10 @@ class TemplateDependencyInfo {
 
   /// 必需依赖 (依赖名 -> 版本约束)
   final Map<String, String> requiredDependencies;
+
   /// 可选依赖 (依赖名 -> 版本约束)
   final Map<String, String> optionalDependencies;
+
   /// 冲突依赖列表
   final List<String> conflictingDependencies;
 }
@@ -203,10 +218,13 @@ class HookContext {
 
   /// 模板名称
   final String templateName;
+
   /// 输出路径
   final String outputPath;
+
   /// 模板变量
   final Map<String, dynamic> variables;
+
   /// 元数据
   final Map<String, dynamic> metadata;
 }
@@ -220,25 +238,27 @@ class HookResult {
     this.modifiedVariables,
     this.shouldContinue = true,
   });
-  
+
   /// 创建失败结果
-  HookResult.failure(String message) : 
-      this(success: false, message: message);
-      
+  HookResult.failure(String message) : this(success: false, message: message);
+
   /// 创建停止结果
-  HookResult.stop(String message) : 
-      this(
-        success: true, 
-        message: message, 
-        shouldContinue: false,
-      );
+  HookResult.stop(String message)
+      : this(
+          success: true,
+          message: message,
+          shouldContinue: false,
+        );
 
   /// 执行是否成功
   final bool success;
+
   /// 结果消息
   final String? message;
+
   /// 修改后的变量
   final Map<String, dynamic>? modifiedVariables;
+
   /// 是否应该继续执行
   final bool shouldContinue;
 
@@ -249,7 +269,7 @@ class HookResult {
 /// 模板生成结果
 class GenerationResult {
   /// 创建模板生成结果
-  /// 
+  ///
   /// 参数：
   /// - [success] 生成是否成功
   /// - [outputPath] 输出路径
@@ -268,22 +288,27 @@ class GenerationResult {
 
   /// 创建失败结果
   GenerationResult.failure(String message, {String? outputPath})
-    : this(
-      success: false,
-      outputPath: outputPath ?? '',
-      message: message,
-    );
+      : this(
+          success: false,
+          outputPath: outputPath ?? '',
+          message: message,
+        );
 
   /// 生成是否成功
   final bool success;
+
   /// 输出路径
   final String outputPath;
+
   /// 生成的文件列表
   final List<String> generatedFiles;
+
   /// 结果消息
   final String? message;
+
   /// 生成耗时
   final Duration? duration;
+
   /// 结果元数据
   final Map<String, dynamic> metadata;
 }
@@ -299,8 +324,10 @@ class TemplateInheritance {
 
   /// 基础模板名称
   final String baseTemplate;
+
   /// 变量覆盖配置
   final Map<String, dynamic> overrides;
+
   /// 排除文件列表
   final List<String> excludeFiles;
 }
@@ -309,10 +336,13 @@ class TemplateInheritance {
 enum HookType {
   /// 生成前钩子
   preGeneration,
+
   /// 生成后钩子
   postGeneration,
+
   /// 验证前钩子
   preValidation,
+
   /// 验证后钩子
   postValidation,
 }
@@ -324,13 +354,13 @@ abstract class TemplateHook {
 
   /// 钩子名称
   final String name;
-  
+
   /// 执行钩子
   Future<HookResult> execute(HookContext context);
-  
+
   /// 钩子类型
   HookType get type;
-  
+
   /// 钩子优先级 (数值越小优先级越高)
   int get priority => 100;
 }

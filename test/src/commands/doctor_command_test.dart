@@ -28,13 +28,13 @@ void main() {
     setUp(() async {
       // 创建临时测试目录
       tempDir = await Directory.systemTemp.createTemp('ming_test_doctor_');
-      
+
       // 初始化配置管理器
       configManager = ConfigManager(workingDirectory: tempDir.path);
-      
+
       // 创建doctor命令实例
       doctorCommand = DoctorCommand();
-      
+
       // 设置测试环境
       await _setupTestEnvironment(tempDir, configManager);
     });
@@ -80,7 +80,7 @@ void main() {
 
         final result = await checker.check();
         expect(result, isA<ValidationResult>());
-        
+
         // 应该检测到已初始化的工作空间
         final hasSuccessMessage = result.messages.any(
           (msg) => msg.message.contains('工作空间已初始化'),
@@ -104,7 +104,7 @@ void main() {
 
         final result = await checker.check();
         expect(result, isA<ValidationResult>());
-        
+
         // 应该有读写权限检查结果
         expect(result.messages.isNotEmpty, isTrue);
       });
@@ -118,11 +118,12 @@ void main() {
 
         final result = await checker.check();
         expect(result, isA<ValidationResult>());
-        
+
         // 应该包含基础配置检查结果
         final hasConfigCheck = result.messages.any(
-          (msg) => msg.message.contains('工作空间名称已设置') ||
-                   msg.message.contains('模板配置已启用'),
+          (msg) =>
+              msg.message.contains('工作空间名称已设置') ||
+              msg.message.contains('模板配置已启用'),
         );
         expect(hasConfigCheck, isTrue);
       });
@@ -134,11 +135,12 @@ void main() {
 
         final result = await checker.check();
         expect(result, isA<ValidationResult>());
-        
+
         // 应该包含用户配置功能状态信息
         final hasUserConfigInfo = result.messages.any(
-          (msg) => msg.message.contains('用户配置管理功能') ||
-                   msg.message.contains('Phase 1'),
+          (msg) =>
+              msg.message.contains('用户配置管理功能') ||
+              msg.message.contains('Phase 1'),
         );
         expect(hasUserConfigInfo, isTrue);
       });
@@ -150,11 +152,11 @@ void main() {
 
         final result = await checker.check();
         expect(result, isA<ValidationResult>());
-        
+
         // 应该检测到可用的配置模板
         final hasTemplateInfo = result.messages.any(
-          (msg) => msg.message.contains('可用配置模板') ||
-                   msg.message.contains('模板验证'),
+          (msg) =>
+              msg.message.contains('可用配置模板') || msg.message.contains('模板验证'),
         );
         expect(hasTemplateInfo, isTrue);
       });
@@ -164,18 +166,18 @@ void main() {
       test('--config参数应该只执行配置相关检查', () async {
         // 创建DoctorCommand实例
         final configDoctorCommand = DoctorCommand();
-        
+
         // 使用测试专用方法获取配置专用检查器
-        final checkers = 
-          configDoctorCommand.getCheckersForTest(configOnly: true);
-        
+        final checkers =
+            configDoctorCommand.getCheckersForTest(configOnly: true);
+
         // 验证检查器数量和类型
         expect(checkers.length, equals(4), reason: '配置专用模式应该只有4个检查器');
         expect(checkers.any((c) => c.name == '工作空间配置'), isTrue);
         expect(checkers.any((c) => c.name == '配置深度检查'), isTrue);
         expect(checkers.any((c) => c.name == '用户配置'), isTrue);
         expect(checkers.any((c) => c.name == '配置模板'), isTrue);
-        
+
         // 不应该包含系统环境检查器
         expect(checkers.any((c) => c.name == 'Dart环境'), isFalse);
         expect(checkers.any((c) => c.name == '依赖包状态'), isFalse);
@@ -186,7 +188,7 @@ void main() {
         // 创建DoctorCommand实例
         final defaultDoctorCommand = DoctorCommand();
         final checkers = defaultDoctorCommand.getCheckersForTest();
-        
+
         // 应该包含系统环境检查器
         expect(checkers.any((c) => c.name == 'Dart环境'), isTrue);
         expect(checkers.any((c) => c.name == '工作空间配置'), isTrue);
@@ -214,13 +216,13 @@ void main() {
       test('WorkspaceConfigChecker自动修复应该处理未初始化状态', () async {
         // 创建未初始化的临时目录
         final uninitDir = await Directory.systemTemp.createTemp('ming_uninit_');
-        final uninitConfigManager = 
-          ConfigManager(workingDirectory: uninitDir.path);
-        
+        final uninitConfigManager =
+            ConfigManager(workingDirectory: uninitDir.path);
+
         try {
           final checker = WorkspaceConfigChecker(uninitConfigManager);
           final canFix = await checker.autoFix();
-          
+
           // 对于未初始化的工作空间，自动修复应该返回false（需要用户确认）
           expect(canFix, isFalse);
         } finally {
@@ -236,10 +238,10 @@ void main() {
         // 创建损坏的配置文件
         final configFile = File('${tempDir.path}/ming_status.yaml');
         await configFile.writeAsString('invalid: yaml: content: [');
-        
+
         final checker = WorkspaceConfigChecker(configManager);
         final result = await checker.check();
-        
+
         // 应该包含错误信息但不应该崩溃
         expect(result, isA<ValidationResult>());
       });
@@ -247,7 +249,7 @@ void main() {
       test('权限不足时应该优雅处理', () async {
         final checker = FilePermissionChecker();
         final result = await checker.check();
-        
+
         // 应该完成检查而不崩溃
         expect(result, isA<ValidationResult>());
       });
@@ -260,7 +262,7 @@ void main() {
           ..addWarning('警告信息')
           ..addInfo('信息')
           ..addSuccess('成功信息');
-        
+
         expect(result.errors.length, equals(1));
         expect(result.warnings.length, equals(1));
         expect(result.infos.length, equals(1));
@@ -272,7 +274,7 @@ void main() {
 
 /// 设置测试环境
 Future<void> _setupTestEnvironment(
-  Directory tempDir, 
+  Directory tempDir,
   ConfigManager configManager,
 ) async {
   // 初始化工作空间配置
@@ -281,15 +283,16 @@ Future<void> _setupTestEnvironment(
     description: 'Test workspace for doctor command',
     author: 'Test Author',
   );
-  
+
   // 创建必要的目录结构
   await Directory('${tempDir.path}/templates').create(recursive: true);
   await Directory('${tempDir.path}/modules').create(recursive: true);
   await Directory('${tempDir.path}/output').create(recursive: true);
-  
+
   // 创建模板文件
-  await Directory('${tempDir.path}/templates/workspace').create(recursive: true);
-  
+  await Directory('${tempDir.path}/templates/workspace')
+      .create(recursive: true);
+
   // 创建基础配置模板文件
   const basicTemplate = '''
 workspace:
@@ -315,7 +318,7 @@ validation:
   requireTests: true
   minCoverage: 80
 ''';
-  
+
   await File('${tempDir.path}/templates/workspace/ming_workspace_basic.yaml')
       .writeAsString(basicTemplate);
-} 
+}

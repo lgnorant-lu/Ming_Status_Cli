@@ -6,10 +6,10 @@ environment:
   sdk: '>=2.17.0 <4.0.0'
 
 dependencies:
+  deprecated_package: ^1.0.0
   flutter:
     sdk: flutter
   http: any
-  deprecated_package: ^1.0.0
 
 dev_dependencies:
   flutter_test:

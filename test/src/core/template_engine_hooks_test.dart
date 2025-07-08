@@ -18,7 +18,7 @@ import 'package:test/test.dart';
 
 /// 简单的测试钩子
 class SimpleTestHook extends TemplateHook {
-  SimpleTestHook(String name, this.hookType, {this.hookPriority = 100}) 
+  SimpleTestHook(String name, this.hookType, {this.hookPriority = 100})
       : super(name: name);
 
   final HookType hookType;
@@ -91,11 +91,20 @@ void main() {
       });
 
       test('应该按优先级排序钩子', () {
-        final hook1 = SimpleTestHook('hook1', HookType.preGeneration,);
-        final hook2 = SimpleTestHook('hook2', HookType.preGeneration, 
-                                     hookPriority: 50,);
-        final hook3 = SimpleTestHook('hook3', HookType.preGeneration, 
-                                     hookPriority: 200,);
+        final hook1 = SimpleTestHook(
+          'hook1',
+          HookType.preGeneration,
+        );
+        final hook2 = SimpleTestHook(
+          'hook2',
+          HookType.preGeneration,
+          hookPriority: 50,
+        );
+        final hook3 = SimpleTestHook(
+          'hook3',
+          HookType.preGeneration,
+          hookPriority: 200,
+        );
 
         engine.hookRegistry.register(hook1);
         engine.hookRegistry.register(hook2);
@@ -103,7 +112,7 @@ void main() {
 
         final hooks = engine.hookRegistry.getHooks(HookType.preGeneration);
         expect(hooks.length, equals(3));
-        expect(hooks[0].priority, equals(50));  // 最高优先级
+        expect(hooks[0].priority, equals(50)); // 最高优先级
         expect(hooks[1].priority, equals(100));
         expect(hooks[2].priority, equals(200)); // 最低优先级
       });
@@ -112,13 +121,17 @@ void main() {
         final hook = SimpleTestHook('test_hook', HookType.preGeneration);
         engine.hookRegistry.register(hook);
 
-        expect(engine.hookRegistry.getHooks(HookType.preGeneration).length, 
-               equals(1),);
+        expect(
+          engine.hookRegistry.getHooks(HookType.preGeneration).length,
+          equals(1),
+        );
 
         engine.hookRegistry.unregister('test_hook', HookType.preGeneration);
 
-        expect(engine.hookRegistry.getHooks(HookType.preGeneration).length, 
-               equals(0),);
+        expect(
+          engine.hookRegistry.getHooks(HookType.preGeneration).length,
+          equals(0),
+        );
       });
 
       test('应该清空所有钩子', () {
@@ -129,17 +142,25 @@ void main() {
           SimpleTestHook('hook2', HookType.postGeneration),
         );
 
-        expect(engine.hookRegistry.getHooks(HookType.preGeneration).length, 
-               greaterThan(0),);
-        expect(engine.hookRegistry.getHooks(HookType.postGeneration).length, 
-               greaterThan(0),);
+        expect(
+          engine.hookRegistry.getHooks(HookType.preGeneration).length,
+          greaterThan(0),
+        );
+        expect(
+          engine.hookRegistry.getHooks(HookType.postGeneration).length,
+          greaterThan(0),
+        );
 
         engine.hookRegistry.clear();
 
-        expect(engine.hookRegistry.getHooks(HookType.preGeneration).length, 
-               equals(0),);
-        expect(engine.hookRegistry.getHooks(HookType.postGeneration).length, 
-               equals(0),);
+        expect(
+          engine.hookRegistry.getHooks(HookType.preGeneration).length,
+          equals(0),
+        );
+        expect(
+          engine.hookRegistry.getHooks(HookType.postGeneration).length,
+          equals(0),
+        );
       });
     });
 
@@ -318,4 +339,4 @@ void main() {
       });
     });
   });
-} 
+}

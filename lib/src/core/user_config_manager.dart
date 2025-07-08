@@ -346,17 +346,20 @@ class UserConfigManager {
             case 'coloredOutput':
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(
-                    coloredOutput: value.toLowerCase() == 'true',),
+                  coloredOutput: value.toLowerCase() == 'true',
+                ),
               );
             case 'autoUpdateCheck':
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(
-                    autoUpdateCheck: value.toLowerCase() == 'true',),
+                  autoUpdateCheck: value.toLowerCase() == 'true',
+                ),
               );
             case 'verboseLogging':
               updatedConfig = config.copyWith(
                 preferences: prefs.copyWith(
-                    verboseLogging: value.toLowerCase() == 'true',),
+                  verboseLogging: value.toLowerCase() == 'true',
+                ),
               );
             case 'preferredIde':
               updatedConfig = config.copyWith(
@@ -413,11 +416,11 @@ class UserConfigManager {
             }
             final integrations =
                 Map<String, dynamic>.from(config.integrations ?? {});
-            
+
             // 创建嵌套结构而不是使用点号连接的键
             final integrationKeys = keys.sublist(1);
             var current = integrations;
-            
+
             // 导航到正确的嵌套位置
             for (var i = 0; i < integrationKeys.length - 1; i++) {
               final key = integrationKeys[i];
@@ -429,10 +432,10 @@ class UserConfigManager {
               }
               current = current[key] as Map<String, dynamic>;
             }
-            
+
             // 设置最终值
             current[integrationKeys.last] = value;
-            
+
             updatedConfig = config.copyWith(integrations: integrations);
           } else {
             return false; // 其他不识别的有效顶级键但无法处理的情况
@@ -449,8 +452,9 @@ class UserConfigManager {
   /// 合并用户配置和工作空间配置
   /// 优先级：命令行参数 > 工作空间配置 > 用户配置
   Future<WorkspaceConfig?> mergeWithWorkspaceConfig(
-      WorkspaceConfig workspaceConfig,
-      {Map<String, String>? overrides,}) async {
+    WorkspaceConfig workspaceConfig, {
+    Map<String, String>? overrides,
+  }) async {
     try {
       final userConfig = await loadUserConfig();
       if (userConfig == null) {

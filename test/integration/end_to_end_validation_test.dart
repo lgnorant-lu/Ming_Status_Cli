@@ -14,21 +14,26 @@ Changed history:
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
+
+import 'package:logging/logging.dart';
 import 'package:ming_status_cli/src/core/validator_service.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
-import 'package:ming_status_cli/src/validators/structure_validator.dart';
-import 'package:ming_status_cli/src/validators/quality_validator.dart';
 import 'package:ming_status_cli/src/validators/dependency_validator.dart';
 import 'package:ming_status_cli/src/validators/platform_compliance_validator.dart';
-
+import 'package:ming_status_cli/src/validators/quality_validator.dart';
+import 'package:ming_status_cli/src/validators/structure_validator.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('End-to-End Validation Tests', () {
     late ValidatorService validatorService;
     late String testModulesPath;
+    late Logger logger;
 
     setUpAll(() async {
+      // 初始化logger
+      logger = Logger('EndToEndValidationTest');
+
       // 使用默认构造函数创建ValidatorService
       validatorService = ValidatorService();
 
@@ -44,7 +49,10 @@ void main() {
 
       // 验证验证器是否正确注册
       final registeredValidators = validatorService.registeredValidators;
-      print('Registered validators: ${registeredValidators.map((v) => v.validatorName).toList()}');
+      logger.info(
+        'Registered validators: '
+        '${registeredValidators.map((v) => v.validatorName).toList()}',
+      );
 
       if (registeredValidators.isEmpty) {
         throw Exception('No validators registered!');
@@ -52,94 +60,100 @@ void main() {
 
       // 健康检查
       final healthStatus = await validatorService.checkValidatorsHealth();
-      print('Validator health status: $healthStatus');
+      logger.info('Validator health status: $healthStatus');
     });
 
     group('Valid Module Tests', () {
       test('should pass validation for valid_module', () async {
         final modulePath = '$testModulesPath/valid_module';
         final moduleDir = Directory(modulePath);
-        
+
         if (!moduleDir.existsSync()) {
           markTestSkipped('valid_module test directory not found');
           return;
         }
 
-        print('Testing module at: ${moduleDir.absolute.path}');
+        logger.info('Testing module at: ${moduleDir.absolute.path}');
 
         // 创建简化的ValidationContext
         final context = ValidationContext(
           projectPath: moduleDir.absolute.path,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
-        print('ValidationContext created with path: ${context.projectPath}');
-        print('Enabled validators: ${context.enabledValidators}');
+        logger.info(
+          'ValidationContext created with path: ${context.projectPath}',
+        );
+        logger.info('Enabled validators: ${context.enabledValidators}');
 
         final result = await validatorService.validateModule(
-          moduleDir.absolute.path, 
+          moduleDir.absolute.path,
           context: context,
         );
 
-        print('Validation result received');
-        print('Messages count: ${result.messages.length}');
+        logger.info('Validation result received');
+        logger.info('Messages count: ${result.messages.length}');
         if (result.messages.isNotEmpty) {
-          print('First message: ${result.messages.first.message}');
-          print('First validator: ${result.messages.first.validatorName}');
+          logger.info('First message: ${result.messages.first.message}');
+          logger
+              .info('First validator: ${result.messages.first.validatorName}');
         }
 
         expect(
-          result, 
-          isNotNull, 
+          result,
+          isNotNull,
           reason: 'Should have validation result',
         );
 
         // 放宽期望 - 可能没有消息也是正常的
-        print('Total validation messages: ${result.messages.length}');
+        logger.info('Total validation messages: ${result.messages.length}');
 
         // 检查是否有验证器运行
         final validators = result.messages
             .map((msg) => msg.validatorName)
             .where((name) => name != null)
             .toSet();
-        
-        print('Validators that ran: $validators');
+
+        logger.info('Validators that ran: $validators');
 
         // 如果有消息，检查结构和平台问题
         if (result.messages.isNotEmpty) {
           final structureIssues = _getMessagesByValidatorName(
-            result, 
+            result,
             'structure',
           );
           final criticalStructureIssues = structureIssues
               .where((msg) => msg.severity == ValidationSeverity.error)
               .toList();
-          
-          print('Structure issues: ${structureIssues.length}');
-          print('Critical structure issues: ${criticalStructureIssues.length}');
+
+          logger.info('Structure issues: ${structureIssues.length}');
+          logger.info(
+              'Critical structure issues: ${criticalStructureIssues.length}');
 
           final platformIssues = _getMessagesByValidatorName(
-            result, 
+            result,
             'platform',
           );
           final criticalPlatformIssues = platformIssues
               .where((msg) => msg.severity == ValidationSeverity.error)
               .toList();
-          
-          print('Platform issues: ${platformIssues.length}');
-          print('Critical platform issues: ${criticalPlatformIssues.length}');
+
+          logger.info('Platform issues: ${platformIssues.length}');
+          logger.info(
+              'Critical platform issues: ${criticalPlatformIssues.length}');
         }
       });
 
-      test('should handle valid module with different validation levels', () async {
+      test('should handle valid module with different validation levels',
+          () async {
         final modulePath = '$testModulesPath/valid_module';
         final moduleDir = Directory(modulePath);
-        
+
         if (!moduleDir.existsSync()) {
           markTestSkipped('valid_module test directory not found');
           return;
@@ -153,31 +167,33 @@ void main() {
         ];
 
         for (final (level, strictMode) in levels) {
-          print('Testing validation level: $level');
-          
+          logger.info('Testing validation level: $level');
+
           final context = ValidationContext(
             projectPath: moduleDir.absolute.path,
             strictMode: strictMode,
             enabledValidators: [
               ValidationType.structure,
-              ValidationType.quality, 
+              ValidationType.quality,
               ValidationType.dependency,
               ValidationType.compliance,
             ],
           );
 
           final result = await validatorService.validateModule(
-            moduleDir.absolute.path, 
+            moduleDir.absolute.path,
             context: context,
           );
 
           expect(
-            result, 
+            result,
             isNotNull,
             reason: 'Validation should complete successfully at $level level',
           );
-          
-          print('Level $level completed with ${result.messages.length} messages');
+
+          logger.info(
+            'Level $level completed with ${result.messages.length} messages',
+          );
         }
       });
     });
@@ -186,50 +202,55 @@ void main() {
       test('should detect multiple issues in problematic_module', () async {
         final modulePath = '$testModulesPath/problematic_module';
         final moduleDir = Directory(modulePath);
-        
+
         if (!moduleDir.existsSync()) {
           markTestSkipped('problematic_module test directory not found');
           return;
         }
 
-        print('Testing problematic module at: ${moduleDir.absolute.path}');
+        logger
+            .info('Testing problematic module at: ${moduleDir.absolute.path}');
 
         final context = ValidationContext(
           projectPath: moduleDir.absolute.path,
           strictMode: true,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
         final result = await validatorService.validateModule(
-          moduleDir.absolute.path, 
+          moduleDir.absolute.path,
           context: context,
         );
 
-        print('Problematic module validation completed');
-        print('Messages count: ${result.messages.length}');
+        logger.info('Problematic module validation completed');
+        logger.info('Messages count: ${result.messages.length}');
 
         if (result.messages.isEmpty) {
-          print('WARNING: No validation messages returned for problematic module');
-          print('This might indicate an issue with the ValidatorService setup');
+          logger.info(
+            'WARNING: No validation messages returned for problematic module',
+          );
+          logger.info(
+              'This might indicate an issue with the ValidatorService setup');
           // 让测试通过，但记录问题
-          markTestSkipped('ValidatorService returned no messages - possible setup issue');
+          markTestSkipped(
+            'ValidatorService returned no messages - possible setup issue',
+          );
           return;
         }
 
         // More flexible dependency issue detection
         final dependencyIssues = _getMessagesByValidatorName(
-          result, 
+          result,
           'dependency',
         );
-        
-        final allMessages = result.messages
-            .map((msg) => msg.message.toLowerCase())
-            .join(' ');
+
+        final allMessages =
+            result.messages.map((msg) => msg.message.toLowerCase()).join(' ');
 
         final hasDependencyIssues = dependencyIssues.isNotEmpty ||
             allMessages.contains('dependency') ||
@@ -237,12 +258,13 @@ void main() {
             allMessages.contains('version') ||
             allMessages.contains('security');
 
-        print('Dependency issues detected: $hasDependencyIssues');
-        print('Dependency validator messages: ${dependencyIssues.length}');
+        logger.info('Dependency issues detected: $hasDependencyIssues');
+        logger
+            .info('Dependency validator messages: ${dependencyIssues.length}');
 
         // Should detect quality issues
         final qualityIssues = _getMessagesByValidatorName(
-          result, 
+          result,
           'quality',
         );
         final hasQualityIssues = qualityIssues.isNotEmpty ||
@@ -251,12 +273,12 @@ void main() {
             allMessages.contains('comment') ||
             allMessages.contains('documentation');
 
-        print('Quality issues detected: $hasQualityIssues');
-        print('Quality validator messages: ${qualityIssues.length}');
+        logger.info('Quality issues detected: $hasQualityIssues');
+        logger.info('Quality validator messages: ${qualityIssues.length}');
 
         // Should detect structure issues
         final structureIssues = _getMessagesByValidatorName(
-          result, 
+          result,
           'structure',
         );
         final hasStructureIssues = structureIssues.isNotEmpty ||
@@ -264,32 +286,36 @@ void main() {
             allMessages.contains('file') ||
             allMessages.contains('directory');
 
-        print('Structure issues detected: $hasStructureIssues');
-        print('Structure validator messages: ${structureIssues.length}');
+        logger.info('Structure issues detected: $hasStructureIssues');
+        logger.info('Structure validator messages: ${structureIssues.length}');
 
         // Debug output
-        print('Total messages found: ${result.messages.length}');
+        logger.info('Total messages found: ${result.messages.length}');
         if (result.messages.isNotEmpty) {
-          print('Sample message: ${result.messages.first.message}');
-          print('Sample validator: ${result.messages.first.validatorName}');
-          print('Sample severity: ${result.messages.first.severity}');
+          logger.info('Sample message: ${result.messages.first.message}');
+          logger
+              .info('Sample validator: ${result.messages.first.validatorName}');
+          logger.info('Sample severity: ${result.messages.first.severity}');
         }
 
         // At least one type of issue should be detected
-        final hasAnyIssues = hasDependencyIssues || hasQualityIssues || hasStructureIssues;
-        
+        final hasAnyIssues =
+            hasDependencyIssues || hasQualityIssues || hasStructureIssues;
+
         expect(
-          hasAnyIssues, 
+          hasAnyIssues,
           isTrue,
-          reason: 'Should detect at least one type of issue in problematic module. '
-                  'Found ${result.messages.length} total messages.',
+          reason:
+              'Should detect at least one type of issue in problematic module. '
+              'Found ${result.messages.length} total messages.',
         );
       });
 
-      test('should provide fixable suggestions for problematic_module', () async {
+      test('should provide fixable suggestions for problematic_module',
+          () async {
         final modulePath = '$testModulesPath/problematic_module';
         final moduleDir = Directory(modulePath);
-        
+
         if (!moduleDir.existsSync()) {
           markTestSkipped('problematic_module test directory not found');
           return;
@@ -299,14 +325,14 @@ void main() {
           projectPath: moduleDir.absolute.path,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
         final result = await validatorService.validateModule(
-          moduleDir.absolute.path, 
+          moduleDir.absolute.path,
           context: context,
         );
 
@@ -316,16 +342,16 @@ void main() {
         }
 
         final fixableIssues = _getFixableMessages(result);
-        final messagesWithFixes = result.messages
-            .where((msg) => msg.fixSuggestion != null)
-            .toList();
-        
-        print('Fixable issues: ${fixableIssues.length}');
-        print('Messages with fixes: ${messagesWithFixes.length}');
+        final messagesWithFixes =
+            result.messages.where((msg) => msg.fixSuggestion != null).toList();
 
-        // This is more of a check that the fix system works, not that fixes exist
+        logger.info('Fixable issues: ${fixableIssues.length}');
+        logger.info('Messages with fixes: ${messagesWithFixes.length}');
+
+        // This is more of a check that the fix system works,
+        // not that fixes exist
         expect(
-          fixableIssues.length, 
+          fixableIssues.length,
           greaterThanOrEqualTo(0),
           reason: 'Should handle fixable suggestions properly',
         );
@@ -336,7 +362,7 @@ void main() {
       test('should handle empty/minimal module structure', () async {
         final modulePath = '$testModulesPath/edge_case_module';
         final moduleDir = Directory(modulePath);
-        
+
         if (!moduleDir.existsSync()) {
           markTestSkipped('edge_case_module test directory not found');
           return;
@@ -346,38 +372,42 @@ void main() {
           projectPath: moduleDir.absolute.path,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
         final result = await validatorService.validateModule(
-          moduleDir.absolute.path, 
+          moduleDir.absolute.path,
           context: context,
         );
 
         expect(
-          result, 
-          isNotNull, 
+          result,
+          isNotNull,
           reason: 'Should handle edge cases gracefully',
         );
 
-        print('Edge case module validation completed with ${result.messages.length} messages');
+        logger.info(
+          'Edge case module validation completed with ${result.messages.length} messages',
+        );
 
         if (result.messages.isNotEmpty) {
           final structureIssues = _getMessagesByValidatorName(
-            result, 
+            result,
             'structure',
           );
           final missingFileIssues = structureIssues
-              .where((msg) => 
-                  msg.message.toLowerCase().contains('missing') ||
-                  msg.message.toLowerCase().contains('required'),)
+              .where(
+                (msg) =>
+                    msg.message.toLowerCase().contains('missing') ||
+                    msg.message.toLowerCase().contains('required'),
+              )
               .toList();
-          
-          print('Structure issues: ${structureIssues.length}');
-          print('Missing file issues: ${missingFileIssues.length}');
+
+          logger.info('Structure issues: ${structureIssues.length}');
+          logger.info('Missing file issues: ${missingFileIssues.length}');
         }
       });
 
@@ -392,22 +422,23 @@ void main() {
         // ValidatorService might handle gracefully instead of throwing
         try {
           final result = await validatorService.validateModule(
-            nonExistentPath, 
+            nonExistentPath,
             context: context,
           );
-          
+
           expect(
-            result, 
+            result,
             isNotNull,
             reason: 'Should handle non-existent path gracefully',
           );
-          
-          print('Non-existent path handled gracefully with ${result.messages.length} messages');
-          
+
+          logger.info(
+            'Non-existent path handled gracefully with ${result.messages.length} messages',
+          );
         } catch (e) {
-          print('Exception thrown for non-existent path: $e');
+          logger.info('Exception thrown for non-existent path: $e');
           expect(
-            e, 
+            e,
             isA<Exception>(),
             reason: 'Should throw appropriate exception for non-existent path',
           );
@@ -419,7 +450,7 @@ void main() {
       test('should support different output formats', () async {
         final modulePath = '$testModulesPath/valid_module';
         final moduleDir = Directory(modulePath);
-        
+
         if (!moduleDir.existsSync()) {
           markTestSkipped('valid_module test directory not found');
           return;
@@ -443,18 +474,18 @@ void main() {
           );
 
           final result = await validatorService.validateModule(
-            moduleDir.absolute.path, 
+            moduleDir.absolute.path,
             context: context,
           );
-          
+
           final output = _formatResult(result, format);
           expect(
-            output.isNotEmpty, 
+            output.isNotEmpty,
             isTrue,
             reason: 'Should produce output in $format format',
           );
 
-          print('Format $format: ${output.length} characters');
+          logger.info('Format $format: ${output.length} characters');
         }
       });
     });
@@ -463,7 +494,7 @@ void main() {
       test('should collect validation statistics', () async {
         final modulePath = '$testModulesPath/valid_module';
         final moduleDir = Directory(modulePath);
-        
+
         if (!moduleDir.existsSync()) {
           markTestSkipped('valid_module test directory not found');
           return;
@@ -475,43 +506,46 @@ void main() {
           projectPath: moduleDir.absolute.path,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
         final result = await validatorService.validateModule(
-          moduleDir.absolute.path, 
+          moduleDir.absolute.path,
           context: context,
         );
-        
+
         stopwatch.stop();
 
         expect(
-          result, 
-          isNotNull, 
+          result,
+          isNotNull,
           reason: 'Should have validation result',
         );
 
         expect(
-          stopwatch.elapsedMilliseconds, 
+          stopwatch.elapsedMilliseconds,
           lessThan(10000),
           reason: 'Validation should complete within reasonable time',
         );
 
-        print('Validation completed in ${stopwatch.elapsedMilliseconds}ms');
+        logger
+            .info('Validation completed in ${stopwatch.elapsedMilliseconds}ms');
 
         final stats = validatorService.lastValidationStats;
         if (stats != null) {
-          print('Validation stats available: ${stats.executedValidators} validators executed');
+          logger.info(
+            'Validation stats available: ${stats.executedValidators} validators executed',
+          );
           expect(
-            stats.executedValidators, 
+            stats.executedValidators,
             greaterThanOrEqualTo(0),
             reason: 'Should track executed validator count',
           );
         } else {
-          print('No validation stats available');
+          logger.info('No validation stats available');
         }
       });
     });
@@ -520,8 +554,8 @@ void main() {
       test('should show different results for different modules', () async {
         final validModulePath = '$testModulesPath/valid_module';
         final problematicModulePath = '$testModulesPath/problematic_module';
-        
-        if (!Directory(validModulePath).existsSync() || 
+
+        if (!Directory(validModulePath).existsSync() ||
             !Directory(problematicModulePath).existsSync()) {
           markTestSkipped('Test modules not found');
           return;
@@ -532,7 +566,7 @@ void main() {
           strictMode: true,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
@@ -543,19 +577,19 @@ void main() {
           strictMode: true,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
         final validResult = await validatorService.validateModule(
-          Directory(validModulePath).absolute.path, 
+          Directory(validModulePath).absolute.path,
           context: validContext,
         );
 
         final problematicResult = await validatorService.validateModule(
-          Directory(problematicModulePath).absolute.path, 
+          Directory(problematicModulePath).absolute.path,
           context: problematicContext,
         );
 
@@ -567,23 +601,30 @@ void main() {
             .where((msg) => msg.severity == ValidationSeverity.error)
             .length;
 
-        print('Valid module errors: $validErrors');
-        print('Problematic module errors: $problematicErrors');
-        print('Valid module total messages: ${validResult.messages.length}');
-        print('Problematic module total messages: ${problematicResult.messages.length}');
+        logger.info('Valid module errors: $validErrors');
+        logger.info('Problematic module errors: $problematicErrors');
+        logger.info(
+            'Valid module total messages: ${validResult.messages.length}');
+        logger.info(
+          'Problematic module total messages: ${problematicResult.messages.length}',
+        );
 
         // If both modules return no messages, there might be a setup issue
-        if (validResult.messages.isEmpty && problematicResult.messages.isEmpty) {
-          markTestSkipped('Both modules returned no messages - possible ValidatorService setup issue');
+        if (validResult.messages.isEmpty &&
+            problematicResult.messages.isEmpty) {
+          markTestSkipped(
+            'Both modules returned no messages - possible ValidatorService setup issue',
+          );
           return;
         }
 
         // 修复：比较错误数量而不是总消息数量
         expect(
-          problematicErrors, 
-          greaterThan(validErrors),  // 改为greaterThan，确保problematic模块错误更多
-          reason: 'Problematic module should have more errors than valid module. '
-                  'Valid: $validErrors errors, Problematic: $problematicErrors errors',
+          problematicErrors,
+          greaterThan(validErrors), // 改为greaterThan，确保problematic模块错误更多
+          reason:
+              'Problematic module should have more errors than valid module. '
+              'Valid: $validErrors errors, Problematic: $problematicErrors errors',
         );
 
         // 可选：也可以验证problematic模块至少有一定数量的错误
@@ -606,7 +647,7 @@ void main() {
 
 /// Helper method to get messages by validator name.
 List<ValidationMessage> _getMessagesByValidatorName(
-  ValidationResult result, 
+  ValidationResult result,
   String validatorName,
 ) {
   return result.messages
@@ -616,9 +657,7 @@ List<ValidationMessage> _getMessagesByValidatorName(
 
 /// Helper method to get fixable messages.
 List<ValidationMessage> _getFixableMessages(ValidationResult result) {
-  return result.messages
-      .where((msg) => msg.fixSuggestion != null)
-      .toList();
+  return result.messages.where((msg) => msg.fixSuggestion != null).toList();
 }
 
 /// Helper method to format validation result.

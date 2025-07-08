@@ -64,11 +64,11 @@ class DefaultLoggingHook extends TemplateHook {
   Future<HookResult> execute(HookContext context) async {
     try {
       final metadata = context.metadata;
-      final duration = metadata.containsKey('startTime') && 
-              metadata.containsKey('endTime')
-          ? DateTime.parse(metadata['endTime'] as String)
-              .difference(DateTime.parse(metadata['startTime'] as String))
-          : null;
+      final duration =
+          metadata.containsKey('startTime') && metadata.containsKey('endTime')
+              ? DateTime.parse(metadata['endTime'] as String)
+                  .difference(DateTime.parse(metadata['startTime'] as String))
+              : null;
 
       cli_logger.Logger.success(
         '模板生成完成: ${context.templateName} -> ${context.outputPath}',
@@ -90,4 +90,4 @@ class DefaultLoggingHook extends TemplateHook {
       return HookResult.successResult;
     }
   }
-} 
+}

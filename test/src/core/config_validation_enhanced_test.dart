@@ -20,7 +20,6 @@ import 'package:test/test.dart';
 
 /// 测试用的临时配置管理器，使用隔离的临时目录
 class TestConfigManagerForValidation extends ConfigManager {
-
   TestConfigManagerForValidation(this.testWorkingDirectory)
       : super(workingDirectory: testWorkingDirectory);
   final String testWorkingDirectory;
@@ -96,9 +95,13 @@ void main() {
 
         expect(result.isValid, isTrue, reason: '仅版本格式警告不影响整体验证通过');
         expect(
-            result.warnings,
-            contains(predicate<String>(
-                (warning) => warning.contains('版本号建议使用语义版本格式'),),),);
+          result.warnings,
+          contains(
+            predicate<String>(
+              (warning) => warning.contains('版本号建议使用语义版本格式'),
+            ),
+          ),
+        );
       });
 
       test('严格验证 - 语义约束检查', () async {
@@ -145,9 +148,13 @@ void main() {
 
         expect(result.isValid, isTrue, reason: '安全警告不影响整体验证通过');
         expect(
-            result.warnings,
-            contains(predicate<String>(
-                (warning) => warning.contains('HTTP协议，存在安全风险'),),),);
+          result.warnings,
+          contains(
+            predicate<String>(
+              (warning) => warning.contains('HTTP协议，存在安全风险'),
+            ),
+          ),
+        );
       });
     });
 
@@ -197,9 +204,7 @@ void main() {
           workspaceName: '测试工作空间',
         );
 
-        final result = await configManager.checkConfigIntegrity(
-          
-        );
+        final result = await configManager.checkConfigIntegrity();
 
         expect(result.isValid, isTrue, reason: '已初始化的工作空间完整性检查应该通过');
         expect(result.suggestions, contains('模块目录为空，可以使用 "ming create" 创建新模块'));
@@ -239,8 +244,11 @@ void main() {
         );
 
         // 标准验证检查更多字段
-        expect(result.warnings.length, greaterThanOrEqualTo(1),
-            reason: '标准验证应该有更多警告',);
+        expect(
+          result.warnings.length,
+          greaterThanOrEqualTo(1),
+          reason: '标准验证应该有更多警告',
+        );
       });
 
       test('严格验证级别', () async {
@@ -276,9 +284,13 @@ void main() {
 
         // 企业级验证包含安全检查
         expect(
-            result.warnings,
-            contains(predicate<String>(
-                (warning) => warning.contains('HTTP协议，存在安全风险'),),),);
+          result.warnings,
+          contains(
+            predicate<String>(
+              (warning) => warning.contains('HTTP协议，存在安全风险'),
+            ),
+          ),
+        );
       });
     });
 

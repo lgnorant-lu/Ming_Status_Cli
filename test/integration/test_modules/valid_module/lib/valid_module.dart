@@ -1,5 +1,5 @@
 /// A valid test module for Ming Status CLI validation testing.
-/// 
+///
 /// This module demonstrates proper structure and coding practices
 /// that should pass validation checks.
 library valid_module;

@@ -12,11 +12,10 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart' as path;
-import 'package:ming_status_cli/src/models/validation_result.dart';
+
 import 'package:ming_status_cli/src/utils/logger.dart';
+import 'package:path/path.dart' as path;
 
 /// CI/CD集成管理器
 ///
@@ -109,7 +108,28 @@ class CiCdIntegration {
           'azure_artifacts': true,
         });
 
-      default:
+      case CiCdEnvironment.local:
+        config.addAll({
+          'output_file': 'validation-report.json',
+          'junit_output': 'test-results.xml',
+          'interactive': true,
+        });
+
+      case CiCdEnvironment.travisCi:
+        config.addAll({
+          'output_file': 'validation-report.json',
+          'junit_output': 'test-results.xml',
+          'travis_fold': true,
+        });
+
+      case CiCdEnvironment.circleCi:
+        config.addAll({
+          'output_file': 'validation-report.json',
+          'junit_output': 'test-results.xml',
+          'circle_artifacts': true,
+        });
+
+      case CiCdEnvironment.generic:
         config.addAll({
           'output_file': 'validation-report.json',
           'junit_output': 'test-results.xml',
@@ -137,7 +157,10 @@ class CiCdIntegration {
       case CiCdEnvironment.azureDevOps:
         await _generateAzureDevOpsConfig(projectPath);
 
-      default:
+      case CiCdEnvironment.local:
+      case CiCdEnvironment.travisCi:
+      case CiCdEnvironment.circleCi:
+      case CiCdEnvironment.generic:
         Logger.warning('不支持为 $environment 生成配置文件');
     }
   }
@@ -406,7 +429,20 @@ steps:
           'jenkins_build_url': Platform.environment['BUILD_URL'] ?? '',
         });
 
-      default:
+      case CiCdEnvironment.azureDevOps:
+        info.addAll({
+          'azure_build_id': Platform.environment['BUILD_BUILDID'] ?? '',
+          'azure_source_branch':
+              Platform.environment['BUILD_SOURCEBRANCH'] ?? '',
+          'azure_repository':
+              Platform.environment['BUILD_REPOSITORY_NAME'] ?? '',
+        });
+
+      case CiCdEnvironment.local:
+      case CiCdEnvironment.travisCi:
+      case CiCdEnvironment.circleCi:
+      case CiCdEnvironment.generic:
+        // 这些环境不需要特殊信息
         break;
     }
 

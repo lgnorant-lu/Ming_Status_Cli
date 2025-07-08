@@ -14,12 +14,13 @@ Change History:
 
 import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart' as path;
+
 import 'package:ming_status_cli/src/models/validation_result.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
+import 'package:path/path.dart' as path;
 
 /// 验证报告生成器
-/// 
+///
 /// 支持多种格式的验证报告生成：
 /// - HTML报告 (详细的可视化报告)
 /// - JSON报告 (机器可读格式)
@@ -72,19 +73,28 @@ class ValidationReportGenerator {
   ) async {
     final htmlContent = _buildHtmlReport(result, metadata);
     final filePath = path.join(outputPath, 'validation-report.html');
-    
+
     await Directory(outputPath).create(recursive: true);
     await File(filePath).writeAsString(htmlContent);
-    
+
     Logger.info('✅ HTML报告已生成: $filePath');
   }
 
   /// 构建HTML报告内容
-  String _buildHtmlReport(ValidationResult result, Map<String, dynamic> metadata) {
-    final errorCount = result.messages.where((m) => m.severity == ValidationSeverity.error).length;
-    final warningCount = result.messages.where((m) => m.severity == ValidationSeverity.warning).length;
-    final successCount = result.messages.where((m) => m.severity == ValidationSeverity.success).length;
-    
+  String _buildHtmlReport(
+    ValidationResult result,
+    Map<String, dynamic> metadata,
+  ) {
+    final errorCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.error)
+        .length;
+    final warningCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.warning)
+        .length;
+    final successCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.success)
+        .length;
+
     final statusColor = result.isValid ? '#28a745' : '#dc3545';
     final statusText = result.isValid ? '通过' : '失败';
 
@@ -152,23 +162,27 @@ class ValidationReportGenerator {
         
         <div class="messages">
             <h2>验证详情</h2>
-            ${result.messages.map((message) => '''
+            ${result.messages.map(
+              (message) => '''
             <div class="message ${message.severity.name}">
                 <div class="message-header">${message.message}</div>
                 ${message.file != null ? '<div class="message-file">📁 ${message.file}</div>' : ''}
             </div>
-            ''',).join()}
+            ''',
+            ).join()}
         </div>
         
         <div class="footer">
             <h3>元数据</h3>
             <div class="metadata">
-                ${metadata.entries.map((entry) => '''
+                ${metadata.entries.map(
+              (entry) => '''
                 <div class="metadata-item">
                     <span><strong>${entry.key}:</strong></span>
                     <span>${entry.value}</span>
                 </div>
-                ''',).join()}
+                ''',
+            ).join()}
             </div>
         </div>
     </div>
@@ -188,27 +202,37 @@ class ValidationReportGenerator {
       'summary': {
         'is_valid': result.isValid,
         'total_messages': result.messages.length,
-        'error_count': result.messages.where((m) => m.severity == ValidationSeverity.error).length,
-        'warning_count': result.messages.where((m) => m.severity == ValidationSeverity.warning).length,
-        'success_count': result.messages.where((m) => m.severity == ValidationSeverity.success).length,
+        'error_count': result.messages
+            .where((m) => m.severity == ValidationSeverity.error)
+            .length,
+        'warning_count': result.messages
+            .where((m) => m.severity == ValidationSeverity.warning)
+            .length,
+        'success_count': result.messages
+            .where((m) => m.severity == ValidationSeverity.success)
+            .length,
       },
-      'messages': result.messages.map((message) => {
-        'severity': message.severity.name,
-        'message': message.message,
-        'validator': message.validatorName,
-        'file_path': message.file,
-        'line_number': message.line,
-        'code': message.code,
-        'fix_suggestion': message.fixSuggestion?.description,
-      },).toList(),
+      'messages': result.messages
+          .map(
+            (message) => {
+              'severity': message.severity.name,
+              'message': message.message,
+              'validator': message.validatorName,
+              'file_path': message.file,
+              'line_number': message.line,
+              'code': message.code,
+              'fix_suggestion': message.fixSuggestion?.description,
+            },
+          )
+          .toList(),
     };
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(jsonData);
     final filePath = path.join(outputPath, 'validation-report.json');
-    
+
     await Directory(outputPath).create(recursive: true);
     await File(filePath).writeAsString(jsonString);
-    
+
     Logger.info('✅ JSON报告已生成: $filePath');
   }
 
@@ -218,15 +242,20 @@ class ValidationReportGenerator {
     String outputPath,
     Map<String, dynamic> metadata,
   ) async {
-    final errorCount = result.messages.where((m) => m.severity == ValidationSeverity.error).length;
-    final warningCount = result.messages.where((m) => m.severity == ValidationSeverity.warning).length;
+    final errorCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.error)
+        .length;
+    final warningCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.warning)
+        .length;
     final totalTests = result.messages.length;
     final failures = errorCount + warningCount;
 
     final xmlContent = '''<?xml version="1.0" encoding="UTF-8"?>
 <testsuites name="Ming Status CLI Validation" tests="$totalTests" failures="$failures" errors="$errorCount" time="0">
   <testsuite name="Validation" tests="$totalTests" failures="$failures" errors="$errorCount" time="0">
-    ${result.messages.map((message) => '''
+    ${result.messages.map(
+              (message) => '''
     <testcase classname="${message.validatorName}" name="${message.message.replaceAll('"', '&quot;')}" time="0">
       ${message.severity == ValidationSeverity.error ? '''
       <error message="${message.message.replaceAll('"', '&quot;')}" type="ValidationError">
@@ -242,15 +271,16 @@ class ValidationReportGenerator {
       </failure>
       ''' : ''}
     </testcase>
-    ''',).join()}
+    ''',
+            ).join()}
   </testsuite>
 </testsuites>''';
 
     final filePath = path.join(outputPath, 'test-results.xml');
-    
+
     await Directory(outputPath).create(recursive: true);
     await File(filePath).writeAsString(xmlContent);
-    
+
     Logger.info('✅ JUnit XML报告已生成: $filePath');
   }
 
@@ -260,10 +290,16 @@ class ValidationReportGenerator {
     String outputPath,
     Map<String, dynamic> metadata,
   ) async {
-    final errorCount = result.messages.where((m) => m.severity == ValidationSeverity.error).length;
-    final warningCount = result.messages.where((m) => m.severity == ValidationSeverity.warning).length;
-    final successCount = result.messages.where((m) => m.severity == ValidationSeverity.success).length;
-    
+    final errorCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.error)
+        .length;
+    final warningCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.warning)
+        .length;
+    final successCount = result.messages
+        .where((m) => m.severity == ValidationSeverity.success)
+        .length;
+
     final statusEmoji = result.isValid ? '✅' : '❌';
     final statusText = result.isValid ? '通过' : '失败';
 
@@ -282,14 +318,16 @@ $statusEmoji **状态**: $statusText
 
 ## 📋 验证详情
 
-${result.messages.map((message) => '''
+${result.messages.map(
+              (message) => '''
 ### ${_getSeverityEmoji(message.severity)} ${message.message}
 
 - **验证器**: ${message.validatorName}
 ${message.file != null ? '- **文件**: `${message.file}`' : ''}
 ${message.line != null ? '- **行号**: ${message.line}' : ''}
 ${message.fixSuggestion != null ? '- **修复建议**: ${message.fixSuggestion!.description}' : ''}
-''',).join('\n')}
+''',
+            ).join('\n')}
 
 ## 📈 元数据
 
@@ -300,10 +338,10 @@ ${metadata.entries.map((entry) => '- **${entry.key}**: ${entry.value}').join('\n
 ''';
 
     final filePath = path.join(outputPath, 'validation-report.md');
-    
+
     await Directory(outputPath).create(recursive: true);
     await File(filePath).writeAsString(markdownContent);
-    
+
     Logger.info('✅ Markdown报告已生成: $filePath');
   }
 
@@ -315,23 +353,28 @@ ${metadata.entries.map((entry) => '- **${entry.key}**: ${entry.value}').join('\n
   ) async {
     final csvLines = <String>[
       'Severity,Message,Validator,File Path,Line Number,Code,Fix Suggestion',
-      ...result.messages.map((message) => [
-        message.severity.name,
-        '"${message.message.replaceAll('"', '""')}"',
-        message.validatorName ?? '',
-        message.file ?? '',
-        message.line?.toString() ?? '',
-        message.code ?? '',
-        if (message.fixSuggestion != null) '"${message.fixSuggestion!.description.replaceAll('"', '""')}"' else '',
-      ].join(','),),
+      ...result.messages.map(
+        (message) => [
+          message.severity.name,
+          '"${message.message.replaceAll('"', '""')}"',
+          message.validatorName ?? '',
+          message.file ?? '',
+          message.line?.toString() ?? '',
+          message.code ?? '',
+          if (message.fixSuggestion != null)
+            '"${message.fixSuggestion!.description.replaceAll('"', '""')}"'
+          else
+            '',
+        ].join(','),
+      ),
     ];
 
     final csvContent = csvLines.join('\n');
     final filePath = path.join(outputPath, 'validation-report.csv');
-    
+
     await Directory(outputPath).create(recursive: true);
     await File(filePath).writeAsString(csvContent);
-    
+
     Logger.info('✅ CSV报告已生成: $filePath');
   }
 
@@ -354,16 +397,16 @@ ${metadata.entries.map((entry) => '- **${entry.key}**: ${entry.value}').join('\n
 enum ReportFormat {
   /// HTML格式
   html,
-  
+
   /// JSON格式
   json,
-  
+
   /// JUnit XML格式
   junit,
-  
+
   /// Markdown格式
   markdown,
-  
+
   /// CSV格式
   csv,
 }

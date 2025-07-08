@@ -68,7 +68,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建带有正确文件头的Dart文件
         await File('${tempDir.path}/lib/good_header.dart').writeAsString('''
 /*
@@ -84,19 +84,19 @@ class GoodHeader {
   void method() {}
 }
 ''');
-        
+
         // 创建缺少文件头的Dart文件
         await File('${tempDir.path}/lib/bad_header.dart').writeAsString('''
 class BadHeader {
   void method() {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('文件头注释')), 
+          result.messages.any((m) => m.message.contains('文件头注释')),
           isTrue,
         );
       });
@@ -108,19 +108,19 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建有长行的文件
         await File('${tempDir.path}/lib/long_lines.dart').writeAsString('''
 class LongLines {
   void veryLongMethodNameThatExceedsTheRecommendedLineLengthLimitAndShouldBeFlaggedByTheQualityValidator() {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('行长度')), 
+          result.messages.any((m) => m.message.contains('行长度')),
           isTrue,
         );
       });
@@ -132,7 +132,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建导入顺序错误的文件
         await File('${tempDir.path}/lib/bad_imports.dart').writeAsString('''
 import 'package:test/test.dart';
@@ -141,12 +141,12 @@ import '../other_file.dart';
 
 class BadImports {}
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('导入语句')), 
+          result.messages.any((m) => m.message.contains('导入语句')),
           isTrue,
         );
       });
@@ -160,14 +160,14 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建没有文档的类
         await File('${tempDir.path}/lib/undocumented.dart').writeAsString('''
 class UndocumentedClass {
   void undocumentedMethod() {}
 }
 ''');
-        
+
         // 创建有文档的类
         await File('${tempDir.path}/lib/documented.dart').writeAsString('''
 /// A well documented class
@@ -176,16 +176,17 @@ class DocumentedClass {
   void documentedMethod() {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('文档覆盖率') ||
-            m.message.contains('方法文档') ||
-            m.message.contains('类文档'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('文档覆盖率') ||
+                m.message.contains('方法文档') ||
+                m.message.contains('类文档'),
+          ),
           isTrue,
         );
       });
@@ -197,7 +198,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建部分文档覆盖的文件
         await File('${tempDir.path}/lib/partial_docs.dart').writeAsString('''
 /// Documented class
@@ -209,10 +210,10 @@ class PartialDocs {
   void undocumentedMethod() {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
     });
@@ -225,26 +226,24 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建很长的文件（超过1000行）
-        final longFileContent = StringBuffer()
-          ..writeln('class VeryLongFile {');
+        final longFileContent = StringBuffer()..writeln('class VeryLongFile {');
         for (var i = 0; i < 1050; i++) {
           longFileContent.writeln('  void method$i() {}');
         }
         longFileContent.writeln('}');
-        
+
         await File('${tempDir.path}/lib/very_long_file.dart')
             .writeAsString(longFileContent.toString());
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('文件过长') || 
-            m.message.contains('文件较长'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('文件过长') || m.message.contains('文件较长'),
+          ),
           isTrue,
         );
       });
@@ -256,7 +255,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建复杂方法（超过50行）
         final complexMethodContent = StringBuffer()
           ..writeln('class ComplexMethod {')
@@ -267,18 +266,17 @@ description: A test project
         complexMethodContent
           ..writeln('  }')
           ..writeln('}');
-        
+
         await File('${tempDir.path}/lib/complex_method.dart')
             .writeAsString(complexMethodContent.toString());
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('方法') && 
-            m.message.contains('过长'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('方法') && m.message.contains('过长'),
+          ),
           isTrue,
         );
       });
@@ -292,7 +290,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/lib/const_usage.dart').writeAsString('''
 class ConstUsage {
   // Should be const
@@ -302,10 +300,10 @@ class ConstUsage {
   static const String constantName = 'Constant';
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
 
@@ -316,7 +314,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/lib/override_usage.dart').writeAsString('''
 class Base {
   void method() {}
@@ -332,10 +330,10 @@ class GoodDerived extends Base {
   void method() {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
 
@@ -346,7 +344,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/lib/anti_patterns.dart').writeAsString('''
 class AntiPatterns {
   void badMethod() {
@@ -362,12 +360,12 @@ class AntiPatterns {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('print语句')), 
+          result.messages.any((m) => m.message.contains('print语句')),
           isTrue,
         );
       });
@@ -381,15 +379,16 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('analysis_options.yaml') ||
-            m.message.contains('静态分析配置'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('analysis_options.yaml') ||
+                m.message.contains('静态分析配置'),
+          ),
           isTrue,
         );
       });
@@ -401,7 +400,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/analysis_options.yaml').writeAsString('''
 analyzer:
   strong-mode:
@@ -412,16 +411,17 @@ linter:
     - prefer_const_constructors
     - use_key_in_widget_constructors
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('静态分析配置') ||
-            m.message.contains('linter规则') ||
-            m.severity == ValidationSeverity.success,
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('静态分析配置') ||
+                m.message.contains('linter规则') ||
+                m.severity == ValidationSeverity.success,
+          ),
           isTrue,
         );
       });
@@ -437,7 +437,7 @@ description: A test project
 environment:
   sdk: '>=3.0.0 <4.0.0'
 ''');
-        
+
         // 创建有分析问题的文件
         await File('${tempDir.path}/lib/analyze_issues.dart').writeAsString('''
 class AnalyzeIssues {
@@ -448,10 +448,10 @@ class AnalyzeIssues {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         // dart analyze集成可能会检测到问题
         expect(result.messages, isNotEmpty);
       });
@@ -465,7 +465,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/lib/parameter_style.dart').writeAsString('''
 class ParameterStyle {
   // Too many parameters
@@ -475,10 +475,10 @@ class ParameterStyle {
   void goodParams(int value, {String? name}) {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
 
@@ -489,7 +489,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/lib/variable_naming.dart').writeAsString('''
 class VariableNaming {
   // Bad naming
@@ -503,10 +503,10 @@ class VariableNaming {
   VariableNaming(this.a, this.str, this.userCount, this.userName);
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
     });
@@ -519,7 +519,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/lib/async_patterns.dart').writeAsString('''
 class AsyncPatterns {
   // Missing async/await
@@ -534,10 +534,10 @@ class AsyncPatterns {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
 
@@ -548,8 +548,9 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
-        await File('${tempDir.path}/lib/loop_performance.dart').writeAsString('''
+
+        await File('${tempDir.path}/lib/loop_performance.dart')
+            .writeAsString('''
 class LoopPerformance {
   void inefficientLoop(List<String> items) {
     for (int i = 0; i < items.length; i++) {
@@ -566,10 +567,10 @@ class LoopPerformance {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
     });
@@ -578,7 +579,7 @@ class LoopPerformance {
       test('should handle permission errors gracefully', () async {
         const context = ValidationContext(projectPath: '/nonexistent/path');
         final result = await validator.validate('/nonexistent/path', context);
-        
+
         expect(result, isNotNull);
         // QualityValidator可能不会因为路径问题而失败，它会优雅处理
         expect(result.messages.isNotEmpty || result.isValid, isTrue);
@@ -591,17 +592,17 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         // 创建语法错误的Dart文件
         await File('${tempDir.path}/lib/malformed.dart').writeAsString('''
 class MalformedFile {
   void method() {
     // Missing closing brace
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result, isNotNull);
       });
     });
@@ -614,7 +615,7 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         await File('${tempDir.path}/lib/strict_test.dart').writeAsString('''
 class StrictTest {
   void method() {
@@ -622,17 +623,19 @@ class StrictTest {
   }
 }
 ''');
-        
+
         final context = ValidationContext(
           projectPath: tempDir.path,
           strictMode: true,
         );
         final result = await validator.validate(tempDir.path, context);
-        
+
         // 严格模式应该产生更多警告
-        final warningCount = result.messages.where((m) => 
-          m.severity == ValidationSeverity.warning,
-        ).length;
+        final warningCount = result.messages
+            .where(
+              (m) => m.severity == ValidationSeverity.warning,
+            )
+            .length;
         expect(warningCount, greaterThan(0));
       });
     });

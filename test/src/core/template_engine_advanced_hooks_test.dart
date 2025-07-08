@@ -11,10 +11,12 @@ Description:        Task 33.* 高级钩子功能测试 (Advanced hooks functiona
 
 import 'dart:io';
 
+import 'package:ming_status_cli/src/core/managers/hook_manager.dart'
+    as hook_mgr;
+import 'package:ming_status_cli/src/core/strategies/hook_implementations.dart'
+    as hook_impl;
 import 'package:ming_status_cli/src/core/template_engine.dart';
 import 'package:ming_status_cli/src/core/template_models.dart';
-import 'package:ming_status_cli/src/core/strategies/hook_implementations.dart' as hook_impl;
-import 'package:ming_status_cli/src/core/managers/hook_manager.dart' as hook_mgr;
 import 'package:test/test.dart';
 
 /// 测试用的简单脚本钩子
@@ -31,7 +33,7 @@ class TestScriptHook extends TemplateHook {
   final int hookPriority;
   final bool shouldFail;
   final bool shouldTimeout;
-  
+
   bool executed = false;
   HookContext? lastContext;
 
@@ -74,21 +76,21 @@ void main() {
         if (tempDir.existsSync()) {
           // 增加延迟让系统释放文件句柄
           await Future<void>.delayed(const Duration(milliseconds: 100));
-          
+
           // 尝试递归删除，如果失败则忽略（Windows文件句柄问题）
           try {
             await tempDir.delete(recursive: true);
           } catch (e) {
             // 如果删除失败，尝试重命名然后删除
             try {
+              final timestamp = DateTime.now().millisecondsSinceEpoch;
               final renamedDir = Directory(
-                '${tempDir.path}_tobedeleted_${
-                  DateTime.now().millisecondsSinceEpoch
-                }',
+                '${tempDir.path}_tobedeleted_$timestamp',
               );
               await tempDir.rename(renamedDir.path);
               // 异步删除，不等待结果
-              renamedDir.delete(recursive: true).catchError((_) => tempDir);
+              final _ =
+                  renamedDir.delete(recursive: true).catchError((_) => tempDir);
             } catch (_) {
               // 如果重命名也失败，就忽略（临时文件会被系统清理）
             }
@@ -152,9 +154,9 @@ void main() {
       test('应该处理脚本执行超时', () async {
         final config = hook_impl.ScriptHookConfig(
           description: '超时测试',
-          scriptPath: Platform.isWindows ?
-            'ping 127.0.0.1 -n 10' :
-            'sleep 10', // Windows兼容的超时命令
+          scriptPath: Platform.isWindows
+              ? 'ping 127.0.0.1 -n 10'
+              : 'sleep 10', // Windows兼容的超时命令
           timeout: 1000, // 1秒超时
         );
 
@@ -173,12 +175,15 @@ void main() {
         final result = await hook.execute(context);
         expect(result.success, isFalse);
         // 修改期望，支持不同的错误消息
-        expect(result.message, anyOf([
-          contains('超时'),
-          contains('timeout'),
-          contains('失败'),
-          contains('ERROR'),
-        ]),);
+        expect(
+          result.message,
+          anyOf([
+            contains('超时'),
+            contains('timeout'),
+            contains('失败'),
+            contains('ERROR'),
+          ]),
+        );
       });
 
       test('应该支持条件执行', () async {
@@ -248,9 +253,10 @@ void main() {
     group('Task 33.2: AdvancedHookManager 测试', () {
       test('应该从brick.yaml加载钩子配置', () async {
         // 创建测试模板配置
-        final templateDir = Directory('${tempDir.path}/templates/test_template');
+        final templateDir =
+            Directory('${tempDir.path}/templates/test_template');
         await templateDir.create(recursive: true);
-        
+
         final brickFile = File('${templateDir.path}/brick.yaml');
         await brickFile.writeAsString('''
 name: test_template
@@ -271,16 +277,16 @@ hooks:
 
         // 创建模板引擎并加载钩子
         final testEngine = TemplateEngine(workingDirectory: tempDir.path)
-        
+
           // 先注册默认钩子，因为加载会在现有基础上添加
           ..registerDefaultHooks();
 
         final initialStats = testEngine.getHookStatistics();
-        
+
         await testEngine.loadTemplateHooks('test_template');
 
         final finalStats = testEngine.getHookStatistics();
-        
+
         // 检查钩子数量是否增加（而不是具体数量）
         expect(
           finalStats['pre_generation_hooks'] as int,
@@ -291,7 +297,8 @@ hooks:
           greaterThanOrEqualTo(initialStats['post_generation_hooks'] as int),
         );
         expect(
-          finalStats['script_hooks'] as int, greaterThanOrEqualTo(0),
+          finalStats['script_hooks'] as int,
+          greaterThanOrEqualTo(0),
         ); // 应该有脚本钩子或没有（因为可能加载失败）
       });
 
@@ -464,9 +471,10 @@ hooks:
     group('Task 33.* 集成测试', () {
       test('应该支持高级钩子的集成使用', () async {
         // 创建一个标准的模板（不包含hooks配置，因为Mason不支持）
-        final templateDir = Directory('${tempDir.path}/templates/integration_test');
+        final templateDir =
+            Directory('${tempDir.path}/templates/integration_test');
         await templateDir.create(recursive: true);
-        
+
         final brickFile = File('${templateDir.path}/brick.yaml');
         await brickFile.writeAsString('''
 name: integration_test
@@ -481,18 +489,18 @@ version: 1.0.0
         await testFile.writeAsString('Test content: {{module_name}}');
 
         final testEngine = TemplateEngine(workingDirectory: tempDir.path);
-        
+
         // 手动注册一些钩子来测试集成功能
         const preHookConfig = hook_impl.ScriptHookConfig(
           description: '集成测试预生成钩子',
           scriptPath: 'echo "开始生成"',
         );
-        
+
         const postHookConfig = hook_impl.ScriptHookConfig(
           description: '集成测试后生成钩子',
           scriptPath: 'echo "生成完成"',
         );
-        
+
         testEngine
           ..registerScriptHook(preHookConfig, HookType.preGeneration)
           ..registerScriptHook(postHookConfig, HookType.postGeneration);
@@ -504,7 +512,7 @@ version: 1.0.0
           outputPath: outputPath,
           variables: {
             'module_name': 'test_module',
-            'module_id': 'test_module',  // 添加必需的module_id
+            'module_id': 'test_module', // 添加必需的module_id
             'author': 'test_author',
             'version': '1.0.0',
           },
@@ -513,7 +521,7 @@ version: 1.0.0
 
         expect(result.success, isTrue);
         expect(Directory(outputPath).existsSync(), isTrue);
-        
+
         // 验证钩子统计
         final stats = testEngine.getHookStatistics();
         expect(stats['script_hooks'] as int, greaterThan(0));
@@ -560,14 +568,16 @@ version: 1.0.0
         engine.hookRegistry.register(hook2);
 
         expect(
-          engine.getHookStatistics()['total_hooks'] as int, greaterThan(0),
+          engine.getHookStatistics()['total_hooks'] as int,
+          greaterThan(0),
         );
 
         // 清理所有钩子
         engine.clearAllHooks();
 
         expect(
-          engine.getHookStatistics()['total_hooks'] as int, equals(0),
+          engine.getHookStatistics()['total_hooks'] as int,
+          equals(0),
         );
       });
     });
@@ -611,4 +621,4 @@ version: 1.0.0
       });
     });
   });
-} 
+}

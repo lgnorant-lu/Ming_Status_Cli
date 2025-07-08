@@ -41,19 +41,25 @@ class ProgressTask {
     this.startTime,
     this.endTime,
   });
-  
+
   /// 任务唯一标识符
   final String id;
+
   /// 任务名称
   final String name;
+
   /// 任务描述
   final String description;
+
   /// 任务状态
   TaskStatus status;
+
   /// 错误信息（任务失败时）
   String? errorMessage;
+
   /// 任务开始时间
   DateTime? startTime;
+
   /// 任务结束时间
   DateTime? endTime;
 

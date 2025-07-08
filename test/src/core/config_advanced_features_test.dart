@@ -61,8 +61,10 @@ void main() {
         final environments = await configManager.getAvailableEnvironments();
 
         expect(environments, isNotEmpty);
-        expect(environments,
-            containsAll(['development', 'testing', 'production']),);
+        expect(
+          environments,
+          containsAll(['development', 'testing', 'production']),
+        );
       });
 
       test('应该能够清除配置缓存', () {
@@ -142,7 +144,9 @@ void main() {
         final baseConfig = WorkspaceConfig.defaultConfig();
         final otherConfig = WorkspaceConfig.enterpriseConfig();
 
-        final merged = baseConfig.mergeWith(otherConfig,);
+        final merged = baseConfig.mergeWith(
+          otherConfig,
+        );
 
         expect(merged.workspace.type, equals(WorkspaceType.enterprise));
         expect(merged.workspace.name, equals(otherConfig.workspace.name));
@@ -152,8 +156,10 @@ void main() {
         final baseConfig = WorkspaceConfig.defaultConfig();
         final otherConfig = WorkspaceConfig.enterpriseConfig();
 
-        final merged = baseConfig.mergeWith(otherConfig,
-            strategy: ConfigMergeStrategy.merge,);
+        final merged = baseConfig.mergeWith(
+          otherConfig,
+          strategy: ConfigMergeStrategy.merge,
+        );
 
         // 验证默认设置合并
         expect(merged.defaults.author, isNotEmpty);
@@ -164,8 +170,10 @@ void main() {
         final baseConfig = WorkspaceConfig.defaultConfig();
         final otherConfig = WorkspaceConfig.enterpriseConfig();
 
-        final merged = baseConfig.mergeWith(otherConfig,
-            strategy: ConfigMergeStrategy.preserve,);
+        final merged = baseConfig.mergeWith(
+          otherConfig,
+          strategy: ConfigMergeStrategy.preserve,
+        );
 
         // 验证原有值被保留
         expect(merged.workspace.name, equals(baseConfig.workspace.name));
@@ -186,8 +194,10 @@ void main() {
         expect(prodConfig, isNotNull);
 
         // 验证环境配置影响了验证规则
-        expect(devConfig.validation.minCoverage,
-            lessThan(prodConfig.validation.minCoverage),);
+        expect(
+          devConfig.validation.minCoverage,
+          lessThan(prodConfig.validation.minCoverage),
+        );
       });
 
       test('应该能够处理不存在的环境', () {

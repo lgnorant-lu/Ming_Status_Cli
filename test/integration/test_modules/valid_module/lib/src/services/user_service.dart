@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import '../models/user.dart';
 
 /// Service for managing user operations.
-/// 
+///
 /// This service provides methods for CRUD operations
 /// on user data with proper error handling.
 class UserService {
@@ -23,17 +23,15 @@ class UserService {
   final Duration timeout;
 
   /// Fetches a user by ID.
-  /// 
+  ///
   /// Returns the user if found, null otherwise.
   /// Throws [UserServiceException] on error.
   Future<User?> getUserById(String id) async {
     try {
-      final response = await http
-          .get(
-            Uri.parse('$baseUrl/users/$id'),
-            headers: {'Content-Type': 'application/json'},
-          )
-          .timeout(timeout);
+      final response = await http.get(
+        Uri.parse('$baseUrl/users/$id'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(timeout);
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
@@ -51,7 +49,7 @@ class UserService {
   }
 
   /// Creates a new user.
-  /// 
+  ///
   /// Returns the created user with assigned ID.
   /// Throws [UserServiceException] on error.
   Future<User> createUser(User user) async {

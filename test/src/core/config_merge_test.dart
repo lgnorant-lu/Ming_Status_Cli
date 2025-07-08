@@ -21,7 +21,6 @@ import 'package:test/test.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerForMerge extends UserConfigManager {
-
   TestUserConfigManagerForMerge(this._testDir);
   final String _testDir;
 
@@ -65,9 +64,7 @@ void main() {
             email: 'user@example.com',
             company: 'User Company',
           ),
-          preferences: UserPreferences(
-            
-          ),
+          preferences: UserPreferences(),
           defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
@@ -158,9 +155,7 @@ void main() {
         // 创建包含偏好设置的用户配置
         const userConfig = UserConfig(
           user: UserInfo(name: 'Test User'),
-          preferences: UserPreferences(
-            
-          ),
+          preferences: UserPreferences(),
           defaults: UserDefaults(
             author: 'User Author',
             license: 'MIT',
@@ -193,7 +188,7 @@ void main() {
         // 2. 工作空间特定设置覆盖用户默认值
         // 注意：由于ConfigManager的参数应用问题，author和type可能是默认值
         expect(loadedWorkspaceConfig!.defaults.author, isNotEmpty);
-        // expect(loadedWorkspaceConfig.workspace.type, 
+        // expect(loadedWorkspaceConfig.workspace.type,
         // equals(WorkspaceType.enterprise));
         expect(loadedWorkspaceConfig.workspace.type, isNotNull);
 
@@ -209,9 +204,7 @@ void main() {
             email: 'test@example.com',
             company: 'Test Company',
           ),
-          preferences: UserPreferences(
-            
-          ),
+          preferences: UserPreferences(),
           defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
@@ -221,36 +214,50 @@ void main() {
         await userConfigManager.saveUserConfig(userConfig);
 
         // 测试嵌套键值获取
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'),);
-        expect(await userConfigManager.getConfigValue('user.email'),
-            equals('test@example.com'),);
         expect(
-            await userConfigManager
-                .getConfigValue('preferences.defaultTemplate'),
-            equals('basic'),);
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Test User'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('user.email'),
+          equals('test@example.com'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('preferences.defaultTemplate'),
+          equals('basic'),
+        );
         final coloredOutput =
             await userConfigManager.getConfigValue('preferences.coloredOutput');
         expect(coloredOutput.toString() == 'true', isTrue);
-        expect(await userConfigManager.getConfigValue('defaults.author'),
-            equals('Test Author'),);
+        expect(
+          await userConfigManager.getConfigValue('defaults.author'),
+          equals('Test Author'),
+        );
 
         // 测试嵌套键值设置
         await userConfigManager.setConfigValue('user.name', 'Updated User');
         await userConfigManager.setConfigValue(
-            'preferences.defaultTemplate', 'enterprise',);
+          'preferences.defaultTemplate',
+          'enterprise',
+        );
         await userConfigManager.setConfigValue(
-            'defaults.license', 'Apache-2.0',);
+          'defaults.license',
+          'Apache-2.0',
+        );
 
         // 验证设置后的值
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Updated User'),);
         expect(
-            await userConfigManager
-                .getConfigValue('preferences.defaultTemplate'),
-            equals('enterprise'),);
-        expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals('Apache-2.0'),);
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Updated User'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('preferences.defaultTemplate'),
+          equals('enterprise'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('defaults.license'),
+          equals('Apache-2.0'),
+        );
       });
     });
 
@@ -312,25 +319,39 @@ void main() {
         await userConfigManager.saveUserConfig(userConfig);
 
         // 测试空值的处理
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'),);
         expect(
-            await userConfigManager.getConfigValue('user.email'), equals(''),);
-        expect(await userConfigManager.getConfigValue('user.company'),
-            equals('Test Company'),);
-        expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals(''),);
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Test User'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('user.email'),
+          equals(''),
+        );
+        expect(
+          await userConfigManager.getConfigValue('user.company'),
+          equals('Test Company'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('defaults.license'),
+          equals(''),
+        );
 
         // 测试设置空字符串值
         await userConfigManager.setConfigValue('user.email', '');
         expect(
-            await userConfigManager.getConfigValue('user.email'), equals(''),);
+          await userConfigManager.getConfigValue('user.email'),
+          equals(''),
+        );
 
         // 验证其他字段不受影响
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'),);
-        expect(await userConfigManager.getConfigValue('user.company'),
-            equals('Test Company'),);
+        expect(
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Test User'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('user.company'),
+          equals('Test Company'),
+        );
       });
     });
 
@@ -342,9 +363,7 @@ void main() {
             name: 'Test User',
             email: 'test@example.com',
           ),
-          preferences: UserPreferences(
-            
-          ),
+          preferences: UserPreferences(),
           defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
@@ -354,22 +373,28 @@ void main() {
         await userConfigManager.saveUserConfig(userConfig);
 
         // 测试各种路径格式
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'),);
         expect(
-            await userConfigManager
-                .getConfigValue('preferences.defaultTemplate'),
-            equals('basic'),);
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Test User'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('preferences.defaultTemplate'),
+          equals('basic'),
+        );
         final coloredOutputValue =
             await userConfigManager.getConfigValue('preferences.coloredOutput');
         // 处理可能的字符串形式布尔值
         expect(
-            coloredOutputValue.toString() == 'true', isTrue,);
+          coloredOutputValue.toString() == 'true',
+          isTrue,
+        );
 
         // 测试无效路径
         expect(await userConfigManager.getConfigValue('invalid.path'), isNull);
         expect(
-          await userConfigManager.getConfigValue('user.nonexistent'), isNull,);
+          await userConfigManager.getConfigValue('user.nonexistent'),
+          isNull,
+        );
         expect(await userConfigManager.getConfigValue(''), isNull);
       });
 
@@ -386,8 +411,10 @@ void main() {
         await userConfigManager.saveUserConfig(userConfig);
 
         // 验证路径大小写敏感性
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'),);
+        expect(
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Test User'),
+        );
         expect(await userConfigManager.getConfigValue('User.name'), isNull);
         expect(await userConfigManager.getConfigValue('user.Name'), isNull);
       });

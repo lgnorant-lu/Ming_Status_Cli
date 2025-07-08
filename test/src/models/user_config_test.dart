@@ -161,8 +161,10 @@ void main() {
       expect(defaults.author, equals(''));
       expect(defaults.license, equals('MIT'));
       expect(defaults.dartVersion, equals('^3.2.0'));
-      expect(defaults.description,
-          equals('A Flutter module created by Ming Status CLI'),);
+      expect(
+        defaults.description,
+        equals('A Flutter module created by Ming Status CLI'),
+      );
     });
 
     test('should create UserDefaults with custom values', () {
@@ -185,7 +187,10 @@ void main() {
 
       for (final license in validLicenses) {
         final defaults = UserDefaults(
-            author: 'Test', license: license, dartVersion: '^3.2.0',);
+          author: 'Test',
+          license: license,
+          dartVersion: '^3.2.0',
+        );
         expect(defaults.license, equals(license));
       }
     });
@@ -288,9 +293,7 @@ void main() {
           dartVersion: '^3.2.5',
           description: 'JSON序列化测试模块',
         ),
-        security: SecuritySettings(
-          
-        ),
+        security: SecuritySettings(),
       );
 
       // 序列化到JSON
@@ -305,28 +308,46 @@ void main() {
       expect(deserialized.user.email, equals(original.user.email));
       expect(deserialized.user.company, equals(original.user.company));
 
-      expect(deserialized.preferences.defaultTemplate,
-          equals(original.preferences.defaultTemplate),);
-      expect(deserialized.preferences.coloredOutput,
-          equals(original.preferences.coloredOutput),);
-      expect(deserialized.preferences.autoUpdateCheck,
-          equals(original.preferences.autoUpdateCheck),);
-      expect(deserialized.preferences.verboseLogging,
-          equals(original.preferences.verboseLogging),);
-      expect(deserialized.preferences.preferredIde,
-          equals(original.preferences.preferredIde),);
+      expect(
+        deserialized.preferences.defaultTemplate,
+        equals(original.preferences.defaultTemplate),
+      );
+      expect(
+        deserialized.preferences.coloredOutput,
+        equals(original.preferences.coloredOutput),
+      );
+      expect(
+        deserialized.preferences.autoUpdateCheck,
+        equals(original.preferences.autoUpdateCheck),
+      );
+      expect(
+        deserialized.preferences.verboseLogging,
+        equals(original.preferences.verboseLogging),
+      );
+      expect(
+        deserialized.preferences.preferredIde,
+        equals(original.preferences.preferredIde),
+      );
 
       expect(deserialized.defaults.author, equals(original.defaults.author));
       expect(deserialized.defaults.license, equals(original.defaults.license));
-      expect(deserialized.defaults.dartVersion,
-          equals(original.defaults.dartVersion),);
-      expect(deserialized.defaults.description,
-          equals(original.defaults.description),);
+      expect(
+        deserialized.defaults.dartVersion,
+        equals(original.defaults.dartVersion),
+      );
+      expect(
+        deserialized.defaults.description,
+        equals(original.defaults.description),
+      );
 
-      expect(deserialized.security?.encryptedCredentials,
-          equals(original.security?.encryptedCredentials),);
-      expect(deserialized.security?.strictPermissions,
-          equals(original.security?.strictPermissions),);
+      expect(
+        deserialized.security?.encryptedCredentials,
+        equals(original.security?.encryptedCredentials),
+      );
+      expect(
+        deserialized.security?.strictPermissions,
+        equals(original.security?.strictPermissions),
+      );
     });
 
     test('should support copyWith for complete config updates', () {
@@ -358,7 +379,8 @@ void main() {
       expect(userConfig.preferences.defaultTemplate, equals('basic'));
       expect(userConfig.defaults.license, equals('MIT')); // 应该使用默认值
       expect(
-          userConfig.security?.encryptedCredentials, isNull,
+        userConfig.security?.encryptedCredentials,
+        isNull,
       ); // security字段为null
     });
 
@@ -398,7 +420,10 @@ void main() {
         user: UserInfo(name: 'TestUser'),
         preferences: UserPreferences(),
         defaults: UserDefaults(
-            author: 'TestUser', license: 'MIT', dartVersion: '^3.2.0',),
+          author: 'TestUser',
+          license: 'MIT',
+          dartVersion: '^3.2.0',
+        ),
       );
 
       expect(config.user.name, equals('TestUser'));
@@ -411,20 +436,28 @@ void main() {
         user: UserInfo(name: 'BasicUser'),
         preferences: UserPreferences(),
         defaults: UserDefaults(
-            author: 'BasicUser', license: 'MIT', dartVersion: '^3.2.0',),
+          author: 'BasicUser',
+          license: 'MIT',
+          dartVersion: '^3.2.0',
+        ),
       );
 
       const enterpriseConfig = UserConfig(
         user: UserInfo(name: 'EnterpriseUser'),
         preferences: UserPreferences(defaultTemplate: 'enterprise'),
         defaults: UserDefaults(
-            author: 'EnterpriseUser', license: 'MIT', dartVersion: '^3.2.0',),
+          author: 'EnterpriseUser',
+          license: 'MIT',
+          dartVersion: '^3.2.0',
+        ),
         security: SecuritySettings(),
       );
 
       expect(basicConfig.preferences.defaultTemplate, equals('basic'));
       expect(
-          enterpriseConfig.preferences.defaultTemplate, equals('enterprise'),);
+        enterpriseConfig.preferences.defaultTemplate,
+        equals('enterprise'),
+      );
       expect(enterpriseConfig.security?.strictPermissions, equals(true));
     });
   });

@@ -20,11 +20,24 @@ import 'package:ming_status_cli/src/core/template_exceptions.dart';
 import 'package:ming_status_cli/src/core/template_models.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
-// 前向声明模式
+/// 基础模板引擎接口
+///
+/// 定义模板引擎的核心功能接口，包括缓存管理、异步生成等功能。
+/// 使用前向声明模式避免循环依赖。
 abstract class BaseTemplateEngine {
+  /// 高级模板缓存管理器
+  ///
+  /// 提供模板缓存、预编译和性能优化功能
   AdvancedTemplateCacheManager get cacheManager;
+
+  /// 异步模板生成管理器
+  ///
+  /// 提供异步生成、批量处理和队列管理功能
   AsyncTemplateGenerationManager get asyncManager;
-  
+
+  /// 使用钩子生成模板
+  ///
+  /// 支持钩子系统的高级模板生成方法，提供完整的生命周期管理
   Future<GenerationResult> generateWithHooks({
     required String templateName,
     required String outputPath,
@@ -40,19 +53,26 @@ abstract class BaseTemplateEngine {
 /// TemplateEngine的用户体验扩展
 extension TemplateEngineUXExtension on BaseTemplateEngine {
   /// 智能错误恢复管理器（延迟初始化）
-  static final Map<BaseTemplateEngine, IntelligentErrorRecoveryManager> _intelligentManagers = {};
-  
+  static final Map<BaseTemplateEngine, IntelligentErrorRecoveryManager>
+      _intelligentManagers = {};
+
   /// 用户体验管理器（延迟初始化）
   static final Map<BaseTemplateEngine, UserExperienceManager> _uxManagers = {};
 
   /// 获取智能错误恢复管理器
   IntelligentErrorRecoveryManager get intelligentErrorRecoveryManager {
-    return _intelligentManagers.putIfAbsent(this, () => IntelligentErrorRecoveryManager(this as dynamic));
+    return _intelligentManagers.putIfAbsent(
+      this,
+      () => IntelligentErrorRecoveryManager(this as dynamic),
+    );
   }
 
   /// 获取用户体验管理器
   UserExperienceManager get userExperienceManager {
-    return _uxManagers.putIfAbsent(this, () => UserExperienceManager(this as dynamic));
+    return _uxManagers.putIfAbsent(
+      this,
+      () => UserExperienceManager(this as dynamic),
+    );
   }
 
   /// Task 36.3: 使用智能错误恢复的增强生成方法
@@ -80,8 +100,9 @@ extension TemplateEngineUXExtension on BaseTemplateEngine {
           type: TemplateEngineErrorType.unknown,
           message: result.message ?? '生成失败',
         );
-        
-        final recoveryResult = await intelligentErrorRecoveryManager.intelligentRecover(
+
+        final recoveryResult =
+            await intelligentErrorRecoveryManager.intelligentRecover(
           error,
           HookContext(
             templateName: templateName,
@@ -124,7 +145,7 @@ extension TemplateEngineUXExtension on BaseTemplateEngine {
     void Function(ProgressUpdate)? onProgress,
   }) async {
     if (onProgress != null) {
-      userExperienceManager.setProgressCallback(onProgress);
+      userExperienceManager.progressCallback = onProgress;
     }
 
     return userExperienceManager.generateWithEnhancedUX(
@@ -236,4 +257,3 @@ extension TemplateEngineTask36Summary on BaseTemplateEngine {
     };
   }
 }
-

@@ -120,8 +120,10 @@ class FileUtils {
   }
 
   /// 删除目录（递归删除）
-  static Future<bool> deleteDirectory(String dirPath,
-      {bool recursive = false,}) async {
+  static Future<bool> deleteDirectory(
+    String dirPath, {
+    bool recursive = false,
+  }) async {
     try {
       final dir = Directory(dirPath);
       if (dir.existsSync()) {

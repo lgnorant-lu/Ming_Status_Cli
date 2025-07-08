@@ -65,10 +65,10 @@ void main() {
         // 创建空项目目录
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.isValid, isFalse);
         expect(
-          result.messages.any((m) => m.message.contains('缺少必需目录: lib/')), 
+          result.messages.any((m) => m.message.contains('缺少必需目录: lib/')),
           isTrue,
         );
       });
@@ -85,25 +85,32 @@ description: A test project
 environment:
   sdk: '>=3.0.0 <4.0.0'
 ''');
-        await File('${tempDir.path}/README.md').writeAsString('# Test Project\nThis is a test project with enough content.');
+        await File('${tempDir.path}/README.md').writeAsString(
+            '# Test Project\nThis is a test project with enough content.',);
         await File('${tempDir.path}/lib/main.dart').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
-        // 验证不应该有任何错误级别的消息  
-        expect(result.messages.where((m) => 
-          m.severity == ValidationSeverity.error,).isEmpty, isTrue,);
+
+        // 验证不应该有任何错误级别的消息
+        expect(
+          result.messages
+              .where(
+                (m) => m.severity == ValidationSeverity.error,
+              )
+              .isEmpty,
+          isTrue,
+        );
       });
 
       test('should detect missing pubspec.yaml', () async {
         await Directory('${tempDir.path}/lib').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('pubspec.yaml')), 
+          result.messages.any((m) => m.message.contains('pubspec.yaml')),
           isTrue,
         );
       });
@@ -111,12 +118,12 @@ environment:
       test('should detect missing README.md', () async {
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('README.md')), 
+          result.messages.any((m) => m.message.contains('README.md')),
           isTrue,
         );
       });
@@ -128,14 +135,16 @@ environment:
         await Directory('${tempDir.path}/lib/src').create();
         await File('${tempDir.path}/pubspec.yaml').create();
         await File('${tempDir.path}/lib/main.dart').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.severity == ValidationSeverity.error && 
-            m.message.contains('lib/src'),), 
+          result.messages.any(
+            (m) =>
+                m.severity == ValidationSeverity.error &&
+                m.message.contains('lib/src'),
+          ),
           isFalse,
         );
       });
@@ -145,12 +154,12 @@ environment:
         await Directory('${tempDir.path}/lib/src').create();
         await File('${tempDir.path}/pubspec.yaml').create();
         await File('${tempDir.path}/lib/BadFileName.dart').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('snake_case')), 
+          result.messages.any((m) => m.message.contains('snake_case')),
           isTrue,
         );
       });
@@ -163,10 +172,10 @@ version: 1.0.0
 description: A test project
 ''');
         await File('${tempDir.path}/lib/invalid.txt').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         // StructureValidator 不会检查文件扩展名，只检查.dart文件命名
         expect(result.messages, isNotEmpty);
       });
@@ -180,14 +189,16 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('缺少推荐目录: test/') || 
-            m.message.contains('缺少测试目录'),), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('缺少推荐目录: test/') ||
+                m.message.contains('缺少测试目录'),
+          ),
           isTrue,
         );
       });
@@ -201,13 +212,14 @@ version: 1.0.0
 description: A test project
 ''');
         await File('${tempDir.path}/test/BadTestName.dart').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('test/ 目录存在但没有测试文件'),), 
+          result.messages.any(
+            (m) => m.message.contains('test/ 目录存在但没有测试文件'),
+          ),
           isTrue,
         );
       });
@@ -221,12 +233,12 @@ version: 1.0.0
 description: A test project
 ''');
         await File('${tempDir.path}/test/example.dart').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('test/ 目录存在但没有测试文件')), 
+          result.messages.any((m) => m.message.contains('test/ 目录存在但没有测试文件')),
           isTrue,
         );
       });
@@ -236,7 +248,7 @@ description: A test project
       test('should validate module.yaml for Pet App modules', () async {
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
-        
+
         final moduleYaml = File('${tempDir.path}/module.yaml');
         await moduleYaml.writeAsString('''
 name: test_module
@@ -244,10 +256,10 @@ type: widget
 version: 1.0.0
 description: Test module
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         // 对于Pet App模块，应该有更严格的结构要求
         expect(result.messages.isNotEmpty, isTrue);
       });
@@ -261,15 +273,19 @@ description: Test module
         await Directory('${tempDir.path}/lib/l10n').create();
         await File('${tempDir.path}/pubspec.yaml').create();
         await File('${tempDir.path}/module.yaml').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         // 标准Pet App结构应该通过验证
         expect(
-          result.messages.where((m) => 
-            m.severity == ValidationSeverity.error &&
-            m.message.contains('Pet App'),).isEmpty, 
+          result.messages
+              .where(
+                (m) =>
+                    m.severity == ValidationSeverity.error &&
+                    m.message.contains('Pet App'),
+              )
+              .isEmpty,
           isTrue,
         );
       });
@@ -278,12 +294,12 @@ description: Test module
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
         await File('${tempDir.path}/module.yaml').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('l10n')), 
+          result.messages.any((m) => m.message.contains('l10n')),
           isTrue,
         );
       });
@@ -293,17 +309,19 @@ description: Test module
       test('should validate README.md content', () async {
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
-        
+
         final readme = File('${tempDir.path}/README.md');
         await readme.writeAsString('# Test Project\nThis is a test.');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.severity == ValidationSeverity.error && 
-            m.message.contains('README.md'),), 
+          result.messages.any(
+            (m) =>
+                m.severity == ValidationSeverity.error &&
+                m.message.contains('README.md'),
+          ),
           isFalse,
         );
       });
@@ -312,12 +330,12 @@ description: Test module
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
         await File('${tempDir.path}/README.md').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('README.md')), 
+          result.messages.any((m) => m.message.contains('README.md')),
           isTrue,
         );
       });
@@ -326,12 +344,12 @@ description: Test module
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
         await File('${tempDir.path}/README.md').writeAsString('# Test');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('CHANGELOG.md')), 
+          result.messages.any((m) => m.message.contains('CHANGELOG.md')),
           isTrue,
         );
       });
@@ -341,12 +359,12 @@ description: Test module
       test('should validate .gitignore presence', () async {
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('.gitignore')), 
+          result.messages.any((m) => m.message.contains('.gitignore')),
           isTrue,
         );
       });
@@ -354,7 +372,7 @@ description: Test module
       test('should validate .gitignore content', () async {
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
-        
+
         final gitignore = File('${tempDir.path}/.gitignore');
         await gitignore.writeAsString('''
 # Build
@@ -365,14 +383,16 @@ build/
 .packages
 pubspec.lock
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.severity == ValidationSeverity.error && 
-            m.message.contains('.gitignore'),), 
+          result.messages.any(
+            (m) =>
+                m.severity == ValidationSeverity.error &&
+                m.message.contains('.gitignore'),
+          ),
           isFalse,
         );
       });
@@ -384,10 +404,10 @@ pubspec.lock
         await Directory('${tempDir.path}/lib/src').create();
         await Directory('${tempDir.path}/empty_dir').create();
         await File('${tempDir.path}/pubspec.yaml').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         // 空目录不应该导致验证器崩溃
         expect(result, isNotNull);
       });
@@ -395,16 +415,19 @@ pubspec.lock
       test('should validate with strict mode', () async {
         await Directory('${tempDir.path}/lib').create();
         await File('${tempDir.path}/pubspec.yaml').create();
-        
+
         final context = ValidationContext(
           projectPath: tempDir.path,
           strictMode: true,
         );
         final result = await validator.validate(tempDir.path, context);
-        
+
         // 严格模式应该产生更多警告
-        final strictWarnings = result.messages.where((m) => 
-          m.severity == ValidationSeverity.warning,).length;
+        final strictWarnings = result.messages
+            .where(
+              (m) => m.severity == ValidationSeverity.warning,
+            )
+            .length;
         expect(strictWarnings, greaterThan(0));
       });
 
@@ -412,7 +435,7 @@ pubspec.lock
         // 创建一个无法访问的目录场景（模拟）
         const context = ValidationContext(projectPath: '/nonexistent/path');
         final result = await validator.validate('/nonexistent/path', context);
-        
+
         expect(result, isNotNull);
         expect(result.isValid, isFalse);
       });
@@ -425,12 +448,15 @@ pubspec.lock
         await File('${tempDir.path}/lib/validFileName.dart').create();
         await File('${tempDir.path}/lib/invalid-file-name.dart').create();
         await File('${tempDir.path}/lib/Valid_File_Name.dart').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
-        final namingIssues = result.messages.where((m) => 
-          m.message.contains('snake_case'),).length;
+
+        final namingIssues = result.messages
+            .where(
+              (m) => m.message.contains('snake_case'),
+            )
+            .length;
         expect(namingIssues, greaterThan(0));
       });
 
@@ -442,15 +468,16 @@ name: test_project
 version: 1.0.0
 description: A test project
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => m.message.contains('目录命名不规范: Invalid-Dir')), 
+          result.messages
+              .any((m) => m.message.contains('目录命名不规范: Invalid-Dir')),
           isTrue,
         );
       });
     });
   });
-} 
+}

@@ -33,22 +33,27 @@ class PrecompiledTemplate {
 
   /// 模板名称
   final String templateName;
+
   /// Mason生成器实例
   final MasonGenerator generator;
+
   /// 模板元数据
   final Map<String, dynamic> metadata;
+
   /// 模板变量列表
-  final List<String> variables;  // 修复类型错误：使用List<String>而不是List<BrickVariableProperties>
+  final List<String>
+      variables; // 修复类型错误：使用List<String>而不是List<BrickVariableProperties>
   /// 编译时间
   final DateTime compilationTime;
+
   /// 最后访问时间
   DateTime lastAccessed;
-  
+
   /// 缓存过期时间
   static const Duration cacheExpiry = Duration(hours: 2);
-  
+
   /// 是否已过期
-  bool get isExpired => 
+  bool get isExpired =>
       DateTime.now().difference(compilationTime) > cacheExpiry;
 }
 
@@ -63,13 +68,15 @@ class CacheAccessStats {
 
   /// 缓存命中次数
   int hitCount;
+
   /// 缓存未命中次数
   int missCount;
+
   /// 预编译次数
   int precompileCount;
-  
+
   /// 缓存命中率（命中次数 / 总访问次数）
-  double get hitRate => 
+  double get hitRate =>
       hitCount + missCount > 0 ? hitCount / (hitCount + missCount) : 0.0;
 }
 
@@ -80,21 +87,23 @@ class AdvancedTemplateCacheManager {
 
   /// 模板引擎实例（使用动态类型避免循环依赖）
   final dynamic templateEngine;
-  
+
   /// 预编译模板缓存
   final Map<String, PrecompiledTemplate> _precompiledCache = {};
-  
+
   /// 缓存访问统计
   final Map<String, CacheAccessStats> _cacheStats = {};
-  
+
   /// 预热任务队列
   final Set<String> _preheatingQueue = {};
-  
+
   /// 缓存配置
   /// 最大缓存大小
   static const int maxCacheSize = 50;
+
   /// 预热任务间隔时间
   static const Duration preheatingInterval = Duration(minutes: 5);
+
   /// 缓存过期时间
   static const Duration cacheExpiry = Duration(hours: 2);
 
@@ -102,9 +111,9 @@ class AdvancedTemplateCacheManager {
   Future<PrecompiledTemplate?> precompileTemplate(String templateName) async {
     try {
       final stopwatch = Stopwatch()..start();
-      
+
       cli_logger.Logger.debug('开始预编译模板: $templateName');
-      
+
       // 检查现有缓存
       if (_precompiledCache.containsKey(templateName)) {
         final cached = _precompiledCache[templateName]!;
@@ -117,20 +126,24 @@ class AdvancedTemplateCacheManager {
       }
 
       // 加载并预编译模板
-      final dynamic generatorResult = await templateEngine.loadTemplate(templateName);
+      final dynamic generatorResultDynamic =
+          await templateEngine.loadTemplate(templateName);
+      final generatorResult = generatorResultDynamic as MasonGenerator?;
       if (generatorResult == null) {
         _updateStats(templateName, miss: true);
         return null;
       }
-      final generator = generatorResult as MasonGenerator;
+      final generator = generatorResult;
 
       // 获取模板元数据
-      final dynamic metadataResult = await templateEngine.getTemplateInfo(templateName);
-      final metadata = (metadataResult as Map<String, dynamic>?) ?? <String, dynamic>{};
-      
+      final dynamic metadataResultDynamic =
+          await templateEngine.getTemplateInfo(templateName);
+      final metadataResult = metadataResultDynamic as Map<String, dynamic>?;
+      final metadata = metadataResult ?? <String, dynamic>{};
+
       // 获取变量定义
-      final dynamic variablesResult = generator.vars;
-      final variables = (variablesResult as List<dynamic>).cast<String>();
+      final variablesResult = generator.vars as List<dynamic>;
+      final variables = variablesResult.cast<String>();
 
       // 创建预编译模板
       final precompiled = PrecompiledTemplate(
@@ -145,15 +158,14 @@ class AdvancedTemplateCacheManager {
       // 缓存管理
       await _manageCacheSize();
       _precompiledCache[templateName] = precompiled;
-      
+
       _updateStats(templateName, precompile: true);
-      
+
       cli_logger.Logger.success(
         '模板预编译完成: $templateName (${stopwatch.elapsedMilliseconds}ms)',
       );
-      
-      return precompiled;
 
+      return precompiled;
     } catch (e) {
       cli_logger.Logger.error('模板预编译失败: $templateName', error: e);
       _updateStats(templateName, miss: true);
@@ -164,27 +176,33 @@ class AdvancedTemplateCacheManager {
   /// 批量预编译常用模板
   Future<void> precompileFrequentTemplates() async {
     try {
-      final dynamic templatesResult = await templateEngine.getAvailableTemplates();
-      final availableTemplates = (templatesResult as List<dynamic>).cast<String>();
-      
+      final dynamic templatesResultDynamic =
+          await templateEngine.getAvailableTemplates();
+      final templatesResult = templatesResultDynamic as List<dynamic>;
+      final availableTemplates = templatesResult.cast<String>();
+
       // 根据访问统计确定频繁使用的模板
       final frequentTemplates = _getFrequentTemplates(availableTemplates);
-      
+
       cli_logger.Logger.info('开始批量预编译 ${frequentTemplates.length} 个常用模板');
-      
-      final futures = frequentTemplates.map((template) => 
-          _preheatingQueue.add(template) ? precompileTemplate(template) : null,
-      ).where((future) => future != null).cast<Future<PrecompiledTemplate?>>();
-      
+
+      final futures = frequentTemplates
+          .map(
+            (template) => _preheatingQueue.add(template)
+                ? precompileTemplate(template)
+                : null,
+          )
+          .where((future) => future != null)
+          .cast<Future<PrecompiledTemplate?>>();
+
       final results = await Future.wait(futures);
       final successCount = results.where((result) => result != null).length;
-      
+
       cli_logger.Logger.success(
         '批量预编译完成: $successCount/${frequentTemplates.length} 个模板成功',
       );
-      
-      _preheatingQueue.clear();
 
+      _preheatingQueue.clear();
     } catch (e) {
       cli_logger.Logger.error('批量预编译失败', error: e);
       _preheatingQueue.clear();
@@ -192,7 +210,9 @@ class AdvancedTemplateCacheManager {
   }
 
   /// 获取预编译模板（缓存优先）
-  Future<PrecompiledTemplate?> getPrecompiledTemplate(String templateName) async {
+  Future<PrecompiledTemplate?> getPrecompiledTemplate(
+    String templateName,
+  ) async {
     // 检查预编译缓存
     if (_precompiledCache.containsKey(templateName)) {
       final cached = _precompiledCache[templateName]!;
@@ -213,15 +233,15 @@ class AdvancedTemplateCacheManager {
   /// 缓存预热任务
   Future<void> warmUpCache() async {
     cli_logger.Logger.info('开始缓存预热...');
-    
+
     final stopwatch = Stopwatch()..start();
-    
+
     // 预编译常用模板
     await precompileFrequentTemplates();
-    
+
     // 清理过期缓存
     await _cleanExpiredCache();
-    
+
     cli_logger.Logger.success(
       '缓存预热完成 (${stopwatch.elapsedMilliseconds}ms)',
     );
@@ -229,10 +249,13 @@ class AdvancedTemplateCacheManager {
 
   /// 获取缓存统计信息
   Map<String, dynamic> getCacheStatistics() {
-    final totalHits = _cacheStats.values.fold(0, (sum, stats) => sum + stats.hitCount);
-    final totalMisses = _cacheStats.values.fold(0, (sum, stats) => sum + stats.missCount);
-    final totalPrecompiles = _cacheStats.values.fold(0, (sum, stats) => sum + stats.precompileCount);
-    
+    final totalHits =
+        _cacheStats.values.fold(0, (sum, stats) => sum + stats.hitCount);
+    final totalMisses =
+        _cacheStats.values.fold(0, (sum, stats) => sum + stats.missCount);
+    final totalPrecompiles =
+        _cacheStats.values.fold(0, (sum, stats) => sum + stats.precompileCount);
+
     return {
       'cache_size': _precompiledCache.length,
       'max_cache_size': maxCacheSize,
@@ -240,11 +263,12 @@ class AdvancedTemplateCacheManager {
       'total_hits': totalHits,
       'total_misses': totalMisses,
       'total_precompiles': totalPrecompiles,
-      'hit_rate': totalHits + totalMisses > 0 
-          ? totalHits / (totalHits + totalMisses) 
+      'hit_rate': totalHits + totalMisses > 0
+          ? totalHits / (totalHits + totalMisses)
           : 0.0,
       'templates_in_cache': _precompiledCache.keys.toList(),
-      'expired_count': _precompiledCache.values.where((t) => t.isExpired).length,
+      'expired_count':
+          _precompiledCache.values.where((t) => t.isExpired).length,
       'recent_activity': _getRecentCacheActivity(),
     };
   }
@@ -255,16 +279,21 @@ class AdvancedTemplateCacheManager {
     _precompiledCache.clear();
     _cacheStats.clear();
     _preheatingQueue.clear();
-    
+
     cli_logger.Logger.info('缓存已清理，移除了 $beforeSize 个预编译模板');
   }
 
   // 私有辅助方法
 
   /// 更新缓存统计
-  void _updateStats(String templateName, {bool hit = false, bool miss = false, bool precompile = false}) {
+  void _updateStats(
+    String templateName, {
+    bool hit = false,
+    bool miss = false,
+    bool precompile = false,
+  }) {
     final stats = _cacheStats.putIfAbsent(templateName, CacheAccessStats.new);
-    
+
     if (hit) stats.hitCount++;
     if (miss) stats.missCount++;
     if (precompile) stats.precompileCount++;
@@ -279,7 +308,7 @@ class AdvancedTemplateCacheManager {
           // 首先按过期状态排序
           if (a.value.isExpired && !b.value.isExpired) return -1;
           if (!a.value.isExpired && b.value.isExpired) return 1;
-          
+
           // 然后按最后访问时间排序
           return a.value.lastAccessed.compareTo(b.value.lastAccessed);
         });
@@ -299,7 +328,7 @@ class AdvancedTemplateCacheManager {
     // 根据访问统计排序
     final templatesWithStats = availableTemplates.map((template) {
       final stats = _cacheStats[template];
-      final score = stats != null 
+      final score = stats != null
           ? stats.hitCount + stats.missCount + stats.precompileCount
           : 0;
       return MapEntry(template, score);
@@ -308,10 +337,7 @@ class AdvancedTemplateCacheManager {
 
     // 返回前70%或至少前3个
     final topCount = math.max(3, (availableTemplates.length * 0.7).ceil());
-    return templatesWithStats
-        .take(topCount)
-        .map((entry) => entry.key)
-        .toList();
+    return templatesWithStats.take(topCount).map((entry) => entry.key).toList();
   }
 
   /// 清理过期缓存
@@ -333,15 +359,18 @@ class AdvancedTemplateCacheManager {
   /// 获取最近缓存活动
   List<Map<String, dynamic>> _getRecentCacheActivity() {
     return _precompiledCache.entries
-        .map((entry) => {
-          'template': entry.key,
-          'last_accessed': entry.value.lastAccessed.toIso8601String(),
-          'compilation_time': entry.value.compilationTime.toIso8601String(),
-          'is_expired': entry.value.isExpired,
-        },)
+        .map(
+          (entry) => {
+            'template': entry.key,
+            'last_accessed': entry.value.lastAccessed.toIso8601String(),
+            'compilation_time': entry.value.compilationTime.toIso8601String(),
+            'is_expired': entry.value.isExpired,
+          },
+        )
         .toList()
-      ..sort((a, b) => (b['last_accessed']! as String)
-          .compareTo(a['last_accessed']! as String),);
+      ..sort(
+        (a, b) => (b['last_accessed']! as String)
+            .compareTo(a['last_accessed']! as String),
+      );
   }
 }
-

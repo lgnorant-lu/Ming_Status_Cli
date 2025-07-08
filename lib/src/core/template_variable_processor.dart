@@ -16,22 +16,31 @@ import 'package:ming_status_cli/src/utils/string_utils.dart';
 enum VariableProcessorType {
   /// snake_case转换器
   snakeCaseConverter,
+
   /// PascalCase转换器
   pascalCaseConverter,
+
   /// camelCase转换器
   camelCaseConverter,
+
   /// kebab-case转换器
   kebabCaseConverter,
+
   /// UPPER_CASE转换器
   upperCaseConverter,
+
   /// lower_case转换器
   lowerCaseConverter,
+
   /// 标题格式转换器
   titleCaseConverter,
+
   /// 时间戳生成器
   timestampGenerator,
+
   /// 路径转换器
   pathConverter,
+
   /// 自定义处理器
   custom,
 }
@@ -49,7 +58,7 @@ class VariableProcessorConfig {
   factory VariableProcessorConfig.fromMap(Map<String, dynamic> map) {
     final typeStr = map['type']?.toString() ?? 'custom';
     final type = _parseProcessorType(typeStr);
-    
+
     return VariableProcessorConfig(
       type: type,
       target: map['target']?.toString() ?? '',
@@ -59,10 +68,10 @@ class VariableProcessorConfig {
 
   /// 处理器类型
   final VariableProcessorType type;
-  
+
   /// 目标变量名称
   final String target;
-  
+
   /// 处理器参数
   final Map<String, dynamic> parameters;
 
@@ -134,16 +143,16 @@ class VariableProcessingResult {
 
   /// 处理是否成功
   final bool success;
-  
+
   /// 处理后的变量
   final Map<String, dynamic> variables;
-  
+
   /// 错误信息
   final List<String> errors;
-  
+
   /// 警告信息
   final List<String> warnings;
-  
+
   /// 生成的额外变量
   final Map<String, dynamic> generatedVariables;
 }
@@ -185,17 +194,17 @@ class TemplateVariableProcessor {
       for (final varDef in variableDefinitions) {
         final value = processed[varDef.name];
         final validationResult = varDef.validateValue(value);
-        
+
         if (!validationResult.isValid) {
           errors.addAll(validationResult.errors);
         }
-        
+
         if (validationResult.hasWarnings) {
           warnings.addAll(validationResult.warnings);
         }
 
         // 如果值为空且有默认值，使用默认值
-        if ((value == null || _isEmptyValue(value)) && 
+        if ((value == null || _isEmptyValue(value)) &&
             varDef.defaultValue != null) {
           processed[varDef.name] = varDef.defaultValue;
         }
@@ -215,7 +224,7 @@ class TemplateVariableProcessor {
             targetValue.toString(),
             processed,
           );
-          
+
           if (processedValue != null) {
             // 生成派生变量
             final derivedVariables = _generateDerivedVariables(
@@ -244,7 +253,6 @@ class TemplateVariableProcessor {
         warnings: warnings,
         generatedVariables: generated,
       );
-
     } catch (e) {
       return VariableProcessingResult.failure(['变量处理过程中发生异常: $e']);
     }
@@ -277,7 +285,7 @@ class TemplateVariableProcessor {
         return value.replaceAll(RegExp(r'[^\w\-_.]'), '_');
       case VariableProcessorType.custom:
         final processorName = config.parameters['processor_name']?.toString();
-        if (processorName != null && 
+        if (processorName != null &&
             _customProcessors.containsKey(processorName)) {
           return _customProcessors[processorName]!(value, config.parameters);
         }
@@ -327,7 +335,7 @@ class TemplateVariableProcessor {
 
     // 为主要的名称变量生成所有格式变体
     final nameFields = ['name', 'module_name', 'package_name', 'project_name'];
-    
+
     for (final field in nameFields) {
       final value = variables[field]?.toString();
       if (value != null && value.isNotEmpty) {
@@ -347,7 +355,7 @@ class TemplateVariableProcessor {
   /// 生成时间戳变量
   Map<String, dynamic> _generateTimestampVariables() {
     final now = DateTime.now();
-    
+
     return {
       'generated_date': now.toIso8601String().substring(0, 10),
       'generated_time': now.toIso8601String().substring(11, 19),
@@ -362,7 +370,7 @@ class TemplateVariableProcessor {
   /// 变量插值处理
   String interpolateVariables(String template, Map<String, dynamic> variables) {
     var result = template;
-    
+
     // 处理简单变量插值 {{variable_name}}
     final simplePattern = RegExp(r'\{\{([^}]+)\}\}');
     result = result.replaceAllMapped(simplePattern, (match) {
@@ -381,7 +389,7 @@ class TemplateVariableProcessor {
     result = result.replaceAllMapped(conditionalPattern, (match) {
       final varName = match.group(1)?.trim();
       final content = match.group(2) ?? '';
-      
+
       if (varName != null && variables.containsKey(varName)) {
         final value = variables[varName];
         // 检查条件是否为真
@@ -400,7 +408,7 @@ class TemplateVariableProcessor {
     result = result.replaceAllMapped(unlessPattern, (match) {
       final varName = match.group(1)?.trim();
       final content = match.group(2) ?? '';
-      
+
       if (varName != null) {
         final value = variables[varName];
         // 检查条件是否为假
@@ -419,7 +427,7 @@ class TemplateVariableProcessor {
     return result.replaceAllMapped(eachPattern, (match) {
       final varName = match.group(1)?.trim();
       final template = match.group(2) ?? '';
-      
+
       if (varName != null && variables.containsKey(varName)) {
         final value = variables[varName];
         if (value is List) {
@@ -430,7 +438,7 @@ class TemplateVariableProcessor {
             itemVariables['@index'] = i;
             itemVariables['@first'] = i == 0;
             itemVariables['@last'] = i == value.length - 1;
-            
+
             buffer.write(interpolateVariables(template, itemVariables));
           }
           return buffer.toString();
@@ -462,14 +470,18 @@ class TemplateVariableProcessor {
 
   /// 转换为标题格式
   String _toTitleCase(String input) {
-    return input.split(' ')
-        .map((word) => word.isEmpty ? word : 
-             word[0].toUpperCase() + word.substring(1).toLowerCase(),)
+    return input
+        .split(' ')
+        .map(
+          (word) => word.isEmpty
+              ? word
+              : word[0].toUpperCase() + word.substring(1).toLowerCase(),
+        )
         .join(' ');
   }
 
   /// 获取处理器配置
-  List<VariableProcessorConfig> get processors => 
+  List<VariableProcessorConfig> get processors =>
       List.unmodifiable(_processors);
 
   /// 添加处理器配置
@@ -488,4 +500,4 @@ class TemplateVariableProcessor {
   void clearProcessors() {
     _processors.clear();
   }
-} 
+}

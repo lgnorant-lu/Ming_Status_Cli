@@ -149,8 +149,11 @@ abstract class BaseCommand extends Command<int> {
   }
 
   /// 获取用户输入
-  String? getUserInput(String prompt,
-      {String? defaultValue, bool required = false,}) {
+  String? getUserInput(
+    String prompt, {
+    String? defaultValue,
+    bool required = false,
+  }) {
     if (quiet && defaultValue != null) {
       return defaultValue;
     }
@@ -163,8 +166,11 @@ abstract class BaseCommand extends Command<int> {
     if (input == null || input.isEmpty) {
       if (required && defaultValue == null) {
         Logger.error('此项为必填项');
-        return getUserInput(prompt,
-            defaultValue: defaultValue, required: required,);
+        return getUserInput(
+          prompt,
+          defaultValue: defaultValue,
+          required: required,
+        );
       }
       return defaultValue;
     }
@@ -173,8 +179,10 @@ abstract class BaseCommand extends Command<int> {
   }
 
   /// 验证模块路径
-  Future<bool> validateModulePath(String modulePath,
-      {bool showDetails = false,}) async {
+  Future<bool> validateModulePath(
+    String modulePath, {
+    bool showDetails = false,
+  }) async {
     final isValid = await moduleValidator.quickValidate(modulePath);
 
     if (!isValid && showDetails) {

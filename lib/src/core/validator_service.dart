@@ -13,9 +13,9 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:io';
-import 'package:path/path.dart' as path;
+
 import 'package:ming_status_cli/src/models/validation_result.dart';
+import 'package:path/path.dart' as path;
 
 /// 模块验证器接口
 abstract class ModuleValidator {
@@ -42,21 +42,24 @@ abstract class ModuleValidator {
 
   /// 获取验证器信息
   Map<String, dynamic> getValidatorInfo() => {
-    'name': validatorName,
-    'supportedTypes': supportedTypes.map((t) => t.name).toList(),
-    'priority': priority,
-    'enabled': isEnabled,
-  };
+        'name': validatorName,
+        'supportedTypes': supportedTypes.map((t) => t.name).toList(),
+        'priority': priority,
+        'enabled': isEnabled,
+      };
 }
 
 /// 验证级别
 enum ValidationLevel {
   /// 基础验证
   basic,
+
   /// 标准验证
   standard,
+
   /// 严格验证
   strict,
+
   /// 企业级验证
   enterprise,
 }
@@ -178,11 +181,11 @@ class ValidatorService {
 
   /// 获取已注册的验证器
   List<ModuleValidator> get registeredValidators =>
-    List.unmodifiable(_validators);
+      List.unmodifiable(_validators);
 
   /// 获取启用的验证器
   List<ModuleValidator> get enabledValidators =>
-    _validators.where((v) => v.isEnabled).toList();
+      _validators.where((v) => v.isEnabled).toList();
 
   /// 验证模块
   Future<ValidationResult> validateModule(
@@ -193,8 +196,8 @@ class ValidatorService {
     // 创建默认上下文
     context ??= ValidationContext(
       projectPath: modulePath,
-      strictMode: config.level == ValidationLevel.strict || 
-                  config.level == ValidationLevel.enterprise,
+      strictMode: config.level == ValidationLevel.strict ||
+          config.level == ValidationLevel.enterprise,
       outputFormat: config.outputFormat,
       enabledValidators: config.enabledValidators,
     );
@@ -203,7 +206,8 @@ class ValidatorService {
     final cacheKey = _generateCacheKey(modulePath, context);
     if (useCache && config.enableCache && _cache.containsKey(cacheKey)) {
       final cacheTime = _cacheTimestamps[cacheKey];
-      if (cacheTime != null && DateTime.now().difference(cacheTime) < _cacheExpiry) {
+      if (cacheTime != null &&
+          DateTime.now().difference(cacheTime) < _cacheExpiry) {
         // 缓存有效，返回缓存结果
         return _cache[cacheKey]!;
       } else {
@@ -235,15 +239,15 @@ class ValidatorService {
 
     if (config.parallelExecution) {
       // 并行执行
-      final futures = modulePaths.map((path) => 
-        validateModule(
-          path, 
-          context: context, 
+      final futures = modulePaths.map(
+        (path) => validateModule(
+          path,
+          context: context,
           useCache: useCache,
         ),
       );
       final validationResults = await Future.wait(futures);
-      
+
       for (var i = 0; i < modulePaths.length; i++) {
         results[modulePaths[i]] = validationResults[i];
       }
@@ -251,8 +255,8 @@ class ValidatorService {
       // 串行执行
       for (final path in modulePaths) {
         results[path] = await validateModule(
-          path, 
-          context: context, 
+          path,
+          context: context,
           useCache: useCache,
         );
       }
@@ -268,22 +272,23 @@ class ValidatorService {
   ) async {
     final aggregatedResult = ValidationResult(strictMode: context.strictMode);
     final startTime = DateTime.now();
-    
+
     var executedCount = 0;
     const skippedCount = 0;
     var failedCount = 0;
     const cacheHits = 0;
     const cacheMisses = 0;
 
-      // 获取要执行的验证器
+    // 获取要执行的验证器
     final validatorsToRun = _getValidatorsToRun(context);
 
     try {
       if (config.parallelExecution && validatorsToRun.length > 1) {
         // 并行执行验证器
-        final futures = validatorsToRun.map((validator) => 
-            _runSingleValidator(validator, modulePath, context),);
-        
+        final futures = validatorsToRun.map(
+          (validator) => _runSingleValidator(validator, modulePath, context),
+        );
+
         final results = await Future.wait(
           futures,
         ).timeout(Duration(seconds: config.timeoutSeconds));
@@ -292,7 +297,7 @@ class ValidatorService {
         for (var i = 0; i < results.length; i++) {
           final result = results[i];
           final validator = validatorsToRun[i];
-          
+
           if (result != null) {
             _mergeResults(aggregatedResult, result, validator.validatorName);
             executedCount++;
@@ -309,8 +314,8 @@ class ValidatorService {
         for (final validator in validatorsToRun) {
           try {
             final result = await _runSingleValidator(
-              validator, 
-              modulePath, 
+              validator,
+              modulePath,
               context,
             ).timeout(
               Duration(
@@ -378,10 +383,10 @@ class ValidatorService {
     } catch (e) {
       // 验证器执行失败
       final result = ValidationResult(strictMode: context.strictMode)
-      ..addError(
-        '验证器 ${validator.validatorName} 执行异常: $e',
-        validatorName: validator.validatorName,
-      );
+        ..addError(
+          '验证器 ${validator.validatorName} 执行异常: $e',
+          validatorName: validator.validatorName,
+        );
       return result;
     }
   }
@@ -392,23 +397,35 @@ class ValidatorService {
 
     // 按配置过滤验证器
     if (context.enabledValidators.isNotEmpty) {
-      validators = validators.where((v) => 
-          v.supportedTypes.any((type) => context.enabledValidators.contains(type)),).toList();
+      validators = validators
+          .where(
+            (v) => v.supportedTypes
+                .any((type) => context.enabledValidators.contains(type)),
+          )
+          .toList();
     }
 
     // 按验证级别过滤
     switch (config.level) {
       case ValidationLevel.basic:
-        validators = validators.where((v) => 
-            v.supportedTypes.contains(ValidationType.structure),).toList();
+        validators = validators
+            .where(
+              (v) => v.supportedTypes.contains(ValidationType.structure),
+            )
+            .toList();
       case ValidationLevel.standard:
-        validators = validators.where((v) => 
-            v.supportedTypes.any((type) => [
-              ValidationType.structure,
-              ValidationType.quality,
-              ValidationType.dependency,
-              ValidationType.compliance,
-            ].contains(type),),).toList();
+        validators = validators
+            .where(
+              (v) => v.supportedTypes.any(
+                (type) => [
+                  ValidationType.structure,
+                  ValidationType.quality,
+                  ValidationType.dependency,
+                  ValidationType.compliance,
+                ].contains(type),
+              ),
+            )
+            .toList();
       case ValidationLevel.strict:
       case ValidationLevel.enterprise:
         // 包含所有验证器
@@ -436,7 +453,7 @@ class ValidatorService {
         fixSuggestion: message.fixSuggestion,
         validatorName: validatorName,
       );
-      
+
       target.messages.add(newMessage);
     }
   }
@@ -450,7 +467,8 @@ class ValidatorService {
 
     // 包含验证级别和启用的验证器信息
     final levelHash = context.strictMode.hashCode;
-    final validatorsHash = context.enabledValidators.map((v) => v.toString()).join(',').hashCode;
+    final validatorsHash =
+        context.enabledValidators.map((v) => v.toString()).join(',').hashCode;
 
     return '${pathHash}_${contextHash}_${levelHash}_$validatorsHash';
   }
@@ -493,7 +511,7 @@ class ValidatorService {
   /// 健康检查所有验证器
   Future<Map<String, bool>> checkValidatorsHealth() async {
     final healthStatus = <String, bool>{};
-    
+
     for (final validator in _validators) {
       try {
         healthStatus[validator.validatorName] = await validator.healthCheck();
@@ -501,7 +519,7 @@ class ValidatorService {
         healthStatus[validator.validatorName] = false;
       }
     }
-    
+
     return healthStatus;
   }
 
@@ -509,4 +527,4 @@ class ValidatorService {
   List<Map<String, dynamic>> getValidatorsInfo() {
     return _validators.map((v) => v.getValidatorInfo()).toList();
   }
-} 
+}

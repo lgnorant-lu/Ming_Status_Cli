@@ -21,7 +21,6 @@ import 'package:test/test.dart';
 
 /// 专门的测试用户配置管理器，使用临时目录
 class TestUserConfigManagerSimple extends UserConfigManager {
-
   TestUserConfigManagerSimple(this._testDir);
   final String _testDir;
 
@@ -64,9 +63,7 @@ void main() {
             name: 'Test User',
             email: 'test@example.com',
           ),
-          preferences: UserPreferences(
-            
-          ),
+          preferences: UserPreferences(),
           defaults: UserDefaults(
             author: 'Test Author',
             license: 'MIT',
@@ -117,18 +114,26 @@ void main() {
         await userConfigManager.saveUserConfig(userConfig);
 
         // 测试配置值获取
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Test User'),);
         expect(
-            await userConfigManager
-                .getConfigValue('preferences.defaultTemplate'),
-            equals('basic'),);
-        expect(await userConfigManager.getConfigValue('defaults.author'),
-            equals('Test Author'),);
-        expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals('MIT'),);
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Test User'),
+        );
         expect(
-            await userConfigManager.getConfigValue('nonexistent.key'), isNull,);
+          await userConfigManager.getConfigValue('preferences.defaultTemplate'),
+          equals('basic'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('defaults.author'),
+          equals('Test Author'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('defaults.license'),
+          equals('MIT'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('nonexistent.key'),
+          isNull,
+        );
       });
 
       test('用户配置值设置', () async {
@@ -148,17 +153,25 @@ void main() {
         // 设置新值
         await userConfigManager.setConfigValue('user.name', 'Updated User');
         await userConfigManager.setConfigValue(
-            'defaults.author', 'Updated Author',);
+          'defaults.author',
+          'Updated Author',
+        );
 
         // 验证设置生效
-        expect(await userConfigManager.getConfigValue('user.name'),
-            equals('Updated User'),);
-        expect(await userConfigManager.getConfigValue('defaults.author'),
-            equals('Updated Author'),);
+        expect(
+          await userConfigManager.getConfigValue('user.name'),
+          equals('Updated User'),
+        );
+        expect(
+          await userConfigManager.getConfigValue('defaults.author'),
+          equals('Updated Author'),
+        );
 
         // 验证其他值不受影响
-        expect(await userConfigManager.getConfigValue('defaults.license'),
-            equals('MIT'),);
+        expect(
+          await userConfigManager.getConfigValue('defaults.license'),
+          equals('MIT'),
+        );
       });
     });
 
@@ -197,7 +210,9 @@ void main() {
 
         expect(loadedWorkspaceConfig!.workspace.name, equals('Workspace Name'));
         expect(
-            loadedWorkspaceConfig.defaults.author, equals('Workspace Author'),);
+          loadedWorkspaceConfig.defaults.author,
+          equals('Workspace Author'),
+        );
       });
     });
 

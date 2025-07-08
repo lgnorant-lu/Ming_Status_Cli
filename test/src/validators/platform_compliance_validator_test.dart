@@ -15,7 +15,7 @@ Change History:
 import 'dart:io';
 import 'package:ming_status_cli/src/models/validation_result.dart';
 import 'package:ming_status_cli/src/validators/platform_compliance_validator.dart';
-import 'package:path/path.dart' as path; 
+import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
 void main() {
@@ -75,54 +75,59 @@ permissions:
   - name: storage
     description: Storage access
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
         expect(
-          result.messages.any((m) => 
-            m.severity == ValidationSeverity.success ||
-            m.message.contains('依赖定义完整'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.severity == ValidationSeverity.success ||
+                m.message.contains('依赖定义完整'),
+          ),
           isTrue,
         );
       });
 
       test('should detect missing module definition file', () async {
         await Directory('${tempDir.path}/lib').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('缺少模块定义文件') ||
-            m.message.contains('_module.dart'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('缺少模块定义文件') ||
+                m.message.contains('_module.dart'),
+          ),
           isTrue,
         );
       });
 
       test('should validate module interface implementation', () async {
         await Directory('${tempDir.path}/lib').create();
-        
+
         // 创建不符合规范的模块文件
-        await File('${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart').writeAsString('''
+        await File(
+                '${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart',)
+            .writeAsString('''
 class TestModule {
   // Missing ModuleInterface implementation
   void someMethod() {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('ModuleInterface') ||
-            m.message.contains('接口'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('ModuleInterface') ||
+                m.message.contains('接口'),
+          ),
           isTrue,
         );
       });
@@ -131,9 +136,11 @@ class TestModule {
     group('Lifecycle Management Validation', () {
       test('should validate lifecycle methods implementation', () async {
         await Directory('${tempDir.path}/lib').create();
-        
+
         // 创建实现了生命周期方法的模块文件
-        await File('${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart').writeAsString('''
+        await File(
+                '${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart',)
+            .writeAsString('''
 import 'package:core_services/module_interface.dart';
 
 class TestModule implements ModuleInterface {
@@ -147,15 +154,16 @@ class TestModule implements ModuleInterface {
   void onModuleUnload() {}
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('生命周期方法') ||
-            m.message.contains('onModuleLoad'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('生命周期方法') ||
+                m.message.contains('onModuleLoad'),
+          ),
           isTrue,
         );
       });
@@ -167,15 +175,16 @@ dependencies:
   some_other_service: ^1.0.0
   # Missing core_services and ui_framework
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('缺少核心依赖') ||
-            m.message.contains('core_services'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('缺少核心依赖') ||
+                m.message.contains('core_services'),
+          ),
           isTrue,
         );
       });
@@ -194,15 +203,16 @@ ios:
   permissions:
     - NSCameraUsageDescription
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('支持') &&
-            (m.message.contains('android') || m.message.contains('ios')),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('支持') &&
+                (m.message.contains('android') || m.message.contains('ios')),
+          ),
           isTrue,
         );
       });
@@ -221,15 +231,14 @@ api_compatibility:
   min_core_version: "1.0.0"
   max_core_version: "2.0.0"
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('版本') ||
-            m.message.contains('兼容性'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('版本') || m.message.contains('兼容性'),
+          ),
           isTrue,
         );
       });
@@ -248,15 +257,16 @@ dependencies:
     - config_service
     - unknown_service  # Invalid service
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('核心服务') ||
-            m.message.contains('unknown_service'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('核心服务') ||
+                m.message.contains('unknown_service'),
+          ),
           isTrue,
         );
       });
@@ -277,16 +287,17 @@ exports:
   interfaces:
     - ITestInterface
 ''');
-        
+
         // 创建模块文件
         await File('${tempDir.path}/lib/test_module.dart').writeAsString('''
 export 'widgets/test_widget.dart';
 export 'services/test_service.dart';
 export 'interfaces/i_test_interface.dart';
 ''');
-        
+
         await Directory('${tempDir.path}/lib/widgets').create();
-        await File('${tempDir.path}/lib/widgets/test_widget.dart').writeAsString('''
+        await File('${tempDir.path}/lib/widgets/test_widget.dart')
+            .writeAsString('''
 import 'package:flutter/material.dart';
 
 class TestWidget extends StatelessWidget {
@@ -296,15 +307,14 @@ class TestWidget extends StatelessWidget {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('接口') ||
-            m.message.contains('导出'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('接口') || m.message.contains('导出'),
+          ),
           isTrue,
         );
       });
@@ -324,14 +334,15 @@ exports:
     - TestWidget
     - MissingWidget  # Should trigger warning
 ''');
-        
+
         await File('${tempDir.path}/lib/test_module.dart').writeAsString('''
 export 'widgets/test_widget.dart';
 // Missing export for MissingWidget
 ''');
-        
+
         await Directory('${tempDir.path}/lib/widgets').create();
-        await File('${tempDir.path}/lib/widgets/test_widget.dart').writeAsString('''
+        await File('${tempDir.path}/lib/widgets/test_widget.dart')
+            .writeAsString('''
 import 'package:flutter/material.dart';
 
 class TestWidget extends StatelessWidget {
@@ -341,16 +352,17 @@ class TestWidget extends StatelessWidget {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('MissingWidget') ||
-            m.message.contains('未找到') ||
-            m.message.contains('导出'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('MissingWidget') ||
+                m.message.contains('未找到') ||
+                m.message.contains('导出'),
+          ),
           isTrue,
         );
       });
@@ -367,13 +379,14 @@ exports:
   services:
     - TestService
 ''');
-        
+
         await File('${tempDir.path}/lib/test_module.dart').writeAsString('''
 export 'services/test_service.dart';
 ''');
-        
+
         await Directory('${tempDir.path}/lib/services').create();
-        await File('${tempDir.path}/lib/services/test_service.dart').writeAsString('''
+        await File('${tempDir.path}/lib/services/test_service.dart')
+            .writeAsString('''
 // Missing documentation
 class TestService {
   void doSomething() {
@@ -381,15 +394,14 @@ class TestService {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('文档') ||
-            m.message.contains('覆盖率'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('文档') || m.message.contains('覆盖率'),
+          ),
           isTrue,
         );
       });
@@ -406,13 +418,14 @@ exports:
   models:
     - TestModel
 ''');
-        
+
         await File('${tempDir.path}/lib/test_module.dart').writeAsString('''
 export 'models/test_model.dart';
 ''');
-        
+
         await Directory('${tempDir.path}/lib/models').create();
-        await File('${tempDir.path}/lib/models/test_model.dart').writeAsString('''
+        await File('${tempDir.path}/lib/models/test_model.dart')
+            .writeAsString('''
 class TestModel {
   final String name;
   final int value;
@@ -422,15 +435,14 @@ class TestModel {
   // Missing toJson/fromJson
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('JSON') ||
-            m.message.contains('序列化'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('JSON') || m.message.contains('序列化'),
+          ),
           isTrue,
         );
       });
@@ -450,7 +462,7 @@ events:
   listens:
     - SystemEvent
 ''');
-        
+
         await File('${tempDir.path}/lib/test_module.dart').writeAsString('''
 import 'dart:async';
 
@@ -459,15 +471,16 @@ class TestModule {
   Stream<String> get events => _controller.stream;
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('事件') ||
-            m.message.contains('StreamController'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('事件') ||
+                m.message.contains('StreamController'),
+          ),
           isTrue,
         );
       });
@@ -492,15 +505,14 @@ permissions:
   dangerous:
     - contacts
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('权限') ||
-            m.message.contains('permission'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('权限') || m.message.contains('permission'),
+          ),
           isTrue,
         );
       });
@@ -518,16 +530,17 @@ security:
   audit_logging: true
   sensitive_data_access: true
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('安全') ||
-            m.message.contains('加密') ||
-            m.message.contains('审计'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('安全') ||
+                m.message.contains('加密') ||
+                m.message.contains('审计'),
+          ),
           isTrue,
         );
       });
@@ -550,11 +563,11 @@ data_models:
       - email: String
     serialization: json
 ''');
-        
+
         await File('${tempDir.path}/lib/test_module.dart').writeAsString('''
 export 'models/user.dart';
 ''');
-        
+
         await Directory('${tempDir.path}/lib/models').create();
         await File('${tempDir.path}/lib/models/user.dart').writeAsString('''
 class User {
@@ -577,15 +590,14 @@ class User {
   );
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('数据模型') ||
-            m.message.contains('User'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('数据模型') || m.message.contains('User'),
+          ),
           isTrue,
         );
       });
@@ -600,16 +612,15 @@ version: 1.0.0
 invalid_yaml: {
   this is not valid yaml
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result, isNotNull);
         expect(
-          result.messages.any((m) => 
-            m.message.contains('格式错误') ||
-            m.message.contains('解析'),
-          ), 
+          result.messages.any(
+            (m) => m.message.contains('格式错误') || m.message.contains('解析'),
+          ),
           isTrue,
         );
       });
@@ -621,10 +632,10 @@ version: 1.0.0
 type: business_logic
 description: A test module
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result, isNotNull);
         expect(result.messages, isNotEmpty);
       });
@@ -632,7 +643,7 @@ description: A test module
       test('should handle permission errors gracefully', () async {
         const context = ValidationContext(projectPath: '/nonexistent/path');
         final result = await validator.validate('/nonexistent/path', context);
-        
+
         expect(result, isNotNull);
         expect(result.messages, isNotEmpty);
       });
@@ -651,20 +662,23 @@ description: A test module
 lifecycle:
   init_priority: 100
 ''');
-        
+
         final context = ValidationContext(
           projectPath: tempDir.path,
           strictMode: true,
         );
         final result = await validator.validate(tempDir.path, context);
-        
+
         // 严格模式应该产生更多警告
-        final warningCount = result.messages.where((m) => 
-          m.severity == ValidationSeverity.warning ||
-          m.severity == ValidationSeverity.error,
-        ).length;
+        final warningCount = result.messages
+            .where(
+              (m) =>
+                  m.severity == ValidationSeverity.warning ||
+                  m.severity == ValidationSeverity.error,
+            )
+            .length;
         expect(warningCount, greaterThan(0));
       });
     });
   });
-} 
+}

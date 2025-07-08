@@ -116,12 +116,16 @@ class ModuleClassification {
 enum ModuleType {
   /// 核心模块
   core,
+
   /// 业务模块
   business,
+
   /// 系统模块
   system,
+
   /// 扩展模块
   extension,
+
   /// 主题模块
   theme,
 }

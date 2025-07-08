@@ -18,30 +18,43 @@ import 'dart:io';
 enum TemplateEngineErrorType {
   /// 模板不存在
   templateNotFound,
+
   /// 模板格式无效
   invalidTemplateFormat,
+
   /// 变量验证失败
   variableValidationFailed,
+
   /// 输出路径冲突
   outputPathConflict,
+
   /// 文件系统错误
   fileSystemError,
+
   /// Mason包错误
   masonError,
+
   /// 钩子执行错误
   hookExecutionError,
+
   /// 网络错误
   networkError,
+
   /// 权限错误
   permissionError,
+
   /// 版本兼容性错误
   versionCompatibilityError,
+
   /// 依赖兼容性错误
   dependencyCompatibilityError,
+
   /// 平台兼容性错误
   platformCompatibilityError,
+
   /// 模板标准合规性错误
   templateComplianceError,
+
   /// 未知错误
   unknown,
 }
@@ -49,7 +62,7 @@ enum TemplateEngineErrorType {
 /// 模板引擎异常类
 class TemplateEngineException implements Exception {
   /// 创建模板引擎异常
-  /// 
+  ///
   /// 参数：
   /// - [type] 错误类型
   /// - [message] 错误消息
@@ -69,12 +82,11 @@ class TemplateEngineException implements Exception {
     String templateName, {
     String? recovery,
   }) : this(
-      type: TemplateEngineErrorType.templateNotFound,
-      message: '模板不存在: $templateName',
-      details: {'templateName': templateName},
-      recovery: recovery ?? 
-          '请检查模板名称是否正确，或使用 ming template list 查看可用模板',
-    );
+          type: TemplateEngineErrorType.templateNotFound,
+          message: '模板不存在: $templateName',
+          details: {'templateName': templateName},
+          recovery: recovery ?? '请检查模板名称是否正确，或使用 ming template list 查看可用模板',
+        );
 
   /// 创建Mason包错误
   TemplateEngineException.masonError(
@@ -82,12 +94,12 @@ class TemplateEngineException implements Exception {
     dynamic error, {
     String? recovery,
   }) : this(
-      type: TemplateEngineErrorType.masonError,
-      message: 'Mason包操作失败: $operation',
-      details: {'operation': operation},
-      innerException: error,
-      recovery: recovery ?? '请检查模板格式是否正确，或尝试重新安装模板',
-    );
+          type: TemplateEngineErrorType.masonError,
+          message: 'Mason包操作失败: $operation',
+          details: {'operation': operation},
+          innerException: error,
+          recovery: recovery ?? '请检查模板格式是否正确，或尝试重新安装模板',
+        );
 
   /// 创建文件系统错误
   TemplateEngineException.fileSystemError(
@@ -96,32 +108,36 @@ class TemplateEngineException implements Exception {
     dynamic error, {
     String? recovery,
   }) : this(
-      type: TemplateEngineErrorType.fileSystemError,
-      message: '文件系统操作失败: $operation',
-      details: {'operation': operation, 'path': path},
-      innerException: error,
-      recovery: recovery ?? '请检查文件路径和权限是否正确',
-    );
+          type: TemplateEngineErrorType.fileSystemError,
+          message: '文件系统操作失败: $operation',
+          details: {'operation': operation, 'path': path},
+          innerException: error,
+          recovery: recovery ?? '请检查文件路径和权限是否正确',
+        );
 
   /// 创建变量验证错误
   TemplateEngineException.variableValidationError(
     Map<String, String> validationErrors, {
     String? recovery,
   }) : this(
-      type: TemplateEngineErrorType.variableValidationFailed,
-      message: '模板变量验证失败',
-      details: {'validationErrors': validationErrors},
-      recovery: recovery ?? '请检查并修正模板变量值',
-    );
+          type: TemplateEngineErrorType.variableValidationFailed,
+          message: '模板变量验证失败',
+          details: {'validationErrors': validationErrors},
+          recovery: recovery ?? '请检查并修正模板变量值',
+        );
 
   /// 错误类型
   final TemplateEngineErrorType type;
+
   /// 错误消息
   final String message;
+
   /// 错误详情
   final Map<String, dynamic>? details;
+
   /// 内部异常
   final dynamic innerException;
+
   /// 恢复建议
   final String? recovery;
 
@@ -144,7 +160,7 @@ class TemplateEngineException implements Exception {
 /// 错误恢复结果
 class ErrorRecoveryResult {
   /// 创建错误恢复结果
-  /// 
+  ///
   /// 参数：
   /// - [success] 恢复是否成功
   /// - [message] 恢复消息
@@ -156,24 +172,26 @@ class ErrorRecoveryResult {
   });
 
   /// 成功恢复
-  ErrorRecoveryResult.createSuccess({String? message, dynamic value}) 
-    : this(
-      success: true,
-      message: message,
-      recoveredValue: value,
-    );
+  ErrorRecoveryResult.createSuccess({String? message, dynamic value})
+      : this(
+          success: true,
+          message: message,
+          recoveredValue: value,
+        );
 
   /// 恢复失败
   ErrorRecoveryResult.createFailure(String message)
-    : this(
-      success: false,
-      message: message,
-    );
+      : this(
+          success: false,
+          message: message,
+        );
 
   /// 恢复是否成功
   final bool success;
+
   /// 恢复消息
   final String? message;
+
   /// 恢复后的值
   final dynamic recoveredValue;
 }
@@ -182,7 +200,7 @@ class ErrorRecoveryResult {
 abstract class ErrorRecoveryStrategy {
   /// 尝试恢复错误
   Future<ErrorRecoveryResult> recover(TemplateEngineException error);
-  
+
   /// 是否可以处理该类型的错误
   bool canHandle(TemplateEngineErrorType errorType);
 }
@@ -190,11 +208,11 @@ abstract class ErrorRecoveryStrategy {
 /// 模板不存在错误恢复策略
 class TemplateNotFoundRecoveryStrategy implements ErrorRecoveryStrategy {
   /// 创建模板不存在错误恢复策略
-  /// 
+  ///
   /// 参数：
   /// - [templateEngine] 模板引擎实例
   const TemplateNotFoundRecoveryStrategy(this.templateEngine);
-  
+
   /// 模板引擎实例引用（使用动态类型避免循环依赖）
   final dynamic templateEngine;
 
@@ -209,18 +227,24 @@ class TemplateNotFoundRecoveryStrategy implements ErrorRecoveryStrategy {
       // 尝试查找相似的模板名称
       final availableTemplates = await templateEngine.getAvailableTemplates();
       final targetTemplate = error.details?['templateName'] as String?;
-      
+
       if (targetTemplate != null) {
         // 转换动态类型到具体类型
         final templates = (availableTemplates as List<dynamic>).cast<String>();
         if (templates.isNotEmpty) {
           // 简单的相似性匹配
           final suggestions = templates
-              .where((String template) => 
-                  template.toLowerCase().contains(targetTemplate.toLowerCase()) ||
-                  targetTemplate.toLowerCase().contains(template.toLowerCase()),)
+              .where(
+                (String template) =>
+                    template
+                        .toLowerCase()
+                        .contains(targetTemplate.toLowerCase()) ||
+                    targetTemplate
+                        .toLowerCase()
+                        .contains(template.toLowerCase()),
+              )
               .toList();
-              
+
           if (suggestions.isNotEmpty) {
             return ErrorRecoveryResult.createSuccess(
               message: '找到相似模板: ${suggestions.join(", ")}',
@@ -229,7 +253,7 @@ class TemplateNotFoundRecoveryStrategy implements ErrorRecoveryStrategy {
           }
         }
       }
-      
+
       final templates = (availableTemplates as List<dynamic>).cast<String>();
       return ErrorRecoveryResult.createSuccess(
         message: '可用模板: ${templates.join(", ")}',
@@ -246,7 +270,7 @@ class FileSystemErrorRecoveryStrategy implements ErrorRecoveryStrategy {
   @override
   bool canHandle(TemplateEngineErrorType errorType) {
     return errorType == TemplateEngineErrorType.fileSystemError ||
-           errorType == TemplateEngineErrorType.permissionError;
+        errorType == TemplateEngineErrorType.permissionError;
   }
 
   @override
@@ -254,7 +278,7 @@ class FileSystemErrorRecoveryStrategy implements ErrorRecoveryStrategy {
     try {
       final operation = error.details?['operation'] as String?;
       final path = error.details?['path'] as String?;
-      
+
       if (operation == 'createDirectory' && path != null) {
         // 尝试创建父目录
         final parentDir = Directory(path).parent;
@@ -266,7 +290,7 @@ class FileSystemErrorRecoveryStrategy implements ErrorRecoveryStrategy {
           );
         }
       }
-      
+
       if (operation == 'writeFile' && path != null) {
         // 检查父目录是否存在
         final file = File(path);
@@ -278,7 +302,7 @@ class FileSystemErrorRecoveryStrategy implements ErrorRecoveryStrategy {
           );
         }
       }
-      
+
       return ErrorRecoveryResult.createFailure('无法自动恢复文件系统错误');
     } catch (e) {
       return ErrorRecoveryResult.createFailure('恢复过程中发生错误: $e');

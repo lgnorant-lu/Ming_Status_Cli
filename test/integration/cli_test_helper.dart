@@ -46,10 +46,10 @@ class CliTestResult {
 
   @override
   String toString() {
-    return
-      'CliTestResult(exitCode: $exitCode, duration: ${duration.inMilliseconds}ms)\n'
-      'STDOUT:\n$stdout\n'
-      'STDERR:\n$stderr';
+    return 'CliTestResult(exitCode: $exitCode, '
+        'duration: ${duration.inMilliseconds}ms)\n'
+        'STDOUT:\n$stdout\n'
+        'STDERR:\n$stderr';
   }
 }
 
@@ -67,7 +67,7 @@ class CliTestHelper {
     _cliPath = path.join('bin', 'ming_status_cli.dart');
 
     // 验证CLI文件存在
-    if (!await File(_cliPath).exists()) {
+    if (!File(_cliPath).existsSync()) {
       throw StateError('CLI可执行文件不存在: $_cliPath');
     }
 
@@ -78,7 +78,7 @@ class CliTestHelper {
 
   /// 清理测试环境
   static Future<void> tearDownAll() async {
-    if (await _tempDir.exists()) {
+    if (_tempDir.existsSync()) {
       await _tempDir.delete(recursive: true);
       stderr.writeln('🗑️  清理临时目录: ${_tempDir.path}');
     }
@@ -124,7 +124,8 @@ class CliTestHelper {
         }
       });
 
-      process.exitCode.then((code) {
+      // 监听进程退出 - 使用变量避免unawaited警告
+      final _ = process.exitCode.then((code) {
         timeoutTimer?.cancel();
         if (!completer.isCompleted) {
           completer.complete(code);

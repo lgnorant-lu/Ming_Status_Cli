@@ -60,7 +60,9 @@ class ModuleValidator {
 
   /// 验证基础目录结构
   Future<void> _validateBasicStructure(
-      String modulePath, ValidationResult result,) async {
+    String modulePath,
+    ValidationResult result,
+  ) async {
     // 检查模块目录是否存在
     if (!FileUtils.directoryExists(modulePath)) {
       result.addError('模块目录不存在', file: modulePath);
@@ -80,7 +82,8 @@ class ModuleValidator {
 
       if (isDirectory) {
         if (!FileUtils.directoryExists(
-            itemPath.substring(0, itemPath.length - 1),)) {
+          itemPath.substring(0, itemPath.length - 1),
+        )) {
           result.addError('必需目录不存在: $item', file: itemPath);
         } else {
           result.addSuccess('目录结构正确: $item');
@@ -108,7 +111,8 @@ class ModuleValidator {
 
       if (isDirectory) {
         if (!FileUtils.directoryExists(
-            itemPath.substring(0, itemPath.length - 1),)) {
+          itemPath.substring(0, itemPath.length - 1),
+        )) {
           result.addWarning('推荐目录缺失: $item', file: itemPath);
         }
       } else {
@@ -121,7 +125,9 @@ class ModuleValidator {
 
   /// 验证配置文件
   Future<void> _validateConfiguration(
-      String modulePath, ValidationResult result,) async {
+    String modulePath,
+    ValidationResult result,
+  ) async {
     // 验证module.yaml
     await _validateModuleConfig(modulePath, result);
 
@@ -131,7 +137,9 @@ class ModuleValidator {
 
   /// 验证模块配置文件
   Future<void> _validateModuleConfig(
-      String modulePath, ValidationResult result,) async {
+    String modulePath,
+    ValidationResult result,
+  ) async {
     final configPath = path.join(modulePath, 'module.yaml');
 
     if (!FileUtils.fileExists(configPath)) {
@@ -165,8 +173,10 @@ class ModuleValidator {
         if (!StringUtils.isValidIdentifier(moduleId)) {
           result.addError('模块ID格式无效: $moduleId', file: configPath);
         } else if (!moduleId.startsWith('com.')) {
-          result.addWarning('建议使用完整的包名格式: com.company.module_name',
-              file: configPath,);
+          result.addWarning(
+            '建议使用完整的包名格式: com.company.module_name',
+            file: configPath,
+          );
         }
       }
 
@@ -186,7 +196,9 @@ class ModuleValidator {
 
   /// 验证pubspec.yaml配置
   Future<void> _validatePubspecConfig(
-      String modulePath, ValidationResult result,) async {
+    String modulePath,
+    ValidationResult result,
+  ) async {
     final pubspecPath = path.join(modulePath, 'pubspec.yaml');
 
     if (!FileUtils.fileExists(pubspecPath)) {
@@ -226,7 +238,9 @@ class ModuleValidator {
 
   /// 验证代码结构
   Future<void> _validateCodeStructure(
-      String modulePath, ValidationResult result,) async {
+    String modulePath,
+    ValidationResult result,
+  ) async {
     final libPath = path.join(modulePath, 'lib');
 
     if (!FileUtils.directoryExists(libPath)) {
@@ -268,7 +282,9 @@ class ModuleValidator {
 
   /// 验证依赖关系
   Future<void> _validateDependencies(
-      String modulePath, ValidationResult result,) async {
+    String modulePath,
+    ValidationResult result,
+  ) async {
     final pubspecPath = path.join(modulePath, 'pubspec.yaml');
 
     try {
@@ -308,7 +324,9 @@ class ModuleValidator {
 
   /// 验证命名规范
   Future<void> _validateNamingConventions(
-      String modulePath, ValidationResult result,) async {
+    String modulePath,
+    ValidationResult result,
+  ) async {
     // 验证模块目录名
     final moduleName = path.basename(modulePath);
     if (!StringUtils.isValidPackageName(moduleName)) {
@@ -336,7 +354,9 @@ class ModuleValidator {
 
   /// 验证文件内容命名
   Future<void> _validateFileNaming(
-      String filePath, ValidationResult result,) async {
+    String filePath,
+    ValidationResult result,
+  ) async {
     try {
       final content = await FileUtils.readFileAsString(filePath);
       if (content == null) return;
@@ -363,12 +383,12 @@ class ModuleValidator {
     try {
       // 检查基本结构
       if (!FileUtils.directoryExists(modulePath)) return false;
-      
+
       // pubspec.yaml是必需的（Dart项目基本要求）
       if (!FileUtils.fileExists(path.join(modulePath, 'pubspec.yaml'))) {
         return false;
       }
-      
+
       // lib目录是必需的
       if (!FileUtils.directoryExists(path.join(modulePath, 'lib'))) {
         return false;

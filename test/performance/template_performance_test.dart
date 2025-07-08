@@ -255,25 +255,29 @@ void main() {
     });
 
     group('并发执行测试', () {
-      test('并发版本查询应该正常工作', () async {
-        // 测试多个并发查询
-        final futures = <Future<CliTestResult>>[];
+      test(
+        '并发版本查询应该正常工作',
+        () async {
+          // 测试多个并发查询
+          final futures = <Future<CliTestResult>>[];
 
-        for (var i = 0; i < 3; i++) {
-          futures.add(CliTestHelper.runCommand(['version']));
-        }
+          for (var i = 0; i < 3; i++) {
+            futures.add(CliTestHelper.runCommand(['version']));
+          }
 
-        final results = await Future.wait(futures);
+          final results = await Future.wait(futures);
 
-        for (final result in results) {
-          CliTestHelper.expectSuccess(result);
-          expect(
-            result.duration.inSeconds,
-            lessThan(15),
-            reason: '并发执行不应该显著影响性能',
-          );
-        }
-      }, timeout: const Timeout(Duration(minutes: 2)));
+          for (final result in results) {
+            CliTestHelper.expectSuccess(result);
+            expect(
+              result.duration.inSeconds,
+              lessThan(15),
+              reason: '并发执行不应该显著影响性能',
+            );
+          }
+        },
+        timeout: const Timeout(Duration(minutes: 2)),
+      );
     });
   });
 }

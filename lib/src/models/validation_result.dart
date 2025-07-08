@@ -45,18 +45,18 @@ class ValidationResult {
       messages.where((m) => m.validationType == type).toList();
 
   /// 获取可自动修复的消息
-  List<ValidationMessage> get autoFixableMessages =>
-      messages.where(
-        (m) => 
-         m.fixSuggestion?.fixabilityLevel == FixabilityLevel.automatic,
-      ).toList();
+  List<ValidationMessage> get autoFixableMessages => messages
+      .where(
+        (m) => m.fixSuggestion?.fixabilityLevel == FixabilityLevel.automatic,
+      )
+      .toList();
 
   /// 获取有修复建议的消息
-  List<ValidationMessage> get suggestedFixMessages =>
-      messages.where(
-        (m) => 
-         m.fixSuggestion?.fixabilityLevel == FixabilityLevel.suggested,
-      ).toList();
+  List<ValidationMessage> get suggestedFixMessages => messages
+      .where(
+        (m) => m.fixSuggestion?.fixabilityLevel == FixabilityLevel.suggested,
+      )
+      .toList();
 
   /// 获取指定验证器的消息
   List<ValidationMessage> getMessagesByValidator(String validatorName) =>
@@ -187,7 +187,7 @@ class ValidationResult {
     );
   }
 
-  /// 格式化输出验证结果 
+  /// 格式化输出验证结果
   String formatOutput({
     bool includeSuccesses = false,
     OutputFormat format = OutputFormat.console,
@@ -213,8 +213,9 @@ class ValidationResult {
       buffer.writeln('❌ ERROR: ${error.message}');
       if (error.file != null) {
         buffer.writeln(
-            '   📁 ${error.file}'
-            '${error.line != null ? ':${error.line}' : ''}',);
+          '   📁 ${error.file}'
+          '${error.line != null ? ':${error.line}' : ''}',
+        );
       }
       if (error.code != null) {
         buffer.writeln('   🔍 Code: ${error.code}');
@@ -226,8 +227,9 @@ class ValidationResult {
       buffer.writeln('⚠️  WARNING: ${warning.message}');
       if (warning.file != null) {
         buffer.writeln(
-            '   📁 ${warning.file}'
-            '${warning.line != null ? ':${warning.line}' : ''}',);
+          '   📁 ${warning.file}'
+          '${warning.line != null ? ':${warning.line}' : ''}',
+        );
       }
     }
 
@@ -240,7 +242,8 @@ class ValidationResult {
 
     // 添加总结
     final summary = getSummary();
-    buffer..writeln('\n📊 验证总结:')
+    buffer
+      ..writeln('\n📊 验证总结:')
       ..writeln('   状态: ${isValid ? '✅ 通过' : '❌ 失败'}')
       ..writeln('   错误: ${summary.errorCount}')
       ..writeln('   警告: ${summary.warningCount}');
@@ -262,25 +265,31 @@ class ValidationResult {
         'successCount': successes.length,
         'durationMs': durationMs ?? 0,
       },
-      'messages': messages.map((m) => {
-        'severity': m.severity.name,
-        'type': m.validationType.name,
-        'message': m.message,
-        'code': m.code,
-        'file': m.file,
-        'line': m.line,
-        'validator': m.validatorName,
-        'fixSuggestion': m.fixSuggestion != null ? {
-          'description': m.fixSuggestion!.description,
-          'fixabilityLevel': m.fixSuggestion!.fixabilityLevel.name,
-          'command': m.fixSuggestion!.command,
-          'codeExample': m.fixSuggestion!.codeExample,
-          'documentation': m.fixSuggestion!.documentation,
-        } : null,
-        'timestamp': m.timestamp.toIso8601String(),
-      },).toList(),
+      'messages': messages
+          .map(
+            (m) => {
+              'severity': m.severity.name,
+              'type': m.validationType.name,
+              'message': m.message,
+              'code': m.code,
+              'file': m.file,
+              'line': m.line,
+              'validator': m.validatorName,
+              'fixSuggestion': m.fixSuggestion != null
+                  ? {
+                      'description': m.fixSuggestion!.description,
+                      'fixabilityLevel': m.fixSuggestion!.fixabilityLevel.name,
+                      'command': m.fixSuggestion!.command,
+                      'codeExample': m.fixSuggestion!.codeExample,
+                      'documentation': m.fixSuggestion!.documentation,
+                    }
+                  : null,
+              'timestamp': m.timestamp.toIso8601String(),
+            },
+          )
+          .toList(),
     };
-    
+
     // 简单的JSON序列化（避免引入json包依赖）
     return _simpleJsonEncode(data);
   }
@@ -290,33 +299,36 @@ class ValidationResult {
     final buffer = StringBuffer()
       ..writeln('<?xml version="1.0" encoding="UTF-8"?>')
       ..writeln('<testsuite name="ValidationResult" '
-        'tests="${messages.length}" '
-        'failures="${errors.length}" '
-        'errors="0" '
-        'time="${(durationMs ?? 0) / 1000}">');
+          'tests="${messages.length}" '
+          'failures="${errors.length}" '
+          'errors="0" '
+          'time="${(durationMs ?? 0) / 1000}">');
 
     for (final message in messages) {
       buffer.writeln('  <testcase classname="${message.validationType.name}" '
           'name="${message.validatorName ?? 'unknown'}" '
           'time="0">');
-      
+
       if (message.severity == ValidationSeverity.error) {
         buffer.writeln(
-          '    <failure type="${message.code ?? 'validation_error'}" '
-          'message="${_escapeXml(message.message)}">'
-        );
+            '    <failure type="${message.code ?? 'validation_error'}" '
+            'message="${_escapeXml(message.message)}">');
         if (message.file != null) {
           buffer.writeln('      File: ${message.file}');
-          if (message.line != null) buffer.writeln('      Line: ${message.line}');
+          if (message.line != null) {
+            buffer.writeln('      Line: ${message.line}');
+          }
         }
         buffer.writeln('    </failure>');
       } else if (message.severity == ValidationSeverity.warning) {
-        buffer.writeln('    <system-out>${_escapeXml(message.message)}</system-out>');
+        buffer.writeln(
+          '    <system-out>${_escapeXml(message.message)}</system-out>',
+        );
       }
-      
+
       buffer.writeln('  </testcase>');
     }
-    
+
     buffer.writeln('</testsuite>');
     return buffer.toString();
   }
@@ -400,27 +412,26 @@ class ValidationMessage {
 
   @override
   String toString() {
-    final buffer = StringBuffer()
-      ..write('[${severity.name.toUpperCase()}]');
-    
+    final buffer = StringBuffer()..write('[${severity.name.toUpperCase()}]');
+
     if (validatorName != null) {
       buffer.write(' [$validatorName]');
     }
-    
+
     buffer.write(' $message');
-    
+
     if (file != null) {
       buffer.write(' ($file');
       if (line != null) buffer.write(':$line');
       buffer.write(')');
     }
-    
+
     if (code != null) buffer.write(' [$code]');
-    
+
     if (fixSuggestion != null) {
       buffer.write(' [Fix: ${fixSuggestion!.fixabilityLevel.name}]');
     }
-    
+
     return buffer.toString();
   }
 }
@@ -429,10 +440,13 @@ class ValidationMessage {
 enum ValidationSeverity {
   /// 错误：必须修复
   error,
+
   /// 警告：建议修复
   warning,
+
   /// 信息：仅供参考
   info,
+
   /// 成功：验证通过
   success,
 }
@@ -441,14 +455,19 @@ enum ValidationSeverity {
 enum ValidationType {
   /// 模块结构验证
   structure,
+
   /// 代码质量验证
   quality,
+
   /// 依赖关系验证
   dependency,
+
   /// 平台规范验证
   compliance,
+
   /// 配置验证
   configuration,
+
   /// 通用验证
   general,
 }
@@ -457,10 +476,13 @@ enum ValidationType {
 enum FixabilityLevel {
   /// 可自动修复
   automatic,
+
   /// 有修复建议
   suggested,
+
   /// 需要手动修复
   manual,
+
   /// 无法修复
   unfixable,
 }
@@ -469,10 +491,13 @@ enum FixabilityLevel {
 enum OutputFormat {
   /// 控制台输出
   console,
+
   /// JSON格式
   json,
+
   /// JUnit XML格式
   junit,
+
   /// 简洁文本
   compact,
 }

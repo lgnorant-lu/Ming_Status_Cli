@@ -18,7 +18,7 @@ void main() {
     group('ProgressConfig Tests', () {
       test('应该创建默认配置', () {
         const config = ProgressConfig();
-        
+
         expect(config.type, equals(ProgressType.progressBar));
         expect(config.showPercentage, isTrue);
         expect(config.showElapsedTime, isTrue);
@@ -36,7 +36,7 @@ void main() {
           completedChar: '#',
           remainingChar: '-',
         );
-        
+
         expect(config.type, equals(ProgressType.spinner));
         expect(config.showPercentage, isFalse);
         expect(config.width, equals(30));
@@ -48,14 +48,14 @@ void main() {
     group('ProgressIndicator Basic Functionality Tests', () {
       test('应该成功创建进度指示器', () {
         final indicator = ProgressIndicator(title: 'Test Progress');
-        
+
         expect(indicator.title, equals('Test Progress'));
         expect(indicator.config, isA<ProgressConfig>());
       });
 
       test('应该正确处理启动和完成流程', () {
         final indicator = ProgressIndicator(title: 'Test Progress');
-        
+
         // 测试方法调用不会抛出异常
         expect(indicator.start, returnsNormally);
         expect(() => indicator.update(0.5), returnsNormally);
@@ -63,23 +63,21 @@ void main() {
       });
 
       test('应该正确处理进度更新', () {
-        final indicator = ProgressIndicator(title: 'Test Progress')
-          ..start();
-        
+        final indicator = ProgressIndicator(title: 'Test Progress')..start();
+
         // 测试各种进度值
         expect(() => indicator.update(0), returnsNormally);
         expect(() => indicator.update(0.5), returnsNormally);
         expect(() => indicator.update(1), returnsNormally);
         expect(() => indicator.update(1.5), returnsNormally); // 应该被限制
         expect(() => indicator.update(-0.1), returnsNormally); // 应该被限制
-        
+
         indicator.complete();
       });
 
       test('应该正确处理失败状态', () {
-        final indicator = ProgressIndicator(title: 'Test Progress')
-          ..start();
-        
+        final indicator = ProgressIndicator(title: 'Test Progress')..start();
+
         expect(indicator.fail, returnsNormally);
         expect(() => indicator.fail(message: 'Custom error'), returnsNormally);
       });
@@ -91,9 +89,9 @@ void main() {
           width: 10,
           showElapsedTime: false,
         );
-        
+
         final indicator = ProgressIndicator(title: 'Test', config: config);
-        
+
         expect(indicator.start, returnsNormally);
         expect(() => indicator.update(0.5), returnsNormally);
         expect(indicator.complete, returnsNormally);
@@ -104,14 +102,16 @@ void main() {
           type: ProgressType.spinner,
           showPercentage: false,
         );
-        
+
         final indicator = ProgressIndicator(
-          title: 'Spinner Test', config: config,
+          title: 'Spinner Test',
+          config: config,
         );
-        
+
         expect(indicator.start, returnsNormally);
         expect(
-          () => indicator.update(0.3, status: 'Processing...'), returnsNormally,
+          () => indicator.update(0.3, status: 'Processing...'),
+          returnsNormally,
         );
         expect(indicator.complete, returnsNormally);
       });
@@ -121,14 +121,16 @@ void main() {
           type: ProgressType.simple,
           showElapsedTime: false,
         );
-        
+
         final indicator = ProgressIndicator(
-          title: 'Simple Test', config: config,
+          title: 'Simple Test',
+          config: config,
         );
-        
+
         expect(indicator.start, returnsNormally);
         expect(
-          () => indicator.update(0.7, status: 'Almost done'), returnsNormally,
+          () => indicator.update(0.7, status: 'Almost done'),
+          returnsNormally,
         );
         expect(indicator.complete, returnsNormally);
       });
@@ -139,16 +141,17 @@ void main() {
     group('Method Structure Tests', () {
       test('confirm方法应该存在并具有正确签名', () {
         expect(UserInteraction.confirm, isA<Function>());
-        
+
         // 测试基本调用结构（不实际交互）
         expect(
-          UserInteraction.confirm.runtimeType.toString(), contains('bool'),
+          UserInteraction.confirm.runtimeType.toString(),
+          contains('bool'),
         );
       });
 
       test('choice方法应该存在并具有正确签名', () {
         expect(UserInteraction.choice, isA<Function>());
-        
+
         final options = ['Option 1', 'Option 2', 'Option 3'];
         expect(options.length, equals(3));
       });
@@ -170,14 +173,14 @@ void main() {
   group('ErrorRecoveryPrompt Tests', () {
     test('应该提供错误恢复选项方法', () {
       expect(ErrorRecoveryPrompt.showErrorWithRecovery, isA<Function>());
-      
+
       final recoveryOptions = ['重试', '忽略', '修复'];
       expect(recoveryOptions.length, equals(3));
     });
 
     test('应该提供回滚确认方法', () {
       expect(ErrorRecoveryPrompt.confirmRollback, isA<Function>());
-      
+
       final affectedFiles = ['file1.txt', 'file2.txt'];
       expect(affectedFiles.length, equals(2));
     });
@@ -196,27 +199,34 @@ void main() {
     test('应该正确执行格式化方法', () {
       // 测试静态方法调用不会抛出异常
       expect(
-        () => StatusFormatter.step('Test step'), returnsNormally,
+        () => StatusFormatter.step('Test step'),
+        returnsNormally,
       );
       expect(
         () => StatusFormatter.step(
-          'Test step', stepNumber: 1, totalSteps: 5,
-        ), returnsNormally,
+          'Test step',
+          stepNumber: 1,
+          totalSteps: 5,
+        ),
+        returnsNormally,
       );
     });
 
     test('应该正确格式化完成消息', () {
       const duration = Duration(milliseconds: 1500);
       expect(
-        () => StatusFormatter.completed('Task completed'), returnsNormally,
+        () => StatusFormatter.completed('Task completed'),
+        returnsNormally,
       );
       expect(
         () => StatusFormatter.completed(
-          'Task completed', duration: duration,
-        ), returnsNormally,
+          'Task completed',
+          duration: duration,
+        ),
+        returnsNormally,
       );
     });
-    
+
     test('应该正确执行其他格式化方法', () {
       expect(() => StatusFormatter.success('Success message'), returnsNormally);
       expect(() => StatusFormatter.warning('Warning message'), returnsNormally);
@@ -234,11 +244,11 @@ void main() {
 
     test('应该处理多次调用', () {
       final indicator = ProgressIndicator(title: 'Test');
-      
+
       // 多次启动
       expect(indicator.start, returnsNormally);
       expect(indicator.start, returnsNormally); // 应该被忽略
-      
+
       // 多次完成
       expect(indicator.complete, returnsNormally);
       expect(indicator.complete, returnsNormally); // 应该被忽略
@@ -246,10 +256,10 @@ void main() {
 
     test('应该处理更新非活动指示器', () {
       final indicator = ProgressIndicator(title: 'Test');
-      
+
       // 未启动就更新
       expect(() => indicator.update(0.5), returnsNormally);
-      
+
       // 完成后更新
       indicator
         ..start()
@@ -257,4 +267,4 @@ void main() {
       expect(() => indicator.update(0.8), returnsNormally);
     });
   });
-} 
+}

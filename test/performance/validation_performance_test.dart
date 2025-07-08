@@ -3,7 +3,8 @@
 File name:                  validation_performance_test.dart
 Author:                     Ignorant-lu
 Date created:               2025/07/04
-Description:                Performance testing for Ming Status CLI validation system
+Description:                Performance testing for Ming Status CLI
+                            validation system
 ----------------------------------------------------------------
 
 Changed history:            
@@ -12,16 +13,18 @@ Changed history:
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
+
+import 'package:logging/logging.dart';
 import 'package:ming_status_cli/src/core/validator_service.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
 import 'package:ming_status_cli/src/validators/dependency_validator.dart';
 import 'package:ming_status_cli/src/validators/platform_compliance_validator.dart';
 import 'package:ming_status_cli/src/validators/quality_validator.dart';
 import 'package:ming_status_cli/src/validators/structure_validator.dart';
+import 'package:test/test.dart';
 
 /// Performance testing for the validation system.
-/// 
+///
 /// This test suite validates:
 /// - Large project validation efficiency
 /// - Different validation level performance
@@ -32,17 +35,17 @@ void main() {
   group('Validation Performance Tests', () {
     late ValidatorService validatorService;
     late String testProjectPath;
+    late Logger logger;
 
     setUpAll(() async {
-      validatorService = ValidatorService();
-
-      // Register all validators using the correct API
-      validatorService.registerValidators([
-        StructureValidator(),
-        QualityValidator(),
-        DependencyValidator(),
-        PlatformComplianceValidator(),
-      ]);
+      logger = Logger('ValidationPerformanceTest');
+      validatorService = ValidatorService()
+        ..registerValidators([
+          StructureValidator(),
+          QualityValidator(),
+          DependencyValidator(),
+          PlatformComplianceValidator(),
+        ]);
 
       // Use current project as test subject
       testProjectPath = Directory.current.path;
@@ -68,32 +71,32 @@ void main() {
 
           final context = ValidationContext(
             projectPath: testProjectPath,
-            strictMode: level == ValidationLevel.strict || 
-                       level == ValidationLevel.enterprise,
+            strictMode: level == ValidationLevel.strict ||
+                level == ValidationLevel.enterprise,
             enabledValidators: [
               ValidationType.structure,
-              ValidationType.quality, 
+              ValidationType.quality,
               ValidationType.dependency,
               ValidationType.compliance,
             ],
           );
 
           await validatorService.validateModule(
-            testProjectPath, 
+            testProjectPath,
             context: context,
           );
-          
+
           stopwatch.stop();
           results[level] = stopwatch.elapsed;
 
-          print('${level.toString().split('.').last}: '
-                '${stopwatch.elapsedMilliseconds}ms');
+          logger.info('${level.toString().split('.').last}: '
+              '${stopwatch.elapsedMilliseconds}ms');
         }
 
         // All validations should complete within reasonable time (30 seconds)
         for (final entry in results.entries) {
           expect(
-            entry.value.inSeconds, 
+            entry.value.inSeconds,
             lessThan(30),
             reason: '${entry.key} validation should complete within 30 seconds',
           );
@@ -123,51 +126,57 @@ void main() {
         for (var i = 0; i < runCount; i++) {
           validatorService.clearCache();
           final stopwatch = Stopwatch()..start();
-          
+
           await validatorService.validateModule(
-            testProjectPath, 
+            testProjectPath,
             context: context,
           );
-          
+
           stopwatch.stop();
           durations.add(stopwatch.elapsed);
-          
+
           // Add small delay to ensure distinct measurements
-          await Future.delayed(const Duration(milliseconds: 10));
+          await Future<void>.delayed(const Duration(milliseconds: 10));
         }
 
         // Calculate statistics - handle edge cases
         final totalMicroseconds = durations.fold<int>(
-          0, (sum, duration) => sum + duration.inMicroseconds,);
-        final avgDuration = Duration(microseconds: totalMicroseconds ~/ runCount);
-        
-        final maxDuration = durations.reduce((a, b) => 
-          a.inMicroseconds > b.inMicroseconds ? a : b,);
-        
-        final minDuration = durations.reduce((a, b) => 
-          a.inMicroseconds < b.inMicroseconds ? a : b,);
+          0,
+          (sum, duration) => sum + duration.inMicroseconds,
+        );
+        final avgDuration =
+            Duration(microseconds: totalMicroseconds ~/ runCount);
+
+        final maxDuration = durations.reduce(
+          (a, b) => a.inMicroseconds > b.inMicroseconds ? a : b,
+        );
+
+        final minDuration = durations.reduce(
+          (a, b) => a.inMicroseconds < b.inMicroseconds ? a : b,
+        );
 
         // Handle edge case where minDuration might be very small
-        final variance = minDuration.inMicroseconds > 0 
-          ? maxDuration.inMicroseconds / minDuration.inMicroseconds
-          : 1.0;
+        final variance = minDuration.inMicroseconds > 0
+            ? maxDuration.inMicroseconds / minDuration.inMicroseconds
+            : 1.0;
 
-        print('Performance Stats:');
-        print('  Average: ${avgDuration.inMilliseconds}ms');
-        print('  Min: ${minDuration.inMilliseconds}ms');
-        print('  Max: ${maxDuration.inMilliseconds}ms');
-        print('  Variance: ${variance.toStringAsFixed(2)}x');
+        logger
+          ..info('Performance Stats:')
+          ..info('  Average: ${avgDuration.inMilliseconds}ms')
+          ..info('  Min: ${minDuration.inMilliseconds}ms')
+          ..info('  Max: ${maxDuration.inMilliseconds}ms')
+          ..info('  Variance: ${variance.toStringAsFixed(2)}x');
 
         // More reasonable variance expectation for real-world scenarios
         expect(
-          variance, 
+          variance,
           lessThan(50.0), // Allow for higher variance in CI environments
           reason: 'Performance should be reasonably consistent across runs',
         );
 
         // Ensure all runs took measurable time
         expect(
-          avgDuration.inMicroseconds, 
+          avgDuration.inMicroseconds,
           greaterThan(0),
           reason: 'Validation should take measurable time',
         );
@@ -180,7 +189,7 @@ void main() {
           projectPath: testProjectPath,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
@@ -188,17 +197,17 @@ void main() {
 
         final stopwatch = Stopwatch()..start();
         final result = await validatorService.validateModule(
-          testProjectPath, 
+          testProjectPath,
           context: context,
         );
         stopwatch.stop();
 
         final executionTime = stopwatch.elapsedMilliseconds;
 
-        print('Validation execution: ${executionTime}ms');
+        logger.info('Validation execution: ${executionTime}ms');
 
         expect(
-          executionTime, 
+          executionTime,
           lessThan(30000),
           reason: 'Validation should complete within reasonable time',
         );
@@ -225,7 +234,7 @@ void main() {
         validatorService.clearCache();
         final noCacheStopwatch = Stopwatch()..start();
         await validatorService.validateModule(
-          testProjectPath, 
+          testProjectPath,
           context: context,
         );
         noCacheStopwatch.stop();
@@ -233,7 +242,7 @@ void main() {
         // Second run with potential cache
         final withCacheStopwatch = Stopwatch()..start();
         await validatorService.validateModule(
-          testProjectPath, 
+          testProjectPath,
           context: context,
         );
         withCacheStopwatch.stop();
@@ -241,24 +250,25 @@ void main() {
         final noCacheTime = noCacheStopwatch.elapsedMilliseconds;
         final withCacheTime = withCacheStopwatch.elapsedMilliseconds;
 
-        print('No cache: ${noCacheTime}ms');
-        print('With cache: ${withCacheTime}ms');
+        logger
+          ..info('No cache: ${noCacheTime}ms')
+          ..info('With cache: ${withCacheTime}ms');
 
         expect(
-          noCacheTime, 
+          noCacheTime,
           greaterThan(0),
           reason: 'First validation should take measurable time',
         );
 
         expect(
-          withCacheTime, 
+          withCacheTime,
           greaterThanOrEqualTo(0),
           reason: 'Second validation should complete successfully',
         );
 
         if (withCacheTime > 0 && noCacheTime > withCacheTime) {
           final speedup = noCacheTime / withCacheTime;
-          print('Cache speedup: ${speedup.toStringAsFixed(2)}x');
+          logger.info('Cache speedup: ${speedup.toStringAsFixed(2)}x');
         }
       });
 
@@ -272,30 +282,33 @@ void main() {
         );
 
         validatorService.clearCache();
-        
+
         for (var i = 0; i < 3; i++) {
           await validatorService.validateModule(
-            testProjectPath, 
+            testProjectPath,
             context: context,
           );
         }
 
         final stats = validatorService.lastValidationStats;
-        
+
         expect(stats, isNotNull, reason: 'Should have validation stats');
-        
-        print('Cache stats available: ${stats != null}');
+
+        logger.info('Cache stats available: ${stats != null}');
         if (stats != null) {
-          print('Cache hit rate: ${(stats.cacheHitRate * 100).toStringAsFixed(1)}%');
-          print('Executed validators: ${stats.executedValidators}');
+          final hitRate = (stats.cacheHitRate * 100).toStringAsFixed(1);
+          logger
+            ..info('Cache hit rate: $hitRate%')
+            ..info('Executed validators: ${stats.executedValidators}');
         }
       });
     });
 
     group('Large Project Simulation', () {
       test('should handle simulated large project efficiently', () async {
-        final tempDir = Directory.systemTemp.createTempSync('large_project_test');
-        
+        final tempDir =
+            Directory.systemTemp.createTempSync('large_project_test');
+
         try {
           await _createLargeProjectStructure(tempDir);
 
@@ -310,42 +323,45 @@ void main() {
           );
 
           final result = await validatorService.validateModule(
-            tempDir.path, 
+            tempDir.path,
             context: context,
           );
-          
+
           stopwatch.stop();
 
           expect(
-            stopwatch.elapsed.inSeconds, 
+            stopwatch.elapsed.inSeconds,
             lessThan(60),
             reason: 'Large project validation should complete within 1 minute',
           );
 
           expect(
-            result.messages.isNotEmpty, 
+            result.messages.isNotEmpty,
             isTrue,
             reason: 'Should produce validation results for large project',
           );
 
           final filesProcessed = _countDartFiles(tempDir);
-          final processingRate = filesProcessed / stopwatch.elapsedMilliseconds * 1000;
+          final processingRate =
+              filesProcessed / stopwatch.elapsedMilliseconds * 1000;
 
-          print('Files processed: $filesProcessed');
-          print('Time taken: ${stopwatch.elapsedMilliseconds}ms');
-          print('Processing rate: ${processingRate.toStringAsFixed(2)} files/second');
+          logger
+            ..info('Files processed: $filesProcessed')
+            ..info('Time taken: ${stopwatch.elapsedMilliseconds}ms')
+            ..info(
+              'Processing rate: ${processingRate.toStringAsFixed(2)} files/second',
+            );
 
           expect(
-            processingRate, 
+            processingRate,
             greaterThan(1.0),
             reason: 'Should maintain reasonable file processing rate',
           );
-
         } finally {
           try {
             tempDir.deleteSync(recursive: true);
           } catch (e) {
-            print('Warning: Failed to clean up temp directory: $e');
+            logger.info('Warning: Failed to clean up temp directory: $e');
           }
         }
       });
@@ -359,27 +375,32 @@ void main() {
           projectPath: testProjectPath,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
         await validatorService.validateModule(
-          testProjectPath, 
+          testProjectPath,
           context: context,
         );
 
         final finalMemory = ProcessInfo.currentRss;
         final memoryChange = finalMemory - initialMemory;
 
-        print('Initial memory: ${(initialMemory / 1024 / 1024).toStringAsFixed(2)} MB');
-        print('Final memory: ${(finalMemory / 1024 / 1024).toStringAsFixed(2)} MB');
-        print('Memory change: ${(memoryChange / 1024 / 1024).toStringAsFixed(2)} MB');
+        final initialMB = (initialMemory / 1024 / 1024).toStringAsFixed(2);
+        final finalMB = (finalMemory / 1024 / 1024).toStringAsFixed(2);
+        final changeMB = (memoryChange / 1024 / 1024).toStringAsFixed(2);
+
+        logger
+          ..info('Initial memory: $initialMB MB')
+          ..info('Final memory: $finalMB MB')
+          ..info('Memory change: $changeMB MB');
 
         final memoryUsage = memoryChange.abs();
         expect(
-          memoryUsage, 
+          memoryUsage,
           lessThan(200 * 1024 * 1024),
           reason: 'Memory usage should be reasonable',
         );
@@ -394,17 +415,17 @@ void main() {
           projectPath: testProjectPath,
           enabledValidators: [
             ValidationType.structure,
-            ValidationType.quality, 
+            ValidationType.quality,
             ValidationType.dependency,
             ValidationType.compliance,
           ],
         );
 
         await validatorService.validateModule(
-          testProjectPath, 
+          testProjectPath,
           context: context,
         );
-        
+
         stopwatch.stop();
 
         final currentPerformance = {
@@ -414,11 +435,16 @@ void main() {
           'project_size': _countDartFiles(Directory(testProjectPath)),
         };
 
-        print('Current performance: ${currentPerformance['duration_ms']}ms');
-        print('Project size: ${currentPerformance['project_size']} Dart files');
+        logger
+          ..info(
+            'Current performance: ${currentPerformance['duration_ms']}ms',
+          )
+          ..info(
+            'Project size: ${currentPerformance['project_size']} Dart files',
+          );
 
         expect(
-          stopwatch.elapsedMilliseconds, 
+          stopwatch.elapsedMilliseconds,
           lessThan(30000),
           reason: 'Validation should complete within 30 seconds',
         );
@@ -439,7 +465,7 @@ Future<void> _createLargeProjectStructure(Directory baseDir) async {
   await libDir.create(recursive: true);
 
   final dirs = ['models', 'services', 'widgets', 'utils', 'controllers'];
-  
+
   for (final dir in dirs) {
     final dirPath = Directory('${libDir.path}/$dir');
     await dirPath.create();
@@ -498,9 +524,9 @@ a large real-world project structure.
 /// Counts the number of Dart files in a directory recursively.
 int _countDartFiles(Directory dir) {
   if (!dir.existsSync()) return 0;
-  
+
   var count = 0;
-  
+
   try {
     for (final entity in dir.listSync(recursive: true)) {
       if (entity is File && entity.path.endsWith('.dart')) {
@@ -508,8 +534,8 @@ int _countDartFiles(Directory dir) {
       }
     }
   } catch (e) {
-    print('Warning: Error counting files in ${dir.path}: $e');
+    // Silently ignore errors when counting files
   }
-  
+
   return count;
 }

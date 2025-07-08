@@ -66,12 +66,15 @@ void main() {
 
         // 验证命令执行成功
         CliTestHelper.expectSuccess(result);
-        expect(result.stdout + result.stderr, anyOf([
-          contains('干运行'),
-          contains('预览'),
-          contains('将要生成'),
-          contains('TestModule'),
-        ]),);
+        expect(
+          result.stdout + result.stderr,
+          anyOf([
+            contains('干运行'),
+            contains('预览'),
+            contains('将要生成'),
+            contains('TestModule'),
+          ]),
+        );
         CliTestHelper.expectDuration(result, const Duration(seconds: 30));
       });
 
@@ -80,10 +83,10 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
-          'variable_test_project', 
+          'variable_test_project',
           '--template', 'basic',
           '--output', uniqueOutputDir,
           '--var', 'module_name=VariableTestModule',
@@ -99,13 +102,16 @@ void main() {
 
         // 由于使用干运行模式，验证输出信息包含变量
         expect(
-          result.stdout + result.stderr, contains('VariableTestModule'),
+          result.stdout + result.stderr,
+          contains('VariableTestModule'),
         );
         expect(
-          result.stdout + result.stderr, contains('Variable Tester'),
+          result.stdout + result.stderr,
+          contains('Variable Tester'),
         );
         expect(
-          result.stdout + result.stderr, contains('Variable replacement test'),
+          result.stdout + result.stderr,
+          contains('Variable replacement test'),
         );
       });
 
@@ -114,11 +120,11 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'provider_test_project',
-          '--template', 'basic', 
+          '--template', 'basic',
           '--output', uniqueOutputDir,
           '--var', 'module_name=ProviderTest',
           '--var', 'use_provider=true',
@@ -141,7 +147,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'flutter_package_test',
@@ -167,12 +173,14 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'invalid_template_test',
-          '--template', 'non_existent_template',
-          '--output', uniqueOutputDir,
+          '--template',
+          'non_existent_template',
+          '--output',
+          uniqueOutputDir,
         ]);
 
         CliTestHelper.expectFailure(result);
@@ -186,7 +194,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         // 生成项目
         final createResult = await CliTestHelper.runCommand([
           'create',
@@ -215,7 +223,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final createResult = await CliTestHelper.runCommand([
           'create',
           'pubspec_validation_project',
@@ -244,22 +252,28 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         // 先创建目录
         await Directory(uniqueOutputDir).create(recursive: true);
         await File(path.join(uniqueOutputDir, 'existing_file.txt'))
-          .writeAsString('test');
+            .writeAsString('test');
 
         // 测试目录存在时的行为（不使用--dry-run以测试实际行为）
         final result = await CliTestHelper.runCommand([
           'create',
           'existing_dir_test',
-          '--template', 'basic',
-          '--output', uniqueOutputDir,
-          '--var', 'module_name=ExistingDir',
-          '--var', 'use_provider=false',
-          '--var', 'use_http=false',
-          '--var', 'has_assets=false',
+          '--template',
+          'basic',
+          '--output',
+          uniqueOutputDir,
+          '--var',
+          'module_name=ExistingDir',
+          '--var',
+          'use_provider=false',
+          '--var',
+          'use_http=false',
+          '--var',
+          'has_assets=false',
         ]);
 
         // 应该失败，因为目录已存在且没有--force标志
@@ -272,11 +286,11 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         // 先创建目录和文件
         await Directory(uniqueOutputDir).create(recursive: true);
         await File(path.join(uniqueOutputDir, 'old_file.txt'))
-          .writeAsString('old content');
+            .writeAsString('old content');
 
         // 使用--force标志和--dry-run避免实际文件操作
         final result = await CliTestHelper.runCommand([
@@ -293,7 +307,7 @@ void main() {
         ]);
 
         CliTestHelper.expectSuccess(result);
-        
+
         // 验证输出包含变量信息
         expect(result.stdout + result.stderr, contains('ForceOverwrite'));
       });
@@ -303,7 +317,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'invalid_vars_test',
@@ -328,7 +342,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'progress_test_project',
@@ -343,14 +357,17 @@ void main() {
         ]);
 
         CliTestHelper.expectSuccess(result);
-        
+
         // 验证进度信息
-        expect(result.stdout + result.stderr, anyOf([
-          contains('正在生成'),
-          contains('完成'),
-          contains('模块生成'),
-          contains('ProgressTest'),
-        ]),);
+        expect(
+          result.stdout + result.stderr,
+          anyOf([
+            contains('正在生成'),
+            contains('完成'),
+            contains('模块生成'),
+            contains('ProgressTest'),
+          ]),
+        );
       });
 
       test('应该支持干运行模式', () async {
@@ -358,7 +375,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'dry_run_test',
@@ -372,12 +389,15 @@ void main() {
         ]);
 
         CliTestHelper.expectSuccess(result);
-        expect(result.stdout + result.stderr, anyOf([
-          contains('预览'),
-          contains('干运行'),
-          contains('将要生成'),
-          contains('DryRunTest'),
-        ]),);
+        expect(
+          result.stdout + result.stderr,
+          anyOf([
+            contains('预览'),
+            contains('干运行'),
+            contains('将要生成'),
+            contains('DryRunTest'),
+          ]),
+        );
       });
 
       test('应该提供创建后的指导信息', () async {
@@ -385,7 +405,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'guidance_test_project',
@@ -399,7 +419,7 @@ void main() {
         ]);
 
         CliTestHelper.expectSuccess(result);
-        
+
         // 验证输出信息包含项目名
         expect(result.stdout + result.stderr, contains('GuidanceTest'));
       });
@@ -411,7 +431,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'multiplatform_test',
@@ -439,7 +459,7 @@ void main() {
           tempTestDir.path,
           'unique_output_${DateTime.now().millisecondsSinceEpoch}',
         );
-        
+
         final result = await CliTestHelper.runCommand([
           'create',
           'performance_test_project',
@@ -456,8 +476,11 @@ void main() {
         final duration = endTime.difference(startTime);
 
         CliTestHelper.expectSuccess(result);
-        expect(duration, lessThan(const Duration(seconds: 30)), 
-               reason: '基本模板生成应该在30秒内完成，实际用时: ${duration.inSeconds}秒',);
+        expect(
+          duration,
+          lessThan(const Duration(seconds: 30)),
+          reason: '基本模板生成应该在30秒内完成，实际用时: ${duration.inSeconds}秒',
+        );
       });
     });
   });

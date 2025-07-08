@@ -77,16 +77,17 @@ dependencies:
 dev_dependencies:
   test: ^1.21.0
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
         expect(
-          result.messages.any((m) => 
-            m.severity == ValidationSeverity.success ||
-            m.message.contains('pubspec.yaml'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.severity == ValidationSeverity.success ||
+                m.message.contains('pubspec.yaml'),
+          ),
           isTrue,
         );
       });
@@ -101,16 +102,17 @@ dependencies:
   flutter:
     sdk: flutter
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('必需字段') ||
-            m.message.contains('name') ||
-            m.message.contains('version'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('必需字段') ||
+                m.message.contains('name') ||
+                m.message.contains('version'),
+          ),
           isTrue,
         );
       });
@@ -126,15 +128,16 @@ dependencies:
   flutter:
     sdk: flutter
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('environment') ||
-            m.message.contains('SDK约束'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('environment') ||
+                m.message.contains('SDK约束'),
+          ),
           isTrue,
         );
       });
@@ -157,10 +160,10 @@ dependencies:
 dev_dependencies:
   test: ^1.21.0
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
 
@@ -177,16 +180,17 @@ dependencies:
   http: any
   path: '>=0.0.0'
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('any') ||
-            m.message.contains('不安全') ||
-            m.message.contains('可能导致不稳定'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('any') ||
+                m.message.contains('不安全') ||
+                m.message.contains('可能导致不稳定'),
+          ),
           isTrue,
         );
       });
@@ -205,16 +209,17 @@ dependencies:
   flutter:
     sdk: flutter
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('兼容性') ||
-            m.message.contains('Flutter') ||
-            m.message.contains('Dart'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('兼容性') ||
+                m.message.contains('Flutter') ||
+                m.message.contains('Dart'),
+          ),
           isTrue,
         );
       });
@@ -238,7 +243,7 @@ dependencies:
 dev_dependencies:
   test: ^1.20.0  # Different version
 ''');
-        
+
         // 需要创建pubspec.lock文件才能进行冲突检测
         await File('${tempDir.path}/pubspec.lock').writeAsString('''
 packages:
@@ -255,16 +260,17 @@ packages:
     source: hosted
     version: "1.21.0"
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('冲突') ||
-            m.message.contains('flutter_test') ||
-            m.message.contains('test'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('冲突') ||
+                m.message.contains('flutter_test') ||
+                m.message.contains('test'),
+          ),
           isTrue,
         );
       });
@@ -284,7 +290,7 @@ dependencies:
   universal_html: ^2.0.0  # Web-only
   camera: ^0.10.0  # Mobile-only
 ''');
-        
+
         // 需要创建pubspec.lock文件才能进行冲突检测
         await File('${tempDir.path}/pubspec.lock').writeAsString('''
 packages:
@@ -303,16 +309,17 @@ packages:
     source: hosted
     version: "0.10.0"
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('平台兼容性') ||
-            m.message.contains('Web') ||
-            m.message.contains('移动端'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('平台兼容性') ||
+                m.message.contains('Web') ||
+                m.message.contains('移动端'),
+          ),
           isTrue,
         );
       });
@@ -335,17 +342,18 @@ dependencies:
   crypto: ^2.0.0  # Old version
   flutter_webview_plugin: ^0.3.0  # Deprecated package with vulnerabilities
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('安全') ||
-            m.message.contains('风险') ||
-            m.message.contains('漏洞') ||
-            m.message.contains('停止维护'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('安全') ||
+                m.message.contains('风险') ||
+                m.message.contains('漏洞') ||
+                m.message.contains('停止维护'),
+          ),
           isTrue,
         );
       });
@@ -369,17 +377,18 @@ dev_dependencies:
   test_api: ^0.4.0  
   build_test: ^2.0.0
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('test') ||
-            m.message.contains('debug') ||
-            m.message.contains('调试信息') ||
-            m.message.contains('后门'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('test') ||
+                m.message.contains('debug') ||
+                m.message.contains('调试信息') ||
+                m.message.contains('后门'),
+          ),
           isTrue,
         );
       });
@@ -400,18 +409,19 @@ dependencies:
   location: ^4.4.0  # Location access
   contacts_service: ^0.6.3  # Contact access
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('涉及') ||
-            m.message.contains('权限') ||
-            m.message.contains('camera') ||
-            m.message.contains('location') ||
-            m.message.contains('合规使用'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('涉及') ||
+                m.message.contains('权限') ||
+                m.message.contains('camera') ||
+                m.message.contains('location') ||
+                m.message.contains('合规使用'),
+          ),
           isTrue,
         );
       });
@@ -434,17 +444,18 @@ dependencies:
   effective_dart: ^1.3.0  # Deprecated
   flutter_driver: ^0.0.0  # Deprecated
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('废弃') ||
-            m.message.contains('pedantic') ||
-            m.message.contains('effective_dart') ||
-            m.message.contains('lints'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('废弃') ||
+                m.message.contains('pedantic') ||
+                m.message.contains('effective_dart') ||
+                m.message.contains('lints'),
+          ),
           isTrue,
         );
       });
@@ -465,18 +476,19 @@ dependencies:
   shared_preferences: ^2.0.0  # Package with modernization suggestions
   sqflite: ^2.0.0  # Package with alternatives
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('建议') ||
-            m.message.contains('考虑') ||
-            m.message.contains('http') ||
-            m.message.contains('shared_preferences') ||
-            m.message.contains('sqflite'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('建议') ||
+                m.message.contains('考虑') ||
+                m.message.contains('http') ||
+                m.message.contains('shared_preferences') ||
+                m.message.contains('sqflite'),
+          ),
           isTrue,
         );
       });
@@ -497,18 +509,19 @@ dependencies:
   path: 1.8.0  # Using exact version constraint
   shared_preferences: ^0.5.0  # Using 0.x version
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('any') ||
-            m.message.contains('稳定性') ||
-            m.message.contains('0.') ||
-            m.message.contains('版本控制') ||
-            m.message.contains('兼容性约束'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('any') ||
+                m.message.contains('稳定性') ||
+                m.message.contains('0.') ||
+                m.message.contains('版本控制') ||
+                m.message.contains('兼容性约束'),
+          ),
           isTrue,
         );
       });
@@ -534,7 +547,7 @@ dependencies:
 dev_dependencies:
   test: ^1.21.0
 ''');
-        
+
         // 创建使用部分依赖的代码
         await File('${tempDir.path}/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
@@ -553,15 +566,17 @@ class MyApp extends StatelessWidget {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('未使用') ||
-            m.message.contains('unused') ||
-            m.message.contains('依赖'),), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('未使用') ||
+                m.message.contains('unused') ||
+                m.message.contains('依赖'),
+          ),
           isTrue,
         );
       });
@@ -580,7 +595,7 @@ dependencies:
     sdk: flutter
   meta: ^1.8.0  # Usually transitive through Flutter
 ''');
-        
+
         await File('${tempDir.path}/lib/main.dart').writeAsString('''
 import 'package:flutter/material.dart';
 
@@ -595,10 +610,10 @@ class MyApp extends StatelessWidget {
   }
 }
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result.messages, isNotEmpty);
       });
     });
@@ -617,16 +632,17 @@ dependencies:
   flutter:
     sdk: flutter
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.message.contains('pubspec.lock') ||
-            m.message.contains('缺少') ||
-            m.message.contains('pub get'),
-          ), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('pubspec.lock') ||
+                m.message.contains('缺少') ||
+                m.message.contains('pub get'),
+          ),
           isTrue,
         );
       });
@@ -645,7 +661,7 @@ dependencies:
     sdk: flutter
   http: ^1.1.0
 ''');
-        
+
         await File('${tempDir.path}/pubspec.lock').writeAsString('''
 # Generated by pub
 packages:
@@ -657,14 +673,16 @@ packages:
     source: hosted
     version: "1.1.0"
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(
-          result.messages.any((m) => 
-            m.severity == ValidationSeverity.success ||
-            m.message.contains('依赖锁文件'),), 
+          result.messages.any(
+            (m) =>
+                m.severity == ValidationSeverity.success ||
+                m.message.contains('依赖锁文件'),
+          ),
           isTrue,
         );
       });
@@ -680,30 +698,31 @@ dependencies:
   invalid_yaml: {
     this is not valid yaml
 ''');
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result, isNotNull);
         expect(
-          result.messages.any((m) => 
-            m.message.contains('格式错误') ||
-            m.message.contains('解析'),), 
+          result.messages.any(
+            (m) => m.message.contains('格式错误') || m.message.contains('解析'),
+          ),
           isTrue,
         );
       });
 
       test('should handle missing pubspec.yaml', () async {
         await Directory('${tempDir.path}/lib').create();
-        
+
         final context = ValidationContext(projectPath: tempDir.path);
         final result = await validator.validate(tempDir.path, context);
-        
+
         expect(result, isNotNull);
         expect(
-          result.messages.any((m) => 
-            m.message.contains('pubspec.yaml') &&
-            m.message.contains('缺少'),), 
+          result.messages.any(
+            (m) =>
+                m.message.contains('pubspec.yaml') && m.message.contains('缺少'),
+          ),
           isTrue,
         );
       });
@@ -711,7 +730,7 @@ dependencies:
       test('should handle permission errors gracefully', () async {
         const context = ValidationContext(projectPath: '/nonexistent/path');
         final result = await validator.validate('/nonexistent/path', context);
-        
+
         expect(result, isNotNull);
         expect(result.messages, isNotEmpty);
       });
@@ -732,18 +751,21 @@ dependencies:
     sdk: flutter
   http: '>=1.0.0 <2.0.0'  # Loose constraint
 ''');
-        
+
         final context = ValidationContext(
           projectPath: tempDir.path,
           strictMode: true,
         );
         final result = await validator.validate(tempDir.path, context);
-        
+
         // 严格模式应该产生更多警告
-        final warningCount = result.messages.where((m) => 
-          m.severity == ValidationSeverity.warning ||
-          m.severity == ValidationSeverity.error,
-        ).length;
+        final warningCount = result.messages
+            .where(
+              (m) =>
+                  m.severity == ValidationSeverity.warning ||
+                  m.severity == ValidationSeverity.error,
+            )
+            .length;
         expect(warningCount, greaterThan(0));
       });
     });

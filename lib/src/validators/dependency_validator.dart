@@ -37,32 +37,31 @@ class DependencyValidator extends ModuleValidator {
     ValidationContext context,
   ) async {
     final result = ValidationResult(strictMode: context.strictMode);
-    
+
     try {
       // Task 40.5: 增强pubspec.yaml格式验证
       await _validatePubspecFormat(result, modulePath);
-      
+
       // pubspec.yaml依赖验证
       await _validatePubspecDependencies(result, modulePath);
-      
+
       // Task 40.5: 增强依赖版本兼容性验证
       await _validateVersionCompatibility(result, modulePath);
-      
+
       // Task 40.6: 增强过时包检测
       await _validateOutdatedPackages(result, modulePath);
-      
+
       // 未使用依赖检查
       await _validateUnusedDependencies(result, modulePath);
-      
+
       // Task 40.6: 增强安全漏洞检查
       await _validateSecurityVulnerabilities(result, modulePath);
-      
+
       // 依赖锁文件验证
       await _validateLockFile(result, modulePath);
-      
+
       // Task 40.5: 添加依赖冲突检测
       await _validateDependencyConflicts(result, modulePath);
-      
     } catch (e) {
       result.addError(
         '依赖关系验证过程发生异常: $e',
@@ -70,7 +69,7 @@ class DependencyValidator extends ModuleValidator {
         validatorName: validatorName,
       );
     }
-    
+
     result.markCompleted();
     return result;
   }
@@ -81,7 +80,7 @@ class DependencyValidator extends ModuleValidator {
     String modulePath,
   ) async {
     final pubspecFile = File(path.join(modulePath, 'pubspec.yaml'));
-    
+
     if (!pubspecFile.existsSync()) {
       result.addError(
         '缺少pubspec.yaml文件',
@@ -103,8 +102,8 @@ class DependencyValidator extends ModuleValidator {
 
       // 检查dev_dependencies部分
       if (yaml is Map && yaml.containsKey('dev_dependencies')) {
-        final devDeps = 
-          Map<String, dynamic>.from(yaml['dev_dependencies'] as Map);
+        final devDeps =
+            Map<String, dynamic>.from(yaml['dev_dependencies'] as Map);
         await _analyzeDependencies(result, devDeps, 'dev_dependencies');
       }
 
@@ -117,7 +116,6 @@ class DependencyValidator extends ModuleValidator {
           validatorName: validatorName,
         );
       }
-
     } catch (e) {
       result.addError(
         'pubspec.yaml格式错误: $e',
@@ -334,7 +332,7 @@ class DependencyValidator extends ModuleValidator {
     final content = await pubspecFile.readAsString();
     final yaml = loadYaml(content);
 
-    final dependencies = (yaml is Map && yaml.containsKey('dependencies')) 
+    final dependencies = (yaml is Map && yaml.containsKey('dependencies'))
         ? Map<String, dynamic>.from(yaml['dependencies'] as Map)
         : null;
     if (dependencies == null) return;
@@ -342,14 +340,14 @@ class DependencyValidator extends ModuleValidator {
     // 收集所有Dart文件中的import语句
     final usedPackages = <String>{};
     final libDir = Directory(path.join(modulePath, 'lib'));
-    
-    if (await libDir.exists()) {
+
+    if (libDir.existsSync()) {
       await for (final entity in libDir.list(recursive: true)) {
         if (entity is File && entity.path.endsWith('.dart')) {
           final fileContent = await entity.readAsString();
           final importRegex = RegExp(r'import\s+.*package:(\w+)');
           final matches = importRegex.allMatches(fileContent);
-          
+
           for (final match in matches) {
             final packageName = match.group(1);
             if (packageName != null) {
@@ -363,14 +361,14 @@ class DependencyValidator extends ModuleValidator {
     // 检查未使用的依赖
     for (final packageName in dependencies.keys) {
       if (packageName == 'flutter' || packageName == 'meta') continue;
-      
+
       if (!usedPackages.contains(packageName)) {
         result.addWarning(
           '可能未使用的依赖: $packageName',
           file: 'pubspec.yaml',
           validationType: ValidationType.dependency,
           validatorName: validatorName,
-          fixSuggestion:  const FixSuggestion(
+          fixSuggestion: const FixSuggestion(
             description: '移除未使用的依赖或确认其必要性',
             fixabilityLevel: FixabilityLevel.manual,
           ),
@@ -437,11 +435,15 @@ class DependencyValidator extends ModuleValidator {
     final dependencies = (yaml is Map && yaml.containsKey('dependencies'))
         ? Map<String, dynamic>.from(yaml['dependencies'] as Map)
         : null;
-    final devDependencies = (yaml is Map && yaml.containsKey('dev_dependencies'))
-        ? Map<String, dynamic>.from(yaml['dev_dependencies'] as Map)
-        : null;
+    final devDependencies =
+        (yaml is Map && yaml.containsKey('dev_dependencies'))
+            ? Map<String, dynamic>.from(yaml['dev_dependencies'] as Map)
+            : null;
 
-    void checkSecurityInPackageList(Map<String, dynamic>? packages, String sectionName) {
+    void checkSecurityInPackageList(
+      Map<String, dynamic>? packages,
+      String sectionName,
+    ) {
       if (packages == null) return;
 
       for (final entry in packages.entries) {
@@ -481,8 +483,10 @@ class DependencyValidator extends ModuleValidator {
         // 检查敏感权限包
         for (final sensitivePackage in sensitivePermissionPackages.keys) {
           if (packageName.toLowerCase().contains(sensitivePackage)) {
+            final permission = sensitivePermissionPackages[sensitivePackage];
+            final message = '$packageName 涉及$permission，请确保合规使用';
             result.addInfo(
-              '$packageName 涉及${sensitivePermissionPackages[sensitivePackage]}，' '请确保合规使用',
+              message,
               file: 'pubspec.yaml',
               validationType: ValidationType.dependency,
               validatorName: validatorName,
@@ -557,8 +561,8 @@ class DependencyValidator extends ModuleValidator {
     String modulePath,
   ) async {
     final lockFile = File(path.join(modulePath, 'pubspec.lock'));
-    
-    if (await lockFile.exists()) {
+
+    if (lockFile.existsSync()) {
       result.addSuccess(
         'pubspec.lock 文件存在，依赖版本已锁定',
         validationType: ValidationType.dependency,
@@ -568,9 +572,9 @@ class DependencyValidator extends ModuleValidator {
       // 检查锁文件是否过时
       final pubspecFile = File(path.join(modulePath, 'pubspec.yaml'));
       if (pubspecFile.existsSync()) {
-        final pubspecStat = await pubspecFile.stat();
-        final lockStat = await lockFile.stat();
-        
+        final pubspecStat = pubspecFile.statSync();
+        final lockStat = lockFile.statSync();
+
         if (pubspecStat.modified.isAfter(lockStat.modified)) {
           result.addWarning(
             'pubspec.lock 可能过时，建议运行 pub get',
@@ -589,9 +593,10 @@ class DependencyValidator extends ModuleValidator {
       try {
         final lockContent = await lockFile.readAsString();
         final lockYaml = loadYaml(lockContent);
-        
+
         if (lockYaml is Map && lockYaml.containsKey('packages')) {
-          final packages = Map<String, dynamic>.from(lockYaml['packages'] as Map);
+          final packages =
+              Map<String, dynamic>.from(lockYaml['packages'] as Map);
           result.addInfo(
             '锁定了 ${packages.length} 个依赖包版本',
             validationType: ValidationType.dependency,
@@ -626,7 +631,7 @@ class DependencyValidator extends ModuleValidator {
     String modulePath,
   ) async {
     final pubspecFile = File(path.join(modulePath, 'pubspec.yaml'));
-    
+
     if (!pubspecFile.existsSync()) {
       result.addError(
         '缺少pubspec.yaml文件',
@@ -723,7 +728,6 @@ class DependencyValidator extends ModuleValidator {
         validationType: ValidationType.dependency,
         validatorName: validatorName,
       );
-
     } catch (e) {
       result.addError(
         'pubspec.yaml解析失败: $e',
@@ -774,9 +778,10 @@ class DependencyValidator extends ModuleValidator {
     final dependencies = (yaml is Map && yaml.containsKey('dependencies'))
         ? Map<String, dynamic>.from(yaml['dependencies'] as Map)
         : null;
-    final devDependencies = (yaml is Map && yaml.containsKey('dev_dependencies'))
-        ? Map<String, dynamic>.from(yaml['dev_dependencies'] as Map)
-        : null;
+    final devDependencies =
+        (yaml is Map && yaml.containsKey('dev_dependencies'))
+            ? Map<String, dynamic>.from(yaml['dev_dependencies'] as Map)
+            : null;
 
     void checkPackageList(Map<String, dynamic>? packages, String sectionName) {
       if (packages == null) return;
@@ -861,14 +866,15 @@ class DependencyValidator extends ModuleValidator {
     try {
       final pubspecContent = await pubspecFile.readAsString();
       final lockContent = await lockFile.readAsString();
-      
+
       final pubspecYaml = loadYaml(pubspecContent);
       final lockYaml = loadYaml(lockContent);
 
       // 检查版本冲突
-      final dependencies = (pubspecYaml is Map && pubspecYaml.containsKey('dependencies'))
-          ? Map<String, dynamic>.from(pubspecYaml['dependencies'] as Map)
-          : null;
+      final dependencies =
+          (pubspecYaml is Map && pubspecYaml.containsKey('dependencies'))
+              ? Map<String, dynamic>.from(pubspecYaml['dependencies'] as Map)
+              : null;
       final lockPackages = (lockYaml is Map && lockYaml.containsKey('packages'))
           ? Map<String, dynamic>.from(lockYaml['packages'] as Map)
           : null;
@@ -882,7 +888,6 @@ class DependencyValidator extends ModuleValidator {
 
       // 检查Flutter/Dart版本兼容性
       await _validateFlutterDartCompatibility(result, pubspecYaml, lockYaml);
-
     } catch (e) {
       result.addError(
         '依赖冲突检测失败: $e',
@@ -949,10 +954,12 @@ class DependencyValidator extends ModuleValidator {
       'package_info',
     ];
 
-    final hasWebPackages = dependencies.keys.any((pkg) => 
-        webOnlyPackages.contains(pkg),);
-    final hasMobilePackages = dependencies.keys.any((pkg) => 
-        mobileOnlyPackages.contains(pkg),);
+    final hasWebPackages = dependencies.keys.any(
+      webOnlyPackages.contains,
+    );
+    final hasMobilePackages = dependencies.keys.any(
+      mobileOnlyPackages.contains,
+    );
 
     if (hasWebPackages && hasMobilePackages) {
       result.addWarning(
@@ -970,9 +977,10 @@ class DependencyValidator extends ModuleValidator {
     dynamic pubspecYaml,
     dynamic lockYaml,
   ) async {
-    final environment = (pubspecYaml is Map && pubspecYaml.containsKey('environment'))
-        ? Map<String, dynamic>.from(pubspecYaml['environment'] as Map)
-        : null;
+    final environment =
+        (pubspecYaml is Map && pubspecYaml.containsKey('environment'))
+            ? Map<String, dynamic>.from(pubspecYaml['environment'] as Map)
+            : null;
     if (environment == null) return;
 
     final dartSdk = environment['sdk'] as String?;

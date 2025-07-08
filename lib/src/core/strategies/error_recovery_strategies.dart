@@ -22,6 +22,7 @@ import 'package:path/path.dart' as path;
 
 /// 错误模式
 class ErrorPattern {
+  /// 创建错误模式实例
   const ErrorPattern({
     required this.errorType,
     required this.frequency,
@@ -33,50 +34,63 @@ class ErrorPattern {
 
   /// 错误类型
   final TemplateEngineErrorType errorType;
+
   /// 错误发生频率
   final int frequency;
+
   /// 最近成功率
   final double recentSuccessRate;
+
   /// 是否为重复发生的错误
   final bool isRecurring;
+
   /// 错误严重程度
   final ErrorSeverity severity;
+
   /// 建议的恢复方法
   final RecoveryApproach suggestedApproach;
 }
 
 /// 错误严重程度
-enum ErrorSeverity { 
+enum ErrorSeverity {
   /// 低严重程度
-  low, 
+  low,
+
   /// 中等严重程度
-  medium, 
+  medium,
+
   /// 高严重程度
-  high, 
+  high,
+
   /// 严重程度
-  critical 
+  critical
 }
 
 /// 恢复方法
-enum RecoveryApproach { 
+enum RecoveryApproach {
   /// 重试方法
-  retry, 
+  retry,
+
   /// 自适应方法
-  adaptive, 
+  adaptive,
+
   /// 预防性方法
-  preventive, 
+  preventive,
+
   /// 手动方法
-  manual 
+  manual
 }
 
 // ==================== 智能恢复策略实现 ====================
 
 /// 自适应模板未找到恢复策略
 class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
+  /// 创建自适应模板未找到恢复策略实例
   AdaptiveTemplateNotFoundStrategy(this.templateEngine, this.pattern);
 
   /// 模板引擎实例
   final dynamic templateEngine;
+
   /// 错误模式
   final ErrorPattern pattern;
 
@@ -95,7 +109,7 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
 
       // 1. 智能模板匹配
       final suggestions = await _findSimilarTemplates(targetTemplate);
-      
+
       if (suggestions.isNotEmpty) {
         // 2. 如果频繁出错，尝试自动创建基础模板
         if (pattern.isRecurring && pattern.frequency > 3) {
@@ -123,7 +137,6 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
       }
 
       return ErrorRecoveryResult.createFailure('无法恢复模板: $targetTemplate');
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('模板恢复异常: $e');
     }
@@ -132,13 +145,15 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
   /// 查找相似模板
   Future<List<String>> _findSimilarTemplates(String targetTemplate) async {
     try {
-      final dynamic templatesResult = await templateEngine.getAvailableTemplates();
-      final availableTemplates = (templatesResult as List<dynamic>).cast<String>();
+      final dynamic templatesResult =
+          await templateEngine.getAvailableTemplates();
+      final availableTemplates =
+          (templatesResult as List<dynamic>).cast<String>();
       final target = targetTemplate.toLowerCase();
-      
+
       // 使用多种匹配算法
       final suggestions = <String>[];
-      
+
       // 1. 精确部分匹配
       for (final template in availableTemplates) {
         if (template.toLowerCase().contains(target) ||
@@ -146,20 +161,20 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
           suggestions.add(template);
         }
       }
-      
+
       // 2. 模糊匹配（基于编辑距离）
       for (final template in availableTemplates) {
         if (suggestions.contains(template)) continue;
-        
+
         final distance = _calculateEditDistance(target, template.toLowerCase());
         final maxLength = math.max(target.length, template.length);
         final similarity = 1.0 - (distance / maxLength);
-        
+
         if (similarity > 0.6) {
           suggestions.add(template);
         }
       }
-      
+
       return suggestions.take(5).toList();
     } catch (e) {
       return [];
@@ -185,10 +200,11 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
         if (s1[i - 1] == s2[j - 1]) {
           dp[i][j] = dp[i - 1][j - 1];
         } else {
-          dp[i][j] = 1 + math.min(
-            math.min(dp[i - 1][j], dp[i][j - 1]),
-            dp[i - 1][j - 1],
-          );
+          dp[i][j] = 1 +
+              math.min(
+                math.min(dp[i - 1][j], dp[i][j - 1]),
+                dp[i - 1][j - 1],
+              );
         }
       }
     }
@@ -200,7 +216,8 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
   Future<bool> _tryCreateBasicTemplate(String templateName) async {
     try {
       cli_logger.Logger.info('尝试自动创建基础模板: $templateName');
-      final dynamic result = await templateEngine.createBaseTemplate(templateName);
+      final dynamic result =
+          await templateEngine.createBaseTemplate(templateName);
       return result as bool? ?? false;
     } catch (e) {
       cli_logger.Logger.warning('自动创建模板失败: $e');
@@ -222,10 +239,12 @@ class AdaptiveTemplateNotFoundStrategy implements ErrorRecoveryStrategy {
 
 /// 智能变量恢复策略
 class SmartVariableRecoveryStrategy implements ErrorRecoveryStrategy {
+  /// 创建智能变量恢复策略实例
   SmartVariableRecoveryStrategy(this.templateEngine, this.pattern);
 
   /// 模板引擎实例
   final dynamic templateEngine;
+
   /// 错误模式
   final ErrorPattern pattern;
 
@@ -237,7 +256,8 @@ class SmartVariableRecoveryStrategy implements ErrorRecoveryStrategy {
   @override
   Future<ErrorRecoveryResult> recover(TemplateEngineException error) async {
     try {
-      final validationErrors = error.details?['validationErrors'] as Map<String, String>?;
+      final validationErrors =
+          error.details?['validationErrors'] as Map<String, String>?;
       if (validationErrors == null || validationErrors.isEmpty) {
         return ErrorRecoveryResult.createFailure('无法获取验证错误详情');
       }
@@ -258,13 +278,13 @@ class SmartVariableRecoveryStrategy implements ErrorRecoveryStrategy {
 
       if (recoveredVariables.isNotEmpty) {
         return ErrorRecoveryResult.createSuccess(
-          message: '成功恢复 ${recoveredVariables.length} 个变量: ${recoveryMessages.join(", ")}',
+          message: '成功恢复 ${recoveredVariables.length} 个变量: '
+              '${recoveryMessages.join(", ")}',
           value: recoveredVariables,
         );
       }
 
       return ErrorRecoveryResult.createFailure('无法恢复任何变量');
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('变量恢复异常: $e');
     }
@@ -318,7 +338,7 @@ class SmartVariableRecoveryStrategy implements ErrorRecoveryStrategy {
     if (errorMsg.contains('空') || errorMsg.contains('empty')) {
       return 'auto_$varName';
     }
-    
+
     if (errorMsg.contains('格式') || errorMsg.contains('format')) {
       if (varName.toLowerCase().contains('id')) {
         return 'auto_${varName}_${DateTime.now().millisecondsSinceEpoch}';
@@ -327,13 +347,14 @@ class SmartVariableRecoveryStrategy implements ErrorRecoveryStrategy {
         return StringUtils.toPascalCase('auto_$varName');
       }
     }
-    
+
     return 'auto_value';
   }
 }
 
 /// 智能文件系统恢复策略
 class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
+  /// 创建智能文件系统恢复策略实例
   IntelligentFileSystemRecoveryStrategy(this.pattern);
 
   /// 错误模式
@@ -342,7 +363,7 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
   @override
   bool canHandle(TemplateEngineErrorType errorType) {
     return errorType == TemplateEngineErrorType.fileSystemError ||
-           errorType == TemplateEngineErrorType.permissionError;
+        errorType == TemplateEngineErrorType.permissionError;
   }
 
   @override
@@ -365,7 +386,6 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
         default:
           return await _attemptGenericRecovery(operation, targetPath);
       }
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('文件系统恢复异常: $e');
     }
@@ -393,7 +413,6 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       }
 
       return ErrorRecoveryResult.createFailure('无法恢复目录创建');
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('目录创建恢复失败: $e');
     }
@@ -418,7 +437,6 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       }
 
       return ErrorRecoveryResult.createFailure('无法恢复文件写入');
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('文件写入恢复失败: $e');
     }
@@ -444,7 +462,6 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       }
 
       return ErrorRecoveryResult.createFailure('无法恢复文件读取');
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('文件读取恢复失败: $e');
     }
@@ -457,14 +474,13 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
   ) async {
     try {
       cli_logger.Logger.info('尝试通用文件系统恢复: $operation -> $targetPath');
-      
+
       // 基本的重试机制
       await Future<void>.delayed(const Duration(milliseconds: 100));
-      
+
       return ErrorRecoveryResult.createSuccess(
         message: '完成通用文件系统恢复尝试',
       );
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('通用恢复失败: $e');
     }
@@ -478,13 +494,13 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final parentDir = path.dirname(originalPath);
       final dirName = path.basename(originalPath);
-      
+
       final altPath = path.join(parentDir, '${dirName}_$timestamp');
-      
+
       if (!Directory(altPath).existsSync()) {
         return altPath;
       }
-      
+
       return null;
     } catch (e) {
       return null;
@@ -498,13 +514,13 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
       final dir = path.dirname(originalPath);
       final fileName = path.basenameWithoutExtension(originalPath);
       final extension = path.extension(originalPath);
-      
+
       final altPath = path.join(dir, '${fileName}_$timestamp$extension');
-      
+
       if (!File(altPath).existsSync()) {
         return altPath;
       }
-      
+
       return null;
     } catch (e) {
       return null;
@@ -527,9 +543,9 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
     try {
       final dir = Directory(path.dirname(targetPath));
       final targetName = path.basename(targetPath);
-      
+
       if (!dir.existsSync()) return [];
-      
+
       final files = <String>[];
       await for (final entity in dir.list()) {
         if (entity is File) {
@@ -540,7 +556,7 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
           }
         }
       }
-      
+
       return files;
     } catch (e) {
       return [];
@@ -562,10 +578,12 @@ class IntelligentFileSystemRecoveryStrategy implements ErrorRecoveryStrategy {
 
 /// Mason错误恢复策略
 class MasonErrorRecoveryStrategy implements ErrorRecoveryStrategy {
+  /// 创建Mason错误恢复策略实例
   MasonErrorRecoveryStrategy(this.templateEngine, this.pattern);
 
   /// 模板引擎实例
   final dynamic templateEngine;
+
   /// 错误模式
   final ErrorPattern pattern;
 
@@ -578,7 +596,7 @@ class MasonErrorRecoveryStrategy implements ErrorRecoveryStrategy {
   Future<ErrorRecoveryResult> recover(TemplateEngineException error) async {
     try {
       final operation = error.details?['operation'] as String?;
-      
+
       switch (operation) {
         case 'fromBrick':
           return await _recoverBrickLoading(error);
@@ -587,49 +605,51 @@ class MasonErrorRecoveryStrategy implements ErrorRecoveryStrategy {
         default:
           return await _recoverGenericMasonError(error);
       }
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('Mason错误恢复异常: $e');
     }
   }
 
   /// 恢复Brick加载错误
-  Future<ErrorRecoveryResult> _recoverBrickLoading(TemplateEngineException error) async {
+  Future<ErrorRecoveryResult> _recoverBrickLoading(
+    TemplateEngineException error,
+  ) async {
     try {
       // 1. 清理并重新加载模板缓存
       templateEngine.clearCache();
-      
+
       // 2. 等待一段时间后重试
       await Future<void>.delayed(const Duration(milliseconds: 500));
-      
+
       return ErrorRecoveryResult.createSuccess(
         message: '清理缓存并准备重试Brick加载',
       );
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('Brick加载恢复失败: $e');
     }
   }
 
   /// 恢复生成错误
-  Future<ErrorRecoveryResult> _recoverGeneration(TemplateEngineException error) async {
+  Future<ErrorRecoveryResult> _recoverGeneration(
+    TemplateEngineException error,
+  ) async {
     try {
       return ErrorRecoveryResult.createSuccess(
         message: '准备重试Mason生成操作',
       );
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('生成错误恢复失败: $e');
     }
   }
 
   /// 恢复通用Mason错误
-  Future<ErrorRecoveryResult> _recoverGenericMasonError(TemplateEngineException error) async {
+  Future<ErrorRecoveryResult> _recoverGenericMasonError(
+    TemplateEngineException error,
+  ) async {
     try {
       return ErrorRecoveryResult.createSuccess(
         message: '执行通用Mason错误恢复',
       );
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('通用Mason错误恢复失败: $e');
     }
@@ -638,8 +658,10 @@ class MasonErrorRecoveryStrategy implements ErrorRecoveryStrategy {
 
 /// 网络错误恢复策略
 class NetworkErrorRecoveryStrategy implements ErrorRecoveryStrategy {
+  /// 创建网络错误恢复策略实例
   NetworkErrorRecoveryStrategy(this.pattern);
 
+  /// 错误模式
   final ErrorPattern pattern;
 
   @override
@@ -661,7 +683,6 @@ class NetworkErrorRecoveryStrategy implements ErrorRecoveryStrategy {
       return ErrorRecoveryResult.createSuccess(
         message: '启用离线模式，使用本地资源',
       );
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('网络错误恢复失败: $e');
     }
@@ -681,8 +702,10 @@ class NetworkErrorRecoveryStrategy implements ErrorRecoveryStrategy {
 
 /// 后备恢复策略
 class FallbackRecoveryStrategy implements ErrorRecoveryStrategy {
+  /// 创建后备恢复策略实例
   FallbackRecoveryStrategy(this.pattern);
 
+  /// 错误模式
   final ErrorPattern pattern;
 
   @override
@@ -694,16 +717,13 @@ class FallbackRecoveryStrategy implements ErrorRecoveryStrategy {
   Future<ErrorRecoveryResult> recover(TemplateEngineException error) async {
     try {
       cli_logger.Logger.info('使用后备恢复策略: ${error.type}');
-      
+
       // 基本的重试建议
       return ErrorRecoveryResult.createSuccess(
         message: '建议检查错误详情并手动重试: ${error.message}',
       );
-
     } catch (e) {
       return ErrorRecoveryResult.createFailure('后备恢复策略失败: $e');
     }
   }
 }
-
-

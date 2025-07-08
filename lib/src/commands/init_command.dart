@@ -27,27 +27,27 @@ class InitCommand extends BaseCommand {
   InitCommand() {
     argParser
       ..addOption(
-      'name',
-      abbr: 'n',
-      help: '工作空间名称',
+        'name',
+        abbr: 'n',
+        help: '工作空间名称',
       )
       ..addOption(
-      'description',
-      abbr: 'd',
-      help: '工作空间描述',
+        'description',
+        abbr: 'd',
+        help: '工作空间描述',
       )
       ..addOption(
-      'author',
-      abbr: 'a',
-      help: '默认作者名称',
-      defaultsTo: 'lgnorant-lu',
+        'author',
+        abbr: 'a',
+        help: '默认作者名称',
+        defaultsTo: 'lgnorant-lu',
       )
       ..addFlag(
-      'force',
-      abbr: 'f',
-      help: '强制初始化（覆盖现有配置）',
-      negatable: false,
-    );
+        'force',
+        abbr: 'f',
+        help: '强制初始化（覆盖现有配置）',
+        negatable: false,
+      );
   }
   @override
   String get name => 'init';
@@ -68,37 +68,34 @@ class InitCommand extends BaseCommand {
       return 0;
     }
 
-    // 创建进度管理器
-    final progress = ProgressManager();
-
-    // 添加初始化任务并开始进度跟踪
-    progress
+    // 创建进度管理器并添加初始化任务
+    final progress = ProgressManager()
       ..addTasks([
-      {
-        'id': 'config_gathering',
-        'name': '收集配置信息',
-        'description': '获取工作空间名称、描述和作者信息',
-      },
-      {
-        'id': 'config_validation',
-        'name': '验证配置',
-        'description': '验证工作空间配置的有效性',
-      },
-      {
-        'id': 'user_confirmation',
-        'name': '用户确认',
-        'description': '显示配置信息并确认初始化',
-      },
-      {
-        'id': 'workspace_creation',
-        'name': '创建工作空间',
-        'description': '创建目录结构和配置文件',
-      },
-      {
-        'id': 'finalization',
-        'name': '完成初始化',
-        'description': '生成示例文件和文档',
-      },
+        {
+          'id': 'config_gathering',
+          'name': '收集配置信息',
+          'description': '获取工作空间名称、描述和作者信息',
+        },
+        {
+          'id': 'config_validation',
+          'name': '验证配置',
+          'description': '验证工作空间配置的有效性',
+        },
+        {
+          'id': 'user_confirmation',
+          'name': '用户确认',
+          'description': '显示配置信息并确认初始化',
+        },
+        {
+          'id': 'workspace_creation',
+          'name': '创建工作空间',
+          'description': '创建目录结构和配置文件',
+        },
+        {
+          'id': 'finalization',
+          'name': '完成初始化',
+          'description': '生成示例文件和文档',
+        },
       ])
       ..start(title: 'Ming Status 工作空间初始化');
 
@@ -223,8 +220,7 @@ class InitCommand extends BaseCommand {
       // 创建README.md
       final readmeFile = File('$workingDirectory/README.md');
       if (!readmeFile.existsSync()) {
-        await readmeFile.writeAsString(
-'''
+        await readmeFile.writeAsString('''
 # ${path.basename(workingDirectory)}
 
 这是一个使用 Ming Status CLI 创建的模块化项目。

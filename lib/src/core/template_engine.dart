@@ -13,11 +13,21 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:mason/mason.dart' hide HookContext;
+import 'package:ming_status_cli/src/core/extensions/template_engine_extensions.dart';
+import 'package:ming_status_cli/src/core/managers/async_manager.dart';
+import 'package:ming_status_cli/src/core/managers/cache_manager.dart';
+import 'package:ming_status_cli/src/core/managers/error_recovery_manager.dart';
+import 'package:ming_status_cli/src/core/managers/hook_manager.dart';
+import 'package:ming_status_cli/src/core/strategies/default_hooks.dart';
+import 'package:ming_status_cli/src/core/strategies/hook_implementations.dart'
+    as hook_impl;
+import 'package:ming_status_cli/src/core/template_exceptions.dart';
+// 导入分离的模块
+import 'package:ming_status_cli/src/core/template_models.dart';
 import 'package:ming_status_cli/src/core/template_parameter_system.dart';
 import 'package:ming_status_cli/src/models/template_variable.dart';
 import 'package:ming_status_cli/src/utils/file_utils.dart';
@@ -25,20 +35,8 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:ming_status_cli/src/utils/string_utils.dart';
 import 'package:path/path.dart' as path;
 
-// 导入分离的模块
-import 'package:ming_status_cli/src/core/template_models.dart';
-import 'package:ming_status_cli/src/core/template_exceptions.dart';
-import 'package:ming_status_cli/src/core/managers/async_manager.dart';
-import 'package:ming_status_cli/src/core/managers/cache_manager.dart';
-import 'package:ming_status_cli/src/core/managers/error_recovery_manager.dart';
-import 'package:ming_status_cli/src/core/managers/hook_manager.dart';
-import 'package:ming_status_cli/src/core/managers/ux_manager.dart';
-import 'package:ming_status_cli/src/core/strategies/default_hooks.dart';
-import 'package:ming_status_cli/src/core/strategies/hook_implementations.dart' as hook_impl;
-import 'package:ming_status_cli/src/core/extensions/template_engine_extensions.dart';
-
 /// 模板引擎管理器
-/// 
+///
 /// 企业级模板引擎，负责模板的完整生命周期管理，包括：
 /// - 模板加载、验证和缓存管理
 /// - 高性能的代码生成和文件处理
@@ -47,12 +45,12 @@ import 'package:ming_status_cli/src/core/extensions/template_engine_extensions.d
 /// - 异步生成和批量处理
 /// - 模板兼容性检查和版本管理
 /// - 用户体验优化和进度反馈
-/// 
+///
 /// 支持Mason模板格式，提供丰富的变量处理、继承机制和插件扩展能力。
 /// 设计用于高频使用场景，具备完善的缓存策略和性能监控。
 class TemplateEngine implements BaseTemplateEngine {
   /// 创建模板引擎实例
-  /// 
+  ///
   /// [workingDirectory] 工作目录路径，用于确定模板和输出文件的基础路径
   /// 默认为当前目录
   TemplateEngine({String? workingDirectory})
@@ -90,7 +88,7 @@ class TemplateEngine implements BaseTemplateEngine {
 
   /// Mason生成器缓存
   final Map<String, MasonGenerator> _generatorCache = {};
-  
+
   /// 模板继承缓存
   final Map<String, TemplateInheritance> _inheritanceCache = {};
 
@@ -108,14 +106,14 @@ class TemplateEngine implements BaseTemplateEngine {
   final Map<String, Duration> _performanceMetrics = {};
 
   /// 初始化模板引擎
-  /// 
+  ///
   /// 执行模板引擎的初始化流程，包括缓存预热、钩子注册等准备工作。
   /// 建议在使用模板引擎功能前调用此方法以获得最佳性能。
-  /// 
+  ///
   /// 参数：
   /// - [templatesPath] 模板目录路径（可选，默认使用工作目录下的templates文件夹）
   /// - [configManager] 配置管理器实例（可选）
-  /// 
+  ///
   /// 抛出：
   /// - [TemplateEngineException] 当初始化过程中发生错误时
   Future<void> initialize({
@@ -124,13 +122,13 @@ class TemplateEngine implements BaseTemplateEngine {
   }) async {
     try {
       cli_logger.Logger.info('正在初始化模板引擎...');
-      
+
       // 预热缓存
       await cacheManager.warmUpCache();
-      
+
       // 注册默认钩子
       registerDefaultHooks();
-      
+
       cli_logger.Logger.success('模板引擎初始化完成');
     } catch (e) {
       cli_logger.Logger.error('模板引擎初始化失败', error: e);
@@ -139,13 +137,13 @@ class TemplateEngine implements BaseTemplateEngine {
   }
 
   /// 获取可用模板列表
-  /// 
+  ///
   /// 扫描模板目录，返回所有有效的Mason模板名称列表。
   /// 只返回包含有效brick.yaml文件的模板目录。
-  /// 
+  ///
   /// 返回：
   /// - [List<String>] 可用模板名称列表，如果目录不存在或没有有效模板则返回空列表
-  /// 
+  ///
   /// 示例：
   /// ```dart
   /// final templates = await engine.getAvailableTemplates();
@@ -195,25 +193,25 @@ class TemplateEngine implements BaseTemplateEngine {
   }
 
   /// 加载模板生成器（优化版本）
-  /// 
+  ///
   /// 加载指定名称的模板并创建Mason生成器实例。
   /// 包含智能缓存、重试机制和错误恢复功能。
-  /// 
+  ///
   /// 特性：
   /// - 自动缓存已加载的生成器，提升后续访问性能
   /// - 内置重试机制，提高加载成功率
   /// - 智能错误恢复，提供模板建议和修复提示
   /// - 性能监控和指标记录
-  /// 
+  ///
   /// 参数：
   /// - [templateName] 模板名称，必须是有效的已存在模板
-  /// 
+  ///
   /// 返回：
   /// - [MasonGenerator?] 模板生成器实例，加载失败时返回null
-  /// 
+  ///
   /// 抛出：
   /// - [TemplateEngineException] 当模板不存在、格式无效或加载失败时
-  /// 
+  ///
   /// 示例：
   /// ```dart
   /// final generator = await engine.loadTemplate('flutter_package');
@@ -223,7 +221,7 @@ class TemplateEngine implements BaseTemplateEngine {
   /// ```
   Future<MasonGenerator?> loadTemplate(String templateName) async {
     final stopwatch = Stopwatch()..start();
-    
+
     try {
       // 检查缓存
       if (_generatorCache.containsKey(templateName)) {
@@ -235,13 +233,13 @@ class TemplateEngine implements BaseTemplateEngine {
       // 验证模板存在性
       if (!isTemplateAvailable(templateName)) {
         final error = TemplateEngineException.templateNotFound(templateName);
-        
+
         // 尝试错误恢复
         final recoveryResult = await errorRecoveryManager.tryRecover(error);
         if (recoveryResult.success) {
           cli_logger.Logger.info('模板恢复建议: ${recoveryResult.message}');
         }
-        
+
         throw error;
       }
 
@@ -255,13 +253,13 @@ class TemplateEngine implements BaseTemplateEngine {
           // 检查brick.yaml是否有效
           await _validateBrickYaml(templatePath);
 
-      // 创建Mason生成器
-      final brick = Brick.path(templatePath);
+          // 创建Mason生成器
+          final brick = Brick.path(templatePath);
           generator = await MasonGenerator.fromBrick(brick);
-          
+
           // 预热generator - 获取变量信息
           final _ = generator.vars;
-          
+
           break; // 成功加载，跳出重试循环
         } on MasonException catch (e) {
           if (attempt == _maxRetries) {
@@ -271,7 +269,7 @@ class TemplateEngine implements BaseTemplateEngine {
               recovery: '请检查模板的brick.yaml文件格式是否正确',
             );
           }
-          
+
           cli_logger.Logger.warning(
             '模板加载失败 (尝试 $attempt/$_maxRetries): $e',
           );
@@ -280,7 +278,7 @@ class TemplateEngine implements BaseTemplateEngine {
           if (attempt == _maxRetries) {
             throw TemplateEngineException.masonError('loadTemplate', e);
           }
-          
+
           cli_logger.Logger.warning(
             '模板加载异常 (尝试 $attempt/$_maxRetries): $e',
           );
@@ -301,11 +299,10 @@ class TemplateEngine implements BaseTemplateEngine {
 
       _recordPerformance('loadTemplate_new', stopwatch.elapsed);
       cli_logger.Logger.success(
-          '模板加载成功: $templateName (${stopwatch.elapsedMilliseconds}ms)',
+        '模板加载成功: $templateName (${stopwatch.elapsedMilliseconds}ms)',
       );
-      
-      return generator;
 
+      return generator;
     } on TemplateEngineException {
       _recordPerformance('loadTemplate_error', stopwatch.elapsed);
       rethrow;
@@ -319,7 +316,7 @@ class TemplateEngine implements BaseTemplateEngine {
   Future<void> _validateBrickYaml(String templatePath) async {
     try {
       final brickPath = path.join(templatePath, 'brick.yaml');
-      
+
       if (!FileUtils.fileExists(brickPath)) {
         throw TemplateEngineException(
           type: TemplateEngineErrorType.invalidTemplateFormat,
@@ -330,7 +327,7 @@ class TemplateEngine implements BaseTemplateEngine {
 
       // 尝试解析YAML文件
       final yamlData = await FileUtils.readYamlFile(brickPath);
-      
+
       // 验证YAML数据不为空
       if (yamlData == null) {
         throw TemplateEngineException(
@@ -339,7 +336,7 @@ class TemplateEngine implements BaseTemplateEngine {
           details: {'path': brickPath},
         );
       }
-      
+
       // 验证必需字段
       if (!yamlData.containsKey('name')) {
         throw TemplateEngineException(
@@ -358,10 +355,9 @@ class TemplateEngine implements BaseTemplateEngine {
           details: {'path': brickDir},
         );
       }
-
     } catch (e) {
       if (e is TemplateEngineException) rethrow;
-      
+
       throw TemplateEngineException(
         type: TemplateEngineErrorType.invalidTemplateFormat,
         message: '验证brick.yaml失败',
@@ -371,26 +367,26 @@ class TemplateEngine implements BaseTemplateEngine {
   }
 
   /// 全面的模板兼容性检查
-  /// 
+  ///
   /// 对指定模板进行多维度兼容性分析，确保模板能在当前环境正常运行。
   /// 提供详细的检查报告，包含错误、警告和优化建议。
-  /// 
+  ///
   /// 检查维度：
   /// - 版本兼容性：CLI、Dart、Mason版本要求
   /// - 依赖兼容性：必需依赖可用性和冲突检测
   /// - 平台兼容性：操作系统和架构支持
   /// - 标准合规性：模板格式和最佳实践验证
-  /// 
+  ///
   /// 参数：
   /// - [templateName] 要检查的模板名称
   /// - [checkVersion] 是否进行版本兼容性检查（默认：true）
   /// - [checkDependencies] 是否检查依赖兼容性（默认：true）
   /// - [checkPlatform] 是否检查平台兼容性（默认：true）
   /// - [checkCompliance] 是否检查标准合规性（默认：true）
-  /// 
+  ///
   /// 返回：
   /// - [CompatibilityCheckResult] 包含详细检查结果的对象
-  /// 
+  ///
   /// 示例：
   /// ```dart
   /// final result = await engine.checkTemplateCompatibility('my_template');
@@ -410,7 +406,7 @@ class TemplateEngine implements BaseTemplateEngine {
     try {
       final templatePath = getTemplatePath(templateName);
       final brickPath = path.join(templatePath, 'brick.yaml');
-      
+
       if (!FileUtils.fileExists(brickPath)) {
         return CompatibilityCheckResult.failure(
           errors: ['模板不存在或brick.yaml文件缺失'],
@@ -483,7 +479,6 @@ class TemplateEngine implements BaseTemplateEngine {
         suggestions: suggestions,
         metadata: metadata,
       );
-
     } catch (e) {
       cli_logger.Logger.error('模板兼容性检查失败', error: e);
       return CompatibilityCheckResult.failure(
@@ -518,21 +513,31 @@ class TemplateEngine implements BaseTemplateEngine {
       const currentCliVersion = '1.0.0'; // 从pubspec.yaml读取实际版本
       if (versionInfo.minCliVersion != null) {
         if (_compareVersions(
-            currentCliVersion, versionInfo.minCliVersion!,) < 0) {
+              currentCliVersion,
+              versionInfo.minCliVersion!,
+            ) <
+            0) {
           errors.add(
             'CLI版本过低: 当前$currentCliVersion < 要求${versionInfo.minCliVersion}',
           );
-          suggestions.add('请升级CLI到${versionInfo.minCliVersion}或更高版本',);
+          suggestions.add(
+            '请升级CLI到${versionInfo.minCliVersion}或更高版本',
+          );
         }
       }
 
       if (versionInfo.maxCliVersion != null) {
         if (_compareVersions(
-            currentCliVersion, versionInfo.maxCliVersion!,) > 0) {
+              currentCliVersion,
+              versionInfo.maxCliVersion!,
+            ) >
+            0) {
           warnings.add(
             'CLI版本可能过高: 当前$currentCliVersion > 建议${versionInfo.maxCliVersion}',
           );
-          suggestions.add('考虑降级CLI或验证模板兼容性',);
+          suggestions.add(
+            '考虑降级CLI或验证模板兼容性',
+          );
         }
       }
 
@@ -540,11 +545,13 @@ class TemplateEngine implements BaseTemplateEngine {
       final currentDartVersion = _getCurrentDartVersion();
       if (currentDartVersion != null) {
         metadata['currentDartVersion'] = currentDartVersion;
-        
+
         if (versionInfo.minDartVersion != null) {
           if (_compareVersions(
-                  currentDartVersion, versionInfo.minDartVersion!,
-                  ) < 0) {
+                currentDartVersion,
+                versionInfo.minDartVersion!,
+              ) <
+              0) {
             errors.add(
               'Dart版本过低: 当前$currentDartVersion < '
               '要求${versionInfo.minDartVersion}',
@@ -557,8 +564,10 @@ class TemplateEngine implements BaseTemplateEngine {
 
         if (versionInfo.maxDartVersion != null) {
           if (_compareVersions(
-                  currentDartVersion, versionInfo.maxDartVersion!,
-                  ) > 0) {
+                currentDartVersion,
+                versionInfo.maxDartVersion!,
+              ) >
+              0) {
             warnings.add(
               'Dart版本可能不兼容: 当前$currentDartVersion > '
               '建议${versionInfo.maxDartVersion}',
@@ -571,11 +580,13 @@ class TemplateEngine implements BaseTemplateEngine {
       final currentMasonVersion = _getCurrentMasonVersion();
       if (currentMasonVersion != null) {
         metadata['currentMasonVersion'] = currentMasonVersion;
-        
+
         if (versionInfo.minMasonVersion != null) {
           if (_compareVersions(
-                  currentMasonVersion, versionInfo.minMasonVersion!,
-                  ) < 0) {
+                currentMasonVersion,
+                versionInfo.minMasonVersion!,
+              ) <
+              0) {
             errors.add(
               'Mason版本过低: 当前$currentMasonVersion < '
               '要求${versionInfo.minMasonVersion}',
@@ -586,7 +597,6 @@ class TemplateEngine implements BaseTemplateEngine {
           }
         }
       }
-
     } catch (e) {
       errors.add('版本兼容性检查失败: $e');
     }
@@ -622,12 +632,12 @@ class TemplateEngine implements BaseTemplateEngine {
       for (final entry in dependencyInfo.requiredDependencies.entries) {
         final dependencyName = entry.key;
         final requiredVersion = entry.value;
-        
+
         final isAvailable = await _checkDependencyAvailability(
           dependencyName,
           requiredVersion,
         );
-        
+
         if (!isAvailable) {
           errors.add('缺少必需依赖: $dependencyName (版本: $requiredVersion)');
           suggestions.add('请安装依赖: dart pub add $dependencyName');
@@ -647,18 +657,17 @@ class TemplateEngine implements BaseTemplateEngine {
       for (final entry in dependencyInfo.optionalDependencies.entries) {
         final dependencyName = entry.key;
         final version = entry.value;
-        
+
         final isAvailable = await _checkDependencyAvailability(
           dependencyName,
           version,
         );
-        
+
         if (!isAvailable) {
           warnings.add('可选依赖不可用: $dependencyName (版本: $version)');
           suggestions.add('考虑安装可选依赖以获得完整功能: dart pub add $dependencyName');
         }
       }
-
     } catch (e) {
       errors.add('依赖兼容性检查失败: $e');
     }
@@ -727,7 +736,6 @@ class TemplateEngine implements BaseTemplateEngine {
           suggestions.add('某些功能可能受限，因为缺少: $feature');
         }
       }
-
     } catch (e) {
       errors.add('平台兼容性检查失败: $e');
     }
@@ -755,7 +763,7 @@ class TemplateEngine implements BaseTemplateEngine {
       // 检查必需字段
       final requiredFields = ['name', 'description', 'version'];
       for (final field in requiredFields) {
-        if (!yamlData.containsKey(field) || 
+        if (!yamlData.containsKey(field) ||
             StringUtils.isBlank(yamlData[field]?.toString())) {
           errors.add('缺少必需字段: $field');
           suggestions.add('请在brick.yaml中添加$field字段');
@@ -779,13 +787,13 @@ class TemplateEngine implements BaseTemplateEngine {
           final varConfig = Map<String, dynamic>.from(
             entry.value as Map? ?? {},
           );
-          
+
           // 检查变量类型
           if (!varConfig.containsKey('type')) {
             warnings.add('变量缺少类型定义: $varName');
             suggestions.add('建议为变量$varName添加type字段');
           }
-          
+
           // 检查变量描述
           if (!varConfig.containsKey('description')) {
             warnings.add('变量缺少描述: $varName');
@@ -799,7 +807,7 @@ class TemplateEngine implements BaseTemplateEngine {
       if (FileUtils.directoryExists(brickDir)) {
         final fileCount = await _countTemplateFiles(templatePath);
         metadata['templateFileCount'] = fileCount;
-        
+
         if (fileCount == 0) {
           warnings.add('__brick__目录为空');
           suggestions.add('请添加模板文件到__brick__目录');
@@ -826,7 +834,6 @@ class TemplateEngine implements BaseTemplateEngine {
         warnings.add('缺少CHANGELOG.md文件');
         suggestions.add('建议添加CHANGELOG.md文件记录版本变更');
       }
-
     } catch (e) {
       errors.add('模板合规性检查失败: $e');
     }
@@ -848,21 +855,20 @@ class TemplateEngine implements BaseTemplateEngine {
     try {
       final brickPath = path.join(templatePath, 'brick.yaml');
       final yamlData = await FileUtils.readYamlFile(brickPath);
-      
+
       // 检查YAML数据是否有效
       if (yamlData == null) {
         cli_logger.Logger.warning('无法读取模板元数据: $templateName');
         return;
       }
-      
+
       // 添加额外的元数据
       final metadata = Map<String, dynamic>.from(yamlData);
       metadata['_cached_at'] = DateTime.now().toIso8601String();
       metadata['_template_path'] = templatePath;
       metadata['_file_count'] = await _countTemplateFiles(templatePath);
-      
+
       _metadataCache[templateName] = metadata;
-      
     } catch (e) {
       cli_logger.Logger.warning('缓存模板元数据失败: $e');
     }
@@ -873,10 +879,10 @@ class TemplateEngine implements BaseTemplateEngine {
     try {
       final brickDir = path.join(templatePath, '__brick__');
       if (!FileUtils.directoryExists(brickDir)) return 0;
-      
+
       var count = 0;
       final entities = FileUtils.listDirectory(brickDir);
-      
+
       for (final entity in entities) {
         if (entity is File) {
           count++;
@@ -885,12 +891,11 @@ class TemplateEngine implements BaseTemplateEngine {
           count += await _countTemplateFiles(entity.path);
         }
       }
-      
+
       return count;
     } catch (e) {
       return 0;
     }
-
   }
 
   /// 记录性能指标
@@ -907,7 +912,7 @@ class TemplateEngine implements BaseTemplateEngine {
     bool overwrite = false,
   }) async {
     final stopwatch = Stopwatch()..start();
-    
+
     try {
       cli_logger.Logger.info('正在生成模块: $templateName -> $outputPath');
 
@@ -916,7 +921,7 @@ class TemplateEngine implements BaseTemplateEngine {
         templateName: templateName,
         variables: variables,
       );
-      
+
       if (validationErrors.isNotEmpty) {
         final error = TemplateEngineException.variableValidationError(
           validationErrors,
@@ -958,28 +963,26 @@ class TemplateEngine implements BaseTemplateEngine {
         '模块生成完成: $outputPath (${stopwatch.elapsedMilliseconds}ms)',
       );
       return true;
-
     } on TemplateEngineException catch (e) {
       _recordPerformance('generateModule_error', stopwatch.elapsed);
-      
+
       // 尝试错误恢复
       final recoveryResult = await errorRecoveryManager.tryRecover(e);
       if (recoveryResult.success) {
         cli_logger.Logger.info('错误恢复建议: ${recoveryResult.message}');
       }
-      
+
       cli_logger.Logger.error('模块生成失败: ${e.message}');
       if (e.recovery != null) {
         cli_logger.Logger.info('建议: ${e.recovery}');
       }
       return false;
-      
     } catch (e) {
       _recordPerformance('generateModule_error', stopwatch.elapsed);
       cli_logger.Logger.error('模块生成失败', error: e);
-        return false;
+      return false;
     }
-      }
+  }
 
   /// 创建输出目录（带错误恢复）
   Future<void> _createOutputDirectoryWithRecovery(String outputPath) async {
@@ -991,13 +994,13 @@ class TemplateEngine implements BaseTemplateEngine {
         outputPath,
         e,
       );
-      
+
       // 尝试恢复
       final recoveryResult = await errorRecoveryManager.tryRecover(error);
       if (!recoveryResult.success) {
         throw error;
       }
-      
+
       // 重新尝试创建目录
       try {
         await FileUtils.createDirectory(outputPath);
@@ -1019,17 +1022,16 @@ class TemplateEngine implements BaseTemplateEngine {
   ) async {
     for (var attempt = 1; attempt <= _maxRetries; attempt++) {
       try {
-      // 准备生成上下文
-      final target = DirectoryGeneratorTarget(Directory(outputPath));
+        // 准备生成上下文
+        final target = DirectoryGeneratorTarget(Directory(outputPath));
 
-      // 执行代码生成
-      await generator.generate(target, vars: variables);
+        // 执行代码生成
+        await generator.generate(target, vars: variables);
 
         // 验证生成结果
         await _validateGenerationResult(outputPath);
-        
+
         return; // 成功，退出重试循环
-        
       } on MasonException catch (e) {
         if (attempt == _maxRetries) {
           throw TemplateEngineException.masonError(
@@ -1038,16 +1040,15 @@ class TemplateEngine implements BaseTemplateEngine {
             recovery: '请检查模板变量是否正确，或模板文件是否有效',
           );
         }
-        
+
         cli_logger.Logger.warning(
           'Mason生成失败 (尝试 $attempt/$_maxRetries): $e',
         );
-        
+
         // 清理失败的生成结果
         await _cleanupFailedGeneration(outputPath);
         await Future<void>.delayed(_retryDelay);
-        
-    } catch (e) {
+      } catch (e) {
         if (attempt == _maxRetries) {
           throw TemplateEngineException(
             type: TemplateEngineErrorType.unknown,
@@ -1055,11 +1056,11 @@ class TemplateEngine implements BaseTemplateEngine {
             innerException: e,
           );
         }
-        
+
         cli_logger.Logger.warning(
           '生成异常 (尝试 $attempt/$_maxRetries): $e',
         );
-        
+
         await _cleanupFailedGeneration(outputPath);
         await Future<void>.delayed(_retryDelay);
       }
@@ -1093,7 +1094,7 @@ class TemplateEngine implements BaseTemplateEngine {
       for (final entity in entities) {
         if (entity is File) {
           final content = await entity.readAsString();
-          
+
           // 检查是否还有未替换的变量
           if (content.contains('{{') && content.contains('}}')) {
             cli_logger.Logger.warning(
@@ -1102,10 +1103,9 @@ class TemplateEngine implements BaseTemplateEngine {
           }
         }
       }
-
     } catch (e) {
       if (e is TemplateEngineException) rethrow;
-      
+
       throw TemplateEngineException(
         type: TemplateEngineErrorType.unknown,
         message: '验证生成结果失败',
@@ -1380,7 +1380,7 @@ class {{class_name}} {
   /// 预热引擎（加载常用模板）
   Future<void> warmup({List<String>? templateNames}) async {
     final stopwatch = Stopwatch()..start();
-    
+
     try {
       final templates = templateNames ?? await getAvailableTemplates();
       cli_logger.Logger.info('预热模板引擎，加载 ${templates.length} 个模板...');
@@ -1401,7 +1401,7 @@ class {{class_name}} {
 
       stopwatch.stop();
       _recordPerformance('warmup', stopwatch.elapsed);
-      
+
       cli_logger.Logger.success(
         '模板引擎预热完成: $successCount/${templates.length} 个模板 '
         '(${stopwatch.elapsedMilliseconds}ms)',
@@ -1430,7 +1430,7 @@ class {{class_name}} {
   }
 
   /// 批量兼容性检查模板（增强版本）
-  Future<Map<String, CompatibilityCheckResult>> 
+  Future<Map<String, CompatibilityCheckResult>>
       validateAllTemplatesCompatibility({
     bool checkVersion = true,
     bool checkDependencies = true,
@@ -1501,7 +1501,7 @@ class {{class_name}} {
 
       // 模板兼容性健康检查
       final compatibilityResults = await validateAllTemplatesCompatibility();
-      
+
       var compatibleCount = 0;
       var totalErrors = 0;
       var totalWarnings = 0;
@@ -1521,7 +1521,7 @@ class {{class_name}} {
           'compatible': result.isCompatible,
           'errors': result.errors.length,
           'warnings': result.warnings.length,
-          'platform_supported': 
+          'platform_supported':
               (result.metadata['currentPlatform'] as Object?) != null,
         };
       }
@@ -1530,8 +1530,8 @@ class {{class_name}} {
       health['checks']['template_compatibility'] = {
         'total_templates': compatibilityResults.length,
         'compatible_templates': compatibleCount,
-        'compatibility_rate': compatibilityResults.isEmpty 
-            ? 0.0 
+        'compatibility_rate': compatibilityResults.isEmpty
+            ? 0.0
             : (compatibleCount / compatibilityResults.length * 100)
                 .toStringAsFixed(1),
         'total_errors': totalErrors,
@@ -1560,7 +1560,6 @@ class {{class_name}} {
           '模板兼容性率较低: ${(compatibilityRate * 100).toStringAsFixed(1)}%',
         );
       }
-
     } catch (e) {
       health['errors'].add('模板系统健康检查失败: $e');
       health['status'] = 'unhealthy';
@@ -1591,9 +1590,8 @@ class {{class_name}} {
       final templatesPath = path.join(workingDirectory, 'templates');
       if (!FileUtils.directoryExists(templatesPath)) {
         health['warnings'].add('模板目录不存在: $templatesPath');
-        health['status'] = health['status'] == 'unhealthy' 
-            ? 'unhealthy' 
-            : 'warning';
+        health['status'] =
+            health['status'] == 'unhealthy' ? 'unhealthy' : 'warning';
       } else {
         health['checks']['templates_directory'] = 'ok';
       }
@@ -1603,7 +1601,8 @@ class {{class_name}} {
       health['checks']['available_templates'] = templates.length;
       if (templates.isEmpty) {
         health['warnings'].add('没有找到可用的模板');
-        health['status'] = health['status'] == 'unhealthy' ? 'unhealthy' : 'warning';
+        health['status'] =
+            health['status'] == 'unhealthy' ? 'unhealthy' : 'warning';
       }
 
       // 检查缓存状态
@@ -1613,10 +1612,9 @@ class {{class_name}} {
       // 检查性能指标
       if (_performanceMetrics.isNotEmpty) {
         final avgMetrics = _calculateAveragePerformance();
-        health['checks']['average_load_time'] = 
+        health['checks']['average_load_time'] =
             avgMetrics['loadTemplate']?.toStringAsFixed(2) ?? 'N/A';
       }
-
     } catch (e) {
       health['errors'].add('健康检查失败: $e');
       health['status'] = 'unhealthy';
@@ -1628,13 +1626,13 @@ class {{class_name}} {
   /// 重建模板缓存
   Future<void> rebuildCache() async {
     cli_logger.Logger.info('正在重建模板缓存...');
-    
+
     // 清理现有缓存
     clearCache();
-    
+
     // 重新加载所有模板
     await warmup();
-    
+
     cli_logger.Logger.success('模板缓存重建完成');
   }
 
@@ -1745,7 +1743,8 @@ class {{class_name}} {
         },
       );
 
-      final postResult = await _executeHooks(HookType.postGeneration, updatedContext);
+      final postResult =
+          await _executeHooks(HookType.postGeneration, updatedContext);
       if (!postResult.success) {
         cli_logger.Logger.warning('后生成钩子执行失败: ${postResult.message}');
       }
@@ -1763,7 +1762,6 @@ class {{class_name}} {
           'hooksExecuted': true,
         },
       );
-
     } catch (e) {
       stopwatch.stop();
       cli_logger.Logger.error('高级生成过程中发生异常', error: e);
@@ -1790,7 +1788,7 @@ class {{class_name}} {
 
     for (var i = 0; i < generationTasks.length; i += concurrency) {
       final batch = generationTasks.skip(i).take(concurrency);
-      
+
       final batchFutures = batch.map((task) async {
         return generateWithHooks(
           templateName: task['templateName'] as String,
@@ -1812,53 +1810,52 @@ class {{class_name}} {
   void registerDefaultHooks() {
     // 注册默认的验证钩子
     hookRegistry.register(DefaultValidationHook());
-    
+
     // 注册默认的日志钩子
     hookRegistry.register(DefaultLoggingHook());
-    
+
     cli_logger.Logger.debug('已注册默认钩子');
   }
 
   /// 执行指定类型的钩子
   Future<HookResult> _executeHooks(
-      HookType type, 
-      HookContext context,
+    HookType type,
+    HookContext context,
   ) async {
     final hooks = hookRegistry.getHooks(type);
     final modifiedVariables = <String, dynamic>{};
-    
+
     for (final hook in hooks) {
       try {
         final result = await hook.execute(context);
-        
+
         if (!result.success) {
           cli_logger.Logger.error(
             '钩子执行失败: ${hook.name} - ${result.message}',
           );
           return result;
         }
-        
+
         if (!result.shouldContinue) {
           cli_logger.Logger.info(
             '钩子请求停止: ${hook.name} - ${result.message}',
           );
           return result;
         }
-        
+
         // 合并修改的变量
         if (result.modifiedVariables != null) {
           modifiedVariables.addAll(result.modifiedVariables!);
         }
-        
       } catch (e) {
         cli_logger.Logger.error('钩子执行异常: ${hook.name}', error: e);
         return HookResult.failure('钩子执行异常: $e');
       }
     }
-    
+
     return HookResult(
-      success: true, 
-      modifiedVariables: 
+      success: true,
+      modifiedVariables:
           modifiedVariables.isNotEmpty ? modifiedVariables : null,
     );
   }
@@ -1881,13 +1878,14 @@ class {{class_name}} {
 
       // 合并变量
       final mergedVariables = Map<String, dynamic>.from(variables);
-      
+
       // 应用基础模板的默认变量
       if (baseInfo.containsKey('vars')) {
-        final baseVars = Map<String, dynamic>.from(baseInfo['vars'] as Map? ?? {});
+        final baseVars =
+            Map<String, dynamic>.from(baseInfo['vars'] as Map? ?? {});
         for (final entry in baseVars.entries) {
           if (!mergedVariables.containsKey(entry.key)) {
-            final varConfig = 
+            final varConfig =
                 Map<String, dynamic>.from(entry.value as Map? ?? {});
             if (varConfig.containsKey('default')) {
               mergedVariables[entry.key] = varConfig['default'];
@@ -1903,7 +1901,6 @@ class {{class_name}} {
         '模板继承处理完成: ${inheritance.baseTemplate} -> $templateName',
       );
       return mergedVariables;
-
     } catch (e) {
       cli_logger.Logger.error('处理模板继承时发生异常', error: e);
       return variables;
@@ -1949,8 +1946,10 @@ class {{class_name}} {
   /// 解析版本信息
   TemplateVersionInfo _parseVersionInfo(Map<String, dynamic> yamlData) {
     final version = yamlData['version']?.toString() ?? '0.1.0';
-    final environment = Map<String, dynamic>.from(yamlData['environment'] as Map? ?? {});
-    final compatibility = Map<String, dynamic>.from(yamlData['compatibility'] as Map? ?? {});
+    final environment =
+        Map<String, dynamic>.from(yamlData['environment'] as Map? ?? {});
+    final compatibility =
+        Map<String, dynamic>.from(yamlData['compatibility'] as Map? ?? {});
 
     return TemplateVersionInfo(
       version: version,
@@ -2016,7 +2015,8 @@ class {{class_name}} {
 
   /// 解析依赖信息
   TemplateDependencyInfo _parseDependencyInfo(Map<String, dynamic> yamlData) {
-    final dependencies = Map<String, dynamic>.from(yamlData['dependencies'] as Map? ?? {});
+    final dependencies =
+        Map<String, dynamic>.from(yamlData['dependencies'] as Map? ?? {});
     final conflicts = (yamlData['conflicts'] as List?)?.cast<dynamic>() ?? [];
 
     final requiredDeps = <String, String>{};
@@ -2024,7 +2024,8 @@ class {{class_name}} {
 
     // 处理必需依赖
     if (dependencies.containsKey('required')) {
-      final required = Map<String, dynamic>.from(dependencies['required'] as Map? ?? {});
+      final required =
+          Map<String, dynamic>.from(dependencies['required'] as Map? ?? {});
       for (final entry in required.entries) {
         requiredDeps[entry.key] = entry.value?.toString() ?? 'any';
       }
@@ -2032,7 +2033,8 @@ class {{class_name}} {
 
     // 处理可选依赖
     if (dependencies.containsKey('optional')) {
-      final optional = Map<String, dynamic>.from(dependencies['optional'] as Map? ?? {});
+      final optional =
+          Map<String, dynamic>.from(dependencies['optional'] as Map? ?? {});
       for (final entry in optional.entries) {
         optionalDeps[entry.key] = entry.value?.toString() ?? 'any';
       }
@@ -2046,13 +2048,23 @@ class {{class_name}} {
   }
 
   /// 检查依赖可用性
-  Future<bool> _checkDependencyAvailability(String dependencyName, String version) async {
+  Future<bool> _checkDependencyAvailability(
+    String dependencyName,
+    String version,
+  ) async {
     try {
       // 这里应该检查pub.dev或本地pubspec.yaml
       // 为了简化，假设常见依赖可用
       final commonDependencies = [
-        'flutter', 'dart', 'path', 'yaml', 'json_annotation',
-        'build_runner', 'test', 'very_good_analysis', 'mason',
+        'flutter',
+        'dart',
+        'path',
+        'yaml',
+        'json_annotation',
+        'build_runner',
+        'test',
+        'very_good_analysis',
+        'mason',
       ];
       return commonDependencies.contains(dependencyName);
     } catch (e) {
@@ -2073,17 +2085,30 @@ class {{class_name}} {
 
   /// 解析平台信息
   TemplatePlatformInfo _parsePlatformInfo(Map<String, dynamic> yamlData) {
-    final platforms = Map<String, dynamic>.from(yamlData['platforms'] as Map? ?? {});
-    
+    final platforms =
+        Map<String, dynamic>.from(yamlData['platforms'] as Map? ?? {});
+
     return TemplatePlatformInfo(
       supportedPlatforms: (platforms['supported'] as List?)
-          ?.cast<dynamic>().map((e) => e.toString()).toList() ?? [],
+              ?.cast<dynamic>()
+              .map((e) => e.toString())
+              .toList() ??
+          [],
       unsupportedPlatforms: (platforms['unsupported'] as List?)
-          ?.cast<dynamic>().map((e) => e.toString()).toList() ?? [],
+              ?.cast<dynamic>()
+              .map((e) => e.toString())
+              .toList() ??
+          [],
       requiredFeatures: (platforms['required_features'] as List?)
-          ?.cast<dynamic>().map((e) => e.toString()).toList() ?? [],
+              ?.cast<dynamic>()
+              .map((e) => e.toString())
+              .toList() ??
+          [],
       optionalFeatures: (platforms['optional_features'] as List?)
-          ?.cast<dynamic>().map((e) => e.toString()).toList() ?? [],
+              ?.cast<dynamic>()
+              .map((e) => e.toString())
+              .toList() ??
+          [],
     );
   }
 
@@ -2124,7 +2149,7 @@ class {{class_name}} {
     final semanticVersionRegex = RegExp(
       r'^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$',
     );
-    
+
     return semanticVersionRegex.hasMatch(version);
   }
 
@@ -2135,14 +2160,14 @@ class {{class_name}} {
 
     stats['total_templates'] = templates.length;
     stats['cached_templates'] = _generatorCache.length;
-    
+
     final templateDetails = <String, Map<String, dynamic>>{};
-    
+
     for (final templateName in templates) {
       try {
-        final metadata = _metadataCache[templateName] ?? 
-                        await getTemplateInfo(templateName);
-        
+        final metadata =
+            _metadataCache[templateName] ?? await getTemplateInfo(templateName);
+
         if (metadata != null) {
           templateDetails[templateName] = {
             'version': metadata['version'] ?? 'unknown',
@@ -2158,13 +2183,15 @@ class {{class_name}} {
         };
       }
     }
-    
+
     stats['templates'] = templateDetails;
     return stats;
   }
 
   /// 获取模板参数系统
-  Future<TemplateParameterSystem> getParameterSystem(String templateName) async {
+  Future<TemplateParameterSystem> getParameterSystem(
+    String templateName,
+  ) async {
     // 检查缓存
     if (_parameterSystemCache.containsKey(templateName)) {
       return _parameterSystemCache[templateName]!;
@@ -2173,7 +2200,7 @@ class {{class_name}} {
     try {
       final templatePath = getTemplatePath(templateName);
       final brickPath = path.join(templatePath, 'brick.yaml');
-      
+
       if (!FileUtils.fileExists(brickPath)) {
         throw TemplateEngineException.templateNotFound(templateName);
       }
@@ -2193,9 +2220,10 @@ class {{class_name}} {
       // 缓存参数系统
       _parameterSystemCache[templateName] = parameterSystem;
 
-      cli_logger.Logger.debug('模板参数系统加载成功: $templateName (${parameterSystem.variableCount} 个变量)');
+      cli_logger.Logger.debug(
+        '模板参数系统加载成功: $templateName (${parameterSystem.variableCount} 个变量)',
+      );
       return parameterSystem;
-
     } catch (e) {
       cli_logger.Logger.error('加载模板参数系统失败: $templateName', error: e);
       if (e is TemplateEngineException) rethrow;
@@ -2233,9 +2261,12 @@ class {{class_name}} {
       cli_logger.Logger.info('开始生成模块: $templateName -> $outputPath');
 
       // 1. 处理模板变量
-      final processingResult = await processTemplateVariables(templateName, variables);
+      final processingResult =
+          await processTemplateVariables(templateName, variables);
       if (!processingResult.success) {
-        cli_logger.Logger.error('变量处理失败: ${processingResult.errors.join(", ")}');
+        cli_logger.Logger.error(
+          '变量处理失败: ${processingResult.errors.join(", ")}',
+        );
         return false;
       }
 
@@ -2253,19 +2284,22 @@ class {{class_name}} {
       );
 
       if (result.success) {
-        cli_logger.Logger.success('模块生成成功: $outputPath (${stopwatch.elapsedMilliseconds}ms)');
-        
+        cli_logger.Logger.success(
+          '模块生成成功: $outputPath (${stopwatch.elapsedMilliseconds}ms)',
+        );
+
         // 记录生成的变量信息
         if (processingResult.generatedVariables.isNotEmpty) {
-          cli_logger.Logger.debug('生成的派生变量: ${processingResult.generatedVariables.keys.join(", ")}');
+          cli_logger.Logger.debug(
+            '生成的派生变量: ${processingResult.generatedVariables.keys.join(", ")}',
+          );
         }
-        
+
         return true;
       } else {
         cli_logger.Logger.error('模块生成失败: ${result.message}');
         return false;
       }
-
     } catch (e) {
       stopwatch.stop();
       cli_logger.Logger.error('模块生成异常', error: e);
@@ -2274,7 +2308,9 @@ class {{class_name}} {
   }
 
   /// 获取模板变量定义
-  Future<List<TemplateVariable>> getTemplateVariableDefinitions(String templateName) async {
+  Future<List<TemplateVariable>> getTemplateVariableDefinitions(
+    String templateName,
+  ) async {
     try {
       final parameterSystem = await getParameterSystem(templateName);
       return parameterSystem.getAllVariableDefinitions();
@@ -2285,7 +2321,9 @@ class {{class_name}} {
   }
 
   /// 获取模板的默认变量值
-  Future<Map<String, dynamic>> getTemplateDefaultValues(String templateName) async {
+  Future<Map<String, dynamic>> getTemplateDefaultValues(
+    String templateName,
+  ) async {
     try {
       final parameterSystem = await getParameterSystem(templateName);
       return parameterSystem.getDefaultValues();
@@ -2340,7 +2378,9 @@ class {{class_name}} {
   }
 
   /// 获取模板变量摘要
-  Future<Map<String, dynamic>> getTemplateVariableSummary(String templateName) async {
+  Future<Map<String, dynamic>> getTemplateVariableSummary(
+    String templateName,
+  ) async {
     try {
       final parameterSystem = await getParameterSystem(templateName);
       return parameterSystem.generateVariableSummary();
@@ -2368,7 +2408,11 @@ class {{class_name}} {
   }
 
   /// 注册条件钩子
-  void registerConditionalHook(String name, String condition, TemplateHook hook) {
+  void registerConditionalHook(
+    String name,
+    String condition,
+    TemplateHook hook,
+  ) {
     final conditionalHook = ConditionalHook(
       name: name,
       condition: condition,
@@ -2404,7 +2448,11 @@ class {{class_name}} {
   }
 
   /// 注册脚本执行钩子
-  void registerScriptHook(hook_impl.ScriptHookConfig config, HookType hookType, {int priority = 100}) {
+  void registerScriptHook(
+    hook_impl.ScriptHookConfig config,
+    HookType hookType, {
+    int priority = 100,
+  }) {
     final scriptHook = hook_impl.ScriptExecutionHook(
       name: 'script_hook_${config.description.hashCode}',
       config: config,
@@ -2455,13 +2503,17 @@ class {{class_name}} {
       'script_execution_hooks': [
         ...preHooks.whereType<hook_impl.ScriptExecutionHook>(),
         ...postHooks.whereType<hook_impl.ScriptExecutionHook>(),
-      ].map((h) => {
-        'name': h.name,
-        'type': h.type.toString(),
-        'priority': h.priority,
-        'description': h.config.description,
-        'script': h.config.scriptPath,
-      },).toList(),
+      ]
+          .map(
+            (h) => {
+              'name': h.name,
+              'type': h.type.toString(),
+              'priority': h.priority,
+              'description': h.config.description,
+              'script': h.config.scriptPath,
+            },
+          )
+          .toList(),
     };
   }
 }

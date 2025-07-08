@@ -37,19 +37,25 @@ class GenerationTask {
 
   /// 任务ID
   final String id;
+
   /// 模板名称
   final String templateName;
+
   /// 输出路径
   final String outputPath;
+
   /// 模板变量
   final Map<String, dynamic> variables;
+
   /// 异步完成器
   final Completer<GenerationResult> completer;
+
   /// 任务优先级
   final int priority;
+
   /// 钩子列表
   final List<TemplateHook>? hooks;
-  
+
   /// 任务创建时间
   DateTime get createdAt => DateTime.now();
 }
@@ -61,18 +67,19 @@ class AsyncTemplateGenerationManager {
 
   /// 模板引擎实例（使用动态类型避免循环依赖）
   final dynamic templateEngine;
-  
+
   /// 最大并发生成数量
   static const int maxConcurrentGenerations = 5;
+
   /// 单个生成任务超时时间
   static const Duration generationTimeout = Duration(minutes: 10);
-  
+
   /// 当前正在执行的生成任务
   final Map<String, Future<GenerationResult>> _activeGenerations = {};
-  
+
   /// 生成任务队列
   final List<GenerationTask> _generationQueue = [];
-  
+
   /// 并发控制信号量
   int _activeTasks = 0;
 
@@ -86,7 +93,7 @@ class AsyncTemplateGenerationManager {
     bool skipQueue = false,
   }) async {
     final taskId = _generateTaskId(templateName, outputPath);
-    
+
     // 检查是否已有相同任务
     if (_activeGenerations.containsKey(taskId)) {
       cli_logger.Logger.debug('重用已有的生成任务: $taskId');
@@ -109,9 +116,12 @@ class AsyncTemplateGenerationManager {
       unawaited(_executeGenerationTask(task));
     } else {
       // 加入队列
-      _generationQueue.add(task);
-      _generationQueue.sort((a, b) => b.priority.compareTo(a.priority));
-      cli_logger.Logger.debug('任务加入队列: $taskId (队列长度: ${_generationQueue.length})');
+      _generationQueue
+        ..add(task)
+        ..sort((a, b) => b.priority.compareTo(a.priority));
+      cli_logger.Logger.debug(
+        '任务加入队列: $taskId (队列长度: ${_generationQueue.length})',
+      );
     }
 
     _activeGenerations[taskId] = completer.future;
@@ -126,23 +136,27 @@ class AsyncTemplateGenerationManager {
   }) async {
     try {
       cli_logger.Logger.info('开始批量异步生成 ${specs.length} 个模板');
-      
-      final futures = specs.map((spec) => generateTemplateAsync(
-        templateName: spec.templateName,
-        outputPath: spec.outputPath,
-        variables: spec.variables,
-        hooks: spec.hooks,
-        priority: spec.priority,
-      ),).toList();
+
+      final futures = specs
+          .map(
+            (spec) => generateTemplateAsync(
+              templateName: spec.templateName,
+              outputPath: spec.outputPath,
+              variables: spec.variables,
+              hooks: spec.hooks,
+              priority: spec.priority,
+            ),
+          )
+          .toList();
 
       if (timeout != null) {
-        final results = await Future.wait(futures, eagerError: !allowPartialFailure)
-            .timeout(timeout);
+        final results =
+            await Future.wait(futures, eagerError: !allowPartialFailure)
+                .timeout(timeout);
         return results;
       } else {
         return await Future.wait(futures, eagerError: !allowPartialFailure);
       }
-
     } catch (e) {
       cli_logger.Logger.error('批量异步生成失败', error: e);
       rethrow;
@@ -155,12 +169,14 @@ class AsyncTemplateGenerationManager {
     int? maxConcurrency,
   }) async* {
     final actualMaxConcurrency = maxConcurrency ?? maxConcurrentGenerations;
-    
-    cli_logger.Logger.info('开始流式生成 ${specs.length} 个模板 (并发度: $actualMaxConcurrency)');
-    
+
+    cli_logger.Logger.info(
+      '开始流式生成 ${specs.length} 个模板 (并发度: $actualMaxConcurrency)',
+    );
+
     // 使用信号量控制并发度
     final semaphore = Semaphore(actualMaxConcurrency);
-    
+
     final futures = specs.map((spec) async {
       await semaphore.acquire();
       try {
@@ -192,20 +208,21 @@ class AsyncTemplateGenerationManager {
       'max_concurrent_generations': maxConcurrentGenerations,
       'queue_utilization': _generationQueue.length / 10, // 假设队列容量为10
       'active_task_ids': _activeGenerations.keys.toList(),
-      'queued_task_priorities': _generationQueue.map((t) => t.priority).toList(),
+      'queued_task_priorities':
+          _generationQueue.map((t) => t.priority).toList(),
     };
   }
 
   /// 取消所有待处理的任务
   Future<void> cancelAllPendingTasks() async {
     final cancelledCount = _generationQueue.length;
-    
+
     // 取消队列中的任务
     for (final task in _generationQueue) {
       task.completer.complete(GenerationResult.failure('任务已取消'));
     }
     _generationQueue.clear();
-    
+
     cli_logger.Logger.info('已取消 $cancelledCount 个待处理任务');
   }
 
@@ -223,26 +240,23 @@ class AsyncTemplateGenerationManager {
   /// 执行生成任务
   Future<void> _executeGenerationTask(GenerationTask task) async {
     _activeTasks++;
-    
+
     try {
       cli_logger.Logger.debug('开始执行生成任务: ${task.id}');
-      
-      final result = await _performGeneration(task)
-          .timeout(generationTimeout);
-      
+
+      final result = await _performGeneration(task).timeout(generationTimeout);
+
       task.completer.complete(result);
-      
     } catch (e) {
       final errorResult = GenerationResult.failure(
         '生成任务执行失败: $e',
         outputPath: task.outputPath,
       );
       task.completer.complete(errorResult);
-      
     } finally {
       _activeTasks--;
-      _activeGenerations.remove(task.id);
-      
+      final _ = _activeGenerations.remove(task.id);
+
       // 处理下一个队列任务
       _processNextQueuedTask();
     }
@@ -254,29 +268,31 @@ class AsyncTemplateGenerationManager {
       // 如果有钩子，使用钩子生成
       final hasHooks = task.hooks != null && task.hooks!.isNotEmpty;
       if (hasHooks) {
-        final dynamic result = await templateEngine.generateWithHooks(
+        final dynamic resultDynamic = await templateEngine.generateWithHooks(
           templateName: task.templateName,
           outputPath: task.outputPath,
           variables: task.variables,
           additionalHooks: task.hooks,
         );
-        return result as GenerationResult;
+        final result = resultDynamic as GenerationResult;
+        return result;
       } else {
         // 标准生成
-        final dynamic successResult = await templateEngine.generateModule(
+        final dynamic successResultDynamic =
+            await templateEngine.generateModule(
           templateName: task.templateName,
           outputPath: task.outputPath,
           variables: task.variables,
         );
-        final success = successResult as bool? ?? false;
-        
+        final successResult = successResultDynamic as bool?;
+        final success = successResult ?? false;
+
         return GenerationResult(
           success: success,
           outputPath: task.outputPath,
           message: success ? '模板生成成功' : '模板生成失败',
         );
       }
-      
     } catch (e) {
       return GenerationResult.failure(
         '模板生成异常: $e',
@@ -287,7 +303,8 @@ class AsyncTemplateGenerationManager {
 
   /// 处理下一个队列任务
   void _processNextQueuedTask() {
-    if (_generationQueue.isNotEmpty && _activeTasks < maxConcurrentGenerations) {
+    if (_generationQueue.isNotEmpty &&
+        _activeTasks < maxConcurrentGenerations) {
       final nextTask = _generationQueue.removeAt(0);
       unawaited(_executeGenerationTask(nextTask));
     }
@@ -312,12 +329,16 @@ class TemplateGenerationSpec {
 
   /// 模板名称
   final String templateName;
+
   /// 输出路径
   final String outputPath;
+
   /// 模板变量映射
   final Map<String, dynamic> variables;
+
   /// 可选的钩子列表
   final List<TemplateHook>? hooks;
+
   /// 任务优先级
   final int priority;
 }
@@ -329,8 +350,10 @@ class Semaphore {
 
   /// 最大许可数量
   final int maxCount;
+
   /// 当前可用许可数量
   int _currentCount;
+
   /// 等待队列
   final List<Completer<void>> _waitQueue = [];
 
@@ -349,11 +372,9 @@ class Semaphore {
   /// 释放许可
   void release() {
     if (_waitQueue.isNotEmpty) {
-      final completer = _waitQueue.removeAt(0);
-      completer.complete();
+      _waitQueue.removeAt(0).complete();
     } else {
       _currentCount++;
     }
   }
 }
-

@@ -17,16 +17,16 @@ import 'dart:io';
 import 'package:ming_status_cli/ming_status_cli.dart';
 
 /// Ming Status CLI 主入口点
-/// 
+///
 /// 这是Ming Status CLI工具的主要可执行文件。
 /// 负责初始化应用程序并处理命令行参数。
 Future<void> main(List<String> arguments) async {
   // 创建CLI应用实例
   final app = MingStatusCliApp();
-  
+
   // 运行应用并获取退出码
   final exitCode = await app.run(arguments);
-  
+
   // 以指定的退出码退出程序
   exit(exitCode);
 }

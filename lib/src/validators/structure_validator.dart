@@ -13,11 +13,11 @@ Change History:
 */
 
 import 'dart:io';
-import 'package:path/path.dart' as path;
-import 'package:yaml/yaml.dart';
 
 import 'package:ming_status_cli/src/core/validator_service.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
+import 'package:path/path.dart' as path;
+import 'package:yaml/yaml.dart';
 
 /// 模块结构验证器
 /// 验证项目的文件结构、目录组织和命名规范
@@ -37,32 +37,31 @@ class StructureValidator extends ModuleValidator {
     ValidationContext context,
   ) async {
     final result = ValidationResult(strictMode: context.strictMode);
-    
+
     try {
       // 基础文件结构验证
       await _validateBasicStructure(result, modulePath);
-      
+
       // pubspec.yaml验证
       await _validatePubspecYaml(result, modulePath);
-      
+
       // 源码目录验证
       await _validateSourceStructure(result, modulePath);
-      
+
       // 测试目录验证
       await _validateTestStructure(result, modulePath);
-      
+
       // 文档文件验证
       await _validateDocumentation(result, modulePath);
-      
+
       // 命名规范验证
       await _validateNamingConventions(result, modulePath);
-      
+
       // Git忽略文件验证
       await _validateGitIgnore(result, modulePath);
-      
+
       // Pet App平台标准验证
       await _validatePetAppPlatformStandards(result, modulePath);
-      
     } catch (e) {
       result.addError(
         '结构验证过程发生异常: $e',
@@ -70,7 +69,7 @@ class StructureValidator extends ModuleValidator {
         validatorName: validatorName,
       );
     }
-    
+
     result.markCompleted();
     return result;
   }
@@ -88,7 +87,7 @@ class StructureValidator extends ModuleValidator {
     // 检查必需目录
     for (final dirName in requiredDirs) {
       final dir = Directory(path.join(modulePath, dirName));
-      if (await dir.exists()) {
+      if (dir.existsSync()) {
         result.addSuccess(
           '必需目录存在: $dirName/',
           validationType: ValidationType.structure,
@@ -111,7 +110,7 @@ class StructureValidator extends ModuleValidator {
     // 检查推荐目录
     for (final dirName in recommendedDirs) {
       final dir = Directory(path.join(modulePath, dirName));
-      if (await dir.exists()) {
+      if (dir.existsSync()) {
         result.addSuccess(
           '推荐目录存在: $dirName/',
           validationType: ValidationType.structure,
@@ -134,7 +133,7 @@ class StructureValidator extends ModuleValidator {
     // 检查必需文件
     for (final fileName in requiredFiles) {
       final file = File(path.join(modulePath, fileName));
-      if (await file.exists()) {
+      if (file.existsSync()) {
         result.addSuccess(
           '必需文件存在: $fileName',
           validationType: ValidationType.structure,
@@ -163,7 +162,7 @@ environment:
     // 检查推荐文件
     for (final fileName in recommendedFiles) {
       final file = File(path.join(modulePath, fileName));
-      if (await file.exists()) {
+      if (file.existsSync()) {
         result.addSuccess(
           '推荐文件存在: $fileName',
           validationType: ValidationType.structure,
@@ -189,8 +188,8 @@ environment:
     String modulePath,
   ) async {
     final pubspecFile = File(path.join(modulePath, 'pubspec.yaml'));
-    
-    if (!await pubspecFile.exists()) {
+
+    if (!pubspecFile.existsSync()) {
       return; // 已在基础结构验证中处理
     }
 
@@ -220,7 +219,7 @@ environment:
       // 检查environment字段
       if (yaml.containsKey('environment')) {
         final env = yaml['environment'] as Map?;
-        if (env?.containsKey('sdk') == true) {
+        if (env?.containsKey('sdk') ?? false) {
           result.addSuccess(
             'pubspec.yaml包含SDK约束',
             validationType: ValidationType.structure,
@@ -242,7 +241,6 @@ environment:
           validatorName: validatorName,
         );
       }
-
     } catch (e) {
       result.addError(
         'pubspec.yaml格式错误: $e',
@@ -259,20 +257,20 @@ environment:
     String modulePath,
   ) async {
     final libDir = Directory(path.join(modulePath, 'lib'));
-    
-    if (!await libDir.exists()) {
+
+    if (!libDir.existsSync()) {
       return; // 已在基础结构验证中处理
     }
 
     // 检查lib目录结构
     final srcDir = Directory(path.join(modulePath, 'lib', 'src'));
-    if (await srcDir.exists()) {
+    if (srcDir.existsSync()) {
       result.addSuccess(
         'lib/src/ 目录结构规范',
         validationType: ValidationType.structure,
         validatorName: validatorName,
       );
-      
+
       // 检查src子目录组织
       await _validateSrcSubdirectories(result, srcDir.path);
     } else {
@@ -297,7 +295,7 @@ environment:
 
     for (final dirName in commonDirs) {
       final dir = Directory(path.join(srcPath, dirName));
-      if (await dir.exists()) {
+      if (dir.existsSync()) {
         hasOrganization = true;
         result.addSuccess(
           '良好的目录组织: src/$dirName/',
@@ -349,8 +347,8 @@ environment:
     String modulePath,
   ) async {
     final testDir = Directory(path.join(modulePath, 'test'));
-    
-    if (!await testDir.exists()) {
+
+    if (!testDir.existsSync()) {
       result.addWarning(
         '缺少测试目录',
         validationType: ValidationType.structure,
@@ -392,8 +390,8 @@ environment:
     String modulePath,
   ) async {
     final readmeFile = File(path.join(modulePath, 'README.md'));
-    
-    if (await readmeFile.exists()) {
+
+    if (readmeFile.existsSync()) {
       final content = await readmeFile.readAsString();
       if (content.length > 100) {
         result.addSuccess(
@@ -413,7 +411,7 @@ environment:
 
     // 检查API文档
     final docDir = Directory(path.join(modulePath, 'doc'));
-    if (await docDir.exists()) {
+    if (docDir.existsSync()) {
       result.addSuccess(
         '包含文档目录',
         validationType: ValidationType.structure,
@@ -429,7 +427,7 @@ environment:
   ) async {
     // 验证目录命名（snake_case）
     await _validateDirectoryNaming(result, modulePath);
-    
+
     // 验证文件命名（snake_case）
     await _validateFileNaming(result, modulePath);
   }
@@ -440,7 +438,7 @@ environment:
     String modulePath,
   ) async {
     final libDir = Directory(path.join(modulePath, 'lib'));
-    if (!await libDir.exists()) return;
+    if (!libDir.existsSync()) return;
 
     await for (final entity in libDir.list(recursive: true)) {
       if (entity is Directory) {
@@ -468,7 +466,7 @@ environment:
     String modulePath,
   ) async {
     final libDir = Directory(path.join(modulePath, 'lib'));
-    if (!await libDir.exists()) return;
+    if (!libDir.existsSync()) return;
 
     await for (final entity in libDir.list(recursive: true)) {
       if (entity is File && entity.path.endsWith('.dart')) {
@@ -497,8 +495,8 @@ environment:
     String modulePath,
   ) async {
     final gitignoreFile = File(path.join(modulePath, '.gitignore'));
-    
-    if (await gitignoreFile.exists()) {
+
+    if (gitignoreFile.existsSync()) {
       final content = await gitignoreFile.readAsString();
       final requiredPatterns = ['.dart_tool/', 'build/', '.packages'];
       final missingPatterns = <String>[];
@@ -550,16 +548,16 @@ environment:
   ) async {
     // 检查module.yaml文件
     await _validateModuleYaml(result, modulePath);
-    
+
     // 检查平台标准目录结构
     await _validatePlatformDirectoryStructure(result, modulePath);
-    
+
     // 检查国际化目录
     await _validateInternationalization(result, modulePath);
-    
+
     // 检查示例目录
     await _validateExampleDirectory(result, modulePath);
-    
+
     // 检查资源目录
     await _validateAssetsDirectory(result, modulePath);
   }
@@ -570,14 +568,14 @@ environment:
     String modulePath,
   ) async {
     final moduleYamlFile = File(path.join(modulePath, 'module.yaml'));
-    
-    if (await moduleYamlFile.exists()) {
+
+    if (moduleYamlFile.existsSync()) {
       result.addSuccess(
         'Pet App模块配置文件存在: module.yaml',
         validationType: ValidationType.structure,
         validatorName: validatorName,
       );
-      
+
       // 验证module.yaml内容
       try {
         final content = await moduleYamlFile.readAsString();
@@ -629,17 +627,17 @@ platform_version: "^1.0.0"
     String modulePath,
   ) async {
     final libDir = Directory(path.join(modulePath, 'lib'));
-    if (!await libDir.exists()) return;
+    if (!libDir.existsSync()) return;
 
     final srcDir = Directory(path.join(modulePath, 'lib', 'src'));
-    if (await srcDir.exists()) {
+    if (srcDir.existsSync()) {
       // 检查Pet App平台推荐的子目录组织
       final platformDirs = ['services', 'widgets', 'models', 'utils'];
       var hasPlatformOrganization = false;
 
       for (final dirName in platformDirs) {
         final dir = Directory(path.join(srcDir.path, dirName));
-        if (await dir.exists()) {
+        if (dir.existsSync()) {
           hasPlatformOrganization = true;
           result.addSuccess(
             'Pet App平台标准目录: src/$dirName/',
@@ -670,14 +668,14 @@ platform_version: "^1.0.0"
     String modulePath,
   ) async {
     final l10nDir = Directory(path.join(modulePath, 'lib', 'l10n'));
-    
-    if (await l10nDir.exists()) {
+
+    if (l10nDir.existsSync()) {
       result.addSuccess(
         'Pet App国际化支持: lib/l10n/',
         validationType: ValidationType.structure,
         validatorName: validatorName,
       );
-      
+
       // 检查ARB文件
       var hasArbFiles = false;
       await for (final entity in l10nDir.list()) {
@@ -686,7 +684,7 @@ platform_version: "^1.0.0"
           break;
         }
       }
-      
+
       if (hasArbFiles) {
         result.addSuccess(
           '包含ARB国际化文件',
@@ -709,17 +707,17 @@ platform_version: "^1.0.0"
     String modulePath,
   ) async {
     final exampleDir = Directory(path.join(modulePath, 'example'));
-    
-    if (await exampleDir.exists()) {
+
+    if (exampleDir.existsSync()) {
       result.addSuccess(
         'Pet App使用示例: example/',
         validationType: ValidationType.structure,
         validatorName: validatorName,
       );
-      
+
       // 检查示例文件
       final exampleDart = File(path.join(exampleDir.path, 'main.dart'));
-      if (await exampleDart.exists()) {
+      if (exampleDart.existsSync()) {
         result.addSuccess(
           '包含可执行示例',
           validationType: ValidationType.structure,
@@ -746,19 +744,19 @@ platform_version: "^1.0.0"
     String modulePath,
   ) async {
     final assetsDir = Directory(path.join(modulePath, 'assets'));
-    
-    if (await assetsDir.exists()) {
+
+    if (assetsDir.existsSync()) {
       result.addSuccess(
         'Pet App资源目录: assets/',
         validationType: ValidationType.structure,
         validatorName: validatorName,
       );
-      
+
       // 检查常见资源类型
       final resourceTypes = ['images', 'fonts', 'data'];
       for (final type in resourceTypes) {
         final typeDir = Directory(path.join(assetsDir.path, type));
-        if (await typeDir.exists()) {
+        if (typeDir.existsSync()) {
           result.addSuccess(
             '包含$type资源',
             validationType: ValidationType.structure,

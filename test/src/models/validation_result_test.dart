@@ -27,7 +27,6 @@ void main() {
 
     test('should add error messages correctly', () {
       final result = ValidationResult()
-
         ..addError('Test error')
         ..addError('Another error', file: 'test.dart');
 
@@ -39,7 +38,6 @@ void main() {
 
     test('should add warning messages correctly', () {
       final result = ValidationResult()
-
         ..addWarning('Test warning')
         ..addWarning('Another warning', file: 'test.dart');
 
@@ -51,7 +49,6 @@ void main() {
 
     test('should add success messages correctly', () {
       final result = ValidationResult()
-
         ..addSuccess('Test success')
         ..addSuccess('Another success');
 
@@ -61,7 +58,6 @@ void main() {
 
     test('should add info messages correctly', () {
       final result = ValidationResult()
-
         ..addInfo('Test info')
         ..addInfo('Another info');
 
@@ -81,11 +77,10 @@ void main() {
 
     test('should generate summary correctly', () {
       final result = ValidationResult()
-
-      ..addError('Error 1')
-      ..addWarning('Warning 1')
-      ..addSuccess('Success 1')
-      ..addInfo('Info 1');
+        ..addError('Error 1')
+        ..addWarning('Warning 1')
+        ..addSuccess('Success 1')
+        ..addInfo('Info 1');
 
       final summary = result.getSummary();
 
@@ -97,9 +92,8 @@ void main() {
 
     test('should be invalid when has errors', () {
       final result = ValidationResult()
-
-      ..addSuccess('Success')
-      ..addWarning('Warning');
+        ..addSuccess('Success')
+        ..addWarning('Warning');
       expect(result.isValid, isTrue);
 
       result.addError('Error');

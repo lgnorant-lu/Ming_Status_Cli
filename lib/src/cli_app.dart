@@ -33,8 +33,10 @@ class MingStatusCliApp {
     _initializeRunner();
     // 不再立即注册命令，延迟到实际需要时
   }
+
   /// 命令运行器实例
   late final CommandRunner<int> _runner;
+
   /// 标志位，指示命令是否已注册
   bool _commandsRegistered = false;
 
@@ -52,22 +54,22 @@ class MingStatusCliApp {
     // 添加全局选项
     _runner.argParser
       ..addFlag(
-      'verbose',
-      abbr: 'v',
-      help: '显示详细输出信息',
-      negatable: false,
+        'verbose',
+        abbr: 'v',
+        help: '显示详细输出信息',
+        negatable: false,
       )
       ..addFlag(
-      'quiet',
-      abbr: 'q',
-      help: '静默模式，仅显示错误信息',
-      negatable: false,
+        'quiet',
+        abbr: 'q',
+        help: '静默模式，仅显示错误信息',
+        negatable: false,
       )
       ..addFlag(
-      'version',
-      help: '显示版本信息',
-      negatable: false,
-    );
+        'version',
+        help: '显示版本信息',
+        negatable: false,
+      );
   }
 
   /// 延迟注册所有命令（仅在需要时）
@@ -256,7 +258,7 @@ class MingStatusCliApp {
   void _showMainHelp(bool verbose) {
     // 确保命令已注册，这样才能在帮助中显示它们
     _ensureCommandsRegistered();
-    
+
     HelpFormatter.showMainHelp(_runner);
 
     if (verbose) {
@@ -301,7 +303,7 @@ class MingStatusCliApp {
   Future<int> _showCommandHelp(String commandName, bool verbose) async {
     // 确保命令已注册
     _ensureCommandsRegistered();
-    
+
     final helpCommand = HelpCommand(_runner);
     return helpCommand.showSpecificCommandHelp(commandName, verbose: verbose);
   }

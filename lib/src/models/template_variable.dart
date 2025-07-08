@@ -14,12 +14,16 @@ Description:        模板变量定义和验证系统
 enum TemplateVariableType {
   /// 字符串类型
   string,
+
   /// 布尔类型
   boolean,
+
   /// 数值类型
   number,
+
   /// 枚举类型
   enumeration,
+
   /// 列表类型
   list,
 }
@@ -52,22 +56,22 @@ class TemplateVariableValidation {
 
   /// 正则表达式模式（用于字符串验证）
   final String? pattern;
-  
+
   /// 最小长度（用于字符串和列表）
   final int? minLength;
-  
+
   /// 最大长度（用于字符串和列表）
   final int? maxLength;
-  
+
   /// 最小值（用于数值）
   final num? minValue;
-  
+
   /// 最大值（用于数值）
   final num? maxValue;
-  
+
   /// 验证失败时的错误信息
   final String? message;
-  
+
   /// 是否必需
   final bool required;
 
@@ -133,25 +137,25 @@ class TemplateVariable {
 
   /// 变量名称
   final String name;
-  
+
   /// 变量类型
   final TemplateVariableType type;
-  
+
   /// 变量描述
   final String? description;
-  
+
   /// 默认值
   final dynamic defaultValue;
-  
+
   /// 用户输入提示
   final String? prompt;
-  
+
   /// 是否可选
   final bool optional;
-  
+
   /// 验证规则
   final TemplateVariableValidation? validation;
-  
+
   /// 可选值列表（用于枚举和列表类型）
   final List<dynamic>? values;
 
@@ -229,8 +233,9 @@ class TemplateVariable {
       }
 
       // 列表类型验证
-      if (type == TemplateVariableType.list && 
-          values != null && value is List) {
+      if (type == TemplateVariableType.list &&
+          values != null &&
+          value is List) {
         final invalidValues = <dynamic>[];
         for (final item in value) {
           if (!values!.contains(item)) {
@@ -243,13 +248,12 @@ class TemplateVariable {
         }
       }
 
-      return errors.isEmpty 
+      return errors.isEmpty
           ? TemplateVariableValidationResult.valid(warnings: warnings)
           : TemplateVariableValidationResult.invalid(
-              errors, 
+              errors,
               warnings: warnings,
-          );
-
+            );
     } catch (e) {
       return TemplateVariableValidationResult.invalid(
         ['验证变量 $name 时发生异常: $e'],
@@ -296,7 +300,7 @@ class TemplateVariable {
           if (val.maxLength != null && value.length > val.maxLength!) {
             errors.add(val.message ?? '变量 $name 长度不能大于 ${val.maxLength}');
           }
-          
+
           // 正则表达式验证
           if (val.pattern != null) {
             try {
@@ -402,10 +406,10 @@ class TemplateVariableValidationResult {
 
   /// 是否有效
   final bool isValid;
-  
+
   /// 错误信息列表
   final List<String> errors;
-  
+
   /// 警告信息列表
   final List<String> warnings;
 
@@ -418,6 +422,6 @@ class TemplateVariableValidationResult {
   @override
   String toString() {
     return 'TemplateVariableValidationResult(isValid: $isValid, '
-           'errors: ${errors.length}, warnings: ${warnings.length})';
+        'errors: ${errors.length}, warnings: ${warnings.length})';
   }
-} 
+}

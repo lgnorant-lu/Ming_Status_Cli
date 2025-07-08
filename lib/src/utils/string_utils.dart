@@ -21,7 +21,9 @@ class StringUtils {
 
     return input
         .replaceAllMapped(
-            RegExp('[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}',)
+          RegExp('[A-Z]'),
+          (match) => '_${match.group(0)!.toLowerCase()}',
+        )
         .replaceAll(RegExp('^_'), '')
         .replaceAll(RegExp('[^a-z0-9_]'), '_')
         .replaceAll(RegExp('_+'), '_')
@@ -232,9 +234,11 @@ class StringUtils {
   }
 
   /// 创建随机字符串
-  static String randomString(int length,
-      {String chars =
-          'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',}) {
+  static String randomString(
+    int length, {
+    String chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+  }) {
     final random = DateTime.now().millisecondsSinceEpoch;
     final result = StringBuffer();
 

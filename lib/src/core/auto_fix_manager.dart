@@ -21,10 +21,13 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 enum FixResultType {
   /// 修复成功
   success,
+
   /// 修复失败
   failed,
+
   /// 跳过修复
   skipped,
+
   /// 不支持自动修复
   unsupported,
 }
@@ -123,7 +126,7 @@ class AutoFixManager {
   FixStatistics get statistics => _statistics;
 
   /// 执行自动修复
-  /// 
+  ///
   /// [result] 验证结果
   /// [targetPath] 目标路径
   Future<FixStatistics> performAutoFix(
@@ -268,7 +271,7 @@ class AutoFixManager {
   ) async {
     // 基于问题描述和文件类型执行智能修复
     final problemType = _identifyProblemType(message.message);
-    
+
     switch (problemType) {
       case 'formatting':
         return _fixFormatting(message, targetPath);
@@ -290,26 +293,26 @@ class AutoFixManager {
   String _identifyProblemType(String message) {
     final lowerMessage = message.toLowerCase();
 
-    if (lowerMessage.contains('format') || 
-        lowerMessage.contains('缩进') || 
+    if (lowerMessage.contains('format') ||
+        lowerMessage.contains('缩进') ||
         lowerMessage.contains('行长度') ||
         lowerMessage.contains('trailing whitespace')) {
       return 'formatting';
     }
 
-    if (lowerMessage.contains('import') || 
+    if (lowerMessage.contains('import') ||
         lowerMessage.contains('导入') ||
         lowerMessage.contains('unused import')) {
       return 'imports';
     }
 
-    if (lowerMessage.contains('pubspec') || 
+    if (lowerMessage.contains('pubspec') ||
         lowerMessage.contains('analysis_options') ||
         lowerMessage.contains('配置')) {
       return 'configuration';
     }
 
-    if (lowerMessage.contains('documentation') || 
+    if (lowerMessage.contains('documentation') ||
         lowerMessage.contains('文档') ||
         lowerMessage.contains('comment')) {
       return 'documentation';
@@ -435,8 +438,16 @@ class AutoFixManager {
 
       // 跨平台命令执行
       final processResult = Platform.isWindows
-          ? await Process.run('cmd', ['/c', command], workingDirectory: workingDirectory)
-          : await Process.run('sh', ['-c', command], workingDirectory: workingDirectory);
+          ? await Process.run(
+              'cmd',
+              ['/c', command],
+              workingDirectory: workingDirectory,
+            )
+          : await Process.run(
+              'sh',
+              ['-c', command],
+              workingDirectory: workingDirectory,
+            );
 
       if (processResult.exitCode == 0) {
         return FixResult(
@@ -513,13 +524,15 @@ class AutoFixManager {
     Logger.info('  修复失败: ${_statistics.failedCount}');
     Logger.info('  跳过修复: ${_statistics.skippedCount}');
     Logger.info('  不支持修复: ${_statistics.unsupportedCount}');
-    
+
     if (_statistics.totalIssues > 0) {
       Logger.info('  修复率: ${(_statistics.fixRate * 100).toStringAsFixed(1)}%');
-      
+
       final attempted = _statistics.successCount + _statistics.failedCount;
       if (attempted > 0) {
-        Logger.info('  成功率: ${(_statistics.successRate * 100).toStringAsFixed(1)}%');
+        Logger.info(
+          '  成功率: ${(_statistics.successRate * 100).toStringAsFixed(1)}%',
+        );
       }
     }
   }
@@ -532,4 +545,4 @@ class AutoFixManager {
     _statistics.skippedCount = 0;
     _statistics.unsupportedCount = 0;
   }
-} 
+}

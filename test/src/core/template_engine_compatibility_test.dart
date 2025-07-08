@@ -27,7 +27,7 @@ void main() {
       tempDir = await _createTempDirectory();
       testTemplateDir = path.join(tempDir, 'templates', 'test_template');
       await Directory(testTemplateDir).create(recursive: true);
-      
+
       // 初始化模板引擎
       templateEngine = TemplateEngine(workingDirectory: tempDir);
     });
@@ -88,11 +88,15 @@ compatibility:
         );
 
         expect(result.metadata['versionInfo'], isNotNull);
+        final versionInfo =
+            result.metadata['versionInfo'] as Map<String, dynamic>;
         expect(
-          result.metadata['versionInfo']['templateVersion'], equals('1.2.3'),
+          versionInfo['templateVersion'],
+          equals('1.2.3'),
         );
         expect(
-          result.metadata['versionInfo']['minCliVersion'], equals('1.0.0'),
+          versionInfo['minCliVersion'],
+          equals('1.0.0'),
         );
       });
 
@@ -112,8 +116,11 @@ description: 测试模板
         );
 
         expect(result.metadata['versionInfo'], isNotNull);
+        final versionInfo =
+            result.metadata['versionInfo'] as Map<String, dynamic>;
         expect(
-          result.metadata['versionInfo']['templateVersion'], equals('0.1.0'),
+          versionInfo['templateVersion'],
+          equals('0.1.0'),
         );
       });
     });
@@ -139,8 +146,10 @@ dependencies:
         );
 
         expect(result.metadata['dependencyInfo'], isNotNull);
+        final dependencyInfo =
+            result.metadata['dependencyInfo'] as Map<String, dynamic>;
         expect(
-          result.metadata['dependencyInfo']['requiredDependencies'],
+          dependencyInfo['requiredDependencies'],
           isNotEmpty,
         );
       });
@@ -163,8 +172,12 @@ conflicts:
           checkCompliance: false,
         );
 
-        expect(result.metadata['dependencyInfo']['conflictingDependencies'], 
-               contains('old_package'),);
+        final dependencyInfo =
+            result.metadata['dependencyInfo'] as Map<String, dynamic>;
+        expect(
+          dependencyInfo['conflictingDependencies'],
+          contains('old_package'),
+        );
       });
     });
 
@@ -194,8 +207,9 @@ platforms:
 
         expect(result.metadata['platformInfo'], isNotNull);
         expect(result.metadata['currentPlatform'], isNotNull);
-        
-        final platformInfo = result.metadata['platformInfo'];
+
+        final platformInfo =
+            result.metadata['platformInfo'] as Map<String, dynamic>;
         expect(platformInfo['supportedPlatforms'], contains('windows'));
         expect(platformInfo['requiredFeatures'], contains('file_system'));
       });
@@ -219,7 +233,8 @@ platforms:
           checkCompliance: false,
         );
 
-        final platformInfo = result.metadata['platformInfo'];
+        final platformInfo =
+            result.metadata['platformInfo'] as Map<String, dynamic>;
         expect(platformInfo['unsupportedPlatforms'], contains('android'));
       });
     });
@@ -338,7 +353,7 @@ version: 1.0.0
         // 创建多个测试模板
         final template1Dir = path.join(tempDir, 'templates', 'template1');
         final template2Dir = path.join(tempDir, 'templates', 'template2');
-        
+
         await Directory(template1Dir).create(recursive: true);
         await Directory(template2Dir).create(recursive: true);
 
@@ -355,8 +370,8 @@ name: template2
 # 缺少必需字段
 ''');
 
-        final results = await templateEngine
-          .validateAllTemplatesCompatibility();
+        final results =
+            await templateEngine.validateAllTemplatesCompatibility();
 
         expect(results, hasLength(2));
         expect(results['template1']?.isCompatible, isTrue);
@@ -374,11 +389,12 @@ version: 1.0.0
 ''');
 
         final health = await templateEngine.checkTemplateSystemHealth();
+        final checks = health['checks'] as Map<String, dynamic>;
 
         expect(health['status'], isNotNull);
         expect(health['checks'], isNotNull);
         expect(health['templates'], isNotNull);
-        expect(health['checks']['template_compatibility'], isNotNull);
+        expect(checks['template_compatibility'], isNotNull);
       });
     });
 
@@ -406,7 +422,7 @@ Future<void> _createTestTemplate(String templateDir, String brickYaml) async {
   // 创建__brick__目录和基础文件
   final brickDir = path.join(templateDir, '__brick__');
   await Directory(brickDir).create(recursive: true);
-  
+
   // 创建一个基础模板文件
   final templateFile = path.join(brickDir, 'main.dart');
   await File(templateFile).writeAsString('''
@@ -435,4 +451,4 @@ Future<void> _cleanupTempDirectory(String dirPath) async {
   } catch (e) {
     // 忽略清理错误
   }
-} 
+}

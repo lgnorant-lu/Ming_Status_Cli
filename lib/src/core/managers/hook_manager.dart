@@ -13,7 +13,6 @@ Change History:
 
 import 'dart:async';
 
-import 'package:ming_status_cli/src/core/template_exceptions.dart';
 import 'package:ming_status_cli/src/core/template_models.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
@@ -26,7 +25,7 @@ class HookRegistry {
   void register(TemplateHook hook) {
     _hooks.putIfAbsent(hook.type, () => []).add(hook);
     // 按优先级排序（数字越小，优先级越高）
-    _hooks[hook.type]!.sort((a, b) => (a.priority ?? 0).compareTo(b.priority ?? 0));
+    _hooks[hook.type]!.sort((a, b) => a.priority.compareTo(b.priority));
   }
 
   /// 注销钩子
@@ -57,7 +56,7 @@ class AdvancedHookManager {
 
   /// 模板引擎实例（动态类型避免循环依赖）
   final dynamic _templateEngine;
-  
+
   /// 钩子注册表
   final HookRegistry hookRegistry = HookRegistry();
 
@@ -101,7 +100,8 @@ class AdvancedHookManager {
       if (hooks.containsKey('pre_gen')) {
         final preGenHooks = hooks['pre_gen'] as List<dynamic>? ?? [];
         for (final hookData in preGenHooks) {
-          final config = ScriptHookConfig.fromMap(hookData as Map<String, dynamic>);
+          final config =
+              ScriptHookConfig.fromMap(hookData as Map<String, dynamic>);
           final hook = ScriptExecutionHook(
             name: 'pre_gen_${hookData['description'] ?? 'script'}',
             config: config,
@@ -116,7 +116,8 @@ class AdvancedHookManager {
       if (hooks.containsKey('post_gen')) {
         final postGenHooks = hooks['post_gen'] as List<dynamic>? ?? [];
         for (final hookData in postGenHooks) {
-          final config = ScriptHookConfig.fromMap(hookData as Map<String, dynamic>);
+          final config =
+              ScriptHookConfig.fromMap(hookData as Map<String, dynamic>);
           final hook = ScriptExecutionHook(
             name: 'post_gen_${hookData['description'] ?? 'script'}',
             config: config,
@@ -126,7 +127,6 @@ class AdvancedHookManager {
         }
         cli_logger.Logger.debug('加载了 ${postGenHooks.length} 个post_gen钩子');
       }
-
     } catch (e) {
       cli_logger.Logger.error('加载模板钩子失败: $templateName', error: e);
     }
@@ -163,14 +163,24 @@ class AdvancedHookManager {
 
   /// 获取钩子执行统计
   Map<String, dynamic> getHookStatistics() {
-    final preHooks = _templateEngine.hookRegistry.getHooks(HookType.preGeneration);
-    final postHooks = _templateEngine.hookRegistry.getHooks(HookType.postGeneration);
-    
+    final preHooks =
+        _templateEngine.hookRegistry.getHooks(HookType.preGeneration);
+    final postHooks =
+        _templateEngine.hookRegistry.getHooks(HookType.postGeneration);
+
     // 统计所有类型的脚本钩子（包括两个不同命名空间的ScriptExecutionHook）
-    final scriptHooksCount = preHooks.where((hook) => 
-      hook.runtimeType.toString().contains('ScriptExecutionHook'),).length +
-      postHooks.where((hook) => 
-      hook.runtimeType.toString().contains('ScriptExecutionHook'),).length;
+    final scriptHooksCount = preHooks
+            .where(
+              (TemplateHook hook) =>
+                  hook.runtimeType.toString().contains('ScriptExecutionHook'),
+            )
+            .length +
+        postHooks
+            .where(
+              (TemplateHook hook) =>
+                  hook.runtimeType.toString().contains('ScriptExecutionHook'),
+            )
+            .length;
 
     return {
       'pre_generation_hooks': preHooks.length,
@@ -192,6 +202,7 @@ class ConditionalHook extends TemplateHook {
 
   /// 执行条件表达式
   final String condition;
+
   /// 被包装的钩子实例
   final TemplateHook wrappedHook;
 
@@ -215,15 +226,17 @@ class ConditionalHook extends TemplateHook {
   Future<bool> _evaluateCondition(String condition, HookContext context) async {
     // 简化的条件评估逻辑
     var processedCondition = condition;
-    
+
     // 替换变量
     for (final entry in context.variables.entries) {
       final value = entry.value;
-      final valueStr = value is bool ? value.toString() : 
-                      value is String ? '"$value"' :
-                      value?.toString() ?? 'null';
+      final valueStr = value is bool
+          ? value.toString()
+          : value is String
+              ? '"$value"'
+              : value?.toString() ?? 'null';
       processedCondition = processedCondition.replaceAll(
-        '{{${entry.key}}}', 
+        '{{${entry.key}}}',
         valueStr,
       );
     }
@@ -237,7 +250,7 @@ class ConditionalHook extends TemplateHook {
     // 简单的布尔表达式评估
     if (processedCondition == 'true') return true;
     if (processedCondition == 'false') return false;
-    
+
     // 更复杂的条件可以在这里扩展
     return processedCondition.isNotEmpty;
   }
@@ -254,6 +267,7 @@ class TimeoutHook extends TemplateHook {
 
   /// 超时时长
   final Duration timeout;
+
   /// 被包装的钩子实例
   final TemplateHook wrappedHook;
 
@@ -286,8 +300,10 @@ class ErrorRecoveryHook extends TemplateHook {
 
   /// 被包装的钩子实例
   final TemplateHook wrappedHook;
+
   /// 错误恢复操作
   final Future<HookResult> Function(HookResult failedResult) recoveryAction;
+
   /// 是否忽略错误
   final bool ignoreErrors;
 
@@ -301,12 +317,12 @@ class ErrorRecoveryHook extends TemplateHook {
   Future<HookResult> execute(HookContext context) async {
     try {
       final result = await wrappedHook.execute(context);
-      
+
       if (!result.success && !ignoreErrors) {
         cli_logger.Logger.warning('钩子执行失败，尝试恢复: $name');
         return await recoveryAction(result);
       }
-      
+
       return result;
     } catch (e) {
       if (ignoreErrors) {
@@ -334,14 +350,18 @@ class ScriptHookConfig {
     return ScriptHookConfig(
       scriptPath: map['script_path'] as String? ?? '',
       arguments: (map['arguments'] as List<dynamic>?)?.cast<String>() ?? [],
-      environment: (map['environment'] as Map<String, dynamic>?)?.cast<String, String>() ?? {},
+      environment: (map['environment'] as Map<String, dynamic>?)
+              ?.cast<String, String>() ??
+          {},
     );
   }
 
   /// 脚本路径
   final String scriptPath;
+
   /// 参数列表
   final List<String> arguments;
+
   /// 环境变量
   final Map<String, String> environment;
 }
@@ -357,6 +377,7 @@ class ScriptExecutionHook extends TemplateHook {
 
   /// 配置
   final ScriptHookConfig config;
+
   /// 钩子类型
   final HookType hookType;
 

@@ -21,18 +21,25 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 enum ErrorType {
   /// 用法错误
   usage,
+
   /// 文件系统错误
   fileSystem,
+
   /// 权限错误
   permission,
+
   /// 网络错误
   network,
+
   /// 验证错误
   validation,
+
   /// 配置错误
   configuration,
+
   /// 依赖错误
   dependency,
+
   /// 未知错误
   unknown,
 }
@@ -310,8 +317,11 @@ class ErrorHandler {
     Logger.usageTip('ming help', '显示所有可用命令', example: 'ming help');
     Logger.usageTip('ming doctor', '检查环境状态', example: 'ming doctor --detailed');
     Logger.usageTip('ming init', '初始化工作空间', example: 'ming init my-project');
-    Logger.usageTip('ming version', '显示版本信息',
-        example: 'ming version --detailed',);
+    Logger.usageTip(
+      'ming version',
+      '显示版本信息',
+      example: 'ming version --detailed',
+    );
   }
 
   /// 显示快速修复建议

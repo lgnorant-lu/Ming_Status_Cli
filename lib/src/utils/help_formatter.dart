@@ -156,8 +156,14 @@ class HelpFormatter {
   static void _showMoreHelp() {
     Logger.subtitle('📚 获取更多帮助');
     Logger.keyValue('项目主页', 'https://github.com/lgnorant-lu/Ming_Status_Cli');
-    Logger.keyValue('文档', 'https://github.com/lgnorant-lu/Ming_Status_Cli/wiki');
-    Logger.keyValue('问题反馈', 'https://github.com/lgnorant-lu/Ming_Status_Cli/issues');
+    Logger.keyValue(
+      '文档',
+      'https://github.com/lgnorant-lu/Ming_Status_Cli/wiki',
+    );
+    Logger.keyValue(
+      '问题反馈',
+      'https://github.com/lgnorant-lu/Ming_Status_Cli/issues',
+    );
     Logger.newLine();
 
     Logger.info('💬 提示：使用 --verbose 选项获取更详细的执行信息');
@@ -215,8 +221,11 @@ class HelpFormatter {
   }
 
   /// 格式化选项帮助
-  static void formatOption(String option, String description,
-      {String? defaultValue,}) {
+  static void formatOption(
+    String option,
+    String description, {
+    String? defaultValue,
+  }) {
     if (defaultValue != null) {
       Logger.keyValue(option, '$description (默认: $defaultValue)');
     } else {

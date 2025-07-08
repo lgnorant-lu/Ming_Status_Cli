@@ -21,16 +21,15 @@ import 'package:ming_status_cli/src/utils/logger.dart';
 import 'package:path/path.dart' as path;
 
 /// 配置验证结果类
-/// 
+///
 /// 封装配置验证过程的结果，包括验证状态、错误信息、警告和建议。
 /// 用于统一处理配置验证的反馈信息，支持层级化的问题分类。
 class ConfigValidationResult {
-
   /// 创建配置验证结果实例
-  /// 
+  ///
   /// [isValid] 表示验证是否通过
   /// [errors] 错误信息列表，阻止配置使用的严重问题
-  /// [warnings] 警告信息列表，不影响使用但建议修复的问题  
+  /// [warnings] 警告信息列表，不影响使用但建议修复的问题
   /// [suggestions] 建议信息列表，优化配置的推荐操作
   const ConfigValidationResult({
     required this.isValid,
@@ -67,13 +66,13 @@ class ConfigValidationResult {
 
   /// 验证结果：true表示通过，false表示失败
   final bool isValid;
-  
+
   /// 错误列表：阻止配置正常使用的严重问题
   final List<String> errors;
-  
+
   /// 警告列表：不影响使用但建议修复的问题
   final List<String> warnings;
-  
+
   /// 建议列表：优化配置的推荐操作
   final List<String> suggestions;
 
@@ -106,7 +105,7 @@ class ConfigValidationResult {
 }
 
 /// 配置验证规则严格程度
-/// 
+///
 /// 定义配置验证的不同等级，从基础验证到企业级验证，
 /// 级别越高验证越严格，检查的方面越全面。
 enum ValidationStrictness {
@@ -128,41 +127,41 @@ enum ValidationStrictness {
 }
 
 /// 配置管理器
-/// 
+///
 /// 负责工作空间和模块配置的完整生命周期管理，包括：
 /// - 工作空间初始化和配置加载/保存
-/// - 模块配置管理  
+/// - 模块配置管理
 /// - 模板管理和验证
 /// - 配置缓存和性能优化
-/// 
+///
 /// 支持多种配置格式和验证级别，提供企业级的配置管理能力。
 class ConfigManager {
   /// 创建配置管理器实例
-  /// 
+  ///
   /// [workingDirectory] 工作目录路径，默认为当前目录
-  ConfigManager({String? workingDirectory}) 
+  ConfigManager({String? workingDirectory})
       : workingDirectory = workingDirectory ?? Directory.current.path;
 
   /// 默认配置文件名
   static const String defaultConfigFileName = 'ming_status.yaml';
-  
+
   /// 模块配置文件名
   static const String moduleConfigFileName = 'module.yaml';
-  
+
   /// 当前工作目录路径
   final String workingDirectory;
-  
+
   /// 缓存的工作空间配置，用于提升性能
   WorkspaceConfig? _cachedWorkspaceConfig;
-  
+
   /// 获取配置文件的完整路径
-  /// 
+  ///
   /// 返回当前工作目录下的配置文件路径
   String get configFilePath =>
       path.join(workingDirectory, defaultConfigFileName);
 
   /// 检查当前目录是否已初始化为工作空间
-  /// 
+  ///
   /// 通过检查配置文件是否存在来判断工作空间初始化状态
   /// 返回 true 表示已初始化，false 表示未初始化
   bool isWorkspaceInitialized() {
@@ -170,15 +169,15 @@ class ConfigManager {
   }
 
   /// 初始化新的工作空间
-  /// 
+  ///
   /// 在当前目录创建新的工作空间配置和目录结构。
-  /// 
+  ///
   /// 参数：
   /// - [workspaceName] 工作空间名称（必需）
   /// - [description] 工作空间描述（可选）
   /// - [author] 作者信息（可选）
   /// - [templateType] 模板类型，支持 'basic' 和 'enterprise'（默认：'basic'）
-  /// 
+  ///
   /// 返回：
   /// - true：初始化成功
   /// - false：初始化失败（已存在配置或发生错误）
@@ -190,33 +189,41 @@ class ConfigManager {
   }) async {
     try {
       Logger.info('正在初始化工作空间: $workspaceName (模板: $templateType)');
-      
+
       // 检查是否已存在配置
       if (isWorkspaceInitialized()) {
         Logger.warning('工作空间已存在配置文件');
         return false;
       }
-      
+
       // 根据模板类型创建配置
       WorkspaceConfig config;
       if (templateType == 'enterprise') {
         config = await _createConfigFromTemplate(
-            'enterprise', workspaceName, description, author,);
+          'enterprise',
+          workspaceName,
+          description,
+          author,
+        );
       } else {
         config = await _createConfigFromTemplate(
-            'basic', workspaceName, description, author,);
+          'basic',
+          workspaceName,
+          description,
+          author,
+        );
       }
-      
+
       // 保存配置文件
       final success = await saveWorkspaceConfig(config);
       if (success) {
         Logger.success('工作空间初始化成功');
         _cachedWorkspaceConfig = config;
-        
+
         // 创建目录结构和模板
         await _createDirectoryStructure();
         await _copyConfigTemplates();
-        
+
         return true;
       } else {
         Logger.error('工作空间初始化失败：无法保存配置文件');
@@ -229,13 +236,13 @@ class ConfigManager {
   }
 
   /// 加载工作空间配置
-  /// 
+  ///
   /// 从配置文件中读取并解析工作空间配置信息。
   /// 支持配置缓存机制以提升性能。
-  /// 
+  ///
   /// 参数：
   /// - [useCache] 是否使用缓存配置（默认：true）
-  /// 
+  ///
   /// 返回：
   /// - WorkspaceConfig：成功加载的配置对象
   /// - null：配置文件不存在或解析失败
@@ -245,25 +252,25 @@ class ConfigManager {
       if (useCache && _cachedWorkspaceConfig != null) {
         return _cachedWorkspaceConfig;
       }
-      
+
       // 检查配置文件是否存在
       if (!FileUtils.fileExists(configFilePath)) {
         Logger.warning('工作空间配置文件不存在: $configFilePath');
         return null;
       }
-      
+
       // 读取YAML文件
       final yamlData = await FileUtils.readYamlFile(configFilePath);
       if (yamlData == null) {
         Logger.error('无法解析工作空间配置文件');
         return null;
       }
-      
+
       // 转换为配置对象（需要先转换YamlMap为Map<String, dynamic>）
       final jsonData = _deepConvertYamlMap(yamlData) as Map<String, dynamic>;
       final config = WorkspaceConfig.fromJson(jsonData);
       _cachedWorkspaceConfig = config;
-      
+
       Logger.debug('工作空间配置加载成功');
       return config;
     } catch (e) {
@@ -273,13 +280,13 @@ class ConfigManager {
   }
 
   /// 保存工作空间配置
-  /// 
+  ///
   /// 将配置对象序列化为YAML格式并保存到配置文件。
   /// 保存成功后会更新内部缓存。
-  /// 
+  ///
   /// 参数：
   /// - [config] 要保存的工作空间配置对象
-  /// 
+  ///
   /// 返回：
   /// - true：保存成功
   /// - false：保存失败
@@ -287,7 +294,7 @@ class ConfigManager {
     try {
       // 转换为YAML数据
       final yamlData = config.toJson();
-      
+
       // 保存到文件
       final success = await FileUtils.writeYamlFile(configFilePath, yamlData);
       if (success) {
@@ -305,25 +312,26 @@ class ConfigManager {
   }
 
   /// 更新工作空间配置
-  /// 
+  ///
   /// 使用提供的更新函数修改现有配置，然后保存更新后的配置。
   /// 该方法采用函数式编程方式，确保配置更新的原子性。
-  /// 
+  ///
   /// 参数：
   /// - [updater] 配置更新函数，接收当前配置并返回更新后的配置
-  /// 
+  ///
   /// 返回：
   /// - true：更新成功
   /// - false：更新失败（无法加载当前配置或保存失败）
   Future<bool> updateWorkspaceConfig(
-      WorkspaceConfig Function(WorkspaceConfig) updater,) async {
+    WorkspaceConfig Function(WorkspaceConfig) updater,
+  ) async {
     try {
       final currentConfig = await loadWorkspaceConfig();
       if (currentConfig == null) {
         Logger.error('无法加载当前配置进行更新');
         return false;
       }
-      
+
       final updatedConfig = updater(currentConfig);
       return await saveWorkspaceConfig(updatedConfig);
     } catch (e) {
@@ -336,18 +344,18 @@ class ConfigManager {
   Future<ModuleConfig?> loadModuleConfig(String modulePath) async {
     try {
       final configPath = path.join(modulePath, moduleConfigFileName);
-      
+
       if (!FileUtils.fileExists(configPath)) {
         Logger.warning('模块配置文件不存在: $configPath');
         return null;
       }
-      
+
       final yamlData = await FileUtils.readYamlFile(configPath);
       if (yamlData == null) {
         Logger.error('无法解析模块配置文件: $configPath');
         return null;
       }
-      
+
       // 这里应该根据实际的模块配置结构进行转换
       // 暂时返回一个基础配置
       Logger.debug('模块配置加载成功: $modulePath');
@@ -366,10 +374,10 @@ class ConfigManager {
   Future<bool> saveModuleConfig(String modulePath, ModuleConfig config) async {
     try {
       final configPath = path.join(modulePath, moduleConfigFileName);
-      
+
       // 创建模块目录
       await FileUtils.createDirectory(modulePath);
-      
+
       // 构建YAML数据
       final yamlData = {
         'id': config.module.id,
@@ -387,7 +395,7 @@ class ConfigManager {
           'widgets': config.exports.widgets.map((w) => w.name).toList(),
         },
       };
-      
+
       final success = await FileUtils.writeYamlFile(configPath, yamlData);
       if (success) {
         Logger.debug('模块配置保存成功: $modulePath');
@@ -410,7 +418,7 @@ class ConfigManager {
           ? config.templates.localPath!
           : path.join(workingDirectory, config.templates.localPath);
     }
-    
+
     // 默认模板路径
     return path.join(workingDirectory, 'templates');
   }
@@ -418,22 +426,22 @@ class ConfigManager {
   /// 列出可用的模板
   List<String> listAvailableTemplates() {
     final templatesPath = getTemplatesPath();
-    
+
     if (!FileUtils.directoryExists(templatesPath)) {
       Logger.warning('模板目录不存在: $templatesPath');
       return [];
     }
-    
+
     final entities = FileUtils.listDirectory(templatesPath);
     final templates = <String>[];
-    
+
     for (final entity in entities) {
       if (entity is Directory) {
         final templateName = path.basename(entity.path);
         templates.add(templateName);
       }
     }
-    
+
     return templates;
   }
 
@@ -469,7 +477,7 @@ class ConfigManager {
       'modules',
       'output',
     ];
-    
+
     for (final dir in directories) {
       final dirPath = path.join(workingDirectory, dir);
       await FileUtils.createDirectory(dirPath);
@@ -483,7 +491,7 @@ class ConfigManager {
     if (config == null) {
       return {'initialized': false};
     }
-    
+
     return {
       'initialized': true,
       'name': config.workspace.name,
@@ -504,7 +512,10 @@ class ConfigManager {
   ) async {
     try {
       final templatePath = path.join(
-          'templates', 'workspace', 'ming_workspace_$templateType.yaml',);
+        'templates',
+        'workspace',
+        'ming_workspace_$templateType.yaml',
+      );
 
       // 检查模板文件是否存在
       if (FileUtils.fileExists(templatePath)) {
@@ -767,8 +778,11 @@ class ConfigManager {
   /// 深度转换YamlMap为Map<String, dynamic>
   dynamic _deepConvertYamlMap(dynamic yamlData) {
     if (yamlData is Map) {
-      return Map<String, dynamic>.from(yamlData.map((key, value) =>
-          MapEntry(key.toString(), _deepConvertYamlMap(value)),),);
+      return Map<String, dynamic>.from(
+        yamlData.map(
+          (key, value) => MapEntry(key.toString(), _deepConvertYamlMap(value)),
+        ),
+      );
     } else if (yamlData is List) {
       return yamlData.map(_deepConvertYamlMap).toList();
     } else {
@@ -793,15 +807,27 @@ class ConfigManager {
 
       // 2. 工作空间信息验证
       await _validateWorkspaceInfo(
-          config.workspace, errors, warnings, suggestions,);
+        config.workspace,
+        errors,
+        warnings,
+        suggestions,
+      );
 
       // 3. 模板配置验证
       await _validateTemplateConfig(
-          config.templates, errors, warnings, suggestions,);
+        config.templates,
+        errors,
+        warnings,
+        suggestions,
+      );
 
       // 4. 默认设置验证
       await _validateDefaultSettings(
-          config.defaults, errors, warnings, suggestions,);
+        config.defaults,
+        errors,
+        warnings,
+        suggestions,
+      );
 
       // 5. 验证规则检查
       await _validateValidationRules(config, errors, warnings);
@@ -813,19 +839,31 @@ class ConfigManager {
         // 7. 环境配置验证（如果存在）
         if (config.environments != null) {
           await _validateEnvironmentConfigs(
-              config.environments!, errors, warnings, suggestions,);
+            config.environments!,
+            errors,
+            warnings,
+            suggestions,
+          );
         }
       }
 
       if (strictness.index >= ValidationStrictness.strict.index) {
         // 8. 语义约束验证
         await _validateSemanticConstraints(
-            config, errors, warnings, suggestions,);
+          config,
+          errors,
+          warnings,
+          suggestions,
+        );
 
         // 9. 依赖关系检查
         if (checkDependencies) {
           await _validateDependencyConsistency(
-              config, errors, warnings, suggestions,);
+            config,
+            errors,
+            warnings,
+            suggestions,
+          );
         }
 
         // 10. 配置一致性检查
@@ -835,17 +873,29 @@ class ConfigManager {
       if (strictness.index >= ValidationStrictness.enterprise.index) {
         // 11. 安全性检查
         await _validateSecurityConstraints(
-            config, errors, warnings, suggestions,);
+          config,
+          errors,
+          warnings,
+          suggestions,
+        );
 
         // 12. 合规性检查
         await _validateComplianceRequirements(
-            config, errors, warnings, suggestions,);
+          config,
+          errors,
+          warnings,
+          suggestions,
+        );
       }
 
       if (checkFileSystem) {
         // 13. 文件系统验证
         await _validateFileSystemConsistency(
-            config, errors, warnings, suggestions,);
+          config,
+          errors,
+          warnings,
+          suggestions,
+        );
       }
 
       // 14. 性能影响评估
@@ -853,9 +903,14 @@ class ConfigManager {
 
       return errors.isEmpty
           ? ConfigValidationResult.success(
-              warnings: warnings, suggestions: suggestions,)
+              warnings: warnings,
+              suggestions: suggestions,
+            )
           : ConfigValidationResult.failure(
-              errors: errors, warnings: warnings, suggestions: suggestions,);
+              errors: errors,
+              warnings: warnings,
+              suggestions: suggestions,
+            );
     } catch (e) {
       Logger.error('配置验证过程中发生异常', error: e);
       return ConfigValidationResult.failure(
@@ -888,7 +943,11 @@ class ConfigManager {
       if (templatePath == 'basic' || templatePath == 'enterprise') {
         try {
           templateConfig = await _createConfigFromTemplate(
-              templatePath, 'Test', 'Test', 'Test',);
+            templatePath,
+            'Test',
+            'Test',
+            'Test',
+          );
         } catch (e) {
           errors.add('无法加载内置模板 $templatePath: $e');
           return ConfigValidationResult.failure(errors: errors);
@@ -930,13 +989,23 @@ class ConfigManager {
 
       // 4. 模板特定验证
       await _validateTemplateSpecificConstraints(
-          templateConfig, templatePath, errors, warnings, suggestions,);
-    
+        templateConfig,
+        templatePath,
+        errors,
+        warnings,
+        suggestions,
+      );
+
       return errors.isEmpty
           ? ConfigValidationResult.success(
-              warnings: warnings, suggestions: suggestions,)
+              warnings: warnings,
+              suggestions: suggestions,
+            )
           : ConfigValidationResult.failure(
-              errors: errors, warnings: warnings, suggestions: suggestions,);
+              errors: errors,
+              warnings: warnings,
+              suggestions: suggestions,
+            );
     } catch (e) {
       Logger.error('模板验证过程中发生异常', error: e);
       return ConfigValidationResult.failure(
@@ -962,8 +1031,10 @@ class ConfigManager {
         if (isWorkspaceInitialized()) {
           final workspaceConfig = await loadWorkspaceConfig();
           if (workspaceConfig != null) {
-            final result = await validateWorkspaceConfig(workspaceConfig,
-                strictness: strictness,);
+            final result = await validateWorkspaceConfig(
+              workspaceConfig,
+              strictness: strictness,
+            );
             errors.addAll(result.errors);
             warnings.addAll(result.warnings);
             suggestions.addAll(result.suggestions);
@@ -984,7 +1055,11 @@ class ConfigManager {
       // 3. 模板完整性检查
       if (checkTemplates) {
         await _checkTemplatesIntegrity(
-            errors, warnings, suggestions, strictness,);
+          errors,
+          warnings,
+          suggestions,
+          strictness,
+        );
       }
 
       // 4. 全局一致性检查
@@ -992,9 +1067,14 @@ class ConfigManager {
 
       return errors.isEmpty
           ? ConfigValidationResult.success(
-              warnings: warnings, suggestions: suggestions,)
+              warnings: warnings,
+              suggestions: suggestions,
+            )
           : ConfigValidationResult.failure(
-              errors: errors, warnings: warnings, suggestions: suggestions,);
+              errors: errors,
+              warnings: warnings,
+              suggestions: suggestions,
+            );
     } catch (e) {
       Logger.error('配置完整性检查过程中发生异常', error: e);
       return ConfigValidationResult.failure(
@@ -1006,8 +1086,11 @@ class ConfigManager {
   // ===== 私有验证方法实现 =====
 
   /// 基础字段验证
-  Future<void> _validateBasicFields(WorkspaceConfig config, List<String> errors,
-      List<String> warnings,) async {
+  Future<void> _validateBasicFields(
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+  ) async {
     // 验证工作空间名称
     if (config.workspace.name.isEmpty) {
       errors.add('工作空间名称不能为空');
@@ -1032,10 +1115,11 @@ class ConfigManager {
 
   /// 工作空间信息验证
   Future<void> _validateWorkspaceInfo(
-      WorkspaceInfo workspace,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceInfo workspace,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 验证工作空间名称的合法性
     if (workspace.name.contains(RegExp(r'[<>:"/\\|?*]'))) {
       errors.add('工作空间名称包含非法字符');
@@ -1056,10 +1140,11 @@ class ConfigManager {
 
   /// 模板配置验证
   Future<void> _validateTemplateConfig(
-      TemplateConfig templates,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    TemplateConfig templates,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 验证本地路径
     if (templates.localPath != null && templates.localPath!.isNotEmpty) {
       final templatePath = path.isAbsolute(templates.localPath!)
@@ -1078,14 +1163,15 @@ class ConfigManager {
     } else if (templates.cacheTimeout > 86400) {
       warnings.add('模板缓存超时时间过长 (>24小时)，可能影响模板更新的及时性');
     }
-    }
+  }
 
   /// 默认设置验证
   Future<void> _validateDefaultSettings(
-      DefaultSettings defaults,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    DefaultSettings defaults,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 验证许可证信息
     final validLicenses = [
       'MIT',
@@ -1111,15 +1197,22 @@ class ConfigManager {
   }
 
   /// 验证规则检查
-  Future<void> _validateValidationRules(WorkspaceConfig config,
-      List<String> errors, List<String> warnings,) async {
+  Future<void> _validateValidationRules(
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+  ) async {
     // 基础的验证规则检查
     Logger.debug('验证规则检查: 配置基础格式验证通过');
   }
 
   /// 字段值有效性检查
-  Future<void> _validateFieldValues(WorkspaceConfig config, List<String> errors,
-      List<String> warnings, List<String> suggestions,) async {
+  Future<void> _validateFieldValues(
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查路径值
     final paths = [
       if (config.templates.localPath != null) config.templates.localPath!,
@@ -1143,10 +1236,11 @@ class ConfigManager {
 
   /// 环境配置验证
   Future<void> _validateEnvironmentConfigs(
-      Map<String, EnvironmentConfig> environments,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    Map<String, EnvironmentConfig> environments,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查是否有基础环境
     final commonEnvs = ['development', 'production', 'test'];
     final existingEnvs = environments.keys.toList();
@@ -1170,10 +1264,11 @@ class ConfigManager {
 
   /// 语义约束验证
   Future<void> _validateSemanticConstraints(
-      WorkspaceConfig config,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查配置间的逻辑一致性
     if (config.workspace.type == WorkspaceType.basic) {
       if (config.collaboration != null) {
@@ -1194,10 +1289,11 @@ class ConfigManager {
 
   /// 依赖关系检查
   Future<void> _validateDependencyConsistency(
-      WorkspaceConfig config,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 这里可以添加更复杂的依赖关系检查逻辑
     // 目前作为占位符实现
     Logger.debug('依赖关系检查: 当前配置依赖关系检查通过');
@@ -1205,10 +1301,11 @@ class ConfigManager {
 
   /// 配置一致性检查
   Future<void> _validateConfigConsistency(
-      WorkspaceConfig config,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查配置的内部一致性
     if (config.collaboration?.sharedSettings != null &&
         config.workspace.type == WorkspaceType.basic) {
@@ -1218,10 +1315,11 @@ class ConfigManager {
 
   /// 安全性检查
   Future<void> _validateSecurityConstraints(
-      WorkspaceConfig config,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查安全相关配置
     if (config.templates.remoteRegistry != null &&
         config.templates.remoteRegistry!.startsWith('http://')) {
@@ -1236,10 +1334,11 @@ class ConfigManager {
 
   /// 合规性检查
   Future<void> _validateComplianceRequirements(
-      WorkspaceConfig config,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查企业合规性要求
     if (config.workspace.type == WorkspaceType.enterprise) {
       if (config.quality == null) {
@@ -1254,10 +1353,11 @@ class ConfigManager {
 
   /// 文件系统一致性验证
   Future<void> _validateFileSystemConsistency(
-      WorkspaceConfig config,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceConfig config,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查重要目录是否存在
     final importantDirs = ['templates', 'modules', 'output'];
     for (final dir in importantDirs) {
@@ -1270,8 +1370,11 @@ class ConfigManager {
   }
 
   /// 性能影响评估
-  Future<void> _validatePerformanceImpact(WorkspaceConfig config,
-      List<String> warnings, List<String> suggestions,) async {
+  Future<void> _validatePerformanceImpact(
+    WorkspaceConfig config,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 评估配置对性能的潜在影响
     if (config.templates.cacheTimeout < 300) {
       suggestions.add('模板缓存超时时间较短，可能影响性能，建议设置为至少5分钟');
@@ -1280,11 +1383,12 @@ class ConfigManager {
 
   /// 模板特定约束验证
   Future<void> _validateTemplateSpecificConstraints(
-      WorkspaceConfig config,
-      String templatePath,
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,) async {
+    WorkspaceConfig config,
+    String templatePath,
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 验证模板特定的约束
     if (templatePath == 'enterprise') {
       if (config.workspace.type != WorkspaceType.enterprise) {
@@ -1294,8 +1398,11 @@ class ConfigManager {
   }
 
   /// 模块完整性检查
-  Future<void> _checkModulesIntegrity(List<String> errors,
-      List<String> warnings, List<String> suggestions,) async {
+  Future<void> _checkModulesIntegrity(
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     final modulesPath = path.join(workingDirectory, 'modules');
     if (FileUtils.directoryExists(modulesPath)) {
       final entities = FileUtils.listDirectory(modulesPath);
@@ -1309,10 +1416,11 @@ class ConfigManager {
 
   /// 模板完整性检查
   Future<void> _checkTemplatesIntegrity(
-      List<String> errors,
-      List<String> warnings,
-      List<String> suggestions,
-      ValidationStrictness strictness,) async {
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+    ValidationStrictness strictness,
+  ) async {
     final templatesPath = getTemplatesPath();
     if (FileUtils.directoryExists(templatesPath)) {
       final templates = listAvailableTemplates();
@@ -1323,8 +1431,11 @@ class ConfigManager {
   }
 
   /// 全局一致性检查
-  Future<void> _checkGlobalConsistency(List<String> errors,
-      List<String> warnings, List<String> suggestions,) async {
+  Future<void> _checkGlobalConsistency(
+    List<String> errors,
+    List<String> warnings,
+    List<String> suggestions,
+  ) async {
     // 检查全局配置的一致性
     Logger.debug('全局一致性检查: 通过');
   }
@@ -1360,8 +1471,9 @@ class ConfigManager {
       _configCache[_getCacheKey(configPath, environment)] = resolvedConfig;
 
       Logger.info(
-          '已加载具有继承功能的工作空间配置 - 继承: ${baseConfig.inheritance != null}, '
-          '环境: $environment, 合并策略: $mergeStrategy',);
+        '已加载具有继承功能的工作空间配置 - 继承: ${baseConfig.inheritance != null}, '
+        '环境: $environment, 合并策略: $mergeStrategy',
+      );
 
       return resolvedConfig;
     } catch (e) {
@@ -1372,7 +1484,8 @@ class ConfigManager {
 
   /// 解析配置继承链
   Future<WorkspaceConfig> _resolveConfigInheritance(
-      WorkspaceConfig config,) async {
+    WorkspaceConfig config,
+  ) async {
     final inheritance = config.inheritance!;
     var resolvedConfig = config;
 
@@ -1380,8 +1493,10 @@ class ConfigManager {
     if (inheritance.baseConfig != null && inheritance.baseConfig!.isNotEmpty) {
       final baseConfig = await _loadConfigFromPath(inheritance.baseConfig!);
       if (baseConfig != null) {
-        resolvedConfig = baseConfig.mergeWith(resolvedConfig,
-            strategy: inheritance.mergeStrategy,);
+        resolvedConfig = baseConfig.mergeWith(
+          resolvedConfig,
+          strategy: inheritance.mergeStrategy,
+        );
         Logger.debug('应用基础配置继承: ${inheritance.baseConfig}');
       }
     }
@@ -1392,8 +1507,10 @@ class ConfigManager {
       for (final inheritPath in inheritance.inheritsFrom!) {
         final parentConfig = await _loadConfigFromPath(inheritPath);
         if (parentConfig != null) {
-          resolvedConfig = parentConfig.mergeWith(resolvedConfig,
-              strategy: inheritance.mergeStrategy,);
+          resolvedConfig = parentConfig.mergeWith(
+            resolvedConfig,
+            strategy: inheritance.mergeStrategy,
+          );
           Logger.debug('应用继承配置: $inheritPath');
         } else {
           Logger.warning('无法加载继承配置: $inheritPath');
@@ -1437,7 +1554,9 @@ class ConfigManager {
 
   /// 应用环境特定配置
   WorkspaceConfig _applyEnvironmentConfig(
-      WorkspaceConfig config, String environment,) {
+    WorkspaceConfig config,
+    String environment,
+  ) {
     if (config.environments == null ||
         !config.environments!.containsKey(environment)) {
       Logger.warning('环境配置不存在: $environment');
@@ -1469,7 +1588,9 @@ class ConfigManager {
 
   /// 应用配置覆盖
   WorkspaceConfig _applyConfigOverrides(
-      WorkspaceConfig config, Map<String, dynamic> overrides,) {
+    WorkspaceConfig config,
+    Map<String, dynamic> overrides,
+  ) {
     try {
       // 创建覆盖配置对象
       final overrideData = <String, dynamic>{
@@ -1564,13 +1685,18 @@ class ConfigManager {
     EnvironmentConfig environmentConfig, {
     String? configPath,
   }) async {
-    return createEnvironmentConfig(environment, environmentConfig,
-        configPath: configPath,);
+    return createEnvironmentConfig(
+      environment,
+      environmentConfig,
+      configPath: configPath,
+    );
   }
 
   /// 删除环境配置
-  Future<bool> removeEnvironmentConfig(String environment,
-      {String? configPath,}) async {
+  Future<bool> removeEnvironmentConfig(
+    String environment, {
+    String? configPath,
+  }) async {
     try {
       final config = await loadWorkspaceConfig();
       if (config == null) {
@@ -1625,9 +1751,9 @@ class ConfigManager {
         // 清除缓存
         _configCache.clear();
         Logger.info(
-            '成功设置配置继承 - 基础配置: ${inheritance.baseConfig}, '
-            '继承来源: ${inheritance.inheritsFrom}, '
-            '合并策略: ${inheritance.mergeStrategy}',
+          '成功设置配置继承 - 基础配置: ${inheritance.baseConfig}, '
+          '继承来源: ${inheritance.inheritsFrom}, '
+          '合并策略: ${inheritance.mergeStrategy}',
         );
       }
 
@@ -1681,8 +1807,9 @@ class ConfigManager {
   }
 
   /// 验证配置继承链
-  Future<ConfigValidationResult> validateInheritanceChain(
-      {String? configPath,}) async {
+  Future<ConfigValidationResult> validateInheritanceChain({
+    String? configPath,
+  }) async {
     final errors = <String>[];
     final warnings = <String>[];
     final suggestions = <String>[];
@@ -1722,9 +1849,14 @@ class ConfigManager {
 
       return errors.isEmpty
           ? ConfigValidationResult.success(
-              warnings: warnings, suggestions: suggestions,)
+              warnings: warnings,
+              suggestions: suggestions,
+            )
           : ConfigValidationResult.failure(
-              errors: errors, warnings: warnings, suggestions: suggestions,);
+              errors: errors,
+              warnings: warnings,
+              suggestions: suggestions,
+            );
     } catch (e) {
       Logger.error('验证继承链失败', error: e);
       return ConfigValidationResult.failure(
@@ -1743,8 +1875,10 @@ class ConfigManager {
   }
 
   /// 检查是否存在循环继承
-  Future<bool> _hasCircularInheritance(WorkspaceConfig config,
-      [Set<String>? visited,]) async {
+  Future<bool> _hasCircularInheritance(
+    WorkspaceConfig config, [
+    Set<String>? visited,
+  ]) async {
     visited ??= <String>{};
 
     if (config.inheritance == null) return false;

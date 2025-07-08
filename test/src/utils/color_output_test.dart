@@ -17,75 +17,75 @@ void main() {
     group('Basic Color Methods Tests', () {
       test('应该提供成功消息格式化', () {
         final result = ColorOutput.success('Success message');
-        
+
         expect(result, isA<String>());
         expect(result, contains('Success message'));
-        
+
         // 如果彩色输出启用，应该包含颜色代码
         if (ColorOutput.isSupported) {
           expect(result, contains('\x1B[32m')); // 绿色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
 
       test('应该提供错误消息格式化', () {
         final result = ColorOutput.error('Error message');
-        
+
         expect(result, isA<String>());
         expect(result, contains('Error message'));
-        
+
         if (ColorOutput.isSupported) {
           expect(result, contains('\x1B[31m')); // 红色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
 
       test('应该提供警告消息格式化', () {
         final result = ColorOutput.warning('Warning message');
-        
+
         expect(result, isA<String>());
         expect(result, contains('Warning message'));
-        
+
         if (ColorOutput.isSupported) {
           expect(result, contains('\x1B[33m')); // 黄色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
 
       test('应该提供信息消息格式化', () {
         final result = ColorOutput.info('Info message');
-        
+
         expect(result, isA<String>());
         expect(result, contains('Info message'));
-        
+
         if (ColorOutput.isSupported) {
           expect(result, contains('\x1B[34m')); // 蓝色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
 
       test('应该提供标题格式化', () {
         final result = ColorOutput.title('Title text');
-        
+
         expect(result, isA<String>());
         expect(result, contains('Title text'));
-        
+
         if (ColorOutput.isSupported) {
-          expect(result, contains('\x1B[1m'));  // 粗体
+          expect(result, contains('\x1B[1m')); // 粗体
           expect(result, contains('\x1B[34m')); // 蓝色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
 
       test('应该提供高亮文本格式化', () {
         final result = ColorOutput.highlight('Highlighted text');
-        
+
         expect(result, isA<String>());
         expect(result, contains('Highlighted text'));
-        
+
         if (ColorOutput.isSupported) {
           expect(result, contains('\x1B[36m')); // 青色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
     });
@@ -93,26 +93,26 @@ void main() {
     group('Specialized Formatting Tests', () {
       test('应该提供文件路径格式化', () {
         final result = ColorOutput.filePath('/path/to/file.txt');
-        
+
         expect(result, isA<String>());
         expect(result, contains('/path/to/file.txt'));
-        
+
         if (ColorOutput.isSupported) {
           expect(result, contains('\x1B[36m')); // 青色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
 
       test('应该提供命令格式化', () {
         final result = ColorOutput.command('npm install');
-        
+
         expect(result, isA<String>());
         expect(result, contains('npm install'));
-        
+
         if (ColorOutput.isSupported) {
-          expect(result, contains('\x1B[1m'));  // 粗体
+          expect(result, contains('\x1B[1m')); // 粗体
           expect(result, contains('\x1B[32m')); // 绿色
-          expect(result, contains('\x1B[0m'));  // 重置
+          expect(result, contains('\x1B[0m')); // 重置
         }
       });
     });
@@ -120,11 +120,11 @@ void main() {
     group('Progress Bar Tests', () {
       test('应该生成基本进度条', () {
         final result = ColorOutput.progressBar(50, 100);
-        
+
         expect(result, isA<String>());
         expect(result, contains('50%'));
         expect(result, contains('(50/100)'));
-        
+
         if (ColorOutput.isSupported) {
           expect(result, contains('█')); // 完成字符
           expect(result, contains('░')); // 未完成字符
@@ -133,7 +133,7 @@ void main() {
 
       test('应该生成0%进度条', () {
         final result = ColorOutput.progressBar(0, 100);
-        
+
         expect(result, isA<String>());
         expect(result, contains('0%'));
         expect(result, contains('(0/100)'));
@@ -141,7 +141,7 @@ void main() {
 
       test('应该生成100%进度条', () {
         final result = ColorOutput.progressBar(100, 100);
-        
+
         expect(result, isA<String>());
         expect(result, contains('100%'));
         expect(result, contains('(100/100)'));
@@ -149,7 +149,7 @@ void main() {
 
       test('应该生成自定义宽度进度条', () {
         final result = ColorOutput.progressBar(25, 100, width: 10);
-        
+
         expect(result, isA<String>());
         expect(result, contains('25%'));
         expect(result, contains('(25/100)'));
@@ -159,11 +159,11 @@ void main() {
         // 测试超出最大值
         final result1 = ColorOutput.progressBar(150, 100);
         expect(result1, isA<String>());
-        
+
         // 测试负值
         final result2 = ColorOutput.progressBar(-10, 100);
         expect(result2, isA<String>());
-        
+
         // 测试零除数
         final result3 = ColorOutput.progressBar(0, 0);
         expect(result3, isA<String>());
@@ -179,17 +179,17 @@ void main() {
       test('应该允许启用/禁用彩色输出', () {
         // 保存原始状态
         final originalState = ColorOutput.isSupported;
-        
+
         // 测试禁用彩色输出
         ColorOutput.setEnabled(enabled: false);
         final disabledResult = ColorOutput.success('Test');
         expect(disabledResult, equals('Test')); // 应该没有颜色代码
-        
+
         // 测试启用彩色输出
         ColorOutput.setEnabled(enabled: true);
         final enabledResult = ColorOutput.success('Test');
         expect(enabledResult, isA<String>());
-        
+
         // 恢复原始状态
         ColorOutput.setEnabled(enabled: originalState);
       });
@@ -209,7 +209,7 @@ void main() {
 
       test('应该处理特殊字符', () {
         const specialText = 'Text with\nnewlines\tand\tspecial chars: éñ中文';
-        
+
         expect(() => ColorOutput.success(specialText), returnsNormally);
         expect(() => ColorOutput.error(specialText), returnsNormally);
         expect(() => ColorOutput.warning(specialText), returnsNormally);
@@ -218,7 +218,7 @@ void main() {
 
       test('应该处理长文本', () {
         final longText = 'A' * 1000; // 1000个字符的长文本
-        
+
         expect(() => ColorOutput.success(longText), returnsNormally);
         expect(() => ColorOutput.error(longText), returnsNormally);
         expect(() => ColorOutput.warning(longText), returnsNormally);
@@ -227,7 +227,7 @@ void main() {
 
       test('应该处理Unicode字符', () {
         const unicodeText = '🎉 项目创建完成！ ✅ 成功 ❌ 失败 ⚠️ 警告';
-        
+
         expect(() => ColorOutput.success(unicodeText), returnsNormally);
         expect(() => ColorOutput.error(unicodeText), returnsNormally);
         expect(() => ColorOutput.warning(unicodeText), returnsNormally);
@@ -238,7 +238,7 @@ void main() {
     group('Consistency Tests', () {
       test('所有格式化方法应该返回非空字符串', () {
         const testText = 'Test message';
-        
+
         final results = [
           ColorOutput.success(testText),
           ColorOutput.error(testText),
@@ -249,7 +249,7 @@ void main() {
           ColorOutput.filePath(testText),
           ColorOutput.command(testText),
         ];
-        
+
         for (final result in results) {
           expect(result, isNotEmpty);
           expect(result, contains(testText));
@@ -264,7 +264,7 @@ void main() {
           ColorOutput.progressBar(75, 100),
           ColorOutput.progressBar(100, 100),
         ];
-        
+
         for (final result in results) {
           expect(result, isNotEmpty);
           expect(result, contains('%'));
@@ -275,4 +275,4 @@ void main() {
       });
     });
   });
-} 
+}

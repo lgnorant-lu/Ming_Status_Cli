@@ -27,7 +27,6 @@ import 'package:test/test.dart';
 
 /// 测试用的临时配置管理器，使用隔离的临时目录
 class TestConfigManagerForErrors extends ConfigManager {
-
   TestConfigManagerForErrors(this.testWorkingDirectory)
       : super(workingDirectory: testWorkingDirectory);
   final String testWorkingDirectory;
@@ -35,7 +34,6 @@ class TestConfigManagerForErrors extends ConfigManager {
 
 /// 测试用的用户配置管理器，使用隔离的临时目录
 class TestUserConfigManagerForErrors extends UserConfigManager {
-
   TestUserConfigManagerForErrors(this.testUserConfigDir);
   final String testUserConfigDir;
 
@@ -208,8 +206,12 @@ workspace:
         // 模拟并发写入
         final futures = <Future<bool>>[];
         for (var i = 0; i < 10; i++) {
-          futures.add(userConfigManager.setConfigValue(
-              'user.name', 'concurrent_user_$i',),);
+          futures.add(
+            userConfigManager.setConfigValue(
+              'user.name',
+              'concurrent_user_$i',
+            ),
+          );
         }
 
         final results = await Future.wait(futures);
@@ -313,7 +315,9 @@ workspace:
 
         for (final specialValue in specialCharacters) {
           final success = await userConfigManager.setConfigValue(
-              'user.company', specialValue,);
+            'user.company',
+            specialValue,
+          );
           final displayValue = specialValue.length > 20
               ? '${specialValue.substring(0, 20)}...'
               : specialValue;
@@ -335,7 +339,9 @@ workspace:
 
         for (var i = 0; i < 100; i++) {
           await userConfigManager.setConfigValue(
-              'integrations.test_key_$i', 'test_value_$i',);
+            'integrations.test_key_$i',
+            'test_value_$i',
+          );
         }
 
         final endTime = DateTime.now();
@@ -390,7 +396,7 @@ workspace:
             path.join(userConfigManager.userConfigDir, 'config.json');
         final modifiedConfig = UserConfig.defaultConfig().copyWith(
           user: const UserInfo(
-            name: 'external_modified', 
+            name: 'external_modified',
             email: 'test@example.com',
           ),
         );
@@ -401,8 +407,11 @@ workspace:
         userConfigManager.clearCache();
         final config2 =
             await userConfigManager.loadUserConfig(useCache: false); // 强制不使用缓存
-        expect(config2?.user.name, equals('external_modified'),
-            reason: '应该检测到外部配置变化',);
+        expect(
+          config2?.user.name,
+          equals('external_modified'),
+          reason: '应该检测到外部配置变化',
+        );
       });
     });
   });

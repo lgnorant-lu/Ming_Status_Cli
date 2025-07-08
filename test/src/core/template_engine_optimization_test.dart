@@ -29,17 +29,17 @@ void main() {
     setUpAll(() async {
       // 创建测试目录
       testDir = path.join(
-        Directory.systemTemp.path, 
+        Directory.systemTemp.path,
         'template_optimization_test',
       );
       templatesDir = path.join(testDir, 'templates');
-      
+
       if (Directory(testDir).existsSync()) {
         await Directory(testDir).delete(recursive: true);
       }
-      
+
       await Directory(templatesDir).create(recursive: true);
-      
+
       // 创建测试模板
       await _createTestTemplate(templatesDir, 'test_template');
       await _createInvalidTemplate(templatesDir, 'invalid_template');
@@ -59,18 +59,26 @@ void main() {
       test('应该正确处理模板不存在错误', () async {
         expect(
           () async => engine.loadTemplate('non_existent_template'),
-          throwsA(isA<TemplateEngineException>()
-              .having((e) => e.type, 'type', 
-                      TemplateEngineErrorType.templateNotFound,),),
+          throwsA(
+            isA<TemplateEngineException>().having(
+              (e) => e.type,
+              'type',
+              TemplateEngineErrorType.templateNotFound,
+            ),
+          ),
         );
       });
 
       test('应该正确处理无效模板格式错误', () async {
         expect(
           () async => engine.loadTemplate('invalid_template'),
-          throwsA(isA<TemplateEngineException>()
-              .having((e) => e.type, 'type', 
-                      TemplateEngineErrorType.masonError,),),
+          throwsA(
+            isA<TemplateEngineException>().having(
+              (e) => e.type,
+              'type',
+              TemplateEngineErrorType.masonError,
+            ),
+          ),
         );
       });
 
@@ -80,7 +88,7 @@ void main() {
           outputPath: path.join(testDir, 'output'),
           variables: {}, // 缺少必需变量
         );
-        
+
         // generateModule 返回 false 而不是抛出异常
         expect(result, isFalse);
       });
@@ -110,23 +118,27 @@ void main() {
         stopwatch2.stop();
 
         // 缓存加载应该更快（或至少不慢）
-        expect(stopwatch2.elapsedMicroseconds, 
-               lessThanOrEqualTo(stopwatch1.elapsedMicroseconds),);
+        expect(
+          stopwatch2.elapsedMicroseconds,
+          lessThanOrEqualTo(stopwatch1.elapsedMicroseconds),
+        );
       });
 
       test('性能监控应该记录指标', () async {
         await engine.loadTemplate('test_template');
-        
+
         final report = engine.getPerformanceReport();
         expect(report['performance_metrics'], isNotEmpty);
-        expect(report['cache_stats']['generators_cached'], equals(1));
+        final cacheStats = report['cache_stats'] as Map<String, dynamic>;
+        expect(cacheStats['generators_cached'], equals(1));
       });
 
       test('预热功能应该加载所有可用模板', () async {
         await engine.warmup();
-        
+
         final stats = engine.getPerformanceReport();
-        expect(stats['cache_stats']['generators_cached'], greaterThan(0));
+        final cacheStats = stats['cache_stats'] as Map<String, dynamic>;
+        expect(cacheStats['generators_cached'], greaterThan(0));
       });
     });
 
@@ -150,11 +162,11 @@ void main() {
     group('批量操作测试', () {
       test('应该能验证所有模板', () async {
         final results = await engine.validateAllTemplates();
-        
+
         expect(results, isA<Map<String, List<String>>>());
         expect(results.containsKey('test_template'), isTrue);
         expect(results['test_template'], isEmpty); // 无验证错误
-        
+
         if (results.containsKey('invalid_template')) {
           expect(results['invalid_template'], isNotEmpty); // 有验证错误
         }
@@ -162,7 +174,7 @@ void main() {
 
       test('应该提供模板统计信息', () async {
         final stats = await engine.getTemplateStats();
-        
+
         expect(stats['total_templates'], greaterThan(0));
         expect(stats['templates'], isA<Map<String, Map<String, dynamic>>>());
       });
@@ -171,7 +183,7 @@ void main() {
     group('健康检查测试', () {
       test('应该检查引擎健康状态', () async {
         final health = await engine.checkHealth();
-        
+
         expect(health['status'], isIn(['healthy', 'warning', 'unhealthy']));
         expect(health['checks'], isA<Map<String, dynamic>>());
         expect(health['warnings'], isA<List<String>>());
@@ -183,7 +195,7 @@ void main() {
         final badEngine = TemplateEngine(
           workingDirectory: '/non/existent/path',
         );
-        
+
         final health = await badEngine.checkHealth();
         expect(health['status'], equals('unhealthy'));
         expect(health['errors'], isNotEmpty);
@@ -192,34 +204,40 @@ void main() {
 
     group('缓存管理测试', () {
       test('应该能清理所有缓存', () {
-        // 加载一些数据到缓存
-        engine.loadTemplate('test_template');
-        
-        // 清理缓存
-        engine.clearCache();
-        
+        // 加载一些数据到缓存并清理缓存
+        engine
+          ..loadTemplate('test_template')
+          ..clearCache();
+
         final report = engine.getPerformanceReport();
-        expect(report['cache_stats']['generators_cached'], equals(0));
-        expect(report['cache_stats']['metadata_cached'], equals(0));
+        final cacheStats = report['cache_stats'] as Map<String, dynamic>;
+        expect(cacheStats['generators_cached'], equals(0));
+        expect(cacheStats['metadata_cached'], equals(0));
       });
 
       test('应该能重建缓存', () async {
         await engine.loadTemplate('test_template');
-        expect(engine.getPerformanceReport()['cache_stats']['generators_cached'], 
-               equals(1),);
-        
+        final initialReport = engine.getPerformanceReport();
+        final initialCacheStats =
+            initialReport['cache_stats'] as Map<String, dynamic>;
+        expect(
+          initialCacheStats['generators_cached'],
+          equals(1),
+        );
+
         await engine.rebuildCache();
-        
+
         // 重建后应该仍有缓存
         final report = engine.getPerformanceReport();
-        expect(report['cache_stats']['generators_cached'], greaterThan(0));
+        final cacheStats = report['cache_stats'] as Map<String, dynamic>;
+        expect(cacheStats['generators_cached'], greaterThan(0));
       });
     });
 
     group('高级生成功能测试', () {
       test('优化的generateModule应该成功生成', () async {
         final outputPath = path.join(testDir, 'optimized_output');
-        
+
         final result = await engine.generateModule(
           templateName: 'test_template',
           outputPath: outputPath,
@@ -228,10 +246,10 @@ void main() {
             'module_name': 'Optimized Module',
           },
         );
-        
+
         expect(result, isTrue);
         expect(FileUtils.directoryExists(outputPath), isTrue);
-        
+
         // 验证生成的文件
         final entities = FileUtils.listDirectory(outputPath);
         expect(entities, isNotEmpty);
@@ -241,9 +259,9 @@ void main() {
         final variables = {
           'module_id': 'test_module',
         };
-        
+
         final processed = engine.preprocessVariables(variables);
-        
+
         expect(processed['class_name'], isNotNull);
         expect(processed['file_name'], isNotNull);
         expect(processed['generated_date'], isNotNull);
@@ -258,7 +276,7 @@ void main() {
             // 缺少 module_name
           },
         );
-        
+
         expect(errors, isNotEmpty);
         expect(errors.containsKey('module_id'), isTrue);
         expect(errors.containsKey('module_name'), isTrue);
@@ -274,7 +292,7 @@ Future<void> _createTestTemplate(
 ) async {
   final templateDir = path.join(templatesDir, templateName);
   await Directory(templateDir).create(recursive: true);
-  
+
   // 创建 brick.yaml
   final brickYaml = '''
 name: $templateName
@@ -295,9 +313,9 @@ vars:
     description: 作者
     default: Test Author
 ''';
-  
+
   await File(path.join(templateDir, 'brick.yaml')).writeAsString(brickYaml);
-  
+
   // 创建模板文件
   const moduleFile = '''
 /// {{module_name}}
@@ -311,31 +329,31 @@ class {{#pascalCase}}{{module_id}}{{/pascalCase}} {
   }
 }
 ''';
-  
+
   final moduleDir = path.join(templateDir, '__brick__');
   await Directory(moduleDir).create(recursive: true);
-  await File(path.join(moduleDir, 'module.dart'))
-      .writeAsString(moduleFile);
+  await File(path.join(moduleDir, 'module.dart')).writeAsString(moduleFile);
 }
 
 /// 创建无效模板（用于测试错误处理）
 Future<void> _createInvalidTemplate(
-  String templatesDir, String templateName,
+  String templatesDir,
+  String templateName,
 ) async {
   final templateDir = path.join(templatesDir, templateName);
   await Directory(templateDir).create(recursive: true);
-  
+
   // 创建无效的 brick.yaml（缺少必需字段）
   const invalidBrickYaml = '''
 description: 无效模板
 # 缺少name字段
 ''';
-  
+
   await File(
     path.join(templateDir, 'brick.yaml'),
   ).writeAsString(invalidBrickYaml);
-  
+
   // 创建__brick__目录但不添加文件
   final moduleDir = path.join(templateDir, '__brick__');
   await Directory(moduleDir).create(recursive: true);
-} 
+}

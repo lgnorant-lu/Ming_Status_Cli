@@ -23,64 +23,64 @@ import 'package:ming_status_cli/src/utils/progress_manager.dart';
 import 'package:path/path.dart' as path;
 
 /// 环境检查命令
-/// 
+///
 /// 类似Flutter doctor，提供全面的开发环境和工作空间状态检查功能：
-/// 
+///
 /// **检查项目**：
 /// - 系统环境：Dart SDK版本、操作系统信息
 /// - 工作空间配置：初始化状态、配置文件有效性
 /// - 依赖包状态：pubspec.yaml和依赖安装情况
 /// - 文件权限：目录读写权限验证
 /// - 配置深度检查：详细的配置项验证
-/// 
+///
 /// **支持的参数**：
 /// - `--detailed, -d`: 显示详细的检查信息和诊断输出
 /// - `--fix, -f`: 自动修复可修复的问题
 /// - `--config, -c`: 仅执行配置相关的深度检查
-/// 
+///
 /// **使用示例**：
 /// ```bash
 /// # 基础环境检查
 /// ming doctor
-/// 
+///
 /// # 详细检查信息
 /// ming doctor --detailed
-/// 
+///
 /// # 自动修复问题
 /// ming doctor --fix
-/// 
+///
 /// # 仅检查配置
 /// ming doctor --config
 /// ```
-/// 
+///
 /// 提供结构化的检查报告和自动修复建议，确保开发环境的完整性。
 class DoctorCommand extends BaseCommand {
   /// 创建环境检查命令实例
-  /// 
+  ///
   /// 初始化命令行参数解析器，配置支持的标志选项：
   /// - `--detailed/-d`: 显示详细检查信息
-  /// - `--fix/-f`: 启用自动修复功能  
+  /// - `--fix/-f`: 启用自动修复功能
   /// - `--config/-c`: 仅执行配置深度检查
   DoctorCommand() {
     argParser
       ..addFlag(
-      'detailed',
-      abbr: 'd',
-      help: '显示详细的检查信息',
-      negatable: false,
+        'detailed',
+        abbr: 'd',
+        help: '显示详细的检查信息',
+        negatable: false,
       )
       ..addFlag(
-      'fix',
-      abbr: 'f',
-      help: '自动修复可修复的问题',
-      negatable: false,
+        'fix',
+        abbr: 'f',
+        help: '自动修复可修复的问题',
+        negatable: false,
       )
       ..addFlag(
-      'config',
-      abbr: 'c',
-      help: '执行配置深度检查',
-      negatable: false,
-    );
+        'config',
+        abbr: 'c',
+        help: '执行配置深度检查',
+        negatable: false,
+      );
   }
   @override
   String get name => 'doctor';
@@ -92,10 +92,10 @@ class DoctorCommand extends BaseCommand {
   String get invocation => 'ming doctor';
 
   /// 执行环境检查命令
-  /// 
+  ///
   /// 运行所有已配置的健康检查器，生成详细的环境状态报告。
   /// 支持详细模式输出和自动修复功能。
-  /// 
+  ///
   /// 返回：
   /// - 0: 所有检查通过
   /// - 1: 发现问题或检查失败
@@ -213,7 +213,7 @@ class DoctorCommand extends BaseCommand {
   /// 获取所有检查器
   List<HealthChecker> _getCheckers() {
     final configOnly = argResults?['config'] as bool? ?? false;
-    
+
     if (configOnly) {
       // 只进行配置相关检查
       return [
@@ -235,21 +235,21 @@ class DoctorCommand extends BaseCommand {
   }
 
   /// 获取当前配置的检查器列表
-  /// 
+  ///
   /// 公共方法，主要用于测试和外部访问。
   /// 根据命令行参数确定是使用完整检查器列表还是仅配置检查器。
-  /// 
+  ///
   /// 返回：
   /// - [List<HealthChecker>] 当前配置下的所有检查器实例
   List<HealthChecker> getCheckers() => _getCheckers();
 
   /// 获取测试用的检查器列表
-  /// 
+  ///
   /// 专为测试环境设计的方法，允许指定检查模式。
-  /// 
+  ///
   /// 参数：
   /// - [configOnly] 是否仅返回配置相关的检查器，默认为false
-  /// 
+  ///
   /// 返回：
   /// - [List<HealthChecker>] 指定模式下的检查器列表
   List<HealthChecker> getCheckersForTest({bool configOnly = false}) {
@@ -325,16 +325,17 @@ class DoctorCommand extends BaseCommand {
       Logger.info('• 使用 "ming doctor --detailed" 查看详细信息');
       Logger.info('• 使用 "ming doctor --fix" 尝试自动修复');
       Logger.info(
-          '• 参考文档: https://github.com/lgnorant-lu/Ming_Status_Cli/wiki',);
+        '• 参考文档: https://github.com/lgnorant-lu/Ming_Status_Cli/wiki',
+      );
     }
   }
 }
 
 /// 健康检查器基类
-/// 
+///
 /// 定义环境检查器的标准接口，所有具体的检查器都应该继承此抽象类。
 /// 提供基础的检查和自动修复功能框架。
-/// 
+///
 /// 实现类需要定义：
 /// - [name]: 检查器的显示名称
 /// - [check]: 执行具体的检查逻辑
@@ -342,43 +343,43 @@ class DoctorCommand extends BaseCommand {
 /// - [autoFix]: 自动修复的具体实现（可选）
 abstract class HealthChecker {
   /// 检查器的显示名称
-  /// 
+  ///
   /// 用于在检查报告中标识此检查器，应该简洁明了地描述检查的内容。
   String get name;
 
   /// 是否支持自动修复
-  /// 
+  ///
   /// 返回true表示此检查器支持自动修复功能，false表示只能检查不能修复。
   /// 默认为false，支持自动修复的检查器应该重写此属性。
   bool get canAutoFix => false;
 
   /// 执行环境检查
-  /// 
+  ///
   /// 实现具体的检查逻辑，验证相关环境或配置的状态。
-  /// 
+  ///
   /// 返回：
   /// - [ValidationResult] 包含检查结果、错误信息、警告和建议的详细报告
   Future<ValidationResult> check();
 
   /// 自动修复发现的问题
-  /// 
+  ///
   /// 当[canAutoFix]为true时，此方法将被调用来尝试自动修复检查中发现的问题。
-  /// 
+  ///
   /// 返回：
   /// - true: 修复成功
   /// - false: 修复失败或不支持自动修复
-  /// 
+  ///
   /// 默认实现返回false，支持自动修复的检查器应该重写此方法。
   Future<bool> autoFix() async => false;
 }
 
 /// 系统环境检查器
-/// 
+///
 /// 检查Dart运行时环境的基础信息，包括：
 /// - Dart SDK版本信息
 /// - 操作系统类型和版本
 /// - Dart可执行文件路径和可用性
-/// 
+///
 /// 这是最基础的环境检查，确保Dart开发环境正常可用。
 class SystemEnvironmentChecker extends HealthChecker {
   @override
@@ -414,19 +415,19 @@ class SystemEnvironmentChecker extends HealthChecker {
 }
 
 /// 工作空间配置检查器
-/// 
+///
 /// 检查当前目录的Ming Status工作空间配置状态，包括：
 /// - 工作空间初始化状态
 /// - 配置文件的有效性和可读性
 /// - 基础工作空间信息（名称、版本等）
-/// 
+///
 /// 支持自动修复功能，可以在某些情况下自动修复配置问题。
 class WorkspaceConfigChecker extends HealthChecker {
   /// 创建工作空间配置检查器
-  /// 
+  ///
   /// [configManager] 用于访问和操作配置的管理器实例
   WorkspaceConfigChecker(this.configManager);
-  
+
   /// 配置管理器实例
   final ConfigManager configManager;
 
@@ -485,12 +486,12 @@ class WorkspaceConfigChecker extends HealthChecker {
 }
 
 /// 依赖包检查器
-/// 
+///
 /// 检查Dart项目的依赖包安装和配置状态，包括：
 /// - pubspec.yaml文件存在性
 /// - 依赖包安装状态（.dart_tool目录）
 /// - 项目类型识别
-/// 
+///
 /// 为开发者提供依赖管理相关的检查和建议。
 class DependencyChecker extends HealthChecker {
   @override
@@ -526,12 +527,12 @@ class DependencyChecker extends HealthChecker {
 }
 
 /// 文件权限检查器
-/// 
+///
 /// 检查当前工作目录的文件系统权限，确保Ming CLI能够正常操作文件，包括：
 /// - 目录读取权限验证
 /// - 目录写入权限验证
 /// - 临时文件创建和删除测试
-/// 
+///
 /// 权限问题通常需要系统管理员权限解决，此检查器主要用于诊断。
 class FilePermissionChecker extends HealthChecker {
   @override
@@ -570,21 +571,21 @@ class FilePermissionChecker extends HealthChecker {
 }
 
 /// 配置深度检查器
-/// 
+///
 /// 执行工作空间配置的深度验证和分析，包括：
 /// - 基础配置完整性检查
 /// - 模板配置验证
 /// - 环境配置分析
 /// - 验证规则检查
 /// - 高级配置验证功能
-/// 
+///
 /// 提供比基础配置检查更详细和全面的配置分析，支持自动修复功能。
 class ConfigDeepChecker extends HealthChecker {
   /// 创建配置深度检查器
-  /// 
+  ///
   /// [configManager] 用于访问和验证配置的管理器实例
   ConfigDeepChecker(this.configManager);
-  
+
   /// 配置管理器实例
   final ConfigManager configManager;
 
@@ -629,21 +630,20 @@ class ConfigDeepChecker extends HealthChecker {
       // 5. 使用ConfigManager的高级验证功能
       try {
         // 安全地调用验证方法
-        final validationResultFuture = 
+        final validationResultFuture =
             configManager.validateWorkspaceConfig(config);
         final validationResult = await validationResultFuture;
 
-        final isValidResult = 
-            (validationResult as dynamic)?.isValid as bool?;
+        final isValidResult = (validationResult as dynamic)?.isValid as bool?;
         final isValid = isValidResult ?? false;
         if (isValid) {
           result.addSuccess('配置深度验证通过');
         } else {
           final errors = (validationResult as dynamic)?.errors as List?;
           final warnings = (validationResult as dynamic)?.warnings as List?;
-          final suggestions = (validationResult as dynamic)
-              ?.suggestions as List?;
-          
+          final suggestions =
+              (validationResult as dynamic)?.suggestions as List?;
+
           if (errors != null && errors.isNotEmpty) {
             for (final error in errors) {
               result.addError('验证错误: $error');
@@ -671,7 +671,7 @@ class ConfigDeepChecker extends HealthChecker {
   }
 
   Future<void> _checkBasicConfig(
-    dynamic config, 
+    dynamic config,
     ValidationResult result,
   ) async {
     // 检查工作空间基本信息
@@ -703,32 +703,33 @@ class ConfigDeepChecker extends HealthChecker {
         }
       } else {
         // 兼容性处理：如果是Map格式（向后兼容）
-      final configMap = config is Map ? 
-          config : <String, dynamic>{};
-      final workspaceData = configMap['workspace'] is Map ? 
-          configMap['workspace'] as Map : <String, dynamic>{};
-      
-      final workspaceName = workspaceData['name']?.toString();
-      if (workspaceName?.isNotEmpty ?? false) {
-        result.addSuccess('工作空间名称已设置: $workspaceName');
-      } else {
+        final configMap = config is Map ? config : <String, dynamic>{};
+        final workspaceData = configMap['workspace'] is Map
+            ? configMap['workspace'] as Map
+            : <String, dynamic>{};
+
+        final workspaceName = workspaceData['name']?.toString();
+        if (workspaceName?.isNotEmpty ?? false) {
+          result.addSuccess('工作空间名称已设置: $workspaceName');
+        } else {
           result.addWarning('工作空间名称未设置或为空');
-      }
+        }
 
-      final workspaceVersion = workspaceData['version']?.toString();
-      if (workspaceVersion?.isNotEmpty ?? false) {
-        result.addSuccess('工作空间版本已设置: $workspaceVersion');
-      } else {
-        result.addWarning('工作空间版本未设置');
-      }
+        final workspaceVersion = workspaceData['version']?.toString();
+        if (workspaceVersion?.isNotEmpty ?? false) {
+          result.addSuccess('工作空间版本已设置: $workspaceVersion');
+        } else {
+          result.addWarning('工作空间版本未设置');
+        }
 
-      // 检查默认设置
-      final defaultsData = configMap['defaults'] is Map ? 
-          configMap['defaults'] as Map : <String, dynamic>{};
-      final defaultAuthor = defaultsData['author']?.toString();
-      if (defaultAuthor?.isNotEmpty ?? false) {
-        result.addSuccess('默认作者已设置: $defaultAuthor');
-      } else {
+        // 检查默认设置
+        final defaultsData = configMap['defaults'] is Map
+            ? configMap['defaults'] as Map
+            : <String, dynamic>{};
+        final defaultAuthor = defaultsData['author']?.toString();
+        if (defaultAuthor?.isNotEmpty ?? false) {
+          result.addSuccess('默认作者已设置: $defaultAuthor');
+        } else {
           result.addWarning('默认作者未设置，建议设置以便自动填充');
         }
       }
@@ -738,7 +739,7 @@ class ConfigDeepChecker extends HealthChecker {
   }
 
   Future<void> _checkTemplateConfig(
-    dynamic config, 
+    dynamic config,
     ValidationResult result,
   ) async {
     try {
@@ -763,32 +764,31 @@ class ConfigDeepChecker extends HealthChecker {
         }
       } else {
         // 兼容性处理：如果是Map格式（向后兼容）
-      final configMap = config is Map ? config : <String, dynamic>{};
-      final templatesData = configMap['templates'] is Map ? 
-          configMap['templates'] as Map : null;
-      
-      if (templatesData != null) {
-        result.addSuccess('模板配置已启用');
+        final configMap = config is Map ? config : <String, dynamic>{};
+        final templatesData = configMap['templates'] is Map
+            ? configMap['templates'] as Map
+            : null;
 
-        // 检查模板路径
-        final localPath = templatesData['localPath']?.toString();
-        if (localPath?.isNotEmpty ?? false) {
-          if (Directory(localPath!).existsSync()) {
-            result.addSuccess('模板目录存在: $localPath');
-          } else {
-            result.addWarning('模板目录不存在: $localPath');
+        if (templatesData != null) {
+          result.addSuccess('模板配置已启用');
+
+          // 检查模板路径
+          final localPath = templatesData['localPath']?.toString();
+          if (localPath?.isNotEmpty ?? false) {
+            if (Directory(localPath!).existsSync()) {
+              result.addSuccess('模板目录存在: $localPath');
+            } else {
+              result.addWarning('模板目录不存在: $localPath');
+            }
           }
-        }
 
-        // 检查缓存设置
-        final cacheTimeout = templatesData['cacheTimeout'];
-        if (cacheTimeout != null && 
-            cacheTimeout is int && 
-            cacheTimeout > 0) {
-          result.addInfo('模板缓存超时: $cacheTimeout秒');
-        }
-      } else {
-        result.addWarning('模板配置未设置');
+          // 检查缓存设置
+          final cacheTimeout = templatesData['cacheTimeout'];
+          if (cacheTimeout != null && cacheTimeout is int && cacheTimeout > 0) {
+            result.addInfo('模板缓存超时: $cacheTimeout秒');
+          }
+        } else {
+          result.addWarning('模板配置未设置');
         }
       }
     } catch (e) {
@@ -797,16 +797,16 @@ class ConfigDeepChecker extends HealthChecker {
   }
 
   Future<void> _checkEnvironmentConfig(
-    dynamic config, 
+    dynamic config,
     ValidationResult result,
   ) async {
     try {
       // 安全访问配置对象
       final configMap = config is Map ? config : <String, dynamic>{};
       final environments = configMap['environments'];
-      
-      if (environments != null && 
-          environments is Map && 
+
+      if (environments != null &&
+          environments is Map &&
           environments.isNotEmpty) {
         final envKeys = environments.keys.map((k) => k.toString()).join(', ');
         result.addSuccess('环境配置已设置: $envKeys');
@@ -829,7 +829,7 @@ class ConfigDeepChecker extends HealthChecker {
   }
 
   Future<void> _checkValidationConfig(
-    dynamic config, 
+    dynamic config,
     ValidationResult result,
   ) async {
     try {
@@ -849,28 +849,29 @@ class ConfigDeepChecker extends HealthChecker {
         }
       } else {
         // 兼容性处理：如果是Map格式（向后兼容）
-      final configMap = config is Map ? config : <String, dynamic>{};
-      final validationData = configMap['validation'] is Map ? 
-          configMap['validation'] as Map : null;
-      
-      if (validationData != null) {
-        result.addSuccess('验证规则已配置');
+        final configMap = config is Map ? config : <String, dynamic>{};
+        final validationData = configMap['validation'] is Map
+            ? configMap['validation'] as Map
+            : null;
 
-        final strictMode = validationData['strictMode'];
-        if (strictMode == true) {
-          result.addInfo('严格模式已启用');
-        }
+        if (validationData != null) {
+          result.addSuccess('验证规则已配置');
 
-        final minCoverage = validationData['minCoverage'];
-        if (minCoverage != null && minCoverage is int) {
-          if (minCoverage >= 80) {
-            result.addSuccess('测试覆盖率要求: $minCoverage%');
-          } else {
-              result.addWarning('测试覆盖率要求较低: $minCoverage%，建议至少80%');
+          final strictMode = validationData['strictMode'];
+          if (strictMode == true) {
+            result.addInfo('严格模式已启用');
           }
-        }
-      } else {
-        result.addWarning('验证规则未配置');
+
+          final minCoverage = validationData['minCoverage'];
+          if (minCoverage != null && minCoverage is int) {
+            if (minCoverage >= 80) {
+              result.addSuccess('测试覆盖率要求: $minCoverage%');
+            } else {
+              result.addWarning('测试覆盖率要求较低: $minCoverage%，建议至少80%');
+            }
+          }
+        } else {
+          result.addWarning('验证规则未配置');
         }
       }
     } catch (e) {
@@ -890,19 +891,19 @@ class ConfigDeepChecker extends HealthChecker {
 }
 
 /// 用户配置检查器
-/// 
+///
 /// 检查用户级别的配置设置和目录结构，包括：
 /// - 用户主目录下的Ming Status配置目录
 /// - 用户配置文件的存在性和有效性
 /// - 用户配置管理器的可用性
-/// 
+///
 /// 注意：此功能在Phase 1中处于开发状态，完整功能将在Phase 2中实现。
 class UserConfigChecker extends HealthChecker {
   /// 创建用户配置检查器
-  /// 
+  ///
   /// [configManager] 配置管理器实例，用于访问用户配置功能
   UserConfigChecker(this.configManager);
-  
+
   /// 配置管理器实例
   final ConfigManager configManager;
 
@@ -919,17 +920,18 @@ class UserConfigChecker extends HealthChecker {
     try {
       // 检查用户配置管理器是否可用
       // 在Phase 1中，用户配置管理功能还未实现
-      final hasUserConfigManagerMethod = 
+      final hasUserConfigManagerMethod =
           (configManager.runtimeType.toString() as String?)?.contains(
-              'ConfigManager',
-          ) ?? false;
-      
+                'ConfigManager',
+              ) ??
+              false;
+
       if (hasUserConfigManagerMethod) {
         result.addInfo('用户配置管理功能检查（Phase 1：功能开发中）');
-        
+
         // 检查用户主目录下的配置目录
         try {
-          final userHomeDir = Platform.environment['USERPROFILE'] ?? 
+          final userHomeDir = Platform.environment['USERPROFILE'] ??
               Platform.environment['HOME'];
           if (userHomeDir != null) {
             final mingConfigDir = path.join(userHomeDir, '.ming_status');
@@ -937,10 +939,10 @@ class UserConfigChecker extends HealthChecker {
               result.addSuccess('用户配置目录存在: $mingConfigDir');
             } else {
               result.addInfo(
-                  '用户配置目录不存在: $mingConfigDir（首次使用时会自动创建）',
+                '用户配置目录不存在: $mingConfigDir（首次使用时会自动创建）',
               );
             }
-            
+
             final userConfigFile = path.join(mingConfigDir, 'config.yaml');
             if (File(userConfigFile).existsSync()) {
               result.addSuccess('用户配置文件存在: $userConfigFile');
@@ -953,7 +955,7 @@ class UserConfigChecker extends HealthChecker {
         } catch (e) {
           result.addWarning('用户配置目录检查失败: $e');
         }
-        
+
         // 提示用户配置功能的状态
         result
           ..addInfo('用户配置管理功能将在Phase 2中完整实现')
@@ -976,20 +978,20 @@ class UserConfigChecker extends HealthChecker {
 }
 
 /// 配置模板检查器
-/// 
+///
 /// 检查配置模板系统的完整性和可用性，包括：
 /// - 可用配置模板的列表和验证
 /// - 内置模板（basic、enterprise）的有效性
 /// - 模板目录结构的存在性
 /// - 工作空间模板的可用性检查
-/// 
+///
 /// 确保模板引擎能够正常工作并提供必要的初始化模板。
 class ConfigTemplateChecker extends HealthChecker {
   /// 创建配置模板检查器
-  /// 
+  ///
   /// [configManager] 配置管理器实例，用于访问模板功能
   ConfigTemplateChecker(this.configManager);
-  
+
   /// 配置管理器实例
   final ConfigManager configManager;
 
@@ -1003,20 +1005,19 @@ class ConfigTemplateChecker extends HealthChecker {
     try {
       // 检查可用的配置模板
       final templatesResult = configManager.listConfigTemplates() as dynamic;
-      final templates = templatesResult is List ? 
-          templatesResult.cast<String>() : <String>[];
+      final templates =
+          templatesResult is List ? templatesResult.cast<String>() : <String>[];
       if (templates.isNotEmpty) {
         result.addSuccess(
-            '可用配置模板: ${templates.join(', ')}',
+          '可用配置模板: ${templates.join(', ')}',
         );
 
         // 验证内置模板
         final builtinTemplates = ['basic', 'enterprise'];
         for (final template in builtinTemplates) {
-          final validationFuture = 
+          final validationFuture =
               configManager.validateConfigTemplate(template) as Future?;
-          final isValid = 
-              (await validationFuture as bool?) ?? false;
+          final isValid = (await validationFuture as bool?) ?? false;
           if (isValid) {
             result.addSuccess('$template 模板验证通过');
           } else {
@@ -1028,14 +1029,12 @@ class ConfigTemplateChecker extends HealthChecker {
       }
 
       // 检查模板目录
-      final templatesPathResult = 
-          configManager.getTemplatesPath() as dynamic;
-      final templatesPath = templatesPathResult is String ? 
-          templatesPathResult : '';
-      if (templatesPath.isNotEmpty && 
-          Directory(templatesPath).existsSync()) {
+      final templatesPathResult = configManager.getTemplatesPath() as dynamic;
+      final templatesPath =
+          templatesPathResult is String ? templatesPathResult : '';
+      if (templatesPath.isNotEmpty && Directory(templatesPath).existsSync()) {
         result.addSuccess('模板目录存在: $templatesPath');
-        
+
         final workspaceTemplatesPath = '$templatesPath/workspace';
         if (Directory(workspaceTemplatesPath).existsSync()) {
           result.addSuccess('工作空间模板目录存在');

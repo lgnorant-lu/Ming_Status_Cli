@@ -19,7 +19,7 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 /// 错误恢复管理器
 class ErrorRecoveryManager {
   /// 创建错误恢复管理器
-  /// 
+  ///
   /// 参数：
   /// - [templateEngine] 模板引擎实例
   ErrorRecoveryManager(this.templateEngine) {
@@ -29,7 +29,7 @@ class ErrorRecoveryManager {
       FileSystemErrorRecoveryStrategy(),
     ]);
   }
-  
+
   /// 模板引擎实例引用，用于错误恢复策略（使用动态类型避免循环依赖）
   final dynamic templateEngine;
   final List<ErrorRecoveryStrategy> _strategies = [];
@@ -54,7 +54,7 @@ class ErrorRecoveryManager {
         }
       }
     }
-    
+
     return ErrorRecoveryResult.createFailure('无可用的恢复策略');
   }
 }
@@ -66,10 +66,10 @@ class IntelligentErrorRecoveryManager {
 
   /// 模板引擎实例引用（使用动态类型避免循环依赖）
   final dynamic templateEngine;
-  
+
   /// 错误恢复历史记录
   final List<ErrorRecoveryRecord> _recoveryHistory = [];
-  
+
   /// 错误模式分析器
   final ErrorPatternAnalyzer _patternAnalyzer = ErrorPatternAnalyzer();
 
@@ -80,7 +80,7 @@ class IntelligentErrorRecoveryManager {
   ) async {
     try {
       cli_logger.Logger.info('开始智能错误恢复: ${error.type}');
-      
+
       // 1. 记录错误
       final record = ErrorRecoveryRecord(
         error: error,
@@ -88,28 +88,29 @@ class IntelligentErrorRecoveryManager {
         context: context,
       );
       _recoveryHistory.add(record);
-      
+
       // 2. 分析错误模式
-      final pattern = await _patternAnalyzer.analyzeError(error, _recoveryHistory);
-      
+      final pattern =
+          await _patternAnalyzer.analyzeError(error, _recoveryHistory);
+
       // 3. 选择恢复策略
       final strategy = await _selectRecoveryStrategy(error, pattern, context);
-      
+
       // 4. 执行恢复
       final result = await strategy.recover(error);
-      
+
       // 5. 更新恢复记录
-      record.recoveryResult = result;
-      record.recoveryStrategy = strategy.runtimeType.toString();
-      
+      record
+        ..recoveryResult = result
+        ..recoveryStrategy = strategy.runtimeType.toString();
+
       if (result.success) {
         cli_logger.Logger.info('智能错误恢复成功: ${result.message}');
       } else {
         cli_logger.Logger.warning('智能错误恢复失败: ${result.message}');
       }
-      
+
       return result;
-      
     } catch (e) {
       cli_logger.Logger.error('智能错误恢复过程异常', error: e);
       return ErrorRecoveryResult.createFailure('恢复过程异常: $e');
@@ -129,17 +130,18 @@ class IntelligentErrorRecoveryManager {
 
     final totalAttempts = _recoveryHistory.length;
     final successfulRecoveries = _recoveryHistory
-        .where((r) => r.recoveryResult?.success == true)
+        .where((r) => r.recoveryResult?.success ?? false)
         .length;
-    
+
     final errorTypeCounts = <String, int>{};
     final strategySuccess = <String, int>{};
-    
+
     for (final record in _recoveryHistory) {
       final errorType = record.error.type.toString();
       errorTypeCounts[errorType] = (errorTypeCounts[errorType] ?? 0) + 1;
-      
-      if (record.recoveryResult?.success == true && record.recoveryStrategy != null) {
+
+      if ((record.recoveryResult?.success ?? false) &&
+          record.recoveryStrategy != null) {
         final strategy = record.recoveryStrategy!;
         strategySuccess[strategy] = (strategySuccess[strategy] ?? 0) + 1;
       }
@@ -179,12 +181,22 @@ class IntelligentErrorRecoveryManager {
     switch (error.type) {
       case TemplateEngineErrorType.templateNotFound:
         return TemplateNotFoundRecoveryStrategy(templateEngine);
-      
+
       case TemplateEngineErrorType.fileSystemError:
       case TemplateEngineErrorType.permissionError:
         return FileSystemErrorRecoveryStrategy();
-      
-      default:
+
+      case TemplateEngineErrorType.invalidTemplateFormat:
+      case TemplateEngineErrorType.variableValidationFailed:
+      case TemplateEngineErrorType.outputPathConflict:
+      case TemplateEngineErrorType.masonError:
+      case TemplateEngineErrorType.hookExecutionError:
+      case TemplateEngineErrorType.networkError:
+      case TemplateEngineErrorType.versionCompatibilityError:
+      case TemplateEngineErrorType.dependencyCompatibilityError:
+      case TemplateEngineErrorType.platformCompatibilityError:
+      case TemplateEngineErrorType.templateComplianceError:
+      case TemplateEngineErrorType.unknown:
         return FileSystemErrorRecoveryStrategy(); // 默认策略
     }
   }
@@ -194,28 +206,30 @@ class IntelligentErrorRecoveryManager {
     final recentRecords = _recoveryHistory
         .where((r) => DateTime.now().difference(r.timestamp).inDays <= 7)
         .toList();
-    
+
     final dailyStats = <String, Map<String, int>>{};
-    
+
     for (final record in recentRecords) {
       final day = record.timestamp.toIso8601String().substring(0, 10);
       dailyStats[day] ??= <String, int>{'attempts': 0, 'successes': 0};
       dailyStats[day]!['attempts'] = dailyStats[day]!['attempts']! + 1;
-      
-      if (record.recoveryResult?.success == true) {
+
+      if (record.recoveryResult?.success ?? false) {
         dailyStats[day]!['successes'] = dailyStats[day]!['successes']! + 1;
       }
     }
-    
+
     return dailyStats.entries
-        .map((e) => <String, dynamic>{
-          'date': e.key,
-          'attempts': e.value['attempts'],
-          'successes': e.value['successes'],
-          'success_rate': e.value['attempts']! > 0 
-              ? e.value['successes']! / e.value['attempts']!
-              : 0.0,
-        },)
+        .map(
+          (e) => <String, dynamic>{
+            'date': e.key,
+            'attempts': e.value['attempts'],
+            'successes': e.value['successes'],
+            'success_rate': e.value['attempts']! > 0
+                ? e.value['successes']! / e.value['attempts']!
+                : 0.0,
+          },
+        )
         .toList()
       ..sort((a, b) => (a['date']! as String).compareTo(b['date']! as String));
   }
@@ -232,12 +246,16 @@ class ErrorRecoveryRecord {
 
   /// 错误异常信息
   final TemplateEngineException error;
+
   /// 错误发生时间戳
   final DateTime timestamp;
+
   /// 钩子上下文（可选）
   final HookContext? context;
+
   /// 恢复结果（可选）
   ErrorRecoveryResult? recoveryResult;
+
   /// 恢复策略名称（可选）
   String? recoveryStrategy;
 }
@@ -255,9 +273,12 @@ class ErrorPatternAnalyzer {
         .toList();
 
     final frequency = recentSimilarErrors.length;
-    final recentSuccessRate = recentSimilarErrors.isEmpty ? 0.0 :
-        recentSimilarErrors.where((r) => r.recoveryResult?.success == true).length /
-        recentSimilarErrors.length;
+    final recentSuccessRate = recentSimilarErrors.isEmpty
+        ? 0.0
+        : recentSimilarErrors
+                .where((r) => r.recoveryResult?.success ?? false)
+                .length /
+            recentSimilarErrors.length;
 
     return ErrorPattern(
       errorType: error.type,
@@ -280,10 +301,13 @@ class ErrorPattern {
 
   /// 错误类型
   final TemplateEngineErrorType errorType;
+
   /// 频率
   final int frequency;
+
   /// 最近成功率
   final double recentSuccessRate;
+
   /// 是否重复发生
   final bool isRecurring;
 }

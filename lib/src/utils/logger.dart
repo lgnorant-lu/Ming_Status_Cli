@@ -20,12 +20,16 @@ import 'package:ansi_styles/ansi_styles.dart';
 enum LogLevel {
   /// 调试信息 - 灰色
   debug,
+
   /// 一般信息 - 蓝色
   info,
+
   /// 成功信息 - 绿色
   success,
+
   /// 警告信息 - 黄色
   warning,
+
   /// 错误信息 - 红色
   error,
 }

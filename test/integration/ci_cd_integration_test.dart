@@ -13,11 +13,12 @@ Change History:
 */
 
 import 'dart:io';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
+
 import 'package:ming_status_cli/src/core/ci_cd_integration.dart';
 import 'package:ming_status_cli/src/core/validation_report_generator.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
 
 void main() {
   group('CI/CD Integration Tests', () {
@@ -35,7 +36,7 @@ void main() {
     });
 
     tearDown(() async {
-      if (await tempDir.exists()) {
+      if (tempDir.existsSync()) {
         await tempDir.delete(recursive: true);
       }
     });
@@ -109,8 +110,9 @@ void main() {
         );
 
         final configFile = File(
-            path.join(tempDir.path, '.github', 'workflows', 'validation.yml'),);
-        expect(await configFile.exists(), isTrue);
+          path.join(tempDir.path, '.github', 'workflows', 'validation.yml'),
+        );
+        expect(configFile.existsSync(), isTrue);
 
         final content = await configFile.readAsString();
         expect(content, contains('name: Ming Status CLI Validation'));
@@ -125,7 +127,7 @@ void main() {
         );
 
         final configFile = File(path.join(tempDir.path, '.gitlab-ci.yml'));
-        expect(await configFile.exists(), isTrue);
+        expect(configFile.existsSync(), isTrue);
 
         final content = await configFile.readAsString();
         expect(content, contains('stages:'));
@@ -140,7 +142,7 @@ void main() {
         );
 
         final configFile = File(path.join(tempDir.path, 'Jenkinsfile'));
-        expect(await configFile.exists(), isTrue);
+        expect(configFile.existsSync(), isTrue);
 
         final content = await configFile.readAsString();
         expect(content, contains('pipeline {'));
@@ -155,7 +157,7 @@ void main() {
         );
 
         final configFile = File(path.join(tempDir.path, 'azure-pipelines.yml'));
-        expect(await configFile.exists(), isTrue);
+        expect(configFile.existsSync(), isTrue);
 
         final content = await configFile.readAsString();
         expect(content, contains('trigger:'));
@@ -213,7 +215,7 @@ void main() {
 
         final reportFile =
             File(path.join(tempDir.path, 'validation-report.html'));
-        expect(await reportFile.exists(), isTrue);
+        expect(reportFile.existsSync(), isTrue);
 
         final content = await reportFile.readAsString();
         expect(content, contains('<!DOCTYPE html>'));
@@ -241,7 +243,7 @@ void main() {
 
         final reportFile =
             File(path.join(tempDir.path, 'validation-report.json'));
-        expect(await reportFile.exists(), isTrue);
+        expect(reportFile.existsSync(), isTrue);
 
         final content = await reportFile.readAsString();
         expect(content, contains('"is_valid": true'));
@@ -266,7 +268,7 @@ void main() {
         );
 
         final reportFile = File(path.join(tempDir.path, 'test-results.xml'));
-        expect(await reportFile.exists(), isTrue);
+        expect(reportFile.existsSync(), isTrue);
 
         final content = await reportFile.readAsString();
         expect(content, contains('<?xml version="1.0"'));
@@ -285,15 +287,17 @@ void main() {
         );
 
         expect(
-            await File(path.join(tempDir.path, 'validation-report.html'))
-                .exists(),
-            isTrue,);
+          File(path.join(tempDir.path, 'validation-report.html')).existsSync(),
+          isTrue,
+        );
         expect(
-            await File(path.join(tempDir.path, 'validation-report.json'))
-                .exists(),
-            isTrue,);
-        expect(await File(path.join(tempDir.path, 'test-results.xml')).exists(),
-            isTrue,);
+          File(path.join(tempDir.path, 'validation-report.json')).existsSync(),
+          isTrue,
+        );
+        expect(
+          File(path.join(tempDir.path, 'test-results.xml')).existsSync(),
+          isTrue,
+        );
       });
     });
   });

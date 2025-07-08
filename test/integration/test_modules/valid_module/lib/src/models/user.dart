@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 part 'user.g.dart';
 
 /// User data model with proper documentation.
-/// 
+///
 /// This class represents a user in the system with
 /// basic information and JSON serialization support.
 @JsonSerializable()

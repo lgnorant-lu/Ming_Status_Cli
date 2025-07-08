@@ -369,7 +369,6 @@ void main() {
 
 /// 测试专用的UserConfigManager，支持自定义配置目录
 class TestUserConfigManager extends UserConfigManager {
-
   TestUserConfigManager(this._testConfigDir);
   final String _testConfigDir;
 
