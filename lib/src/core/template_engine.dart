@@ -151,7 +151,7 @@ class TemplateEngine implements BaseTemplateEngine {
   /// ```
   Future<List<String>> getAvailableTemplates() async {
     try {
-      final templatesPath = path.join(workingDirectory, 'templates');
+      final templatesPath = _getTemplatesDirectory();
 
       if (!FileUtils.directoryExists(templatesPath)) {
         cli_logger.Logger.warning('模板目录不存在: $templatesPath');
@@ -189,7 +189,83 @@ class TemplateEngine implements BaseTemplateEngine {
 
   /// 获取模板路径
   String getTemplatePath(String templateName) {
-    return path.join(workingDirectory, 'templates', templateName);
+    return path.join(_getTemplatesDirectory(), templateName);
+  }
+
+  /// 获取模板目录路径（智能查找）
+  String _getTemplatesDirectory() {
+    // 首先尝试当前工作目录
+    final localTemplatesPath = path.join(workingDirectory, 'templates');
+    cli_logger.Logger.debug('检查本地模板目录: $localTemplatesPath');
+    if (FileUtils.directoryExists(localTemplatesPath) &&
+        _hasValidTemplates(localTemplatesPath)) {
+      cli_logger.Logger.debug('使用本地模板目录: $localTemplatesPath');
+      return localTemplatesPath;
+    }
+
+    // 尝试查找项目根目录（通过查找pubspec.yaml或ming_status.yaml）
+    final projectRoot = _findProjectRoot(workingDirectory);
+    cli_logger.Logger.debug('查找到项目根目录: $projectRoot');
+    if (projectRoot != null) {
+      final projectTemplatesPath = path.join(projectRoot, 'templates');
+      cli_logger.Logger.debug('检查项目模板目录: $projectTemplatesPath');
+      if (FileUtils.directoryExists(projectTemplatesPath)) {
+        cli_logger.Logger.debug('使用项目模板目录: $projectTemplatesPath');
+        return projectTemplatesPath;
+      }
+    }
+
+    // 回退到当前工作目录
+    cli_logger.Logger.debug('回退到本地模板目录: $localTemplatesPath');
+    return localTemplatesPath;
+  }
+
+  /// 查找项目根目录
+  String? _findProjectRoot(String startPath) {
+    var currentPath = startPath;
+
+    while (true) {
+      // 检查是否有项目标识文件或templates目录
+      if (FileUtils.fileExists(path.join(currentPath, 'pubspec.yaml')) ||
+          FileUtils.fileExists(path.join(currentPath, 'ming_status.yaml')) ||
+          _hasValidTemplates(path.join(currentPath, 'templates'))) {
+        return currentPath;
+      }
+
+      // 向上一级目录
+      final parentPath = path.dirname(currentPath);
+      if (parentPath == currentPath) {
+        // 已经到达根目录
+        break;
+      }
+      currentPath = parentPath;
+    }
+
+    return null;
+  }
+
+  /// 检查模板目录是否包含有效的模板
+  bool _hasValidTemplates(String templatesPath) {
+    try {
+      final dir = Directory(templatesPath);
+      if (!dir.existsSync()) return false;
+
+      // 检查是否有子目录（模板目录）
+      final entities = dir.listSync();
+      for (final entity in entities) {
+        if (entity is Directory) {
+          // 检查是否有brick.yaml文件
+          final brickYaml = File(path.join(entity.path, 'brick.yaml'));
+          if (brickYaml.existsSync()) {
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (e) {
+      cli_logger.Logger.debug('检查模板目录时出错: $e');
+      return false;
+    }
   }
 
   /// 加载模板生成器（优化版本）

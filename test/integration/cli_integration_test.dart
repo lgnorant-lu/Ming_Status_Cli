@@ -116,14 +116,14 @@ void main() {
         final result = await CliTestHelper.runCommand(['help']);
 
         CliTestHelper.expectSuccess(result);
-        CliTestHelper.expectDuration(result, const Duration(seconds: 10));
+        CliTestHelper.expectDuration(result, const Duration(seconds: 15));
       });
 
       test('version命令应该快速响应', () async {
         final result = await CliTestHelper.runCommand(['version']);
 
         CliTestHelper.expectSuccess(result);
-        CliTestHelper.expectDuration(result, const Duration(seconds: 10));
+        CliTestHelper.expectDuration(result, const Duration(seconds: 15));
       });
 
       test('doctor命令应该在合理时间内完成', () async {

@@ -32,7 +32,6 @@ enum CacheStrategy {
 
 /// 缓存项
 class CacheItem<T> {
-
   CacheItem({
     required this.key,
     required this.value,
@@ -43,6 +42,7 @@ class CacheItem<T> {
         lastAccessedAt = DateTime.now(),
         accessCount = 1,
         expiresAt = expiresAt;
+
   /// 缓存键
   final String key;
 
@@ -134,7 +134,6 @@ class CacheStats {
 
 /// 内存缓存
 class MemoryCache<T> {
-
   MemoryCache({
     this.strategy = CacheStrategy.lru,
     this.maxItems = 1000,
@@ -146,6 +145,7 @@ class MemoryCache<T> {
       _cleanup();
     });
   }
+
   /// 缓存策略
   final CacheStrategy strategy;
 
@@ -302,7 +302,8 @@ class MemoryCache<T> {
       case CacheStrategy.fifo:
         keyToEvict = _cache.entries
             .reduce(
-                (a, b) => a.value.createdAt.isBefore(b.value.createdAt) ? a : b,)
+              (a, b) => a.value.createdAt.isBefore(b.value.createdAt) ? a : b,
+            )
             .key;
       case CacheStrategy.ttl:
         keyToEvict = _cache.entries
@@ -370,11 +371,11 @@ class MemoryCache<T> {
 
 /// 磁盘缓存
 class DiskCache {
-
   DiskCache({
     required this.cacheDirectory,
     this.maxSizeBytes = 500 * 1024 * 1024, // 500MB
   });
+
   /// 缓存目录
   final String cacheDirectory;
 
@@ -611,7 +612,9 @@ class CacheManager {
       // 将磁盘缓存的数据加载到内存缓存
       try {
         final decoded = jsonDecode(utf8.decode(diskResult));
-        _memoryCache?.set(key, decoded);
+        // 注意：从磁盘缓存恢复时不设置TTL，避免覆盖已过期的内存缓存
+        // TODO: 在Phase 2中改进磁盘缓存以支持TTL信息存储
+        // _memoryCache?.set(key, decoded);
         return decoded as T?;
       } catch (e) {
         Logger.warning('磁盘缓存数据解码失败: $key - $e');
@@ -628,12 +631,15 @@ class CacheManager {
     // 设置内存缓存
     _memoryCache?.set(key, value, ttl: ttl);
 
-    // 设置磁盘缓存
-    try {
-      final encoded = utf8.encode(jsonEncode(value));
-      await _diskCache?.set(key, Uint8List.fromList(encoded));
-    } catch (e) {
-      Logger.warning('磁盘缓存设置失败: $key - $e');
+    // 只有在没有设置TTL时才设置磁盘缓存
+    // 因为磁盘缓存不支持TTL，避免过期数据从磁盘恢复
+    if (ttl == null) {
+      try {
+        final encoded = utf8.encode(jsonEncode(value));
+        await _diskCache?.set(key, Uint8List.fromList(encoded));
+      } catch (e) {
+        Logger.warning('磁盘缓存设置失败: $key - $e');
+      }
     }
   }
 
