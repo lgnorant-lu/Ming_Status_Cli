@@ -197,5 +197,5 @@ dart format --set-exit-if-changed .
 
 - [Git工作流规范](./Git-Workflow.md)
 - [项目贡献指南](../README.md#贡献指南)
-- [代码风格指南](./Coding-Style.md) (待创建)
-- [测试规范](./Testing-Guidelines.md) (待创建)
+- [代码风格指南](./developer_guide.md#代码规范)
+- [测试规范](./developer_guide.md#测试指南)

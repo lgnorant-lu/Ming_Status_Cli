@@ -63,8 +63,18 @@ class CliTestHelper {
 
   /// 初始化测试环境
   static Future<void> setUpAll() async {
-    // 设置CLI可执行文件路径
-    _cliPath = path.join('bin', 'ming_status_cli.dart');
+    // 获取项目根目录（从当前测试文件位置向上查找）
+    var currentDir = Directory.current;
+    while (!File(path.join(currentDir.path, 'pubspec.yaml')).existsSync()) {
+      final parent = currentDir.parent;
+      if (parent.path == currentDir.path) {
+        throw StateError('无法找到项目根目录');
+      }
+      currentDir = parent;
+    }
+
+    // 设置CLI可执行文件路径（使用绝对路径）
+    _cliPath = path.join(currentDir.path, 'bin', 'ming_status_cli.dart');
 
     // 验证CLI文件存在
     if (!File(_cliPath).existsSync()) {

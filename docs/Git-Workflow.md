@@ -213,4 +213,4 @@ conventional-changelog -p angular -i CHANGELOG.md -s
 - [约定式提交规范官方文档](https://www.conventionalcommits.org/)
 - [项目贡献指南](../README.md#贡献指南)
 - [代码审查规范](./Code-Review.md) (待创建)
-- [发布流程文档](./Release-Process.md) (待创建)
+- [发布流程文档](./developer_guide.md#发布流程)
