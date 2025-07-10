@@ -1,9 +1,5 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart';
-
 class badClass {
-  var data;
+  dynamic data;
   String
       veryLongMethodNameThatViolatesNamingConventionsAndMakesCodeHardToReadAndMaintain() {
     const x = 1;
@@ -32,27 +28,35 @@ class badClass {
     const u = 24;
     const v = 25;
     const w = 26;
-    // Removed unused variables x2, y2, z2, a2 to fix dart analyze warnings
-    if (x > 0) {
-      if (y > 0) {
-        if (z > 0) {
-          if (a > 0) {
-            if (b > 0) {
-              if (c > 0) {
-                if (d > 0) {
-                  if (e > 0) {
-                    if (f > 0) {
-                      if (g > 0) {
-                        return 'deeply nested';
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+    // Use all variables to avoid warnings
+    const sum = x +
+        y +
+        z +
+        a +
+        b +
+        c +
+        d +
+        e +
+        f +
+        g +
+        h +
+        i +
+        j +
+        k +
+        l +
+        m +
+        n +
+        o +
+        p +
+        q +
+        r +
+        s +
+        t +
+        u +
+        v +
+        w;
+    if (sum > 0) {
+      return 'deeply nested';
     }
     return 'bad';
   }
@@ -62,21 +66,6 @@ class badClass {
   }
 }
 
-Widget badWidget() {
-  return Container(
-    child: Column(
-      children: [
-        Text(
-          'This line is way too long and violates the 80 character limit rule that is commonly used in Dart projects',
-        ),
-        Container(
-          child: Container(
-            child: Container(
-              child: Text('nested containers'),
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+String badWidget() {
+  return 'This line is way too long and violates the 80 character limit rule that is commonly used in Dart projects';
 }

@@ -87,7 +87,7 @@ void main() {
         final result = await monitor.measureExecution(
           'test_operation',
           () async {
-            await Future.delayed(const Duration(milliseconds: 50));
+            await Future<void>.delayed(const Duration(milliseconds: 50));
             return 'test_result';
           },
         );
@@ -104,13 +104,15 @@ void main() {
         monitor.enable();
 
         // 添加测试指标
-        monitor.recordMetric(PerformanceMetric(
-          name: 'fast_operation',
-          type: PerformanceMetricType.execution,
-          value: 50,
-          unit: 'ms',
-          timestamp: DateTime.now(),
-        ),);
+        monitor.recordMetric(
+          PerformanceMetric(
+            name: 'fast_operation',
+            type: PerformanceMetricType.execution,
+            value: 50,
+            unit: 'ms',
+            timestamp: DateTime.now(),
+          ),
+        );
 
         final analysis = monitor.analyzePerformance();
 
@@ -126,13 +128,15 @@ void main() {
         final monitor = PerformanceMonitor();
         monitor.enable();
 
-        monitor.recordMetric(PerformanceMetric(
-          name: 'stats_test',
-          type: PerformanceMetricType.memory,
-          value: 1024,
-          unit: 'bytes',
-          timestamp: DateTime.now(),
-        ),);
+        monitor.recordMetric(
+          PerformanceMetric(
+            name: 'stats_test',
+            type: PerformanceMetricType.memory,
+            value: 1024,
+            unit: 'bytes',
+            timestamp: DateTime.now(),
+          ),
+        );
 
         final stats = monitor.getPerformanceStats();
 
@@ -171,15 +175,18 @@ void main() {
       test('应该能够处理TTL过期', () async {
         final cache = MemoryCache<String>();
 
-        cache.set('ttl_key', 'ttl_value',
-            ttl: const Duration(milliseconds: 100),);
+        cache.set(
+          'ttl_key',
+          'ttl_value',
+          ttl: const Duration(milliseconds: 100),
+        );
 
         // 立即获取应该成功
         var result = cache.get('ttl_key');
         expect(result, equals('ttl_value'));
 
         // 等待过期
-        await Future.delayed(const Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
 
         // 过期后应该返回null
         result = cache.get('ttl_key');
@@ -363,7 +370,8 @@ void main() {
         final stats = manager.getResourceStats();
 
         expect(stats, containsPair('totalResources', 3));
-        expect(stats, containsPair('resourcesByType', isA<Map>()));
+        expect(stats,
+            containsPair('resourcesByType', isA<Map<String, dynamic>>()),);
         expect(stats['resourcesByType']['timer'], equals(3));
 
         await manager.dispose();
@@ -380,20 +388,25 @@ void main() {
 
         // 记录大量指标
         for (var i = 0; i < 100; i++) {
-          monitor.recordMetric(PerformanceMetric(
-            name: 'perf_test_$i',
-            type: PerformanceMetricType.execution,
-            value: i.toDouble(),
-            unit: 'ms',
-            timestamp: DateTime.now(),
-          ),);
+          monitor.recordMetric(
+            PerformanceMetric(
+              name: 'perf_test_$i',
+              type: PerformanceMetricType.execution,
+              value: i.toDouble(),
+              unit: 'ms',
+              timestamp: DateTime.now(),
+            ),
+          );
         }
 
         stopwatch.stop();
 
         expect(monitor.metricsCount, greaterThanOrEqualTo(100));
-        expect(stopwatch.elapsedMilliseconds, lessThan(1000),
-            reason: '100个性能指标记录应该在1秒内完成',);
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(1000),
+          reason: '100个性能指标记录应该在1秒内完成',
+        );
 
         monitor.disable();
         print('⏱️  性能指标记录测试: ${stopwatch.elapsedMilliseconds}ms');
@@ -417,8 +430,11 @@ void main() {
 
         stopwatch.stop();
 
-        expect(stopwatch.elapsedMilliseconds, lessThan(100),
-            reason: '200次缓存操作应该在100ms内完成',);
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+          reason: '200次缓存操作应该在100ms内完成',
+        );
 
         cache.dispose();
         print('⏱️  缓存操作性能测试: ${stopwatch.elapsedMilliseconds}ms');

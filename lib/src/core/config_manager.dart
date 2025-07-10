@@ -511,14 +511,41 @@ class ConfigManager {
     String? author,
   ) async {
     try {
-      final templatePath = path.join(
-        'templates',
-        'workspace',
-        'ming_workspace_$templateType.yaml',
-      );
+      // 使用绝对路径查找模板文件，支持多种可能的位置
+      final possiblePaths = [
+        // 1. 相对于当前工作目录
+        path.join(
+          Directory.current.path,
+          'templates',
+          'workspace',
+          'ming_workspace_$templateType.yaml',
+        ),
+        // 2. 相对于可执行文件目录
+        path.join(
+          path.dirname(Platform.script.toFilePath()),
+          '..',
+          'templates',
+          'workspace',
+          'ming_workspace_$templateType.yaml',
+        ),
+        // 3. 传统相对路径（向后兼容）
+        path.join(
+          'templates',
+          'workspace',
+          'ming_workspace_$templateType.yaml',
+        ),
+      ];
+
+      String? templatePath;
+      for (final possiblePath in possiblePaths) {
+        if (FileUtils.fileExists(possiblePath)) {
+          templatePath = possiblePath;
+          break;
+        }
+      }
 
       // 检查模板文件是否存在
-      if (FileUtils.fileExists(templatePath)) {
+      if (templatePath != null) {
         Logger.debug('从模板文件加载配置: $templatePath');
         final templateData = await FileUtils.readYamlFile(templatePath);
 

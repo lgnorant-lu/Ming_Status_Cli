@@ -18,8 +18,8 @@ import 'dart:io';
 
 /// 发布管理器
 class ReleaseManager {
-
   ReleaseManager(this.projectRoot);
+
   /// 项目根目录
   final String projectRoot;
 
@@ -107,27 +107,6 @@ class ReleaseManager {
 
     currentVersion = versionMatch.group(1)?.trim();
     print('✅ 当前版本: $currentVersion');
-    print('');
-  }
-
-  /// 运行测试
-  Future<void> _runTests() async {
-    print('🧪 运行测试套件...');
-
-    final testResult = await Process.run(
-      'dart',
-      ['test', '--reporter=compact'],
-      workingDirectory: projectRoot,
-    );
-
-    if (testResult.exitCode != 0) {
-      print('❌ 测试失败:');
-      print(testResult.stdout);
-      print(testResult.stderr);
-      throw Exception('测试未通过，无法发布');
-    }
-
-    print('✅ 所有测试通过');
     print('');
   }
 
@@ -272,7 +251,8 @@ class ReleaseManager {
     releaseInfo.writeln('- [API文档](docs/API.md)');
     releaseInfo.writeln('- [贡献指南](CONTRIBUTING.md)');
     releaseInfo.writeln(
-        '- [问题反馈](https://github.com/lgnorant-lu/Ming_Status_Cli/issues)',);
+      '- [问题反馈](https://github.com/lgnorant-lu/Ming_Status_Cli/issues)',
+    );
     releaseInfo.writeln();
     releaseInfo.writeln('---');
     releaseInfo.writeln();

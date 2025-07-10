@@ -373,7 +373,7 @@ class EnhancedProgressIndicator {
     final totalElapsed = DateTime.now().difference(_startTime);
     Logger.listItem('总耗时: ${_formatDuration(totalElapsed)}');
     Logger.listItem(
-        '完成步骤: ${steps.where((s) => s.isCompleted).length}/${steps.length}');
+        '完成步骤: ${steps.where((s) => s.isCompleted).length}/${steps.length}',);
 
     if (_stepDurations.isNotEmpty) {
       final avgDuration = Duration(

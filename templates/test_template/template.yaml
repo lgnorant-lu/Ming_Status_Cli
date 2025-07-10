@@ -1,0 +1,5 @@
+name: test_template
+version: 1.0.0
+description: test_template模板
+author: Ming Status CLI
+parameters: []
