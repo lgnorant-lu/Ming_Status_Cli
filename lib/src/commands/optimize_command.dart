@@ -12,17 +12,17 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'package:args/command_runner.dart';
-import 'package:path/path.dart' as path;
+import 'dart:io';
 
-import '../core/performance/performance_optimizer.dart';
-import '../core/performance/startup_optimizer.dart';
-import '../core/performance/memory_optimizer.dart';
-import '../utils/logger.dart' as cli_logger;
-import '../utils/progress_manager.dart';
+import 'package:args/command_runner.dart';
+import 'package:ming_status_cli/src/core/performance/memory_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/performance_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/startup_optimizer.dart';
+import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
+import 'package:ming_status_cli/src/utils/progress_manager.dart';
+import 'package:path/path.dart' as path;
 
 /// 性能优化命令
 class OptimizeCommand extends Command<int> {
@@ -59,7 +59,6 @@ class OptimizeCommand extends Command<int> {
         'auto',
         abbr: 'a',
         help: '启用自动优化',
-        defaultsTo: false,
       )
       ..addOption(
         'target-memory',
@@ -75,7 +74,6 @@ class OptimizeCommand extends Command<int> {
         'verbose',
         abbr: 'v',
         help: '显示详细输出',
-        defaultsTo: false,
       );
   }
 
@@ -163,7 +161,7 @@ class OptimizeCommand extends Command<int> {
       cli_logger.Logger.info('基准性能指标:');
       cli_logger.Logger.info('  启动时间: ${baselineMetrics.startupTime}ms');
       cli_logger.Logger.info(
-          '  内存使用: ${_formatBytes(baselineMetrics.memoryUsage)}');
+          '  内存使用: ${_formatBytes(baselineMetrics.memoryUsage)}',);
       cli_logger.Logger.info('  响应时间: ${baselineMetrics.responseTime}ms');
 
       // 3. 执行优化
@@ -244,7 +242,7 @@ class OptimizeCommand extends Command<int> {
 
   /// 测量基准性能
   Future<PerformanceMetrics> _measureBaseline() async {
-    return await _performanceOptimizer.getCurrentMetrics();
+    return _performanceOptimizer.getCurrentMetrics();
   }
 
   /// 执行优化
@@ -252,7 +250,7 @@ class OptimizeCommand extends Command<int> {
     OptimizationStrategy strategy,
   ) async {
     cli_logger.Logger.info('执行优化策略: ${strategy.name}');
-    return await _performanceOptimizer.optimize(strategy);
+    return _performanceOptimizer.optimize(strategy);
   }
 
   /// 分析结果
@@ -383,8 +381,9 @@ class OptimizeCommand extends Command<int> {
   String _formatBytes(int bytes) {
     if (bytes < 1024) return '${bytes}B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-    if (bytes < 1024 * 1024 * 1024)
+    if (bytes < 1024 * 1024 * 1024) {
       return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
   }
 }
