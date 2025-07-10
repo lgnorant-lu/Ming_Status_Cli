@@ -743,7 +743,7 @@ class SmartRecommendationEngine {
       'oldestCacheAge': _cacheTime.values.isNotEmpty
           ? DateTime.now()
               .difference(
-                  _cacheTime.values.reduce((a, b) => a.isBefore(b) ? a : b))
+                  _cacheTime.values.reduce((a, b) => a.isBefore(b) ? a : b),)
               .inSeconds
           : null,
     };

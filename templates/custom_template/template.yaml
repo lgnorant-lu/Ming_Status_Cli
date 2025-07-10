@@ -1,5 +1,17 @@
+id: custom_template
 name: custom_template
 version: 1.0.0
 description: custom_template模板
 author: Ming Status CLI
+type: basic
+platform: crossPlatform
+framework: agnostic
+complexity: simple
+maturity: development
+tags: []
+keywords: []
+dependencies: []
+category: basic
+createdAt: "2025-01-15T10:00:00.000Z"
+updatedAt: "2025-01-15T10:00:00.000Z"
 parameters: []

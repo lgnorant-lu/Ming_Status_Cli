@@ -20,6 +20,7 @@ import 'package:ming_status_cli/src/core/template_system/template_metadata.dart'
 import 'package:ming_status_cli/src/core/template_system/template_types.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:path/path.dart' as path;
+import 'package:yaml/yaml.dart';
 
 /// 模板搜索查询
 ///
@@ -298,7 +299,8 @@ class TemplateRegistry {
   ///
   /// 根据查询条件搜索模板
   Future<TemplateSearchResult> searchTemplates(
-      TemplateSearchQuery query,) async {
+    TemplateSearchQuery query,
+  ) async {
     try {
       // 获取所有模板元数据
       final allTemplates = await _getAllTemplateMetadata();
@@ -351,7 +353,8 @@ class TemplateRegistry {
   ///
   /// 获取支持指定平台的模板列表
   Future<List<TemplateMetadata>> getTemplatesByPlatform(
-      TemplatePlatform platform,) async {
+    TemplatePlatform platform,
+  ) async {
     final query = TemplateSearchQuery(platform: platform);
     final result = await searchTemplates(query);
     return result.templates;
@@ -413,8 +416,77 @@ class TemplateRegistry {
 
   /// 获取所有模板元数据
   Future<List<TemplateMetadata>> _getAllTemplateMetadata() async {
-    // 实现获取所有模板元数据的逻辑
-    return [];
+    final templates = <TemplateMetadata>[];
+
+    try {
+      final registryDir = Directory(registryPath);
+
+      // 如果注册表目录不存在，尝试扫描当前目录
+      if (!await registryDir.exists()) {
+        final currentDir = Directory.current;
+        await _scanDirectoryForTemplates(currentDir, templates);
+      } else {
+        await _scanDirectoryForTemplates(registryDir, templates);
+      }
+
+      cli_logger.Logger.debug('找到 ${templates.length} 个模板');
+      return templates;
+    } catch (e) {
+      cli_logger.Logger.error('获取模板元数据失败', error: e);
+      return [];
+    }
+  }
+
+  /// 扫描目录查找模板
+  Future<void> _scanDirectoryForTemplates(
+    Directory directory,
+    List<TemplateMetadata> templates,
+  ) async {
+    try {
+      await for (final entity in directory.list()) {
+        if (entity is Directory) {
+          // 跳过隐藏目录和系统目录
+          final dirName = entity.path.split(Platform.pathSeparator).last;
+          if (dirName.startsWith('.') ||
+              dirName == 'node_modules' ||
+              dirName == 'build' ||
+              dirName == '.dart_tool') {
+            continue;
+          }
+
+          final templateYaml = File('${entity.path}/template.yaml');
+          if (await templateYaml.exists()) {
+            try {
+              final content = await templateYaml.readAsString();
+              final yaml = loadYaml(content);
+              final jsonMap = _yamlToJson(yaml) as Map<String, dynamic>;
+              final metadata = TemplateMetadata.fromJson(jsonMap);
+              templates.add(metadata);
+              cli_logger.Logger.debug('加载模板: ${metadata.name}');
+            } catch (e) {
+              cli_logger.Logger.warning('解析模板失败: ${entity.path} - $e');
+            }
+          }
+        }
+      }
+    } catch (e) {
+      cli_logger.Logger.error('扫描目录失败: ${directory.path} - $e');
+    }
+  }
+
+  /// 将YAML转换为JSON Map
+  dynamic _yamlToJson(dynamic yaml) {
+    if (yaml is YamlMap) {
+      final map = <String, dynamic>{};
+      for (final entry in yaml.entries) {
+        map[entry.key.toString()] = _yamlToJson(entry.value);
+      }
+      return map;
+    } else if (yaml is YamlList) {
+      return yaml.map(_yamlToJson).toList();
+    } else {
+      return yaml;
+    }
   }
 
   /// 检查模板是否匹配查询条件
@@ -440,4 +512,103 @@ class TemplateRegistry {
     // 实现搜索建议生成逻辑
     return [];
   }
+
+  /// 获取模板详细信息
+  Future<TemplateInfo?> getTemplateInfo(
+    String templateName, {
+    String? version,
+  }) async {
+    try {
+      // 搜索指定模板
+      final query = TemplateSearchQuery(
+        keyword: templateName,
+        limit: 1,
+      );
+
+      final searchResult = await searchTemplates(query);
+
+      if (searchResult.templates.isEmpty) {
+        return null;
+      }
+
+      final metadata = searchResult.templates.first;
+
+      // 构建模板信息
+      return TemplateInfo(
+        metadata: metadata,
+        dependencies: [], // TODO: 实现依赖关系获取
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 获取所有模板
+  Future<List<TemplateMetadata>> getAllTemplates() async {
+    final searchResult = await searchTemplates(const TemplateSearchQuery());
+    return searchResult.templates;
+  }
+}
+
+/// 模板信息数据类
+class TemplateInfo {
+  const TemplateInfo({
+    required this.metadata,
+    required this.dependencies,
+    this.performanceMetrics,
+    this.compatibility,
+  });
+  final TemplateMetadata metadata;
+  final List<TemplateDependency> dependencies;
+  final PerformanceMetrics? performanceMetrics;
+  final CompatibilityInfo? compatibility;
+}
+
+/// 模板依赖关系
+class TemplateDependency {
+  const TemplateDependency({
+    required this.name,
+    required this.version,
+    required this.type,
+    this.description,
+  });
+  final String name;
+  final String version;
+  final DependencyType type;
+  final String? description;
+}
+
+/// 依赖类型
+enum DependencyType {
+  required,
+  optional,
+  development,
+}
+
+/// 性能指标
+class PerformanceMetrics {
+  const PerformanceMetrics({
+    required this.generationTime,
+    required this.memoryUsage,
+    required this.fileCount,
+    required this.linesOfCode,
+  });
+  final Duration generationTime;
+  final int memoryUsage;
+  final int fileCount;
+  final int linesOfCode;
+}
+
+/// 兼容性信息
+class CompatibilityInfo {
+  const CompatibilityInfo({
+    required this.dartSdkVersion,
+    required this.supportedPlatforms,
+    required this.minimumRequirements,
+    this.flutterVersion,
+  });
+  final String dartSdkVersion;
+  final String? flutterVersion;
+  final List<String> supportedPlatforms;
+  final Map<String, String> minimumRequirements;
 }

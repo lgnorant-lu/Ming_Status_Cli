@@ -12,11 +12,11 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
-import '../../utils/logger.dart' as cli_logger;
+import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 内存使用类型
 enum MemoryType {
@@ -110,7 +110,7 @@ class MemoryOptimizationResult {
 
   /// 优化效果百分比
   double get improvementPercentage {
-    if (beforeUsage.usedBytes == 0) return 0.0;
+    if (beforeUsage.usedBytes == 0) return 0;
     return (freedBytes / beforeUsage.usedBytes) * 100;
   }
 }
@@ -284,7 +284,7 @@ class MemoryOptimizer {
   /// 注册内存池
   void registerMemoryPool<T>(MemoryPool<T> pool) {
     _memoryPools[T] = pool;
-    cli_logger.Logger.debug('注册内存池: ${T.toString()}');
+    cli_logger.Logger.debug('注册内存池: $T');
   }
 
   /// 获取内存池
@@ -319,7 +319,7 @@ class MemoryOptimizer {
 
   /// 获取当前内存使用
   Future<MemoryUsage> getCurrentMemoryUsage() async {
-    return await _getCurrentMemoryUsage();
+    return _getCurrentMemoryUsage();
   }
 
   /// 获取内存使用历史
