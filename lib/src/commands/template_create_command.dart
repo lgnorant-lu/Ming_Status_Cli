@@ -12,7 +12,6 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/core/template_creator/configuration_wizard.dart';
@@ -22,9 +21,9 @@ import 'package:ming_status_cli/src/core/template_system/template_types.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 模板创建命令
-/// 
+///
 /// 实现 `ming template create` 命令
-class TemplateCreateCommand extends Command<void> {
+class TemplateCreateCommand extends Command<int> {
   /// 创建模板创建命令实例
   TemplateCreateCommand() {
     argParser
@@ -39,8 +38,7 @@ class TemplateCreateCommand extends Command<void> {
         help: '模板类型',
         allowed: TemplateType.values.map((t) => t.name),
         allowedHelp: {
-          for (final type in TemplateType.values)
-            type.name: type.displayName,
+          for (final type in TemplateType.values) type.name: type.displayName,
         },
       )
       ..addOption(
@@ -132,7 +130,7 @@ class TemplateCreateCommand extends Command<void> {
 ''';
 
   @override
-  Future<void> run() async {
+  Future<int> run() async {
     try {
       cli_logger.Logger.info('开始创建模板');
 
@@ -147,7 +145,7 @@ class TemplateCreateCommand extends Command<void> {
 
       if (config == null) {
         cli_logger.Logger.warning('模板创建已取消');
-        return;
+        return 1;
       }
 
       // 生成模板脚手架
@@ -159,7 +157,7 @@ class TemplateCreateCommand extends Command<void> {
         for (final error in result.errors) {
           cli_logger.Logger.error('  - $error');
         }
-        exit(1);
+        return 1;
       }
 
       // 显示生成结果
@@ -171,9 +169,10 @@ class TemplateCreateCommand extends Command<void> {
       }
 
       cli_logger.Logger.success('模板创建完成: ${result.templatePath}');
+      return 0;
     } catch (e) {
       cli_logger.Logger.error('模板创建失败', error: e);
-      exit(1);
+      return 1;
     }
   }
 
@@ -270,7 +269,7 @@ class TemplateCreateCommand extends Command<void> {
     print('─' * 40);
     print('📁 模板路径: ${result.templatePath}');
     print('📄 生成文件: ${result.generatedFiles.length}个');
-    
+
     if (result.generatedFiles.isNotEmpty) {
       print('\n生成的文件:');
       for (final file in result.generatedFiles) {

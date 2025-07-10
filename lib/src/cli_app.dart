@@ -19,6 +19,7 @@ import 'package:ming_status_cli/src/commands/create_command.dart';
 import 'package:ming_status_cli/src/commands/doctor_command.dart';
 import 'package:ming_status_cli/src/commands/help_command.dart';
 import 'package:ming_status_cli/src/commands/init_command.dart';
+import 'package:ming_status_cli/src/commands/template_command.dart';
 import 'package:ming_status_cli/src/commands/validate_command.dart';
 import 'package:ming_status_cli/src/commands/version_command.dart';
 import 'package:ming_status_cli/src/utils/error_handler.dart';
@@ -84,6 +85,9 @@ class MingStatusCliApp {
       ..addCommand(VersionCommand())
       ..addCommand(DoctorCommand())
       ..addCommand(ValidateCommand()); // Phase 1 Week 5: 验证系统命令
+
+    // Phase 2.1: 高级模板系统命令
+    _runner.addCommand(TemplateCommand());
 
     // 注意：使用自定义帮助处理而不是添加help命令
     // 因为CommandRunner已经有内置的help命令
