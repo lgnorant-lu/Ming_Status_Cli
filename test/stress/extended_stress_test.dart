@@ -12,19 +12,16 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:async';
-import 'dart:math' as math;
-import 'dart:isolate';
-
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math' as math;
 
-import '../../lib/src/core/performance/performance_optimizer.dart';
-import '../../lib/src/core/performance/startup_optimizer.dart';
-import '../../lib/src/core/performance/memory_optimizer.dart';
-import '../../lib/src/utils/logger.dart' as cli_logger;
+import 'package:ming_status_cli/src/core/performance/memory_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/performance_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/startup_optimizer.dart';
+import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
+import 'package:path/path.dart' as path;
 
 /// 压力测试配置
 class StressTestConfig {
@@ -277,7 +274,7 @@ class ExtendedStressTester {
 
       cli_logger.Logger.info(
         '并发压力测试完成: ${success ? '成功' : '失败'} - '
-        '${totalOperations}个操作, 错误率${(errorRate * 100).toStringAsFixed(2)}%',
+        '$totalOperations个操作, 错误率${(errorRate * 100).toStringAsFixed(2)}%',
       );
 
       return result;
@@ -290,11 +287,11 @@ class ExtendedStressTester {
         totalOperations: 0,
         successfulOperations: 0,
         failedOperations: 0,
-        averageResponseTime: 0.0,
-        maxResponseTime: 0.0,
-        minResponseTime: 0.0,
-        throughput: 0.0,
-        errorRate: 1.0,
+        averageResponseTime: 0,
+        maxResponseTime: 0,
+        minResponseTime: 0,
+        throughput: 0,
+        errorRate: 1,
         memoryUsage: {},
         duration: stopwatch.elapsed,
         errors: errors,
@@ -419,7 +416,7 @@ class ExtendedStressTester {
 
       cli_logger.Logger.info(
         '长期稳定性测试完成: ${success ? '成功' : '失败'} - '
-        '运行${stopwatch.elapsed.inHours}小时, ${totalOperations}个操作',
+        '运行${stopwatch.elapsed.inHours}小时, $totalOperations个操作',
       );
 
       return result;
@@ -432,11 +429,11 @@ class ExtendedStressTester {
         totalOperations: totalOperations,
         successfulOperations: successfulOperations,
         failedOperations: failedOperations,
-        averageResponseTime: 0.0,
-        maxResponseTime: 0.0,
-        minResponseTime: 0.0,
-        throughput: 0.0,
-        errorRate: 1.0,
+        averageResponseTime: 0,
+        maxResponseTime: 0,
+        minResponseTime: 0,
+        throughput: 0,
+        errorRate: 1,
         memoryUsage: {},
         duration: stopwatch.elapsed,
         errors: errors,
@@ -466,8 +463,8 @@ class ExtendedStressTester {
       _isRunning = true;
 
       // 创建大量模板
-      final templateCount = 10000;
-      cli_logger.Logger.info('创建${templateCount}个测试模板...');
+      const templateCount = 10000;
+      cli_logger.Logger.info('创建$templateCount个测试模板...');
 
       for (var i = 0; i < templateCount; i++) {
         try {
@@ -499,7 +496,7 @@ class ExtendedStressTester {
           final operationStopwatch = Stopwatch()..start();
 
           await _searchTemplates(
-              'template_${math.Random().nextInt(templateCount)}');
+              'template_${math.Random().nextInt(templateCount)}',);
 
           operationStopwatch.stop();
           responseTimes.add(operationStopwatch.elapsedMilliseconds.toDouble());
@@ -550,7 +547,7 @@ class ExtendedStressTester {
 
       cli_logger.Logger.info(
         '大型模板库测试完成: ${success ? '成功' : '失败'} - '
-        '${totalOperations}个操作, 平均响应时间${averageResponseTime.toStringAsFixed(2)}ms',
+        '$totalOperations个操作, 平均响应时间${averageResponseTime.toStringAsFixed(2)}ms',
       );
 
       return result;
@@ -563,11 +560,11 @@ class ExtendedStressTester {
         totalOperations: totalOperations,
         successfulOperations: successfulOperations,
         failedOperations: failedOperations,
-        averageResponseTime: 0.0,
-        maxResponseTime: 0.0,
-        minResponseTime: 0.0,
-        throughput: 0.0,
-        errorRate: 1.0,
+        averageResponseTime: 0,
+        maxResponseTime: 0,
+        minResponseTime: 0,
+        throughput: 0,
+        errorRate: 1,
         memoryUsage: {},
         duration: stopwatch.elapsed,
         errors: errors,
@@ -613,7 +610,7 @@ class ExtendedStressTester {
                 'errors': result.errors,
                 'warnings': result.warnings,
                 'memory_usage': result.memoryUsage,
-              })
+              },)
           .toList(),
       'recommendations': _generateRecommendations(),
     };
@@ -628,7 +625,7 @@ class ExtendedStressTester {
 
   /// 模拟用户操作
   Future<bool> _simulateUserOperations(
-      int userId, List<double> responseTimes) async {
+      int userId, List<double> responseTimes,) async {
     try {
       for (var i = 0; i < config.operationsPerUser; i++) {
         final stopwatch = Stopwatch()..start();
@@ -640,7 +637,7 @@ class ExtendedStressTester {
 
         // 随机延迟模拟真实用户行为
         await Future<void>.delayed(
-            Duration(milliseconds: math.Random().nextInt(100)));
+            Duration(milliseconds: math.Random().nextInt(100)),);
       }
       return true;
     } catch (e) {

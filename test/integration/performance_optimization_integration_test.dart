@@ -12,16 +12,16 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:async';
-import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
+import 'dart:io';
 
-import '../../lib/src/core/performance/performance_optimizer.dart';
-import '../../lib/src/core/performance/startup_optimizer.dart';
-import '../../lib/src/core/performance/memory_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/memory_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/performance_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/startup_optimizer.dart';
+import 'package:path/path.dart' as path;
+import 'package:test/test.dart';
+
 import '../stress/extended_stress_test.dart';
-import '../../lib/src/utils/logger.dart' as cli_logger;
 
 void main() {
   group('性能优化集成测试', () {
@@ -44,10 +44,10 @@ void main() {
       await memoryOptimizer.initialize();
       
       // 初始化压力测试器
-      final config = StressTestConfig(
+      const config = StressTestConfig(
         concurrentUsers: 10,
         operationsPerUser: 100,
-        testDuration: const Duration(minutes: 5),
+        testDuration: Duration(minutes: 5),
         maxMemoryUsage: 200 * 1024 * 1024, // 200MB
         maxResponseTime: 2000, // 2秒
         errorThreshold: 0.1, // 10%
@@ -239,10 +239,10 @@ void main() {
         print('⏱️ 测试短期稳定性');
         
         // 修改配置为短期测试
-        final shortTermConfig = StressTestConfig(
+        const shortTermConfig = StressTestConfig(
           concurrentUsers: 5,
           operationsPerUser: 50,
-          testDuration: const Duration(minutes: 1),
+          testDuration: Duration(minutes: 1),
           maxMemoryUsage: 200 * 1024 * 1024,
           maxResponseTime: 2000,
           errorThreshold: 0.1,

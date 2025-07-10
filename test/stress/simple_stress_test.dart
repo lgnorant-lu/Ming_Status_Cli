@@ -12,15 +12,13 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:test/test.dart';
 
-import '../../lib/src/core/performance/performance_optimizer.dart';
-import '../../lib/src/core/performance/startup_optimizer.dart';
-import '../../lib/src/core/performance/memory_optimizer.dart';
-import '../../lib/src/utils/logger.dart' as cli_logger;
+import 'package:ming_status_cli/src/core/performance/memory_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/performance_optimizer.dart';
+import 'package:ming_status_cli/src/core/performance/startup_optimizer.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('简化压力测试', () {
