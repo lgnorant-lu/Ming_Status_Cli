@@ -371,7 +371,7 @@ void main() {
 
         expect(stats, containsPair('totalResources', 3));
         expect(stats,
-            containsPair('resourcesByType', isA<Map<String, dynamic>>()));
+            containsPair('resourcesByType', isA<Map<String, dynamic>>()),);
         expect(stats['resourcesByType']['timer'], equals(3));
 
         await manager.dispose();

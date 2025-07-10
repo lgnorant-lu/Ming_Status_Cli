@@ -29,7 +29,7 @@ class badClass {
     const v = 25;
     const w = 26;
     // Use all variables to avoid warnings
-    final sum = x +
+    const sum = x +
         y +
         z +
         a +
