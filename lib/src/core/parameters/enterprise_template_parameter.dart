@@ -149,7 +149,9 @@ class EnterpriseTemplateParameter extends TemplateVariable {
 
   /// 从Map创建企业级参数
   factory EnterpriseTemplateParameter.fromMap(
-      String name, Map<String, dynamic> map,) {
+    String name,
+    Map<String, dynamic> map,
+  ) {
     // 解析企业级类型
     final typeStr = map['enterprise_type']?.toString() ??
         map['type']?.toString() ??
@@ -250,7 +252,8 @@ class EnterpriseTemplateParameter extends TemplateVariable {
 
   /// 映射企业级类型到基础类型
   static TemplateVariableType _mapEnterpriseTypeToBasic(
-      EnterpriseParameterType enterpriseType,) {
+    EnterpriseParameterType enterpriseType,
+  ) {
     switch (enterpriseType) {
       case EnterpriseParameterType.string:
       case EnterpriseParameterType.organization:
@@ -446,13 +449,14 @@ class EnterpriseTemplateParameter extends TemplateVariable {
       'order': order,
       if (dependencies.isNotEmpty)
         'dependencies': dependencies
-            .map((d) => {
-                  'depends_on': d.dependsOn,
-                  'condition': d.condition.name,
-                  if (d.whenValue != null) 'when_value': d.whenValue,
-                  if (d.whenCondition != null)
-                    'when_condition': d.whenCondition,
-                },)
+            .map(
+              (d) => {
+                'depends_on': d.dependsOn,
+                'condition': d.condition.name,
+                if (d.whenValue != null) 'when_value': d.whenValue,
+                if (d.whenCondition != null) 'when_condition': d.whenCondition,
+              },
+            )
             .toList(),
       if (computation != null)
         'computation': {

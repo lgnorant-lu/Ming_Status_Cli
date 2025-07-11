@@ -26,7 +26,9 @@ class TemplateMetadata {
     required this.author,
     required this.description,
     required this.type,
-    required this.createdAt, required this.updatedAt, this.subType,
+    required this.createdAt,
+    required this.updatedAt,
+    this.subType,
     this.tags = const [],
     this.complexity = TemplateComplexity.medium,
     this.maturity = TemplateMaturity.stable,
@@ -68,10 +70,9 @@ class TemplateMetadata {
               (st) => st.name == json['subType'],
             )
           : null,
-      tags: (json['tags'] as List<dynamic>?)
-              ?.map((t) => t as String)
-              .toList() ??
-          [],
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((t) => t as String).toList() ??
+              [],
       keywords: (json['keywords'] as List<dynamic>?)
               ?.map((k) => k as String)
               .toList() ??
@@ -95,7 +96,8 @@ class TemplateMetadata {
       ),
       dependencies: (json['dependencies'] as List<dynamic>?)
               ?.map(
-                  (d) => TemplateDependency.fromJson(d as Map<String, dynamic>),)
+                (d) => TemplateDependency.fromJson(d as Map<String, dynamic>),
+              )
               .toList() ??
           [],
       license: json['license'] != null
@@ -116,7 +118,8 @@ class TemplateMetadata {
           : null,
       certification: json['certification'] != null
           ? CertificationInfo.fromJson(
-              json['certification'] as Map<String, dynamic>,)
+              json['certification'] as Map<String, dynamic>,
+            )
           : null,
       homepage: json['homepage'] as String?,
       repository: json['repository'] as String?,

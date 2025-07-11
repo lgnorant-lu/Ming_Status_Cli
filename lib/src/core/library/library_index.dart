@@ -21,19 +21,19 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 enum IndexType {
   /// 名称索引
   name,
-  
+
   /// 描述索引
   description,
-  
+
   /// 标签索引
   tags,
-  
+
   /// 作者索引
   author,
-  
+
   /// 分类索引
   category,
-  
+
   /// 复合索引
   composite,
 }
@@ -54,25 +54,25 @@ class SearchWeights {
 
   /// 名称权重
   final double nameWeight;
-  
+
   /// 描述权重
   final double descriptionWeight;
-  
+
   /// 标签权重
   final double tagsWeight;
-  
+
   /// 作者权重
   final double authorWeight;
-  
+
   /// 分类权重
   final double categoryWeight;
-  
+
   /// 下载次数权重
   final double downloadWeight;
-  
+
   /// 评分权重
   final double ratingWeight;
-  
+
   /// 新鲜度权重
   final double freshnessWeight;
 }
@@ -90,16 +90,16 @@ class IndexEntry {
 
   /// 模板ID
   final String templateId;
-  
+
   /// 库ID
   final String libraryId;
-  
+
   /// 索引词条
   final List<String> terms;
-  
+
   /// 索引评分
   final double score;
-  
+
   /// 额外元数据
   final Map<String, dynamic> metadata;
 }
@@ -118,19 +118,19 @@ class SearchResult {
 
   /// 模板ID
   final String templateId;
-  
+
   /// 库ID
   final String libraryId;
-  
+
   /// 搜索评分
   final double score;
-  
+
   /// 相关性评分
   final double relevance;
-  
+
   /// 高亮词条
   final List<String> highlights;
-  
+
   /// 评分解释
   final String? explanation;
 }
@@ -149,19 +149,19 @@ class RecommendationResult {
 
   /// 模板ID
   final String templateId;
-  
+
   /// 库ID
   final String libraryId;
-  
+
   /// 推荐评分
   final double score;
-  
+
   /// 推荐原因
   final String reason;
-  
+
   /// 置信度
   final double confidence;
-  
+
   /// 额外元数据
   final Map<String, dynamic> metadata;
 }
@@ -182,25 +182,25 @@ class IndexStatistics {
 
   /// 总条目数
   final int totalEntries;
-  
+
   /// 总词条数
   final int totalTerms;
-  
+
   /// 平均每条目词条数
   final double averageTermsPerEntry;
-  
+
   /// 索引大小 (字节)
   final int indexSize;
-  
+
   /// 最后更新时间
   final DateTime lastUpdateTime;
-  
+
   /// 构建耗时
   final Duration? buildTime;
-  
+
   /// 查询次数
   final int queryCount;
-  
+
   /// 平均查询时间
   final Duration? averageQueryTime;
 }
@@ -218,34 +218,34 @@ class LibraryIndex {
 
   /// 索引文件路径
   final String _indexPath;
-  
+
   /// 搜索权重配置
   final SearchWeights searchWeights;
-  
+
   /// 是否启用增量更新
   final bool enableIncrementalUpdate;
-  
+
   /// 最大缓存大小
   final int maxCacheSize;
-  
+
   /// 是否启用查询缓存
   final bool enableQueryCache;
 
   /// 索引数据
   final Map<IndexType, Map<String, List<IndexEntry>>> _indexes = {};
-  
+
   /// 反向索引
   final Map<String, Set<String>> _inverseIndex = {};
-  
+
   /// 查询缓存
   final Map<String, List<SearchResult>> _queryCache = {};
-  
+
   /// 使用历史
   final Map<String, int> _usageHistory = {};
-  
+
   /// 索引统计
   IndexStatistics? _statistics;
-  
+
   /// 最后更新时间
   DateTime? _lastUpdateTime;
 
@@ -253,10 +253,10 @@ class LibraryIndex {
   Future<void> initialize() async {
     try {
       cli_logger.Logger.debug('初始化高级索引系统');
-      
+
       await _loadIndexData();
       await _buildInverseIndex();
-      
+
       cli_logger.Logger.info('高级索引系统初始化完成');
     } catch (e) {
       cli_logger.Logger.error('高级索引系统初始化失败', error: e);
@@ -267,35 +267,35 @@ class LibraryIndex {
   /// 构建索引
   Future<void> buildIndex(List<TemplateLibraryEntry> templates) async {
     final startTime = DateTime.now();
-    
+
     try {
       cli_logger.Logger.debug('开始构建索引: ${templates.length}个模板');
-      
+
       // 清空现有索引
       _indexes.clear();
       _inverseIndex.clear();
-      
+
       // 初始化索引类型
       for (final type in IndexType.values) {
         _indexes[type] = {};
       }
-      
+
       // 构建各类型索引
       for (final template in templates) {
         await _indexTemplate(template);
       }
-      
+
       // 构建反向索引
       await _buildInverseIndex();
-      
+
       // 保存索引数据
       await _saveIndexData();
-      
+
       // 更新统计信息
       await _updateStatistics(startTime);
-      
+
       _lastUpdateTime = DateTime.now();
-      
+
       cli_logger.Logger.info('索引构建完成: ${_getTotalEntries()}个条目');
     } catch (e) {
       cli_logger.Logger.error('索引构建失败', error: e);
@@ -309,26 +309,26 @@ class LibraryIndex {
       await buildIndex(templates);
       return;
     }
-    
+
     try {
       cli_logger.Logger.debug('增量更新索引: ${templates.length}个模板');
-      
+
       for (final template in templates) {
         // 移除旧索引
         await _removeTemplateFromIndex(template.id);
-        
+
         // 添加新索引
         await _indexTemplate(template);
       }
-      
+
       // 重建反向索引
       await _buildInverseIndex();
-      
+
       // 保存索引数据
       await _saveIndexData();
-      
+
       _lastUpdateTime = DateTime.now();
-      
+
       cli_logger.Logger.info('增量索引更新完成');
     } catch (e) {
       cli_logger.Logger.error('增量索引更新失败', error: e);
@@ -344,26 +344,28 @@ class LibraryIndex {
     Map<String, dynamic>? filters,
   }) async {
     try {
-      final cacheKey = _generateCacheKey(query, limit, minScore, libraryIds, filters);
-      
+      final cacheKey =
+          _generateCacheKey(query, limit, minScore, libraryIds, filters);
+
       // 检查查询缓存
       if (enableQueryCache && _queryCache.containsKey(cacheKey)) {
         cli_logger.Logger.debug('使用缓存搜索结果: $query');
         return _queryCache[cacheKey]!;
       }
-      
+
       cli_logger.Logger.debug('执行全文搜索: $query');
-      
-      final results = await _performSearch(query, limit, minScore, libraryIds, filters);
-      
+
+      final results =
+          await _performSearch(query, limit, minScore, libraryIds, filters);
+
       // 缓存结果
       if (enableQueryCache && _queryCache.length < maxCacheSize) {
         _queryCache[cacheKey] = results;
       }
-      
+
       // 更新使用历史
       _updateUsageHistory(query);
-      
+
       cli_logger.Logger.info('搜索完成: 找到${results.length}个结果');
       return results;
     } catch (e) {
@@ -381,31 +383,35 @@ class LibraryIndex {
   }) async {
     try {
       cli_logger.Logger.debug('生成智能推荐');
-      
+
       final recommendations = <RecommendationResult>[];
-      
+
       // 基于使用历史的推荐
       if (usageHistory != null && usageHistory.isNotEmpty) {
-        final historyRecommendations = await _recommendByHistory(usageHistory, limit ~/ 2);
+        final historyRecommendations =
+            await _recommendByHistory(usageHistory, limit ~/ 2);
         recommendations.addAll(historyRecommendations);
       }
-      
+
       // 基于流行度的推荐
-      final popularRecommendations = await _recommendByPopularity(limit - recommendations.length);
+      final popularRecommendations =
+          await _recommendByPopularity(limit - recommendations.length);
       recommendations.addAll(popularRecommendations);
-      
+
       // 基于上下文的推荐
       if (context != null && context.isNotEmpty) {
-        final contextRecommendations = await _recommendByContext(context, limit);
+        final contextRecommendations =
+            await _recommendByContext(context, limit);
         recommendations.addAll(contextRecommendations);
       }
-      
+
       // 去重和排序
-      final uniqueRecommendations = _deduplicateRecommendations(recommendations);
+      final uniqueRecommendations =
+          _deduplicateRecommendations(recommendations);
       uniqueRecommendations.sort((a, b) => b.score.compareTo(a.score));
-      
+
       final result = uniqueRecommendations.take(limit).toList();
-      
+
       cli_logger.Logger.info('推荐生成完成: ${result.length}个推荐');
       return result;
     } catch (e) {
@@ -427,9 +433,9 @@ class LibraryIndex {
 
   /// 获取默认索引路径
   static String _getDefaultIndexPath() {
-    final homeDir = Platform.environment['HOME'] ?? 
-                   Platform.environment['USERPROFILE'] ?? 
-                   '.';
+    final homeDir = Platform.environment['HOME'] ??
+        Platform.environment['USERPROFILE'] ??
+        '.';
     return '$homeDir/.ming/index';
   }
 
@@ -437,52 +443,72 @@ class LibraryIndex {
   Future<void> _indexTemplate(TemplateLibraryEntry template) async {
     // 名称索引
     final nameTerms = _tokenize(template.name);
-    _addToIndex(IndexType.name, template.name.toLowerCase(), IndexEntry(
-      templateId: template.id,
-      libraryId: 'unknown', // 这里需要从模板获取库ID
-      terms: nameTerms,
-      score: _calculateNameScore(template),
-    ),);
-    
+    _addToIndex(
+      IndexType.name,
+      template.name.toLowerCase(),
+      IndexEntry(
+        templateId: template.id,
+        libraryId: 'unknown', // 这里需要从模板获取库ID
+        terms: nameTerms,
+        score: _calculateNameScore(template),
+      ),
+    );
+
     // 描述索引
     if (template.description != null) {
       final descTerms = _tokenize(template.description!);
-      _addToIndex(IndexType.description, template.description!.toLowerCase(), IndexEntry(
-        templateId: template.id,
-        libraryId: 'unknown',
-        terms: descTerms,
-        score: _calculateDescriptionScore(template),
-      ),);
+      _addToIndex(
+        IndexType.description,
+        template.description!.toLowerCase(),
+        IndexEntry(
+          templateId: template.id,
+          libraryId: 'unknown',
+          terms: descTerms,
+          score: _calculateDescriptionScore(template),
+        ),
+      );
     }
-    
+
     // 标签索引
     for (final tag in template.tags) {
-      _addToIndex(IndexType.tags, tag.toLowerCase(), IndexEntry(
-        templateId: template.id,
-        libraryId: 'unknown',
-        terms: [tag],
-        score: _calculateTagScore(template),
-      ),);
+      _addToIndex(
+        IndexType.tags,
+        tag.toLowerCase(),
+        IndexEntry(
+          templateId: template.id,
+          libraryId: 'unknown',
+          terms: [tag],
+          score: _calculateTagScore(template),
+        ),
+      );
     }
-    
+
     // 作者索引
     if (template.author != null) {
-      _addToIndex(IndexType.author, template.author!.toLowerCase(), IndexEntry(
-        templateId: template.id,
-        libraryId: 'unknown',
-        terms: [template.author!],
-        score: _calculateAuthorScore(template),
-      ),);
+      _addToIndex(
+        IndexType.author,
+        template.author!.toLowerCase(),
+        IndexEntry(
+          templateId: template.id,
+          libraryId: 'unknown',
+          terms: [template.author!],
+          score: _calculateAuthorScore(template),
+        ),
+      );
     }
-    
+
     // 分类索引
     if (template.category != null) {
-      _addToIndex(IndexType.category, template.category!.toLowerCase(), IndexEntry(
-        templateId: template.id,
-        libraryId: 'unknown',
-        terms: [template.category!],
-        score: _calculateCategoryScore(template),
-      ),);
+      _addToIndex(
+        IndexType.category,
+        template.category!.toLowerCase(),
+        IndexEntry(
+          templateId: template.id,
+          libraryId: 'unknown',
+          terms: [template.category!],
+          score: _calculateCategoryScore(template),
+        ),
+      );
     }
   }
 
@@ -506,43 +532,43 @@ class LibraryIndex {
 
   /// 计算名称评分
   double _calculateNameScore(TemplateLibraryEntry template) {
-    return searchWeights.nameWeight * 
-           (1.0 + template.downloadCount / 1000.0) * 
-           (template.rating / 5.0);
+    return searchWeights.nameWeight *
+        (1.0 + template.downloadCount / 1000.0) *
+        (template.rating / 5.0);
   }
 
   /// 计算描述评分
   double _calculateDescriptionScore(TemplateLibraryEntry template) {
-    return searchWeights.descriptionWeight * 
-           (1.0 + template.downloadCount / 1000.0) * 
-           (template.rating / 5.0);
+    return searchWeights.descriptionWeight *
+        (1.0 + template.downloadCount / 1000.0) *
+        (template.rating / 5.0);
   }
 
   /// 计算标签评分
   double _calculateTagScore(TemplateLibraryEntry template) {
-    return searchWeights.tagsWeight * 
-           (1.0 + template.downloadCount / 1000.0) * 
-           (template.rating / 5.0);
+    return searchWeights.tagsWeight *
+        (1.0 + template.downloadCount / 1000.0) *
+        (template.rating / 5.0);
   }
 
   /// 计算作者评分
   double _calculateAuthorScore(TemplateLibraryEntry template) {
-    return searchWeights.authorWeight * 
-           (1.0 + template.downloadCount / 1000.0) * 
-           (template.rating / 5.0);
+    return searchWeights.authorWeight *
+        (1.0 + template.downloadCount / 1000.0) *
+        (template.rating / 5.0);
   }
 
   /// 计算分类评分
   double _calculateCategoryScore(TemplateLibraryEntry template) {
-    return searchWeights.categoryWeight * 
-           (1.0 + template.downloadCount / 1000.0) * 
-           (template.rating / 5.0);
+    return searchWeights.categoryWeight *
+        (1.0 + template.downloadCount / 1000.0) *
+        (template.rating / 5.0);
   }
 
   /// 构建反向索引
   Future<void> _buildInverseIndex() async {
     _inverseIndex.clear();
-    
+
     for (final typeIndexes in _indexes.values) {
       for (final entries in typeIndexes.values) {
         for (final entry in entries) {
@@ -566,7 +592,7 @@ class LibraryIndex {
     final queryTerms = _tokenize(query);
     final results = <SearchResult>[];
     final scoreMap = <String, double>{};
-    
+
     // 搜索各个索引
     for (final term in queryTerms) {
       for (final type in IndexType.values) {
@@ -584,20 +610,22 @@ class LibraryIndex {
         }
       }
     }
-    
+
     // 转换为搜索结果
     for (final entry in scoreMap.entries) {
       if (entry.value >= minScore) {
-        results.add(SearchResult(
-          templateId: entry.key,
-          libraryId: 'unknown', // 需要从索引条目获取
-          score: entry.value,
-          relevance: _calculateRelevance(entry.key, queryTerms),
-          highlights: _findHighlights(entry.key, queryTerms),
-        ),);
+        results.add(
+          SearchResult(
+            templateId: entry.key,
+            libraryId: 'unknown', // 需要从索引条目获取
+            score: entry.value,
+            relevance: _calculateRelevance(entry.key, queryTerms),
+            highlights: _findHighlights(entry.key, queryTerms),
+          ),
+        );
       }
     }
-    
+
     // 排序和限制
     results.sort((a, b) => b.score.compareTo(a.score));
     return results.take(limit).toList();
@@ -645,14 +673,14 @@ class LibraryIndex {
   ) {
     final seen = <String>{};
     final unique = <RecommendationResult>[];
-    
+
     for (final rec in recommendations) {
       if (!seen.contains(rec.templateId)) {
         seen.add(rec.templateId);
         unique.add(rec);
       }
     }
-    
+
     return unique;
   }
 
@@ -707,7 +735,7 @@ class LibraryIndex {
     final totalEntries = _getTotalEntries();
     final totalTerms = _inverseIndex.length;
     final buildTime = DateTime.now().difference(startTime);
-    
+
     _statistics = IndexStatistics(
       totalEntries: totalEntries,
       totalTerms: totalTerms,

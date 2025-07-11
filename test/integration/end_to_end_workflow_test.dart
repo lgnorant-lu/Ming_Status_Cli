@@ -46,45 +46,58 @@ void main() {
     });
 
     group('基础工作流测试', () {
-      test('应该成功执行工作空间初始化', () async {
-        final workspaceDir =
-            Directory(path.join(tempDir.path, 'basic_workspace'));
-        await workspaceDir.create(recursive: true);
+      test(
+        '应该成功执行工作空间初始化',
+        () async {
+          final workspaceDir =
+              Directory(path.join(tempDir.path, 'basic_workspace'));
+          await workspaceDir.create(recursive: true);
 
-        // Step 1: 初始化工作空间
-        print('🚀 Step 1: 初始化工作空间');
-        final initResult = await CliTestHelper.runCommand(
-          [
-            '--quiet',
-            'init',
-            'basic_workspace',
-            '--name',
-            'basic_workspace',
-            '--description',
-            'E2E test workspace',
-            '--author',
-            'E2E Tester',
-          ],
-          workingDirectory: tempDir.path,
-        );
+          // Step 1: 初始化工作空间
+          print('🚀 Step 1: 初始化工作空间');
+          final initResult = await CliTestHelper.runCommand(
+            [
+              '--quiet',
+              'init',
+              'basic_workspace',
+              '--name',
+              'basic_workspace',
+              '--description',
+              'E2E test workspace',
+              '--author',
+              'E2E Tester',
+            ],
+            workingDirectory: tempDir.path,
+          );
 
-        expect(initResult.exitCode, equals(0), reason: '工作空间初始化应该成功');
+          expect(initResult.exitCode, equals(0), reason: '工作空间初始化应该成功');
 
-        // 验证工作空间文件结构 - init命令在当前目录创建文件
-        final workspaceConfigFile =
-            File(path.join(tempDir.path, 'ming_status.yaml'));
-        expect(workspaceConfigFile.existsSync(), isTrue,
-            reason: '工作空间配置文件应该存在',);
+          // 验证工作空间文件结构 - init命令在当前目录创建文件
+          final workspaceConfigFile =
+              File(path.join(tempDir.path, 'ming_status.yaml'));
+          expect(
+            workspaceConfigFile.existsSync(),
+            isTrue,
+            reason: '工作空间配置文件应该存在',
+          );
 
-        // 验证配置文件内容
-        final configContent = await workspaceConfigFile.readAsString();
-        expect(configContent, contains('basic_workspace'),
-            reason: '配置文件应该包含工作空间名称',);
-        expect(configContent, contains('E2E test workspace'),
-            reason: '配置文件应该包含描述',);
+          // 验证配置文件内容
+          final configContent = await workspaceConfigFile.readAsString();
+          expect(
+            configContent,
+            contains('basic_workspace'),
+            reason: '配置文件应该包含工作空间名称',
+          );
+          expect(
+            configContent,
+            contains('E2E test workspace'),
+            reason: '配置文件应该包含描述',
+          );
 
-        print('✅ 工作空间初始化测试成功完成');
-      }, timeout: const Timeout(Duration(minutes: 2)),);
+          print('✅ 工作空间初始化测试成功完成');
+        },
+        timeout: const Timeout(Duration(minutes: 2)),
+      );
 
       test('应该正确处理错误场景', () async {
         final errorWorkspaceDir =
@@ -98,8 +111,11 @@ void main() {
           workingDirectory: errorWorkspaceDir.path,
         );
 
-        expect(invalidTemplateResult.exitCode, isNot(equals(0)),
-            reason: '使用无效模板应该失败',);
+        expect(
+          invalidTemplateResult.exitCode,
+          isNot(equals(0)),
+          reason: '使用无效模板应该失败',
+        );
 
         print('✅ 错误场景测试完成');
       });
@@ -111,8 +127,11 @@ void main() {
         );
 
         expect(helpResult.exitCode, equals(0), reason: '帮助命令应该成功');
-        expect(helpResult.stdout, contains('Ming Status CLI'),
-            reason: '应该显示CLI名称',);
+        expect(
+          helpResult.stdout,
+          contains('Ming Status CLI'),
+          reason: '应该显示CLI名称',
+        );
         expect(helpResult.stdout, contains('init'), reason: '应该显示init命令');
 
         print('✅ 帮助信息验证通过');

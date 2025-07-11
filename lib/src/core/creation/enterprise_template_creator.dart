@@ -415,21 +415,24 @@ class EnterpriseTemplateCreator {
       if (analysisTypes.contains(CodeAnalysisType.structural)) {
         final structuralSuggestions = await _analyzeStructure(projectPath);
         suggestions.addAll(
-            structuralSuggestions.where((s) => s.confidence >= minConfidence),);
+          structuralSuggestions.where((s) => s.confidence >= minConfidence),
+        );
       }
 
       // 2. 语法分析
       if (analysisTypes.contains(CodeAnalysisType.syntactic)) {
         final syntacticSuggestions = await _analyzeSyntax(projectPath);
         suggestions.addAll(
-            syntacticSuggestions.where((s) => s.confidence >= minConfidence),);
+          syntacticSuggestions.where((s) => s.confidence >= minConfidence),
+        );
       }
 
       // 3. 依赖分析
       if (analysisTypes.contains(CodeAnalysisType.dependency)) {
         final dependencySuggestions = await _analyzeDependencies(projectPath);
         suggestions.addAll(
-            dependencySuggestions.where((s) => s.confidence >= minConfidence),);
+          dependencySuggestions.where((s) => s.confidence >= minConfidence),
+        );
       }
 
       // 4. 语义分析 (高级功能)
@@ -437,7 +440,8 @@ class EnterpriseTemplateCreator {
           analysisTypes.contains(CodeAnalysisType.semantic)) {
         final semanticSuggestions = await _analyzeSemantic(projectPath);
         suggestions.addAll(
-            semanticSuggestions.where((s) => s.confidence >= minConfidence),);
+          semanticSuggestions.where((s) => s.confidence >= minConfidence),
+        );
       }
 
       // 5. 模式分析 (高级功能)
@@ -445,7 +449,8 @@ class EnterpriseTemplateCreator {
           analysisTypes.contains(CodeAnalysisType.pattern)) {
         final patternSuggestions = await _analyzePatterns(projectPath);
         suggestions.addAll(
-            patternSuggestions.where((s) => s.confidence >= minConfidence),);
+          patternSuggestions.where((s) => s.confidence >= minConfidence),
+        );
       }
 
       // 去重和排序
@@ -726,7 +731,8 @@ class EnterpriseTemplateCreator {
 
   /// 结构分析
   Future<List<ParameterizationSuggestion>> _analyzeStructure(
-      String projectPath,) async {
+    String projectPath,
+  ) async {
     final suggestions = <ParameterizationSuggestion>[];
 
     try {
@@ -738,19 +744,21 @@ class EnterpriseTemplateCreator {
       // 分析项目名称
       final projectName = projectPath.split('/').last;
       if (projectName.isNotEmpty) {
-        suggestions.add(ParameterizationSuggestion(
-          filePath: 'project_structure',
-          lineNumber: 0,
-          originalValue: projectName,
-          suggestedParameter: EnterpriseTemplateParameter(
-            name: 'project_name',
-            enterpriseType: EnterpriseParameterType.string,
-            description: '项目名称',
-            defaultValue: projectName,
+        suggestions.add(
+          ParameterizationSuggestion(
+            filePath: 'project_structure',
+            lineNumber: 0,
+            originalValue: projectName,
+            suggestedParameter: EnterpriseTemplateParameter(
+              name: 'project_name',
+              enterpriseType: EnterpriseParameterType.string,
+              description: '项目名称',
+              defaultValue: projectName,
+            ),
+            confidence: 0.9,
+            reason: '项目名称应该参数化',
           ),
-          confidence: 0.9,
-          reason: '项目名称应该参数化',
-        ),);
+        );
       }
 
       // 分析配置文件
@@ -764,7 +772,8 @@ class EnterpriseTemplateCreator {
 
   /// 语法分析
   Future<List<ParameterizationSuggestion>> _analyzeSyntax(
-      String projectPath,) async {
+    String projectPath,
+  ) async {
     final suggestions = <ParameterizationSuggestion>[];
 
     try {
@@ -785,7 +794,8 @@ class EnterpriseTemplateCreator {
 
   /// 依赖分析
   Future<List<ParameterizationSuggestion>> _analyzeDependencies(
-      String projectPath,) async {
+    String projectPath,
+  ) async {
     final suggestions = <ParameterizationSuggestion>[];
 
     try {
@@ -804,19 +814,21 @@ class EnterpriseTemplateCreator {
               final packageName = parts[0].trim();
               final version = parts[1].trim();
 
-              suggestions.add(ParameterizationSuggestion(
-                filePath: 'pubspec.yaml',
-                lineNumber: i + 1,
-                originalValue: version,
-                suggestedParameter: EnterpriseTemplateParameter(
-                  name: '${packageName}_version',
-                  enterpriseType: EnterpriseParameterType.string,
-                  description: '$packageName包版本',
-                  defaultValue: version,
+              suggestions.add(
+                ParameterizationSuggestion(
+                  filePath: 'pubspec.yaml',
+                  lineNumber: i + 1,
+                  originalValue: version,
+                  suggestedParameter: EnterpriseTemplateParameter(
+                    name: '${packageName}_version',
+                    enterpriseType: EnterpriseParameterType.string,
+                    description: '$packageName包版本',
+                    defaultValue: version,
+                  ),
+                  confidence: 0.8,
+                  reason: '依赖版本应该参数化',
                 ),
-                confidence: 0.8,
-                reason: '依赖版本应该参数化',
-              ),);
+              );
             }
           }
         }
@@ -830,7 +842,8 @@ class EnterpriseTemplateCreator {
 
   /// 语义分析 (高级功能)
   Future<List<ParameterizationSuggestion>> _analyzeSemantic(
-      String projectPath,) async {
+    String projectPath,
+  ) async {
     final suggestions = <ParameterizationSuggestion>[];
 
     // 高级语义分析实现
@@ -841,7 +854,8 @@ class EnterpriseTemplateCreator {
 
   /// 模式分析 (高级功能)
   Future<List<ParameterizationSuggestion>> _analyzePatterns(
-      String projectPath,) async {
+    String projectPath,
+  ) async {
     final suggestions = <ParameterizationSuggestion>[];
 
     // 高级模式分析实现
@@ -884,19 +898,21 @@ class EnterpriseTemplateCreator {
         final line = lines[i];
         if (line.contains('name:')) {
           final name = line.split(':')[1].trim();
-          suggestions.add(ParameterizationSuggestion(
-            filePath: 'pubspec.yaml',
-            lineNumber: i + 1,
-            originalValue: name,
-            suggestedParameter: EnterpriseTemplateParameter(
-              name: 'app_name',
-              enterpriseType: EnterpriseParameterType.string,
-              description: '应用名称',
-              defaultValue: name,
+          suggestions.add(
+            ParameterizationSuggestion(
+              filePath: 'pubspec.yaml',
+              lineNumber: i + 1,
+              originalValue: name,
+              suggestedParameter: EnterpriseTemplateParameter(
+                name: 'app_name',
+                enterpriseType: EnterpriseParameterType.string,
+                description: '应用名称',
+                defaultValue: name,
+              ),
+              confidence: 0.9,
+              reason: '应用名称应该参数化',
             ),
-            confidence: 0.9,
-            reason: '应用名称应该参数化',
-          ),);
+          );
         }
       }
     }
@@ -923,19 +939,21 @@ class EnterpriseTemplateCreator {
           for (final match in stringMatches) {
             final value = match.group(1) ?? match.group(2) ?? '';
             if (value.length > 3 && _shouldParameterize(value)) {
-              suggestions.add(ParameterizationSuggestion(
-                filePath: file.path.replaceFirst('$projectPath/', ''),
-                lineNumber: i + 1,
-                originalValue: value,
-                suggestedParameter: EnterpriseTemplateParameter(
-                  name: _generateParameterName(value),
-                  enterpriseType: EnterpriseParameterType.string,
-                  description: '字符串常量',
-                  defaultValue: value,
+              suggestions.add(
+                ParameterizationSuggestion(
+                  filePath: file.path.replaceFirst('$projectPath/', ''),
+                  lineNumber: i + 1,
+                  originalValue: value,
+                  suggestedParameter: EnterpriseTemplateParameter(
+                    name: _generateParameterName(value),
+                    enterpriseType: EnterpriseParameterType.string,
+                    description: '字符串常量',
+                    defaultValue: value,
+                  ),
+                  confidence: 0.6,
+                  reason: '字符串常量可以参数化',
                 ),
-                confidence: 0.6,
-                reason: '字符串常量可以参数化',
-              ),);
+              );
             }
           }
         }
@@ -967,19 +985,21 @@ class EnterpriseTemplateCreator {
               final value = parts.sublist(1).join(':').trim();
 
               if (value.isNotEmpty && _shouldParameterize(value)) {
-                suggestions.add(ParameterizationSuggestion(
-                  filePath: file.path.replaceFirst('$projectPath/', ''),
-                  lineNumber: i + 1,
-                  originalValue: value,
-                  suggestedParameter: EnterpriseTemplateParameter(
-                    name: _generateParameterName(key),
-                    enterpriseType: EnterpriseParameterType.string,
-                    description: 'YAML配置值',
-                    defaultValue: value,
+                suggestions.add(
+                  ParameterizationSuggestion(
+                    filePath: file.path.replaceFirst('$projectPath/', ''),
+                    lineNumber: i + 1,
+                    originalValue: value,
+                    suggestedParameter: EnterpriseTemplateParameter(
+                      name: _generateParameterName(key),
+                      enterpriseType: EnterpriseParameterType.string,
+                      description: 'YAML配置值',
+                      defaultValue: value,
+                    ),
+                    confidence: 0.7,
+                    reason: 'YAML配置值可以参数化',
                   ),
-                  confidence: 0.7,
-                  reason: 'YAML配置值可以参数化',
-                ),);
+                );
               }
             }
           }
@@ -1026,19 +1046,21 @@ class EnterpriseTemplateCreator {
       final fullKey = prefix.isEmpty ? key : '$prefix.$key';
 
       if (value is String && _shouldParameterize(value)) {
-        suggestions.add(ParameterizationSuggestion(
-          filePath: filePath,
-          lineNumber: 0, // JSON文件中难以确定行号
-          originalValue: value,
-          suggestedParameter: EnterpriseTemplateParameter(
-            name: _generateParameterName(fullKey),
-            enterpriseType: EnterpriseParameterType.string,
-            description: 'JSON配置值',
-            defaultValue: value,
+        suggestions.add(
+          ParameterizationSuggestion(
+            filePath: filePath,
+            lineNumber: 0, // JSON文件中难以确定行号
+            originalValue: value,
+            suggestedParameter: EnterpriseTemplateParameter(
+              name: _generateParameterName(fullKey),
+              enterpriseType: EnterpriseParameterType.string,
+              description: 'JSON配置值',
+              defaultValue: value,
+            ),
+            confidence: 0.7,
+            reason: 'JSON配置值可以参数化',
           ),
-          confidence: 0.7,
-          reason: 'JSON配置值可以参数化',
-        ),);
+        );
       } else if (value is Map<String, dynamic>) {
         _analyzeJsonObject(value, filePath, suggestions, fullKey);
       }
@@ -1047,7 +1069,9 @@ class EnterpriseTemplateCreator {
 
   /// 查找指定扩展名的文件
   Future<List<File>> _findFilesByExtension(
-      String path, String extension,) async {
+    String path,
+    String extension,
+  ) async {
     final files = <File>[];
     final dir = Directory(path);
 

@@ -25,13 +25,13 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 enum ParameterCollectionMode {
   /// 交互式模式
   interactive,
-  
+
   /// 批量模式
   batch,
-  
+
   /// 向导模式
   wizard,
-  
+
   /// 自动模式
   automatic,
 }
@@ -40,19 +40,19 @@ enum ParameterCollectionMode {
 enum RecommendationSource {
   /// 环境变量
   environment,
-  
+
   /// 配置文件
   configFile,
-  
+
   /// 项目检测
   projectDetection,
-  
+
   /// 历史记录
   history,
-  
+
   /// 默认值
   defaultValue,
-  
+
   /// 用户输入
   userInput,
 }
@@ -70,16 +70,16 @@ class ParameterRecommendation {
 
   /// 推荐值
   final dynamic value;
-  
+
   /// 推荐来源
   final RecommendationSource source;
-  
+
   /// 置信度 (0.0-1.0)
   final double confidence;
-  
+
   /// 推荐描述
   final String? description;
-  
+
   /// 额外元数据
   final Map<String, dynamic> metadata;
 }
@@ -98,19 +98,19 @@ class ParameterCollectionStep {
 
   /// 步骤名称
   final String name;
-  
+
   /// 步骤标题
   final String title;
-  
+
   /// 步骤参数列表
   final List<EnterpriseTemplateParameter> parameters;
-  
+
   /// 步骤描述
   final String? description;
-  
+
   /// 显示条件
   final String? condition;
-  
+
   /// 显示顺序
   final int order;
 }
@@ -129,43 +129,43 @@ class ParameterCollectionSession {
 
   /// 会话ID
   final String sessionId;
-  
+
   /// 参数列表
   final List<EnterpriseTemplateParameter> parameters;
-  
+
   /// 收集模式
   final ParameterCollectionMode mode;
-  
+
   /// 是否启用推荐
   final bool enableRecommendations;
-  
+
   /// 是否启用验证
   final bool enableValidation;
-  
+
   /// 是否显示进度
   final bool enableProgress;
 
   /// 收集的参数值
   final Map<String, dynamic> collectedValues = {};
-  
+
   /// 参数推荐
   final Map<String, List<ParameterRecommendation>> recommendations = {};
-  
+
   /// 验证结果
   final Map<String, EnterpriseValidationResult> validationResults = {};
-  
+
   /// 当前步骤索引
   int currentStepIndex = 0;
-  
+
   /// 收集步骤
   List<ParameterCollectionStep> steps = [];
-  
+
   /// 会话开始时间
   final DateTime startTime = DateTime.now();
-  
+
   /// 是否已完成
   bool isCompleted = false;
-  
+
   /// 是否已取消
   bool isCancelled = false;
 
@@ -197,19 +197,19 @@ class SmartParameterCollector {
 
   /// 平台检测器
   final PlatformDetector? platformDetector;
-  
+
   /// 功能检测器
   final FeatureDetector? featureDetector;
-  
+
   /// 参数验证器
   final EnterpriseParameterValidator? validator;
-  
+
   /// 是否启用自动填充
   final bool enableAutoFill;
-  
+
   /// 是否启用智能推荐
   final bool enableSmartRecommendations;
-  
+
   /// 最大推荐数量
   final int maxRecommendations;
 
@@ -226,7 +226,7 @@ class SmartParameterCollector {
   }) async {
     try {
       cli_logger.Logger.debug('开始参数收集会话: $sessionId');
-      
+
       final session = ParameterCollectionSession(
         sessionId: sessionId,
         parameters: parameters,
@@ -252,7 +252,7 @@ class SmartParameterCollector {
       }
 
       _activeSessions[sessionId] = session;
-      
+
       cli_logger.Logger.info(
         '参数收集会话已启动: $sessionId - '
         '${parameters.length}个参数, ${session.steps.length}个步骤',
@@ -283,9 +283,9 @@ class SmartParameterCollector {
 
       // 立即验证
       if (validateImmediately && validator != null) {
-        final parameter = session.parameters
-            .firstWhere((p) => p.name == parameterName);
-        
+        final parameter =
+            session.parameters.firstWhere((p) => p.name == parameterName);
+
         final result = await validator!.validateParameter(parameter, value);
         session.validationResults[parameterName] = result;
 
@@ -312,7 +312,7 @@ class SmartParameterCollector {
     bool validateImmediately = true,
   }) async {
     final results = <String, bool>{};
-    
+
     for (final entry in values.entries) {
       results[entry.key] = await collectParameter(
         sessionId: sessionId,
@@ -392,11 +392,12 @@ class SmartParameterCollector {
       }
 
       session.isCompleted = true;
-      final collectedValues = Map<String, dynamic>.from(session.collectedValues);
-      
+      final collectedValues =
+          Map<String, dynamic>.from(session.collectedValues);
+
       // 清理会话
       _activeSessions.remove(sessionId);
-      
+
       cli_logger.Logger.info(
         '参数收集会话完成: $sessionId - 收集了${collectedValues.length}个参数',
       );
@@ -428,10 +429,10 @@ class SmartParameterCollector {
     List<EnterpriseTemplateParameter> parameters,
   ) async {
     final steps = <ParameterCollectionStep>[];
-    
+
     // 按分组和顺序组织参数
     final groupedParams = <String, List<EnterpriseTemplateParameter>>{};
-    
+
     for (final param in parameters) {
       final group = param.group ?? param.category ?? 'general';
       groupedParams.putIfAbsent(group, () => []).add(param);
@@ -442,22 +443,24 @@ class SmartParameterCollector {
     for (final entry in groupedParams.entries) {
       final groupName = entry.key;
       final groupParams = entry.value;
-      
+
       // 按order字段排序
       groupParams.sort((a, b) => a.order.compareTo(b.order));
-      
-      steps.add(ParameterCollectionStep(
-        name: groupName,
-        title: _generateStepTitle(groupName),
-        parameters: groupParams,
-        description: _generateStepDescription(groupName, groupParams),
-        order: stepOrder++,
-      ),);
+
+      steps.add(
+        ParameterCollectionStep(
+          name: groupName,
+          title: _generateStepTitle(groupName),
+          parameters: groupParams,
+          description: _generateStepDescription(groupName, groupParams),
+          order: stepOrder++,
+        ),
+      );
     }
 
     // 按order排序
     steps.sort((a, b) => a.order.compareTo(b.order));
-    
+
     return steps;
   }
 
@@ -472,24 +475,29 @@ class SmartParameterCollector {
       // 1. 环境变量推荐
       final envValue = _getEnvironmentValue(parameter.name);
       if (envValue != null) {
-        recommendations.add(ParameterRecommendation(
-          value: envValue,
-          source: RecommendationSource.environment,
-          confidence: 0.8,
-          description: '从环境变量获取',
-        ),);
+        recommendations.add(
+          ParameterRecommendation(
+            value: envValue,
+            source: RecommendationSource.environment,
+            confidence: 0.8,
+            description: '从环境变量获取',
+          ),
+        );
       }
 
       // 2. 配置文件推荐
       if (projectPath != null) {
-        final configValue = await _getConfigFileValue(projectPath, parameter.name);
+        final configValue =
+            await _getConfigFileValue(projectPath, parameter.name);
         if (configValue != null) {
-          recommendations.add(ParameterRecommendation(
-            value: configValue,
-            source: RecommendationSource.configFile,
-            confidence: 0.9,
-            description: '从配置文件获取',
-          ),);
+          recommendations.add(
+            ParameterRecommendation(
+              value: configValue,
+              source: RecommendationSource.configFile,
+              confidence: 0.9,
+              description: '从配置文件获取',
+            ),
+          );
         }
       }
 
@@ -497,28 +505,32 @@ class SmartParameterCollector {
       if (projectPath != null && platformDetector != null) {
         final detectedValue = await _getDetectedValue(parameter, projectPath);
         if (detectedValue != null) {
-          recommendations.add(ParameterRecommendation(
-            value: detectedValue,
-            source: RecommendationSource.projectDetection,
-            confidence: 0.7,
-            description: '基于项目检测',
-          ),);
+          recommendations.add(
+            ParameterRecommendation(
+              value: detectedValue,
+              source: RecommendationSource.projectDetection,
+              confidence: 0.7,
+              description: '基于项目检测',
+            ),
+          );
         }
       }
 
       // 4. 默认值推荐
       if (parameter.defaultValue != null) {
-        recommendations.add(ParameterRecommendation(
-          value: parameter.defaultValue,
-          source: RecommendationSource.defaultValue,
-          confidence: 0.5,
-          description: '参数默认值',
-        ),);
+        recommendations.add(
+          ParameterRecommendation(
+            value: parameter.defaultValue,
+            source: RecommendationSource.defaultValue,
+            confidence: 0.5,
+            description: '参数默认值',
+          ),
+        );
       }
 
       // 按置信度排序并限制数量
       recommendations.sort((a, b) => b.confidence.compareTo(a.confidence));
-      session.recommendations[parameter.name] = 
+      session.recommendations[parameter.name] =
           recommendations.take(maxRecommendations).toList();
     }
   }
@@ -536,7 +548,7 @@ class SmartParameterCollector {
       final recommendations = session.recommendations[parameter.name] ?? [];
       if (recommendations.isNotEmpty) {
         final bestRecommendation = recommendations.first;
-        
+
         // 只有高置信度的推荐才自动填充
         if (bestRecommendation.confidence >= 0.8) {
           session.collectedValues[parameter.name] = bestRecommendation.value;
@@ -569,7 +581,8 @@ class SmartParameterCollector {
   }
 
   /// 从配置文件获取值
-  Future<dynamic> _getConfigFileValue(String projectPath, String parameterName) async {
+  Future<dynamic> _getConfigFileValue(
+      String projectPath, String parameterName) async {
     final configFiles = [
       'ming.config.json',
       'ming.config.yaml',
@@ -622,11 +635,11 @@ class SmartParameterCollector {
       switch (parameter.enterpriseType) {
         case EnterpriseParameterType.environment:
           return platformResult.environment.name;
-          
+
         case EnterpriseParameterType.organization:
           // 从Git配置获取组织信息
           return await _getGitOrganization(projectPath);
-          
+
         default:
           return null;
       }
@@ -636,7 +649,8 @@ class SmartParameterCollector {
   }
 
   /// 在配置中查找值
-  dynamic _findValueInConfig(Map<String, dynamic> config, String parameterName) {
+  dynamic _findValueInConfig(
+      Map<String, dynamic> config, String parameterName) {
     // 直接查找
     if (config.containsKey(parameterName)) {
       return config[parameterName];
@@ -645,7 +659,7 @@ class SmartParameterCollector {
     // 查找嵌套值
     final parts = parameterName.split('.');
     dynamic current = config;
-    
+
     for (final part in parts) {
       if (current is Map && current.containsKey(part)) {
         current = current[part];
@@ -700,7 +714,8 @@ class SmartParameterCollector {
   }
 
   /// 生成步骤描述
-  String _generateStepDescription(String groupName, List<EnterpriseTemplateParameter> parameters) {
+  String _generateStepDescription(
+      String groupName, List<EnterpriseTemplateParameter> parameters) {
     return '配置${_generateStepTitle(groupName)}相关的${parameters.length}个参数';
   }
 }

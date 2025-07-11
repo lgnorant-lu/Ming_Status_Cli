@@ -28,7 +28,6 @@ enum CompatibilityLevel {
 
 /// 兼容性检查结果
 class CompatibilityResult {
-
   const CompatibilityResult({
     required this.level,
     required this.passed,
@@ -36,6 +35,7 @@ class CompatibilityResult {
     this.migrationSuggestions = const [],
     this.affectedFeatures = const [],
   });
+
   /// 兼容性级别
   final CompatibilityLevel level;
 
@@ -54,15 +54,16 @@ class CompatibilityResult {
 
 /// 版本兼容性规则
 class CompatibilityRule {
-
   const CompatibilityRule({
     required this.id,
     required this.name,
     required this.versionRange,
     required this.level,
     required this.checker,
-    required this.description, this.migrator,
+    required this.description,
+    this.migrator,
   });
+
   /// 规则ID
   final String id;
 
@@ -266,8 +267,10 @@ class CompatibilityManager {
   /// 获取兼容性报告
   CompatibilityReport generateReport(String version) {
     final deprecatedFeatures = _deprecatedFeatures.entries
-        .where((entry) =>
-            _isVersionInRange(version, entry.value.deprecatedInVersion),)
+        .where(
+          (entry) =>
+              _isVersionInRange(version, entry.value.deprecatedInVersion),
+        )
         .map((entry) => entry.key)
         .toList();
 
@@ -275,7 +278,8 @@ class CompatibilityManager {
 
     final availableMigrations = _migrationScripts.values
         .where(
-            (script) => _isVersionInRange(version, script.targetVersionRange),)
+          (script) => _isVersionInRange(version, script.targetVersionRange),
+        )
         .map((script) => script.name)
         .toList();
 
@@ -291,47 +295,51 @@ class CompatibilityManager {
   /// 注册内置兼容性规则
   void _registerBuiltinRules() {
     // Phase 1 -> Phase 2 兼容性规则
-    registerRule(CompatibilityRule(
-      id: 'config_format_v1_to_v2',
-      name: '配置文件格式兼容性',
-      versionRange: '>=2.0.0',
-      level: CompatibilityLevel.partial,
-      description: '检查配置文件格式是否需要升级',
-      checker: (context) async {
-        // 检查配置文件格式
-        final configPath = context['configPath'] as String?;
-        if (configPath == null) return true;
+    registerRule(
+      CompatibilityRule(
+        id: 'config_format_v1_to_v2',
+        name: '配置文件格式兼容性',
+        versionRange: '>=2.0.0',
+        level: CompatibilityLevel.partial,
+        description: '检查配置文件格式是否需要升级',
+        checker: (context) async {
+          // 检查配置文件格式
+          final configPath = context['configPath'] as String?;
+          if (configPath == null) return true;
 
-        final configFile = File(configPath);
-        if (!configFile.existsSync()) return true;
+          final configFile = File(configPath);
+          if (!configFile.existsSync()) return true;
 
-        try {
-          final content = await configFile.readAsString();
-          final config = jsonDecode(content);
+          try {
+            final content = await configFile.readAsString();
+            final config = jsonDecode(content);
 
-          // 检查是否包含v2格式的字段
-          final version = config['version'];
-          return version != null &&
-              version is String &&
-              version.compareTo('2.0.0') >= 0;
-        } catch (e) {
-          return false;
-        }
-      },
-    ),);
+            // 检查是否包含v2格式的字段
+            final version = config['version'];
+            return version != null &&
+                version is String &&
+                version.compareTo('2.0.0') >= 0;
+          } catch (e) {
+            return false;
+          }
+        },
+      ),
+    );
 
-    registerRule(CompatibilityRule(
-      id: 'template_engine_v1_to_v2',
-      name: '模板引擎兼容性',
-      versionRange: '>=2.0.0',
-      level: CompatibilityLevel.deprecated,
-      description: '检查模板引擎API使用',
-      checker: (context) async {
-        // 检查是否使用了旧的模板API
-        // 这里是预留接口，Phase 2实现
-        return true;
-      },
-    ),);
+    registerRule(
+      CompatibilityRule(
+        id: 'template_engine_v1_to_v2',
+        name: '模板引擎兼容性',
+        versionRange: '>=2.0.0',
+        level: CompatibilityLevel.deprecated,
+        description: '检查模板引擎API使用',
+        checker: (context) async {
+          // 检查是否使用了旧的模板API
+          // 这里是预留接口，Phase 2实现
+          return true;
+        },
+      ),
+    );
   }
 
   /// 加载破坏性变更信息
@@ -355,71 +363,75 @@ class CompatibilityManager {
   void _loadDeprecatedFeatures() {
     // Phase 1 中将在 Phase 2 弃用的功能
     deprecateFeature(
-        'basic_template_engine',
-        const DeprecationInfo(
-          feature: 'basic_template_engine',
-          deprecatedInVersion: '2.0.0',
-          removedInVersion: '3.0.0',
-          reason: '被高级模板系统替代',
-          migrationAdvice: '使用新的高级模板API',
-        ),);
+      'basic_template_engine',
+      const DeprecationInfo(
+        feature: 'basic_template_engine',
+        deprecatedInVersion: '2.0.0',
+        removedInVersion: '3.0.0',
+        reason: '被高级模板系统替代',
+        migrationAdvice: '使用新的高级模板API',
+      ),
+    );
 
     deprecateFeature(
-        'simple_validator',
-        const DeprecationInfo(
-          feature: 'simple_validator',
-          deprecatedInVersion: '2.1.0',
-          removedInVersion: '3.0.0',
-          reason: '被企业级验证器替代',
-          migrationAdvice: '迁移到新的验证器框架',
-        ),);
+      'simple_validator',
+      const DeprecationInfo(
+        feature: 'simple_validator',
+        deprecatedInVersion: '2.1.0',
+        removedInVersion: '3.0.0',
+        reason: '被企业级验证器替代',
+        migrationAdvice: '迁移到新的验证器框架',
+      ),
+    );
   }
 
   /// 加载迁移脚本
   void _loadMigrationScripts() {
     // v1 -> v2 配置迁移
-    registerMigrationScript(MigrationScript(
-      id: 'config_v1_to_v2',
-      name: '配置文件v1到v2迁移',
-      fromVersion: '1.x.x',
-      toVersion: '2.x.x',
-      targetVersionRange: '>=2.0.0',
-      description: '将v1配置文件格式升级到v2',
-      execute: (context) async {
-        final configPath = context['configPath'] as String?;
-        if (configPath == null) return;
+    registerMigrationScript(
+      MigrationScript(
+        id: 'config_v1_to_v2',
+        name: '配置文件v1到v2迁移',
+        fromVersion: '1.x.x',
+        toVersion: '2.x.x',
+        targetVersionRange: '>=2.0.0',
+        description: '将v1配置文件格式升级到v2',
+        execute: (context) async {
+          final configPath = context['configPath'] as String?;
+          if (configPath == null) return;
 
-        final configFile = File(configPath);
-        if (!configFile.existsSync()) return;
+          final configFile = File(configPath);
+          if (!configFile.existsSync()) return;
 
-        // 读取v1配置
-        final content = await configFile.readAsString();
-        final v1Config = jsonDecode(content);
+          // 读取v1配置
+          final content = await configFile.readAsString();
+          final v1Config = jsonDecode(content);
 
-        // 转换为v2格式
-        final v2Config = <String, dynamic>{
-          'version': '2.0.0',
-          'migrated_from': '1.x.x',
-          'migration_date': DateTime.now().toIso8601String(),
-        };
+          // 转换为v2格式
+          final v2Config = <String, dynamic>{
+            'version': '2.0.0',
+            'migrated_from': '1.x.x',
+            'migration_date': DateTime.now().toIso8601String(),
+          };
 
-        // 合并v1配置
-        if (v1Config is Map<String, dynamic>) {
-          v2Config.addAll(v1Config);
-        }
+          // 合并v1配置
+          if (v1Config is Map<String, dynamic>) {
+            v2Config.addAll(v1Config);
+          }
 
-        // 备份原配置
-        final backupPath = '$configPath.v1.backup';
-        await configFile.copy(backupPath);
+          // 备份原配置
+          final backupPath = '$configPath.v1.backup';
+          await configFile.copy(backupPath);
 
-        // 写入v2配置
-        await configFile.writeAsString(
-          const JsonEncoder.withIndent('  ').convert(v2Config),
-        );
+          // 写入v2配置
+          await configFile.writeAsString(
+            const JsonEncoder.withIndent('  ').convert(v2Config),
+          );
 
-        Logger.info('配置文件已迁移到v2格式，原文件备份为: $backupPath');
-      },
-    ),);
+          Logger.info('配置文件已迁移到v2格式，原文件备份为: $backupPath');
+        },
+      ),
+    );
   }
 
   /// 获取破坏性变更
@@ -439,18 +451,24 @@ class CompatibilityManager {
   /// 获取弃用功能
   List<DeprecationInfo> _getDeprecations(String fromVersion, String toVersion) {
     return _deprecatedFeatures.values
-        .where((dep) =>
-            _isVersionBetween(dep.deprecatedInVersion, fromVersion, toVersion),)
+        .where(
+          (dep) => _isVersionBetween(
+              dep.deprecatedInVersion, fromVersion, toVersion),
+        )
         .toList();
   }
 
   /// 查找适用的迁移脚本
   List<MigrationScript> _findApplicableMigrationScripts(
-      String fromVersion, String toVersion,) {
+    String fromVersion,
+    String toVersion,
+  ) {
     return _migrationScripts.values
-        .where((script) =>
-            _isVersionInRange(fromVersion, script.fromVersion) &&
-            _isVersionInRange(toVersion, script.toVersion),)
+        .where(
+          (script) =>
+              _isVersionInRange(fromVersion, script.fromVersion) &&
+              _isVersionInRange(toVersion, script.toVersion),
+        )
         .toList();
   }
 
@@ -469,7 +487,6 @@ class CompatibilityManager {
 
 /// 弃用信息
 class DeprecationInfo {
-
   const DeprecationInfo({
     required this.feature,
     required this.deprecatedInVersion,
@@ -477,6 +494,7 @@ class DeprecationInfo {
     required this.reason,
     required this.migrationAdvice,
   });
+
   /// 弃用的功能
   final String feature;
 
@@ -495,7 +513,6 @@ class DeprecationInfo {
 
 /// 迁移脚本
 class MigrationScript {
-
   const MigrationScript({
     required this.id,
     required this.name,
@@ -505,6 +522,7 @@ class MigrationScript {
     required this.description,
     required this.execute,
   });
+
   /// 脚本ID
   final String id;
 
@@ -529,7 +547,6 @@ class MigrationScript {
 
 /// 迁移结果
 class MigrationResult {
-
   const MigrationResult({
     required this.success,
     required this.fromVersion,
@@ -537,6 +554,7 @@ class MigrationResult {
     required this.executedScripts,
     this.errors = const [],
   });
+
   /// 迁移是否成功
   final bool success;
 
@@ -555,7 +573,6 @@ class MigrationResult {
 
 /// 兼容性报告
 class CompatibilityReport {
-
   const CompatibilityReport({
     required this.version,
     required this.deprecatedFeatures,
@@ -563,6 +580,7 @@ class CompatibilityReport {
     required this.availableMigrations,
     required this.compatibilityRules,
   });
+
   /// 版本
   final String version;
 

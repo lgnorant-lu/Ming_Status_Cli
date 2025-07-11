@@ -496,7 +496,8 @@ class ExtendedStressTester {
           final operationStopwatch = Stopwatch()..start();
 
           await _searchTemplates(
-              'template_${math.Random().nextInt(templateCount)}',);
+            'template_${math.Random().nextInt(templateCount)}',
+          );
 
           operationStopwatch.stop();
           responseTimes.add(operationStopwatch.elapsedMilliseconds.toDouble());
@@ -596,21 +597,23 @@ class ExtendedStressTester {
         'generated_at': DateTime.now().toIso8601String(),
       },
       'test_results': _testResults
-          .map((result) => {
-                'success': result.success,
-                'total_operations': result.totalOperations,
-                'successful_operations': result.successfulOperations,
-                'failed_operations': result.failedOperations,
-                'average_response_time_ms': result.averageResponseTime,
-                'max_response_time_ms': result.maxResponseTime,
-                'min_response_time_ms': result.minResponseTime,
-                'throughput_ops_per_sec': result.throughput,
-                'error_rate': result.errorRate,
-                'duration_ms': result.duration.inMilliseconds,
-                'errors': result.errors,
-                'warnings': result.warnings,
-                'memory_usage': result.memoryUsage,
-              },)
+          .map(
+            (result) => {
+              'success': result.success,
+              'total_operations': result.totalOperations,
+              'successful_operations': result.successfulOperations,
+              'failed_operations': result.failedOperations,
+              'average_response_time_ms': result.averageResponseTime,
+              'max_response_time_ms': result.maxResponseTime,
+              'min_response_time_ms': result.minResponseTime,
+              'throughput_ops_per_sec': result.throughput,
+              'error_rate': result.errorRate,
+              'duration_ms': result.duration.inMilliseconds,
+              'errors': result.errors,
+              'warnings': result.warnings,
+              'memory_usage': result.memoryUsage,
+            },
+          )
           .toList(),
       'recommendations': _generateRecommendations(),
     };
@@ -625,7 +628,9 @@ class ExtendedStressTester {
 
   /// 模拟用户操作
   Future<bool> _simulateUserOperations(
-      int userId, List<double> responseTimes,) async {
+    int userId,
+    List<double> responseTimes,
+  ) async {
     try {
       for (var i = 0; i < config.operationsPerUser; i++) {
         final stopwatch = Stopwatch()..start();
@@ -637,7 +642,8 @@ class ExtendedStressTester {
 
         // 随机延迟模拟真实用户行为
         await Future<void>.delayed(
-            Duration(milliseconds: math.Random().nextInt(100)),);
+          Duration(milliseconds: math.Random().nextInt(100)),
+        );
       }
       return true;
     } catch (e) {

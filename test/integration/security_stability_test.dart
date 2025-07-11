@@ -65,7 +65,7 @@ void main() {
           () => PathSecurityValidator.validateFileName('CON'),
           throwsA(isA<SecurityValidationError>()),
         );
-        
+
         expect(
           () => PathSecurityValidator.validateFileName('test<file>.dart'),
           throwsA(isA<SecurityValidationError>()),
@@ -84,12 +84,12 @@ void main() {
           () => InputValidator.validateProjectName(''),
           throwsA(isA<SecurityValidationError>()),
         );
-        
+
         expect(
           () => InputValidator.validateProjectName('123invalid'),
           throwsA(isA<SecurityValidationError>()),
         );
-        
+
         expect(
           () => InputValidator.validateProjectName('invalid@name'),
           throwsA(isA<SecurityValidationError>()),
@@ -100,7 +100,7 @@ void main() {
       test('应该能够验证URL', () {
         final result1 = InputValidator.validateUrl('https://example.com');
         expect(result1, equals(SecurityValidationResult.safe));
-        
+
         final result2 = InputValidator.validateUrl('file:///local/path');
         expect(result2, equals(SecurityValidationResult.warning));
         print('✅ URL验证通过');
@@ -111,7 +111,7 @@ void main() {
           () => InputValidator.validateUrl(''),
           throwsA(isA<SecurityValidationError>()),
         );
-        
+
         expect(
           () => InputValidator.validateUrl('ftp://invalid.com'),
           throwsA(isA<SecurityValidationError>()),
@@ -122,10 +122,17 @@ void main() {
       test('应该能够检查路径是否在允许目录内', () {
         final allowed = tempDir.path;
         final validPath = path.join(tempDir.path, 'subdir', 'file.txt');
-        final invalidPath = path.join(Directory.systemTemp.path, 'other', 'file.txt');
-        
-        expect(PathSecurityValidator.isPathWithinAllowedDirectory(validPath, allowed), isTrue);
-        expect(PathSecurityValidator.isPathWithinAllowedDirectory(invalidPath, allowed), isFalse);
+        final invalidPath =
+            path.join(Directory.systemTemp.path, 'other', 'file.txt');
+
+        expect(
+            PathSecurityValidator.isPathWithinAllowedDirectory(
+                validPath, allowed),
+            isTrue);
+        expect(
+            PathSecurityValidator.isPathWithinAllowedDirectory(
+                invalidPath, allowed),
+            isFalse);
         print('✅ 路径范围检查通过');
       });
     });
@@ -143,61 +150,63 @@ void main() {
         // 创建测试文件
         final testFile = File(path.join(tempDir.path, 'test_read.txt'));
         await testFile.writeAsString('test content');
-        
+
         // 安全读取
         final content = await fileManager.secureReadFile(testFile.path);
         expect(content, equals('test content'));
-        
+
         // 检查操作日志
         final log = fileManager.getOperationLog();
         expect(log, isNotEmpty);
         expect(log.last.type, equals(FileOperationType.read));
         expect(log.last.success, isTrue);
-        
+
         print('✅ 安全文件读取测试通过');
       });
 
       test('应该能够安全写入文件', () async {
         final testFile = path.join(tempDir.path, 'test_write.dart');
         const testContent = 'void main() { print("Hello"); }';
-        
+
         // 安全写入
         await fileManager.secureWriteFile(testFile, testContent);
-        
+
         // 验证文件内容
         final file = File(testFile);
         expect(file.existsSync(), isTrue);
         expect(await file.readAsString(), equals(testContent));
-        
+
         // 检查操作日志
         final log = fileManager.getOperationLog();
-        final writeOp = log.where((op) => op.type == FileOperationType.write).last;
+        final writeOp =
+            log.where((op) => op.type == FileOperationType.write).last;
         expect(writeOp.success, isTrue);
-        
+
         print('✅ 安全文件写入测试通过');
       });
 
       test('应该能够安全创建目录', () async {
         final testDir = path.join(tempDir.path, 'test_subdir');
-        
+
         // 安全创建目录
         await fileManager.secureCreateDirectory(testDir);
-        
+
         // 验证目录存在
         expect(Directory(testDir).existsSync(), isTrue);
-        
+
         // 检查操作日志
         final log = fileManager.getOperationLog();
-        final createOp = log.where((op) => op.type == FileOperationType.create).last;
+        final createOp =
+            log.where((op) => op.type == FileOperationType.create).last;
         expect(createOp.success, isTrue);
-        
+
         print('✅ 安全目录创建测试通过');
       });
 
       test('应该能够阻止危险文件操作', () async {
         // 尝试访问沙箱外的文件
         final outsideFile = path.join(Directory.systemTemp.path, 'outside.txt');
-        
+
         expect(
           () => fileManager.secureReadFile(outsideFile),
           throwsA(isA<SecurityValidationError>()),
@@ -207,7 +216,7 @@ void main() {
 
       test('应该能够阻止非法文件扩展名', () async {
         final executableFile = path.join(tempDir.path, 'malware.exe');
-        
+
         expect(
           () => fileManager.secureWriteFile(executableFile, 'malware'),
           throwsA(isA<SecurityValidationError>()),
@@ -218,10 +227,10 @@ void main() {
       test('应该能够限制文件大小', () async {
         // 设置严格策略
         fileManager.setPolicy(FileSecurityPolicy.strictPolicy);
-        
+
         final largeFile = path.join(tempDir.path, 'large.txt');
         final largeContent = 'x' * (2 * 1024 * 1024); // 2MB
-        
+
         expect(
           () => fileManager.secureWriteFile(largeFile, largeContent),
           throwsA(isA<SecurityValidationError>()),
@@ -231,13 +240,13 @@ void main() {
 
       test('应该能够获取安全统计信息', () {
         final stats = fileManager.getSecurityStats();
-        
+
         expect(stats, containsPair('totalOperations', isA<int>()));
         expect(stats, containsPair('successfulOperations', isA<int>()));
         expect(stats, containsPair('failedOperations', isA<int>()));
         expect(stats, containsPair('successRate', isA<String>()));
         expect(stats, containsPair('sandboxRoot', tempDir.path));
-        
+
         print('✅ 安全统计信息测试通过');
       });
     });
@@ -272,25 +281,26 @@ dev_dependencies:
 
         // 扫描依赖
         final report = await depChecker.scanPubspecFile(pubspecFile.path);
-        
+
         expect(report.totalDependencies, greaterThan(0));
         expect(report.dependencies, isNotEmpty);
         expect(report.scanTime, isA<DateTime>());
-        
+
         // 检查依赖信息
         final httpDep = report.dependencies.firstWhere((d) => d.name == 'http');
         expect(httpDep.currentVersion, equals('^0.13.5'));
         expect(httpDep.isDev, isFalse);
-        
+
         final testDep = report.dependencies.firstWhere((d) => d.name == 'test');
         expect(testDep.isDev, isTrue);
-        
+
         print('✅ pubspec.yaml扫描测试通过 (${report.totalDependencies}个依赖)');
       });
 
       test('应该能够检测不安全的依赖', () async {
         // 创建包含不安全依赖的pubspec.yaml
-        final pubspecFile = File(path.join(tempDir.path, 'unsafe_pubspec.yaml'));
+        final pubspecFile =
+            File(path.join(tempDir.path, 'unsafe_pubspec.yaml'));
         await pubspecFile.writeAsString('''
 name: unsafe_project
 version: 1.0.0
@@ -305,17 +315,17 @@ dev_dependencies:
 
         // 扫描依赖
         final report = await depChecker.scanPubspecFile(pubspecFile.path);
-        
+
         expect(report.vulnerableDependencies, greaterThan(0));
         expect(report.totalVulnerabilities, greaterThan(0));
-        
+
         // 检查不安全包
         final unsafeDep = report.dependencies.firstWhere(
           (d) => d.name == 'unsafe_package_example',
         );
         expect(unsafeDep.securityLevel, equals(DependencySecurityLevel.high));
         expect(unsafeDep.vulnerabilities, isNotEmpty);
-        
+
         print('✅ 不安全依赖检测测试通过');
       });
 
@@ -354,11 +364,13 @@ dev_dependencies:
         );
 
         // 生成建议
-        final recommendations = depChecker.generateSecurityRecommendations(report);
-        
+        final recommendations =
+            depChecker.generateSecurityRecommendations(report);
+
         expect(recommendations, isNotEmpty);
-        expect(recommendations.any((r) => r.contains('vulnerable_package')), isTrue);
-        
+        expect(recommendations.any((r) => r.contains('vulnerable_package')),
+            isTrue);
+
         print('✅ 安全建议生成测试通过 (${recommendations.length}条建议)');
       });
 
@@ -382,15 +394,15 @@ dev_dependencies:
         // 导出报告
         final reportPath = path.join(tempDir.path, 'security_report.json');
         await depChecker.exportReport(report, reportPath);
-        
+
         // 验证报告文件
         final reportFile = File(reportPath);
         expect(reportFile.existsSync(), isTrue);
-        
+
         final content = await reportFile.readAsString();
         expect(content, isNotEmpty);
         expect(content, contains('test_package'));
-        
+
         print('✅ 安全报告导出测试通过');
       });
     });
@@ -417,7 +429,7 @@ dev_dependencies:
 
         // 检查是否有危险结果
         expect(SecurityValidator.hasDangerousResults(results), isFalse);
-        
+
         print('✅ 综合安全验证测试通过 (${results.length}项检查)');
       });
 
@@ -430,7 +442,7 @@ dev_dependencies:
           ),
           throwsA(isA<SecurityValidationError>()),
         );
-        
+
         print('✅ 综合安全风险检测测试通过');
       });
     });
@@ -438,18 +450,21 @@ dev_dependencies:
     group('性能和稳定性测试', () {
       test('应该能够处理大量安全验证', () async {
         final stopwatch = Stopwatch()..start();
-        
+
         // 执行多次验证
         for (var i = 0; i < 100; i++) {
           PathSecurityValidator.validatePath('lib/src/test_$i.dart');
           InputValidator.validateProjectName('test_project_$i');
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(1000),
-               reason: '100次安全验证应该在1秒内完成',);
-        
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(1000),
+          reason: '100次安全验证应该在1秒内完成',
+        );
+
         print('⏱️  安全验证性能测试: ${stopwatch.elapsedMilliseconds}ms');
         print('✅ 性能测试通过');
       });
@@ -457,27 +472,28 @@ dev_dependencies:
       test('应该能够处理并发文件操作', () async {
         final fileManager = FileSecurityManager();
         fileManager.setSandboxRoot(tempDir.path);
-        
+
         // 并发创建多个文件
         final futures = <Future<void>>[];
         for (var i = 0; i < 10; i++) {
           final filePath = path.join(tempDir.path, 'concurrent_$i.txt');
           futures.add(fileManager.secureWriteFile(filePath, 'content $i'));
         }
-        
+
         await Future.wait(futures);
-        
+
         // 验证所有文件都创建成功
         for (var i = 0; i < 10; i++) {
           final filePath = path.join(tempDir.path, 'concurrent_$i.txt');
           expect(File(filePath).existsSync(), isTrue);
         }
-        
+
         // 检查操作日志
         final log = fileManager.getOperationLog();
-        final writeOps = log.where((op) => op.type == FileOperationType.write).toList();
+        final writeOps =
+            log.where((op) => op.type == FileOperationType.write).toList();
         expect(writeOps.length, greaterThanOrEqualTo(10));
-        
+
         print('✅ 并发文件操作测试通过');
       });
     });

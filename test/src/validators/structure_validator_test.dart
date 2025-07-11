@@ -86,7 +86,8 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 ''');
         await File('${tempDir.path}/README.md').writeAsString(
-            '# Test Project\nThis is a test project with enough content.',);
+          '# Test Project\nThis is a test project with enough content.',
+        );
         await File('${tempDir.path}/lib/main.dart').create();
 
         final context = ValidationContext(projectPath: tempDir.path);

@@ -551,8 +551,10 @@ class LibraryManager {
     // 按权限过滤
     if (requiredPermissions != null) {
       libraries = libraries
-          .where((lib) =>
-              requiredPermissions.every((perm) => lib.hasPermission(perm)),)
+          .where(
+            (lib) =>
+                requiredPermissions.every((perm) => lib.hasPermission(perm)),
+          )
           .toList();
     }
 
@@ -569,7 +571,9 @@ class LibraryManager {
 
   /// 更新库配置
   Future<bool> updateLibrary(
-      String libraryId, Map<String, dynamic> updates,) async {
+    String libraryId,
+    Map<String, dynamic> updates,
+  ) async {
     try {
       final config = _libraries[libraryId];
       if (config == null) {
@@ -603,8 +607,10 @@ class LibraryManager {
   }
 
   /// 同步库
-  Future<LibrarySyncResult> syncLibrary(String libraryId,
-      {bool force = false,}) async {
+  Future<LibrarySyncResult> syncLibrary(
+    String libraryId, {
+    bool force = false,
+  }) async {
     final startTime = DateTime.now();
 
     try {
@@ -654,7 +660,8 @@ class LibraryManager {
 
       final duration = DateTime.now().difference(startTime);
       cli_logger.Logger.info(
-          '库同步完成: ${config.name} - ${result.totalChanges}个变更',);
+        '库同步完成: ${config.name} - ${result.totalChanges}个变更',
+      );
 
       return result.copyWith(
         syncTime: startTime,
@@ -849,7 +856,9 @@ class LibraryManager {
 
   /// 执行库同步
   Future<LibrarySyncResult> _performLibrarySync(
-      LibraryConfig config, bool force,) async {
+    LibraryConfig config,
+    bool force,
+  ) async {
     // 这里实现具体的同步逻辑
     // 目前提供基础框架
 
@@ -861,7 +870,9 @@ class LibraryManager {
 
   /// 更新库统计信息
   Future<void> _updateLibraryStatistics(
-      String libraryId, LibrarySyncResult result,) async {
+    String libraryId,
+    LibrarySyncResult result,
+  ) async {
     final existing = _statistics[libraryId];
 
     _statistics[libraryId] = LibraryStatistics(

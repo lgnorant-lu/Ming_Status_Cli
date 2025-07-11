@@ -46,6 +46,15 @@ class HelpCommand {
 
   /// 显示命令的详细帮助信息
   void _showCommandDetailedHelp(Command<int> command, bool verbose) {
+    // 检查是否有自定义usage，如果有则直接显示
+    if (command.usage.isNotEmpty && command.usage.contains('使用方法:')) {
+      Logger.title('📖 ${command.name} 命令帮助');
+      Logger.newLine();
+      print(command.usage);
+      return;
+    }
+
+    // 否则使用通用格式
     Logger.title('📖 ${command.name} 命令帮助');
     Logger.newLine();
 

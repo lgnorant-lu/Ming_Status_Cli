@@ -2,24 +2,35 @@
 
 🚀 **现代化的企业级模块化脚手架工具** - 专为提升开发效率和项目质量而设计
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/pet-app/ming_status_cli/releases)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/pet-app/ming_status_cli/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#支持平台)
 
 ## 🎯 项目概述
 
-**Ming Status CLI v1.0.0** 是一个功能完整、质量可靠的企业级模块化脚手架工具。经过Phase 1的完整开发，现已达到生产就绪状态，为开发者提供智能化的项目初始化、多层级验证、企业级配置管理等核心功能。
+**Ming Status CLI v2.2.0** 是一个功能完整、质量可靠的企业级模块化脚手架工具。经过Phase 1和Phase 2.2的完整开发，现已达到企业级生产就绪状态，为开发者提供智能化的项目初始化、企业级安全验证、智能搜索分发、网络通信优化等全方位功能。
 
 ### ✨ 核心特性
 
+#### 🏗️ Phase 1 基础功能
 - 🔧 **智能项目初始化** - 自动识别项目类型，生成最佳实践结构
 - 🔍 **多层级验证系统** - 结构/内容/依赖全方位验证
 - ⚙️ **企业级配置管理** - 用户/工作空间/项目三级配置
 - 🏥 **智能健康检查** - 环境检测和依赖验证
 - 📋 **模板管理系统** - 丰富的项目模板库
-- 🛡️ **安全性保障** - 输入验证、文件安全、依赖安全
+
+#### 🌐 Phase 2.2 企业级功能
+- 🛡️ **企业级安全验证** - 恶意代码检测、漏洞扫描、合规检查
+- 🏢 **企业级模板管理** - 私有注册表、访问控制、生命周期管理
+- 🌐 **网络通信优化** - HTTP优化、带宽管理、离线支持
+- 📦 **智能搜索分发** - 模板安装、更新、依赖解析
+- 🔐 **访问控制系统** - RBAC权限管理、SSO集成、审计日志
+- 📊 **合规检查系统** - SOX/GDPR/HIPAA等多标准支持
+
+#### 🚀 通用特性
 - ⚡ **性能优化** - 智能缓存、并行处理、内存优化
 - 🌐 **跨平台支持** - Windows/Linux/macOS完整兼容
+- 🛡️ **安全性保障** - 多层安全验证、威胁检测
 
 ## 🚀 快速开始
 
@@ -27,14 +38,14 @@
 
 #### 方式1: 下载可执行文件
 ```bash
-# 下载最新版本 (v1.0.0)
-wget https://github.com/ming_status_cli/releases/download/v1.0.0/ming_status_cli_v1.0.0.exe
+# 下载最新版本 (v2.2.0)
+wget https://github.com/ming_status_cli/releases/download/v2.2.0/ming_status_cli_v2.2.0.exe
 
 # Windows: 添加到PATH
-move ming_status_cli_v1.0.0.exe C:\tools\ming.exe
+move ming_status_cli_v2.2.0.exe C:\tools\ming.exe
 
 # Linux/macOS: 添加到PATH
-sudo mv ming_status_cli_v1.0.0.exe /usr/local/bin/ming
+sudo mv ming_status_cli_v2.2.0.exe /usr/local/bin/ming
 chmod +x /usr/local/bin/ming
 ```
 
@@ -78,7 +89,16 @@ ming config list
 # 7. 查看可用模板
 ming template list
 
-# 8. 获取帮助
+# 8. 企业级安全扫描 (Phase 2.2)
+ming template security --file ./src --verbose
+
+# 9. 企业级模板管理 (Phase 2.2)
+ming template enterprise --action=registry --subaction=stats
+
+# 10. 网络通信管理 (Phase 2.2)
+ming template network --action=status --subaction=show
+
+# 11. 获取帮助
 ming help
 ```
 
@@ -100,6 +120,17 @@ ming config export --output my-config.yaml
 
 # 性能诊断
 ming doctor --verbose --check-performance
+
+# 企业级安全验证 (Phase 2.2)
+ming template security --file ./src --scan-type comprehensive --output json
+
+# 企业级模板管理 (Phase 2.2)
+ming template enterprise --action=tenant --subaction=create --name=dev-team
+ming template enterprise --action=compliance --subaction=report --type=gdpr
+
+# 网络通信优化 (Phase 2.2)
+ming template network --action=bandwidth --subaction=optimize --network-type=mobile
+ming template network --action=offline --subaction=sync
 ```
 
 ## 📋 核心功能

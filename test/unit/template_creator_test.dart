@@ -108,7 +108,9 @@ void main() {
 
       expect(result.success, isTrue);
       expect(
-          result.templatePath, equals(path.join(tempDir.path, 'basic_test')),);
+        result.templatePath,
+        equals(path.join(tempDir.path, 'basic_test')),
+      );
       expect(result.generatedFiles, isNotEmpty);
 
       // 检查生成的目录结构
@@ -154,11 +156,13 @@ void main() {
       expect(result.success, isTrue);
 
       // 检查UI模板文件
-      final mainTemplateFile = File(path.join(
-        result.templatePath,
-        'templates',
-        'main.dart.template',
-      ),);
+      final mainTemplateFile = File(
+        path.join(
+          result.templatePath,
+          'templates',
+          'main.dart.template',
+        ),
+      );
       expect(await mainTemplateFile.exists(), isTrue);
 
       final content = await mainTemplateFile.readAsString();
@@ -416,8 +420,10 @@ type: basic
           .where((i) => i.ruleType == ValidationRuleType.structure)
           .toList();
       expect(structureErrors, isNotEmpty);
-      expect(structureErrors.any((e) => e.message.contains('template.yaml')),
-          isTrue,);
+      expect(
+        structureErrors.any((e) => e.message.contains('template.yaml')),
+        isTrue,
+      );
     });
 
     test('TemplateValidator should validate metadata format', () async {

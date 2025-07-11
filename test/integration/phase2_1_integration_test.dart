@@ -405,14 +405,20 @@ class {{componentName}} extends StatelessWidget {
 
         // 除了basic类型，每个模板类型都应该有至少一个支持的子类型
         if (templateType != TemplateType.basic) {
-          expect(supportedSubTypes, isNotEmpty,
-              reason: '模板类型 ${templateType.name} 应该有支持的子类型',);
+          expect(
+            supportedSubTypes,
+            isNotEmpty,
+            reason: '模板类型 ${templateType.name} 应该有支持的子类型',
+          );
         }
 
         // 验证子类型的显示名称
         for (final subType in supportedSubTypes) {
-          expect(subType.displayName, isNotEmpty,
-              reason: '子类型 ${subType.name} 应该有显示名称',);
+          expect(
+            subType.displayName,
+            isNotEmpty,
+            reason: '子类型 ${subType.name} 应该有显示名称',
+          );
         }
       }
 
@@ -471,8 +477,11 @@ class {{componentName}} extends StatelessWidget {
       final memoryUsage = endMemory - startMemory;
 
       // 性能断言
-      expect(executionTime.inMilliseconds, lessThan(5000),
-          reason: '批量处理10个模板应该在5秒内完成',);
+      expect(
+        executionTime.inMilliseconds,
+        lessThan(5000),
+        reason: '批量处理10个模板应该在5秒内完成',
+      );
 
       expect(memoryUsage, lessThan(50 * 1024 * 1024), reason: '内存使用应该少于50MB');
 
@@ -486,17 +495,18 @@ class {{componentName}} extends StatelessWidget {
 
       // 1. 无效模板元数据
       expect(
-          () => TemplateMetadata(
-                id: '', // 空ID应该在验证时被捕获
-                name: 'Invalid Template',
-                version: '1.0.0',
-                author: 'Test',
-                description: 'Invalid template',
-                type: TemplateType.basic,
-                createdAt: DateTime.now(),
-                updatedAt: DateTime.now(),
-              ),
-          returnsNormally,); // 构造函数不应该抛出异常
+        () => TemplateMetadata(
+          id: '', // 空ID应该在验证时被捕获
+          name: 'Invalid Template',
+          version: '1.0.0',
+          author: 'Test',
+          description: 'Invalid template',
+          type: TemplateType.basic,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+        returnsNormally,
+      ); // 构造函数不应该抛出异常
 
       // 2. 条件渲染错误处理
       final evaluator = ConditionEvaluator();

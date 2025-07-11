@@ -62,8 +62,11 @@ class StringUtils {
   /// Truncates a string to a maximum length.
   ///
   /// Adds ellipsis (...) if the string is longer than maxLength.
-  static String truncate(String? value, int maxLength,
-      {String suffix = '...',}) {
+  static String truncate(
+    String? value,
+    int maxLength, {
+    String suffix = '...',
+  }) {
     if (isNullOrEmpty(value)) return '';
     if (maxLength <= 0) return '';
 

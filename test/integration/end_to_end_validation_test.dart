@@ -133,7 +133,8 @@ void main() {
 
           logger.info('Structure issues: ${structureIssues.length}');
           logger.info(
-              'Critical structure issues: ${criticalStructureIssues.length}',);
+            'Critical structure issues: ${criticalStructureIssues.length}',
+          );
 
           final platformIssues = _getMessagesByValidatorName(
             result,
@@ -145,7 +146,8 @@ void main() {
 
           logger.info('Platform issues: ${platformIssues.length}');
           logger.info(
-              'Critical platform issues: ${criticalPlatformIssues.length}',);
+            'Critical platform issues: ${criticalPlatformIssues.length}',
+          );
         }
       });
 
@@ -235,7 +237,8 @@ void main() {
             'WARNING: No validation messages returned for problematic module',
           );
           logger.info(
-              'This might indicate an issue with the ValidatorService setup',);
+            'This might indicate an issue with the ValidatorService setup',
+          );
           // 让测试通过，但记录问题
           markTestSkipped(
             'ValidatorService returned no messages - possible setup issue',
@@ -604,7 +607,8 @@ void main() {
         logger.info('Valid module errors: $validErrors');
         logger.info('Problematic module errors: $problematicErrors');
         logger.info(
-            'Valid module total messages: ${validResult.messages.length}',);
+          'Valid module total messages: ${validResult.messages.length}',
+        );
         logger.info(
           'Problematic module total messages: ${problematicResult.messages.length}',
         );

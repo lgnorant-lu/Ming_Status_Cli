@@ -53,7 +53,7 @@ void main() {
         expect(metadata.name, equals('Test Extension'));
         expect(metadata.type, equals(ExtensionType.template));
         expect(metadata.dependencies, contains('core_extension'));
-        
+
         print('✅ 扩展元数据创建测试通过');
       });
 
@@ -75,7 +75,7 @@ void main() {
         expect(restored.name, equals(metadata.name));
         expect(restored.version, equals(metadata.version));
         expect(restored.type, equals(metadata.type));
-        
+
         print('✅ 扩展元数据序列化测试通过');
       });
 
@@ -91,7 +91,7 @@ void main() {
         expect(result.errors, hasLength(2));
         expect(result.warnings, hasLength(1));
         expect(result.details['errorCount'], equals(2));
-        
+
         print('✅ 验证结果创建测试通过');
       });
 
@@ -107,7 +107,7 @@ void main() {
         expect(rule.id, equals('test_rule'));
         expect(rule.severity, equals(ValidationSeverity.error));
         expect(rule.config['threshold'], equals(10));
-        
+
         print('✅ 验证规则创建测试通过');
       });
 
@@ -131,7 +131,7 @@ void main() {
         expect(result.directories, hasLength(2));
         expect(result.stats.fileCount, equals(5));
         expect(result.logs, hasLength(2));
-        
+
         print('✅ 生成结果创建测试通过');
       });
 
@@ -161,7 +161,7 @@ void main() {
         expect(command.arguments, hasLength(1));
         expect(command.options.first.name, equals('verbose'));
         expect(command.arguments.first.name, equals('input'));
-        
+
         print('✅ 命令定义创建测试通过');
       });
     });
@@ -179,62 +179,62 @@ void main() {
 
       test('应该能够初始化扩展管理器', () async {
         await manager.initialize();
-        
+
         // 验证管理器已初始化
         expect(manager, isNotNull);
-        
+
         print('✅ 扩展管理器初始化测试通过');
       });
 
       test('应该能够获取扩展统计信息', () async {
         await manager.initialize();
-        
+
         final stats = manager.getStats();
-        
+
         expect(stats, isNotNull);
         expect(stats.totalExtensions, isA<int>());
         expect(stats.activeExtensions, isA<int>());
         expect(stats.templateExtensions, isA<int>());
-        
+
         print('✅ 扩展统计信息测试通过');
       });
 
       test('应该能够检查扩展是否存在', () async {
         await manager.initialize();
-        
+
         final exists = manager.hasExtension('nonexistent_extension');
         expect(exists, isFalse);
-        
+
         print('✅ 扩展存在性检查测试通过');
       });
 
       test('应该能够获取不同类型的扩展', () async {
         await manager.initialize();
-        
+
         final templateExtensions = manager.getTemplateExtensions();
         final validatorExtensions = manager.getValidatorExtensions();
         final generatorExtensions = manager.getGeneratorExtensions();
         final commandExtensions = manager.getCommandExtensions();
         final providerExtensions = manager.getProviderExtensions();
         final middlewareExtensions = manager.getMiddlewareExtensions();
-        
+
         expect(templateExtensions, isA<List<TemplateExtension>>());
         expect(validatorExtensions, isA<List<ValidatorExtension>>());
         expect(generatorExtensions, isA<List<GeneratorExtension>>());
         expect(commandExtensions, isA<List<CommandExtension>>());
         expect(providerExtensions, isA<List<ProviderExtension>>());
         expect(middlewareExtensions, isA<List<MiddlewareExtension>>());
-        
+
         print('✅ 扩展类型获取测试通过');
       });
 
       test('应该能够获取所有扩展信息', () async {
         await manager.initialize();
-        
+
         final allExtensions = manager.getAllExtensions();
-        
+
         expect(allExtensions, isA<List<ExtensionInfo>>());
-        
+
         print('✅ 所有扩展信息获取测试通过');
       });
     });
@@ -249,7 +249,7 @@ void main() {
 
       test('应该能够初始化兼容性管理器', () {
         expect(manager, isNotNull);
-        
+
         print('✅ 兼容性管理器初始化测试通过');
       });
 
@@ -266,7 +266,7 @@ void main() {
         expect(result.messages, isA<List<String>>());
         expect(result.migrationSuggestions, isA<List<String>>());
         expect(result.affectedFeatures, isA<List<String>>());
-        
+
         print('✅ 版本兼容性检查测试通过');
       });
 
@@ -283,7 +283,7 @@ void main() {
         expect(result.toVersion, equals('2.0.0'));
         expect(result.executedScripts, isA<Map<String, bool>>());
         expect(result.errors, isA<List<String>>());
-        
+
         print('✅ 版本迁移执行测试通过');
       });
 
@@ -297,15 +297,15 @@ void main() {
         );
 
         manager.deprecateFeature('old_feature', deprecationInfo);
-        
+
         expect(manager.isFeatureDeprecated('old_feature'), isTrue);
         expect(manager.isFeatureDeprecated('new_feature'), isFalse);
-        
+
         final info = manager.getDeprecationInfo('old_feature');
         expect(info, isNotNull);
         expect(info!.feature, equals('old_feature'));
         expect(info.reason, equals('Replaced by new feature'));
-        
+
         print('✅ 弃用功能管理测试通过');
       });
 
@@ -318,11 +318,11 @@ void main() {
         expect(report.breakingChanges, isA<List<String>>());
         expect(report.availableMigrations, isA<List<String>>());
         expect(report.compatibilityRules, isA<int>());
-        
+
         final json = report.toJson();
         expect(json, isA<Map<String, dynamic>>());
         expect(json['version'], equals('2.0.0'));
-        
+
         print('✅ 兼容性报告生成测试通过');
       });
 
@@ -336,11 +336,11 @@ void main() {
         );
 
         manager.deprecateFeature('test_feature', deprecationInfo);
-        
+
         final allDeprecated = manager.getAllDeprecatedFeatures();
         expect(allDeprecated, isA<Map<String, DeprecationInfo>>());
         expect(allDeprecated.containsKey('test_feature'), isTrue);
-        
+
         print('✅ 所有弃用功能获取测试通过');
       });
     });
@@ -348,49 +348,49 @@ void main() {
     group('扩展接口完整性测试', () {
       test('应该包含所有必需的扩展类型', () {
         const types = ExtensionType.values;
-        
+
         expect(types, contains(ExtensionType.template));
         expect(types, contains(ExtensionType.validator));
         expect(types, contains(ExtensionType.generator));
         expect(types, contains(ExtensionType.command));
         expect(types, contains(ExtensionType.provider));
         expect(types, contains(ExtensionType.middleware));
-        
+
         print('✅ 扩展类型完整性测试通过');
       });
 
       test('应该包含所有必需的扩展状态', () {
         const statuses = ExtensionStatus.values;
-        
+
         expect(statuses, contains(ExtensionStatus.uninitialized));
         expect(statuses, contains(ExtensionStatus.initializing));
         expect(statuses, contains(ExtensionStatus.active));
         expect(statuses, contains(ExtensionStatus.inactive));
         expect(statuses, contains(ExtensionStatus.error));
         expect(statuses, contains(ExtensionStatus.disposed));
-        
+
         print('✅ 扩展状态完整性测试通过');
       });
 
       test('应该包含所有必需的验证严重级别', () {
         const severities = ValidationSeverity.values;
-        
+
         expect(severities, contains(ValidationSeverity.info));
         expect(severities, contains(ValidationSeverity.warning));
         expect(severities, contains(ValidationSeverity.error));
         expect(severities, contains(ValidationSeverity.critical));
-        
+
         print('✅ 验证严重级别完整性测试通过');
       });
 
       test('应该包含所有必需的兼容性级别', () {
         const levels = CompatibilityLevel.values;
-        
+
         expect(levels, contains(CompatibilityLevel.full));
         expect(levels, contains(CompatibilityLevel.partial));
         expect(levels, contains(CompatibilityLevel.deprecated));
         expect(levels, contains(CompatibilityLevel.breaking));
-        
+
         print('✅ 兼容性级别完整性测试通过');
       });
     });
@@ -399,7 +399,7 @@ void main() {
       test('应该为模板扩展预留接口', () {
         // 验证模板扩展接口的完整性
         expect(TemplateExtension, isA<Type>());
-        
+
         // 验证接口方法存在
         final methods = [
           'supportedTemplateTypes',
@@ -407,64 +407,64 @@ void main() {
           'validateTemplateContext',
           'getTemplateSchema',
         ];
-        
+
         // 这里只是验证接口定义存在，实际实现在Phase 2
         expect(methods, hasLength(4));
-        
+
         print('✅ 模板扩展接口预留验证通过');
       });
 
       test('应该为验证器扩展预留接口', () {
         // 验证验证器扩展接口的完整性
         expect(ValidatorExtension, isA<Type>());
-        
+
         // 验证接口方法存在
         final methods = [
           'supportedValidationTypes',
           'validate',
           'getValidationRules',
         ];
-        
+
         expect(methods, hasLength(3));
-        
+
         print('✅ 验证器扩展接口预留验证通过');
       });
 
       test('应该为生成器扩展预留接口', () {
         // 验证生成器扩展接口的完整性
         expect(GeneratorExtension, isA<Type>());
-        
+
         // 验证接口方法存在
         final methods = [
           'supportedGeneratorTypes',
           'generate',
           'preview',
         ];
-        
+
         expect(methods, hasLength(3));
-        
+
         print('✅ 生成器扩展接口预留验证通过');
       });
 
       test('应该为命令扩展预留接口', () {
         // 验证命令扩展接口的完整性
         expect(CommandExtension, isA<Type>());
-        
+
         // 验证接口方法存在
         final methods = [
           'commands',
           'executeCommand',
         ];
-        
+
         expect(methods, hasLength(2));
-        
+
         print('✅ 命令扩展接口预留验证通过');
       });
 
       test('应该为提供者扩展预留接口', () {
         // 验证提供者扩展接口的完整性
         expect(ProviderExtension, isA<Type>());
-        
+
         // 验证接口方法存在
         final methods = [
           'providerType',
@@ -472,24 +472,24 @@ void main() {
           'supportsService',
           'supportedServices',
         ];
-        
+
         expect(methods, hasLength(4));
-        
+
         print('✅ 提供者扩展接口预留验证通过');
       });
 
       test('应该为中间件扩展预留接口', () {
         // 验证中间件扩展接口的完整性
         expect(MiddlewareExtension, isA<Type>());
-        
+
         // 验证接口方法存在
         final methods = [
           'priority',
           'process',
         ];
-        
+
         expect(methods, hasLength(2));
-        
+
         print('✅ 中间件扩展接口预留验证通过');
       });
     });

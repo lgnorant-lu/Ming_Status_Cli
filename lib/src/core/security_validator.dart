@@ -28,13 +28,13 @@ enum SecurityValidationResult {
 
 /// 安全验证错误
 class SecurityValidationError extends Error {
-
   SecurityValidationError({
     required this.message,
     required this.result,
     this.details,
     this.suggestions = const [],
   });
+
   /// 错误消息
   final String message;
 
@@ -201,7 +201,9 @@ class PathSecurityValidator {
 
   /// 检查路径是否在允许的目录内
   static bool isPathWithinAllowedDirectory(
-      String targetPath, String allowedDir,) {
+    String targetPath,
+    String allowedDir,
+  ) {
     try {
       final normalizedTarget = path.normalize(path.absolute(targetPath));
       final normalizedAllowed = path.normalize(path.absolute(allowedDir));
@@ -284,7 +286,9 @@ class InputValidator {
 
   /// 验证配置值
   static SecurityValidationResult validateConfigValue(
-      String key, String value,) {
+    String key,
+    String value,
+  ) {
     // 检查键名
     if (key.trim().isEmpty) {
       throw SecurityValidationError(
@@ -363,7 +367,8 @@ class InputValidator {
 class PermissionValidator {
   /// 检查文件读权限
   static Future<SecurityValidationResult> checkReadPermission(
-      String filePath,) async {
+    String filePath,
+  ) async {
     try {
       final file = File(filePath);
       if (!file.existsSync()) {
@@ -392,7 +397,8 @@ class PermissionValidator {
 
   /// 检查文件写权限
   static Future<SecurityValidationResult> checkWritePermission(
-      String filePath,) async {
+    String filePath,
+  ) async {
     try {
       final file = File(filePath);
       final dir = Directory(path.dirname(filePath));
@@ -430,7 +436,8 @@ class PermissionValidator {
 
   /// 检查目录权限
   static Future<SecurityValidationResult> checkDirectoryPermission(
-      String dirPath,) async {
+    String dirPath,
+  ) async {
     try {
       final dir = Directory(dirPath);
 
@@ -510,10 +517,13 @@ class SecurityValidator {
 
   /// 检查是否有危险结果
   static bool hasDangerousResults(
-      Map<String, SecurityValidationResult> results,) {
-    return results.values.any((result) =>
-        result == SecurityValidationResult.dangerous ||
-        result == SecurityValidationResult.blocked,);
+    Map<String, SecurityValidationResult> results,
+  ) {
+    return results.values.any(
+      (result) =>
+          result == SecurityValidationResult.dangerous ||
+          result == SecurityValidationResult.blocked,
+    );
   }
 
   /// 检查是否有警告结果

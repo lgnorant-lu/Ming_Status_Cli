@@ -111,8 +111,8 @@ permissions:
 
         // 创建不符合规范的模块文件
         await File(
-                '${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart',)
-            .writeAsString('''
+          '${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart',
+        ).writeAsString('''
 class TestModule {
   // Missing ModuleInterface implementation
   void someMethod() {}
@@ -139,8 +139,8 @@ class TestModule {
 
         // 创建实现了生命周期方法的模块文件
         await File(
-                '${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart',)
-            .writeAsString('''
+          '${tempDir.path}/lib/${path.basename(tempDir.path)}_module.dart',
+        ).writeAsString('''
 import 'package:core_services/module_interface.dart';
 
 class TestModule implements ModuleInterface {

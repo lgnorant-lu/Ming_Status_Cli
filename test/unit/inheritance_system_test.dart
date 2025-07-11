@@ -150,8 +150,10 @@ void main() {
       expect(result.success, isTrue);
       expect(result.resolvedTemplate, equals(template));
       expect(result.inheritanceChain, hasLength(1));
-      expect(result.appliedStrategies['test.dart'],
-          equals(InheritanceStrategy.merge),);
+      expect(
+        result.appliedStrategies['test.dart'],
+        equals(InheritanceStrategy.merge),
+      );
       expect(result.errors, isEmpty);
     });
 
@@ -173,9 +175,7 @@ void main() {
     late DependencyResolver resolver;
 
     setUp(() {
-      resolver = DependencyResolver(
-        
-      );
+      resolver = DependencyResolver();
     });
 
     test('DependencyNode should be created correctly', () {
@@ -262,9 +262,7 @@ void main() {
     late CompositionEngine compositionEngine;
 
     setUp(() {
-      compositionEngine = CompositionEngine(
-        
-      );
+      compositionEngine = CompositionEngine();
     });
 
     test('CompositionConfig should have correct defaults', () {
@@ -340,8 +338,10 @@ void main() {
 
       expect(result.success, isTrue);
       expect(result.composedTemplate, equals(template));
-      expect(result.appliedStrategies['main.dart'],
-          equals(FileMergeStrategy.merge),);
+      expect(
+        result.appliedStrategies['main.dart'],
+        equals(FileMergeStrategy.merge),
+      );
       expect(result.processedFiles, hasLength(2));
       expect(result.errors, isEmpty);
     });
@@ -351,9 +351,7 @@ void main() {
     late InheritanceValidator validator;
 
     setUp(() {
-      validator = InheritanceValidator(
-        
-      );
+      validator = InheritanceValidator();
     });
 
     test('ValidationIssue should be created correctly', () {

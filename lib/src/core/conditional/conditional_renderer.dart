@@ -158,7 +158,9 @@ class RenderResult {
 
 /// 自定义条件函数类型
 typedef ConditionalFunction = Future<dynamic> Function(
-    List<dynamic> args, Map<String, dynamic> context,);
+  List<dynamic> args,
+  Map<String, dynamic> context,
+);
 
 /// 预编译模板
 class CompiledTemplate {
@@ -398,14 +400,16 @@ class ConditionalRenderer {
       // 记录性能指标
       if (enablePerformanceTracking) {
         final totalTime = DateTime.now().difference(startTime);
-        _performanceMetrics.add(RenderPerformanceMetrics(
-          renderTime: totalTime,
-          compilationTime: compilationTime,
-          evaluationTime: evaluationTime,
-          cacheHits: cacheHits,
-          cacheMisses: cacheMisses,
-          blocksProcessed: blocksProcessed,
-        ),);
+        _performanceMetrics.add(
+          RenderPerformanceMetrics(
+            renderTime: totalTime,
+            compilationTime: compilationTime,
+            evaluationTime: evaluationTime,
+            cacheHits: cacheHits,
+            cacheMisses: cacheMisses,
+            blocksProcessed: blocksProcessed,
+          ),
+        );
       }
 
       cli_logger.Logger.debug('条件渲染完成: ${blocks.length}个条件块');
@@ -455,7 +459,8 @@ class ConditionalRenderer {
   ///
   /// 从模板中解析出所有条件块
   Future<List<ConditionalBlock>> _parseConditionalBlocks(
-      String template,) async {
+    String template,
+  ) async {
     final blocks = <ConditionalBlock>[];
 
     // 正则表达式匹配条件块
@@ -491,13 +496,15 @@ class ConditionalRenderer {
         final condition = match.group(1)?.trim() ?? '';
         final content = match.group(2) ?? '';
 
-        blocks.add(ConditionalBlock(
-          type: type,
-          condition: condition,
-          content: content,
-          startPosition: match.start,
-          endPosition: match.end,
-        ),);
+        blocks.add(
+          ConditionalBlock(
+            type: type,
+            condition: condition,
+            content: content,
+            startPosition: match.start,
+            endPosition: match.end,
+          ),
+        );
       }
     }
 

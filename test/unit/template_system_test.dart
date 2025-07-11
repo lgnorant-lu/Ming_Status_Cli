@@ -50,7 +50,7 @@ void main() {
       expect(TemplateType.micro.isEnterpriseType, isTrue);
       expect(TemplateType.plugin.isEnterpriseType, isTrue);
       expect(TemplateType.infrastructure.isEnterpriseType, isTrue);
-      
+
       expect(TemplateType.ui.isEnterpriseType, isFalse);
       expect(TemplateType.service.isEnterpriseType, isFalse);
       expect(TemplateType.basic.isEnterpriseType, isFalse);
@@ -94,7 +94,7 @@ void main() {
 
     test('TemplateMetadata should convert to JSON correctly', () {
       final json = metadata.toJson();
-      
+
       expect(json['id'], equals('test-template-001'));
       expect(json['name'], equals('Test Template'));
       expect(json['type'], equals('ui'));
@@ -108,7 +108,7 @@ void main() {
     test('TemplateMetadata should be created from JSON correctly', () {
       final json = metadata.toJson();
       final recreated = TemplateMetadata.fromJson(json);
-      
+
       expect(recreated.id, equals(metadata.id));
       expect(recreated.name, equals(metadata.name));
       expect(recreated.version, equals(metadata.version));
@@ -124,7 +124,7 @@ void main() {
         description: 'Updated description',
         maturity: TemplateMaturity.beta,
       );
-      
+
       expect(updated.id, equals(metadata.id));
       expect(updated.name, equals(metadata.name));
       expect(updated.version, equals('1.1.0'));
@@ -144,9 +144,9 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
-      
+
       final different = metadata.copyWith(version: '2.0.0');
-      
+
       expect(metadata == same, isTrue);
       expect(metadata == different, isFalse);
     });
@@ -159,7 +159,7 @@ void main() {
         version: '^3.16.0',
         description: 'Flutter framework dependency',
       );
-      
+
       expect(dependency.name, equals('flutter'));
       expect(dependency.version, equals('^3.16.0'));
       expect(dependency.type, equals(DependencyType.required));
@@ -172,12 +172,12 @@ void main() {
         version: '>=3.0.0 <4.0.0',
         type: DependencyType.peer,
       );
-      
+
       final json = dependency.toJson();
       expect(json['name'], equals('dart'));
       expect(json['version'], equals('>=3.0.0 <4.0.0'));
       expect(json['type'], equals('peer'));
-      
+
       final recreated = TemplateDependency.fromJson(json);
       expect(recreated.name, equals(dependency.name));
       expect(recreated.version, equals(dependency.version));
@@ -194,7 +194,7 @@ void main() {
         userPreferences: {'theme': 'dark'},
         projectConfig: {'name': 'test_project'},
       );
-      
+
       expect(context.workingDirectory, equals('/test/project'));
       expect(context.targetPlatform, equals(TemplatePlatform.mobile));
       expect(context.environment['NODE_ENV'], equals('development'));
@@ -210,7 +210,7 @@ void main() {
         warnings: ['Warning: deprecated API used'],
         metadata: {'fileCount': 2},
       );
-      
+
       expect(result.success, isTrue);
       expect(result.generatedFiles, hasLength(2));
       expect(result.generatedFiles, contains('lib/main.dart'));
@@ -225,7 +225,7 @@ void main() {
         warnings: ['Warning: using default values'],
         generatedFiles: ['partial.dart'],
       );
-      
+
       expect(result.success, isFalse);
       expect(result.errors, hasLength(2));
       expect(result.warnings, hasLength(1));
@@ -239,7 +239,7 @@ void main() {
         warnings: ['Parameter could be more specific'],
         suggestions: ['Consider using enum type'],
       );
-      
+
       expect(result.isValid, isTrue);
       expect(result.errors, isEmpty);
       expect(result.warnings, hasLength(1));
@@ -251,7 +251,7 @@ void main() {
         errors: ['Required parameter missing', 'Invalid parameter type'],
         warnings: ['Deprecated parameter used'],
       );
-      
+
       expect(result.isValid, isFalse);
       expect(result.errors, hasLength(2));
       expect(result.warnings, hasLength(1));
@@ -262,7 +262,7 @@ void main() {
     test('PerformanceMetrics should calculate execution time correctly', () {
       final startTime = DateTime(2025, 7, 10, 10);
       final endTime = DateTime(2025, 7, 10, 10, 0, 5); // 5 seconds later
-      
+
       final metrics = PerformanceMetrics(
         startTime: startTime,
         endTime: endTime,
@@ -271,7 +271,7 @@ void main() {
         cacheMisses: 2,
         fileOperations: 10,
       );
-      
+
       expect(metrics.executionTimeMs, equals(5000));
       expect(metrics.cacheHitRate, equals(0.8));
       expect(metrics.memoryUsage, equals(1024 * 1024));
@@ -283,7 +283,7 @@ void main() {
         endTime: DateTime.now(),
         memoryUsage: 0,
       );
-      
+
       expect(metrics.cacheHitRate, equals(0.0));
     });
   });
@@ -291,7 +291,7 @@ void main() {
   group('Template Search Query Tests', () {
     test('TemplateSearchQuery should be created with default values', () {
       const query = TemplateSearchQuery();
-      
+
       expect(query.keyword, isNull);
       expect(query.type, isNull);
       expect(query.sortBy, equals(TemplateSortBy.relevance));
@@ -313,7 +313,7 @@ void main() {
         limit: 20,
         offset: 10,
       );
-      
+
       expect(query.keyword, equals('flutter'));
       expect(query.type, equals(TemplateType.ui));
       expect(query.platform, equals(TemplatePlatform.mobile));

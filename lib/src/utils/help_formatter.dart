@@ -101,7 +101,26 @@ class HelpFormatter {
       Logger.listItem('version  - 显示版本信息', indent: 1);
     }
 
-    Logger.newLine();
+    // Phase 2.1: 高级模板系统命令
+    if (commands.containsKey('template')) {
+      Logger.info('📚 高级模板系统 (Phase 2.1)：');
+      Logger.listItem('template - 企业级模板管理系统 (10个子命令)', indent: 1);
+      Logger.listItem('  • template list/search/info - 模板发现和管理', indent: 1);
+      Logger.listItem('  • template create/generate - 模板创建工具', indent: 1);
+      Logger.listItem('  • template inherit/conditional - 高级模板功能', indent: 1);
+      Logger.listItem('  • template params/library - 参数化和库管理', indent: 1);
+      Logger.listItem('  • template benchmark - 性能测试', indent: 1);
+      Logger.newLine();
+    }
+
+    // Phase 2.2: 远程模板生态系统命令
+    if (commands.containsKey('registry')) {
+      Logger.info('🌐 远程模板生态 (Phase 2.2)：');
+      Logger.listItem('registry - 模板注册表管理系统 (4个子命令)', indent: 1);
+      Logger.listItem('  • registry add/list - 注册表管理', indent: 1);
+      Logger.listItem('  • registry sync/stats - 同步和统计', indent: 1);
+      Logger.newLine();
+    }
 
     // 获取命令详细帮助的提示
     Logger.info('💡 使用 "ming help <command>" 查看特定命令的详细帮助');

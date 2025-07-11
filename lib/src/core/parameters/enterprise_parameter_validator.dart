@@ -22,34 +22,34 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 enum ValidationRuleType {
   /// 密码强度
   passwordStrength,
-  
+
   /// 邮箱格式
   emailFormat,
-  
+
   /// URL有效性
   urlValidity,
-  
+
   /// 项目命名规范
   projectNaming,
-  
+
   /// 版本号格式
   versionFormat,
-  
+
   /// 域名格式
   domainFormat,
-  
+
   /// IP地址格式
   ipAddressFormat,
-  
+
   /// 端口号范围
   portRange,
-  
+
   /// 文件路径格式
   filePathFormat,
-  
+
   /// JSON格式
   jsonFormat,
-  
+
   /// 自定义规则
   custom,
 }
@@ -58,22 +58,22 @@ enum ValidationRuleType {
 enum AsyncValidationType {
   /// API可用性检查
   apiAvailability,
-  
+
   /// 域名可达性检查
   domainReachability,
-  
+
   /// 数据库连接检查
   databaseConnection,
-  
+
   /// 文件存在性检查
   fileExists,
-  
+
   /// 目录存在性检查
   directoryExists,
-  
+
   /// 网络连通性检查
   networkConnectivity,
-  
+
   /// 自定义异步验证
   custom,
 }
@@ -82,13 +82,13 @@ enum AsyncValidationType {
 enum ValidationSeverity {
   /// 信息
   info,
-  
+
   /// 警告
   warning,
-  
+
   /// 错误
   error,
-  
+
   /// 致命错误
   fatal,
 }
@@ -108,22 +108,23 @@ class EnterpriseValidationRule {
 
   /// 验证规则类型
   final ValidationRuleType type;
-  
+
   /// 验证函数
-  final Future<bool> Function(dynamic value, Map<String, dynamic> context) validator;
-  
+  final Future<bool> Function(dynamic value, Map<String, dynamic> context)
+      validator;
+
   /// 验证失败消息
   final String? message;
-  
+
   /// 验证严重性
   final ValidationSeverity severity;
-  
+
   /// 是否为异步验证
   final bool async;
-  
+
   /// 异步验证超时时间
   final Duration timeout;
-  
+
   /// 额外元数据
   final Map<String, dynamic> metadata;
 }
@@ -141,16 +142,16 @@ class CrossParameterValidationRule {
 
   /// 规则名称
   final String name;
-  
+
   /// 涉及的参数列表
   final List<String> parameters;
-  
+
   /// 验证函数
   final bool Function(Map<String, dynamic> values) validator;
-  
+
   /// 验证失败消息
   final String? message;
-  
+
   /// 验证严重性
   final ValidationSeverity severity;
 }
@@ -200,13 +201,13 @@ class EnterpriseValidationResult extends TemplateVariableValidationResult {
 
   /// 信息列表
   final List<String> infos;
-  
+
   /// 致命错误列表
   final List<String> fatals;
-  
+
   /// 异步验证结果
   final Map<String, bool> asyncResults;
-  
+
   /// 跨参数验证错误
   final List<String> crossParameterErrors;
 
@@ -218,12 +219,12 @@ class EnterpriseValidationResult extends TemplateVariableValidationResult {
 
   /// 获取所有消息
   List<String> get allMessages => [
-    ...infos,
-    ...warnings,
-    ...errors,
-    ...fatals,
-    ...crossParameterErrors,
-  ];
+        ...infos,
+        ...warnings,
+        ...errors,
+        ...fatals,
+        ...crossParameterErrors,
+      ];
 }
 
 /// 企业级参数验证器
@@ -239,19 +240,19 @@ class EnterpriseParameterValidator {
 
   /// 是否启用异步验证
   final bool enableAsyncValidation;
-  
+
   /// 异步验证超时时间
   final Duration asyncTimeout;
-  
+
   /// 是否启用跨参数验证
   final bool enableCrossParameterValidation;
 
   /// 内置验证规则
   final Map<ValidationRuleType, EnterpriseValidationRule> _builtinRules = {};
-  
+
   /// 自定义验证规则
   final Map<String, EnterpriseValidationRule> _customRules = {};
-  
+
   /// 跨参数验证规则
   final List<CrossParameterValidationRule> _crossParameterRules = [];
 
@@ -263,7 +264,7 @@ class EnterpriseParameterValidator {
   }) async {
     try {
       cli_logger.Logger.debug('开始验证企业级参数: ${parameter.name}');
-      
+
       final errors = <String>[];
       final warnings = <String>[];
       final infos = <String>[];
@@ -298,7 +299,7 @@ class EnterpriseParameterValidator {
       }
 
       final isValid = fatals.isEmpty && errors.isEmpty;
-      
+
       cli_logger.Logger.debug(
         '参数验证完成: ${parameter.name} - '
         '有效: $isValid, 错误: ${errors.length}, 警告: ${warnings.length}',
@@ -327,7 +328,7 @@ class EnterpriseParameterValidator {
     Map<String, dynamic> context = const {},
   }) async {
     final results = <String, EnterpriseValidationResult>{};
-    
+
     // 1. 单独验证每个参数
     for (final parameter in parameters) {
       final value = values[parameter.name];
@@ -341,14 +342,14 @@ class EnterpriseParameterValidator {
     // 2. 跨参数验证
     if (enableCrossParameterValidation && _crossParameterRules.isNotEmpty) {
       final crossParameterErrors = <String>[];
-      
+
       for (final rule in _crossParameterRules) {
         try {
           final ruleValues = <String, dynamic>{};
           for (final paramName in rule.parameters) {
             ruleValues[paramName] = values[paramName];
           }
-          
+
           if (!rule.validator(ruleValues)) {
             crossParameterErrors.add(
               rule.message ?? '跨参数验证失败: ${rule.name}',
@@ -408,19 +409,19 @@ class EnterpriseParameterValidator {
   ) async {
     // 根据参数类型选择验证规则
     final rulesToApply = <EnterpriseValidationRule>[];
-    
+
     switch (parameter.enterpriseType) {
       case EnterpriseParameterType.password:
         if (_builtinRules.containsKey(ValidationRuleType.passwordStrength)) {
           rulesToApply.add(_builtinRules[ValidationRuleType.passwordStrength]!);
         }
-        
+
       case EnterpriseParameterType.organization:
       case EnterpriseParameterType.team:
         if (_builtinRules.containsKey(ValidationRuleType.projectNaming)) {
           rulesToApply.add(_builtinRules[ValidationRuleType.projectNaming]!);
         }
-        
+
       default:
         break;
     }
@@ -429,10 +430,10 @@ class EnterpriseParameterValidator {
     for (final rule in rulesToApply) {
       try {
         if (rule.async && enableAsyncValidation) {
-          final result = await rule.validator(value, context)
-              .timeout(rule.timeout);
+          final result =
+              await rule.validator(value, context).timeout(rule.timeout);
           asyncResults[rule.type.name] = result;
-          
+
           if (!result) {
             _addValidationMessage(
               rule.message ?? '异步验证失败: ${rule.type.name}',
@@ -445,7 +446,7 @@ class EnterpriseParameterValidator {
           }
         } else if (!rule.async) {
           final result = await rule.validator(value, context);
-          
+
           if (!result) {
             _addValidationMessage(
               rule.message ?? '验证失败: ${rule.type.name}',
@@ -479,14 +480,14 @@ class EnterpriseParameterValidator {
   ) {
     if (parameter.isSensitive && value != null) {
       final valueStr = value.toString();
-      
+
       // 检查敏感信息是否以明文形式存储
       if (valueStr.isNotEmpty && !_isEncrypted(valueStr)) {
         warnings.add('敏感参数 ${parameter.name} 应该加密存储');
       }
-      
+
       // 检查敏感信息长度
-      if (parameter.sensitivity == ParameterSensitivity.secret && 
+      if (parameter.sensitivity == ParameterSensitivity.secret &&
           valueStr.length < 8) {
         errors.add('绝密参数 ${parameter.name} 长度不能少于8个字符');
       }
@@ -501,10 +502,10 @@ class EnterpriseParameterValidator {
     List<String> warnings,
   ) async {
     if (value == null) return;
-    
+
     try {
       Map<String, dynamic> config;
-      
+
       if (value is String) {
         config = json.decode(value) as Map<String, dynamic>;
       } else if (value is Map) {
@@ -518,16 +519,16 @@ class EnterpriseParameterValidator {
       switch (parameter.enterpriseType) {
         case EnterpriseParameterType.databaseConfig:
           _validateDatabaseConfig(config, parameter.name, errors, warnings);
-          
+
         case EnterpriseParameterType.authConfig:
           _validateAuthConfig(config, parameter.name, errors, warnings);
-          
+
         case EnterpriseParameterType.deploymentConfig:
           _validateDeploymentConfig(config, parameter.name, errors, warnings);
-          
+
         case EnterpriseParameterType.securityConfig:
           _validateSecurityConfig(config, parameter.name, errors, warnings);
-          
+
         default:
           break;
       }
@@ -549,7 +550,7 @@ class EnterpriseParameterValidator {
         errors.add('数据库配置 $paramName 缺少必需字段: $field');
       }
     }
-    
+
     // 端口号验证
     if (config['port'] is int) {
       final port = config['port'] as int;
@@ -570,7 +571,7 @@ class EnterpriseParameterValidator {
       errors.add('认证配置 $paramName 缺少认证类型');
       return;
     }
-    
+
     final authType = config['type'].toString().toLowerCase();
     switch (authType) {
       case 'oauth2':
@@ -580,12 +581,12 @@ class EnterpriseParameterValidator {
             errors.add('OAuth2配置 $paramName 缺少必需字段: $field');
           }
         }
-        
+
       case 'jwt':
         if (!config.containsKey('secret_key')) {
           errors.add('JWT配置 $paramName 缺少密钥');
         }
-        
+
       default:
         warnings.add('认证配置 $paramName 使用了未知的认证类型: $authType');
     }
@@ -616,7 +617,7 @@ class EnterpriseParameterValidator {
     if (config.containsKey('encryption') && config['encryption'] == false) {
       warnings.add('安全配置 $paramName 未启用加密');
     }
-    
+
     if (config.containsKey('ssl') && config['ssl'] == false) {
       warnings.add('安全配置 $paramName 未启用SSL');
     }
@@ -647,26 +648,27 @@ class EnterpriseParameterValidator {
   bool _isEncrypted(String value) {
     // 简单的加密检测逻辑
     // 实际应用中应该使用更复杂的检测算法
-    return value.startsWith('enc:') || 
-           value.startsWith('-----BEGIN') ||
-           (value.length > 20 && !RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value));
+    return value.startsWith('enc:') ||
+        value.startsWith('-----BEGIN') ||
+        (value.length > 20 && !RegExp(r'^[a-zA-Z0-9\s]+$').hasMatch(value));
   }
 
   /// 初始化内置验证规则
   void _initializeBuiltinRules() {
     // 密码强度验证
-    _builtinRules[ValidationRuleType.passwordStrength] = EnterpriseValidationRule(
+    _builtinRules[ValidationRuleType.passwordStrength] =
+        EnterpriseValidationRule(
       type: ValidationRuleType.passwordStrength,
       validator: (value, context) async {
         if (value is! String) return false;
         final password = value;
-        
+
         // 密码强度检查: 至少8位，包含大小写字母、数字和特殊字符
         return password.length >= 8 &&
-               RegExp('[A-Z]').hasMatch(password) &&
-               RegExp('[a-z]').hasMatch(password) &&
-               RegExp('[0-9]').hasMatch(password) &&
-               RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
+            RegExp('[A-Z]').hasMatch(password) &&
+            RegExp('[a-z]').hasMatch(password) &&
+            RegExp('[0-9]').hasMatch(password) &&
+            RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password);
       },
       message: '密码必须至少8位，包含大小写字母、数字和特殊字符',
     );
@@ -703,11 +705,11 @@ class EnterpriseParameterValidator {
       validator: (value, context) async {
         if (value is! String) return false;
         final name = value;
-        
+
         // 项目名称规范: 只能包含字母、数字、下划线和连字符，不能以数字开头
         return RegExp(r'^[a-zA-Z][a-zA-Z0-9_-]*$').hasMatch(name) &&
-               name.length >= 2 &&
-               name.length <= 50;
+            name.length >= 2 &&
+            name.length <= 50;
       },
       message: '项目名称只能包含字母、数字、下划线和连字符，不能以数字开头，长度2-50字符',
     );

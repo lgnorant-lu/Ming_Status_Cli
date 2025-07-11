@@ -310,13 +310,15 @@ class TemplateValidator {
     // 检查模板目录是否存在
     final templateDir = Directory(templatePath);
     if (!await templateDir.exists()) {
-      issues.add(ValidationIssue(
-        ruleType: ValidationRuleType.structure,
-        severity: ValidationSeverity.fatal,
-        message: '模板目录不存在',
-        filePath: templatePath,
-        suggestion: '确保模板目录路径正确',
-      ),);
+      issues.add(
+        ValidationIssue(
+          ruleType: ValidationRuleType.structure,
+          severity: ValidationSeverity.fatal,
+          message: '模板目录不存在',
+          filePath: templatePath,
+          suggestion: '确保模板目录路径正确',
+        ),
+      );
       return issues;
     }
 
@@ -325,13 +327,15 @@ class TemplateValidator {
     for (final fileName in requiredFiles) {
       final file = File(path.join(templatePath, fileName));
       if (!await file.exists()) {
-        issues.add(ValidationIssue(
-          ruleType: ValidationRuleType.structure,
-          severity: ValidationSeverity.error,
-          message: '缺少必需文件: $fileName',
-          filePath: path.join(templatePath, fileName),
-          suggestion: '创建缺少的必需文件',
-        ),);
+        issues.add(
+          ValidationIssue(
+            ruleType: ValidationRuleType.structure,
+            severity: ValidationSeverity.error,
+            message: '缺少必需文件: $fileName',
+            filePath: path.join(templatePath, fileName),
+            suggestion: '创建缺少的必需文件',
+          ),
+        );
       }
     }
 
@@ -340,30 +344,34 @@ class TemplateValidator {
     for (final dirName in recommendedDirs) {
       final dir = Directory(path.join(templatePath, dirName));
       if (!await dir.exists()) {
-        issues.add(ValidationIssue(
-          ruleType: ValidationRuleType.structure,
-          severity: ValidationSeverity.warning,
-          message: '缺少推荐目录: $dirName',
-          filePath: path.join(templatePath, dirName),
-          suggestion: '创建推荐的目录结构',
-        ),);
+        issues.add(
+          ValidationIssue(
+            ruleType: ValidationRuleType.structure,
+            severity: ValidationSeverity.warning,
+            message: '缺少推荐目录: $dirName',
+            filePath: path.join(templatePath, dirName),
+            suggestion: '创建推荐的目录结构',
+          ),
+        );
       }
     }
 
     // 检查模板文件数量
     final templateFiles = await _getTemplateFiles(templatePath);
     if (templateFiles.length > config.maxTemplateFiles) {
-      issues.add(ValidationIssue(
-        ruleType: ValidationRuleType.structure,
-        severity: ValidationSeverity.warning,
-        message: '模板文件数量过多: ${templateFiles.length}',
-        filePath: templatePath,
-        suggestion: '考虑拆分为多个模板或优化文件结构',
-        details: {
-          'fileCount': templateFiles.length,
-          'maxFiles': config.maxTemplateFiles,
-        },
-      ),);
+      issues.add(
+        ValidationIssue(
+          ruleType: ValidationRuleType.structure,
+          severity: ValidationSeverity.warning,
+          message: '模板文件数量过多: ${templateFiles.length}',
+          filePath: templatePath,
+          suggestion: '考虑拆分为多个模板或优化文件结构',
+          details: {
+            'fileCount': templateFiles.length,
+            'maxFiles': config.maxTemplateFiles,
+          },
+        ),
+      );
     }
 
     return issues;
@@ -391,13 +399,15 @@ class TemplateValidator {
       ];
       for (final field in requiredFields) {
         if (!content.contains('$field:')) {
-          issues.add(ValidationIssue(
-            ruleType: ValidationRuleType.metadata,
-            severity: ValidationSeverity.error,
-            message: '元数据缺少必需字段: $field',
-            filePath: metadataFile.path,
-            suggestion: '在template.yaml中添加缺少的字段',
-          ),);
+          issues.add(
+            ValidationIssue(
+              ruleType: ValidationRuleType.metadata,
+              severity: ValidationSeverity.error,
+              message: '元数据缺少必需字段: $field',
+              filePath: metadataFile.path,
+              suggestion: '在template.yaml中添加缺少的字段',
+            ),
+          );
         }
       }
 
@@ -406,23 +416,27 @@ class TemplateValidator {
       if (versionMatch != null) {
         final version = versionMatch.group(1)?.trim();
         if (version != null && !RegExp(r'^\d+\.\d+\.\d+').hasMatch(version)) {
-          issues.add(ValidationIssue(
-            ruleType: ValidationRuleType.metadata,
-            severity: ValidationSeverity.warning,
-            message: '版本号格式不规范: $version',
-            filePath: metadataFile.path,
-            suggestion: '使用SemVer格式 (x.y.z)',
-          ),);
+          issues.add(
+            ValidationIssue(
+              ruleType: ValidationRuleType.metadata,
+              severity: ValidationSeverity.warning,
+              message: '版本号格式不规范: $version',
+              filePath: metadataFile.path,
+              suggestion: '使用SemVer格式 (x.y.z)',
+            ),
+          );
         }
       }
     } catch (e) {
-      issues.add(ValidationIssue(
-        ruleType: ValidationRuleType.metadata,
-        severity: ValidationSeverity.error,
-        message: '元数据文件解析失败: $e',
-        filePath: metadataFile.path,
-        suggestion: '检查YAML语法是否正确',
-      ),);
+      issues.add(
+        ValidationIssue(
+          ruleType: ValidationRuleType.metadata,
+          severity: ValidationSeverity.error,
+          message: '元数据文件解析失败: $e',
+          filePath: metadataFile.path,
+          suggestion: '检查YAML语法是否正确',
+        ),
+      );
     }
 
     return issues;
@@ -443,26 +457,30 @@ class TemplateValidator {
 
         // 检查文件大小
         if (content.length > config.maxFileSize) {
-          issues.add(ValidationIssue(
-            ruleType: ValidationRuleType.syntax,
-            severity: ValidationSeverity.warning,
-            message: '文件过大: ${content.length} 字节',
-            filePath: file.path,
-            suggestion: '考虑拆分大文件或优化内容',
-            details: {
-              'fileSize': content.length,
-              'maxSize': config.maxFileSize,
-            },
-          ),);
+          issues.add(
+            ValidationIssue(
+              ruleType: ValidationRuleType.syntax,
+              severity: ValidationSeverity.warning,
+              message: '文件过大: ${content.length} 字节',
+              filePath: file.path,
+              suggestion: '考虑拆分大文件或优化内容',
+              details: {
+                'fileSize': content.length,
+                'maxSize': config.maxFileSize,
+              },
+            ),
+          );
         }
       } catch (e) {
-        issues.add(ValidationIssue(
-          ruleType: ValidationRuleType.syntax,
-          severity: ValidationSeverity.error,
-          message: '文件读取失败: $e',
-          filePath: file.path,
-          suggestion: '检查文件权限和编码',
-        ),);
+        issues.add(
+          ValidationIssue(
+            ruleType: ValidationRuleType.syntax,
+            severity: ValidationSeverity.error,
+            message: '文件读取失败: $e',
+            filePath: file.path,
+            suggestion: '检查文件权限和编码',
+          ),
+        );
       }
     }
 
@@ -485,13 +503,15 @@ class TemplateValidator {
 
     final unclosedTags = openTagNames.difference(closeTagNames);
     for (final tag in unclosedTags) {
-      issues.add(ValidationIssue(
-        ruleType: ValidationRuleType.syntax,
-        severity: ValidationSeverity.error,
-        message: '未闭合的模板标签: $tag',
-        filePath: filePath,
-        suggestion: '添加对应的闭合标签 {{/$tag}}',
-      ),);
+      issues.add(
+        ValidationIssue(
+          ruleType: ValidationRuleType.syntax,
+          severity: ValidationSeverity.error,
+          message: '未闭合的模板标签: $tag',
+          filePath: filePath,
+          suggestion: '添加对应的闭合标签 {{/$tag}}',
+        ),
+      );
     }
 
     // 检查无效的变量引用
@@ -499,13 +519,15 @@ class TemplateValidator {
     for (final variable in variables) {
       final varName = variable.group(1)?.trim();
       if (varName != null && varName.isEmpty) {
-        issues.add(ValidationIssue(
-          ruleType: ValidationRuleType.syntax,
-          severity: ValidationSeverity.warning,
-          message: '空的变量引用',
-          filePath: filePath,
-          suggestion: '移除空的变量引用或添加变量名',
-        ),);
+        issues.add(
+          ValidationIssue(
+            ruleType: ValidationRuleType.syntax,
+            severity: ValidationSeverity.warning,
+            message: '空的变量引用',
+            filePath: filePath,
+            suggestion: '移除空的变量引用或添加变量名',
+          ),
+        );
       }
     }
 
@@ -514,7 +536,8 @@ class TemplateValidator {
 
   /// 验证依赖
   Future<List<ValidationIssue>> _validateDependencies(
-      String templatePath,) async {
+    String templatePath,
+  ) async {
     final issues = <ValidationIssue>[];
 
     // 检查pubspec.yaml
@@ -532,24 +555,28 @@ class TemplateValidator {
           if (version != null &&
               !version.startsWith('^') &&
               !version.startsWith('>=')) {
-            issues.add(ValidationIssue(
-              ruleType: ValidationRuleType.dependency,
-              severity: ValidationSeverity.info,
-              message: '依赖版本约束建议使用范围: $name: $version',
-              filePath: pubspecFile.path,
-              suggestion:
-                  '使用 ^$version 或 >=$version <${_getNextMajorVersion(version)}',
-            ),);
+            issues.add(
+              ValidationIssue(
+                ruleType: ValidationRuleType.dependency,
+                severity: ValidationSeverity.info,
+                message: '依赖版本约束建议使用范围: $name: $version',
+                filePath: pubspecFile.path,
+                suggestion:
+                    '使用 ^$version 或 >=$version <${_getNextMajorVersion(version)}',
+              ),
+            );
           }
         }
       } catch (e) {
-        issues.add(ValidationIssue(
-          ruleType: ValidationRuleType.dependency,
-          severity: ValidationSeverity.warning,
-          message: 'pubspec.yaml解析失败: $e',
-          filePath: pubspecFile.path,
-          suggestion: '检查YAML语法',
-        ),);
+        issues.add(
+          ValidationIssue(
+            ruleType: ValidationRuleType.dependency,
+            severity: ValidationSeverity.warning,
+            message: 'pubspec.yaml解析失败: $e',
+            filePath: pubspecFile.path,
+            suggestion: '检查YAML语法',
+          ),
+        );
       }
     }
 
@@ -577,13 +604,15 @@ class TemplateValidator {
         for (final entry in sensitivePatterns.entries) {
           final pattern = RegExp(entry.key, caseSensitive: false);
           if (pattern.hasMatch(content)) {
-            issues.add(ValidationIssue(
-              ruleType: ValidationRuleType.security,
-              severity: ValidationSeverity.warning,
-              message: '${entry.value}，请确保不包含真实凭据',
-              filePath: file.path,
-              suggestion: '使用占位符或环境变量替换敏感信息',
-            ),);
+            issues.add(
+              ValidationIssue(
+                ruleType: ValidationRuleType.security,
+                severity: ValidationSeverity.warning,
+                message: '${entry.value}，请确保不包含真实凭据',
+                filePath: file.path,
+                suggestion: '使用占位符或环境变量替换敏感信息',
+              ),
+            );
           }
         }
       } catch (e) {
@@ -611,13 +640,15 @@ class TemplateValidator {
 
     if (totalSize > 10 * 1024 * 1024) {
       // 10MB
-      issues.add(ValidationIssue(
-        ruleType: ValidationRuleType.performance,
-        severity: ValidationSeverity.warning,
-        message: '模板总大小过大: ${(totalSize / 1024 / 1024).toStringAsFixed(1)}MB',
-        filePath: templatePath,
-        suggestion: '考虑优化模板内容或拆分模板',
-      ),);
+      issues.add(
+        ValidationIssue(
+          ruleType: ValidationRuleType.performance,
+          severity: ValidationSeverity.warning,
+          message: '模板总大小过大: ${(totalSize / 1024 / 1024).toStringAsFixed(1)}MB',
+          filePath: templatePath,
+          suggestion: '考虑优化模板内容或拆分模板',
+        ),
+      );
 
       recommendations.add('使用模板继承减少重复内容');
       recommendations.add('移除不必要的示例文件');
@@ -637,25 +668,29 @@ class TemplateValidator {
     // 检查文档完整性
     final readmeFile = File(path.join(templatePath, 'README.md'));
     if (!await readmeFile.exists()) {
-      issues.add(ValidationIssue(
-        ruleType: ValidationRuleType.bestPractice,
-        severity: ValidationSeverity.info,
-        message: '缺少README.md文档',
-        filePath: path.join(templatePath, 'README.md'),
-        suggestion: '添加模板使用说明文档',
-      ),);
+      issues.add(
+        ValidationIssue(
+          ruleType: ValidationRuleType.bestPractice,
+          severity: ValidationSeverity.info,
+          message: '缺少README.md文档',
+          filePath: path.join(templatePath, 'README.md'),
+          suggestion: '添加模板使用说明文档',
+        ),
+      );
     }
 
     // 检查测试文件
     final testDir = Directory(path.join(templatePath, 'test'));
     if (!await testDir.exists()) {
-      issues.add(ValidationIssue(
-        ruleType: ValidationRuleType.bestPractice,
-        severity: ValidationSeverity.info,
-        message: '缺少测试目录',
-        filePath: path.join(templatePath, 'test'),
-        suggestion: '添加模板测试以确保质量',
-      ),);
+      issues.add(
+        ValidationIssue(
+          ruleType: ValidationRuleType.bestPractice,
+          severity: ValidationSeverity.info,
+          message: '缺少测试目录',
+          filePath: path.join(templatePath, 'test'),
+          suggestion: '添加模板测试以确保质量',
+        ),
+      );
     }
 
     recommendations.add('为模板添加完整的使用示例');
@@ -691,9 +726,11 @@ class TemplateValidator {
   /// 确定验证结果
   bool _determineValidationResult(List<ValidationIssue> issues) {
     if (config.strictMode) {
-      return !issues.any((issue) =>
-          issue.severity == ValidationSeverity.error ||
-          issue.severity == ValidationSeverity.fatal,);
+      return !issues.any(
+        (issue) =>
+            issue.severity == ValidationSeverity.error ||
+            issue.severity == ValidationSeverity.fatal,
+      );
     } else {
       return !issues.any((issue) => issue.severity == ValidationSeverity.fatal);
     }

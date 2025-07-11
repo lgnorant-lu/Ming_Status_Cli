@@ -22,16 +22,16 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 enum PresetType {
   /// 团队预设
   team,
-  
+
   /// 环境预设
   environment,
-  
+
   /// 项目类型预设
   projectType,
-  
+
   /// 个人预设
   personal,
-  
+
   /// 全局预设
   global,
 }
@@ -40,16 +40,16 @@ enum PresetType {
 enum PresetScope {
   /// 用户级别
   user,
-  
+
   /// 项目级别
   project,
-  
+
   /// 团队级别
   team,
-  
+
   /// 组织级别
   organization,
-  
+
   /// 全局级别
   global,
 }
@@ -81,26 +81,26 @@ class ParameterPreset {
       name: map['name']?.toString() ?? '',
       type: _parsePresetType(map['type']?.toString() ?? 'personal'),
       scope: _parsePresetScope(map['scope']?.toString() ?? 'user'),
-      parameters: map['parameters'] is Map 
+      parameters: map['parameters'] is Map
           ? Map<String, dynamic>.from(map['parameters'] as Map)
           : const {},
       description: map['description']?.toString(),
       version: map['version']?.toString() ?? '1.0.0',
       author: map['author']?.toString(),
-      tags: map['tags'] is List 
+      tags: map['tags'] is List
           ? List<String>.from(map['tags'] as List)
           : const [],
       parentPresetId: map['parent_preset_id']?.toString(),
-      overrides: map['overrides'] is Map 
+      overrides: map['overrides'] is Map
           ? Map<String, dynamic>.from(map['overrides'] as Map)
           : const {},
-      metadata: map['metadata'] is Map 
+      metadata: map['metadata'] is Map
           ? Map<String, dynamic>.from(map['metadata'] as Map)
           : const {},
-      createdAt: map['created_at'] is String 
+      createdAt: map['created_at'] is String
           ? DateTime.tryParse(map['created_at'] as String)
           : null,
-      updatedAt: map['updated_at'] is String 
+      updatedAt: map['updated_at'] is String
           ? DateTime.tryParse(map['updated_at'] as String)
           : null,
     );
@@ -108,43 +108,43 @@ class ParameterPreset {
 
   /// 预设ID
   final String id;
-  
+
   /// 预设名称
   final String name;
-  
+
   /// 预设类型
   final PresetType type;
-  
+
   /// 预设范围
   final PresetScope scope;
-  
+
   /// 参数值映射
   final Map<String, dynamic> parameters;
-  
+
   /// 预设描述
   final String? description;
-  
+
   /// 预设版本
   final String version;
-  
+
   /// 创建者
   final String? author;
-  
+
   /// 标签列表
   final List<String> tags;
-  
+
   /// 父预设ID (用于继承)
   final String? parentPresetId;
-  
+
   /// 覆盖参数 (覆盖父预设的参数)
   final Map<String, dynamic> overrides;
-  
+
   /// 额外元数据
   final Map<String, dynamic> metadata;
-  
+
   /// 创建时间
   final DateTime? createdAt;
-  
+
   /// 更新时间
   final DateTime? updatedAt;
 
@@ -186,18 +186,18 @@ class ParameterPreset {
   /// 获取有效参数值 (合并父预设和覆盖)
   Map<String, dynamic> getEffectiveParameters([ParameterPreset? parentPreset]) {
     final effectiveParams = <String, dynamic>{};
-    
+
     // 1. 添加父预设参数
     if (parentPreset != null) {
       effectiveParams.addAll(parentPreset.parameters);
     }
-    
+
     // 2. 添加当前预设参数
     effectiveParams.addAll(parameters);
-    
+
     // 3. 应用覆盖
     effectiveParams.addAll(overrides);
-    
+
     return effectiveParams;
   }
 
@@ -280,22 +280,22 @@ class PresetQuery {
 
   /// 预设类型过滤
   final PresetType? type;
-  
+
   /// 预设范围过滤
   final PresetScope? scope;
-  
+
   /// 作者过滤
   final String? author;
-  
+
   /// 标签过滤
   final List<String> tags;
-  
+
   /// 名称模式匹配
   final String? namePattern;
-  
+
   /// 结果限制数量
   final int? limit;
-  
+
   /// 结果偏移量
   final int offset;
 }
@@ -312,19 +312,19 @@ class ParameterPresetManager {
 
   /// 预设存储目录
   final String _presetDirectory;
-  
+
   /// 是否启用版本控制
   final bool enableVersionControl;
-  
+
   /// 是否启用继承
   final bool enableInheritance;
-  
+
   /// 最大版本历史数量
   final int maxVersionHistory;
 
   /// 内存中的预设缓存
   final Map<String, ParameterPreset> _presetCache = {};
-  
+
   /// 预设继承关系缓存
   final Map<String, List<String>> _inheritanceCache = {};
 
@@ -344,7 +344,7 @@ class ParameterPresetManager {
     try {
       final id = _generatePresetId(name, type, scope);
       final now = DateTime.now();
-      
+
       final preset = ParameterPreset(
         id: id,
         name: name,
@@ -363,7 +363,7 @@ class ParameterPresetManager {
 
       await _savePreset(preset);
       _presetCache[id] = preset;
-      
+
       // 更新继承关系缓存
       if (parentPresetId != null) {
         _inheritanceCache.putIfAbsent(parentPresetId, () => []).add(id);
@@ -416,16 +416,16 @@ class ParameterPresetManager {
       final updatedPreset = existingPreset.copyWith(
         name: updates['name']?.toString(),
         description: updates['description']?.toString(),
-        parameters: updates['parameters'] is Map 
+        parameters: updates['parameters'] is Map
             ? Map<String, dynamic>.from(updates['parameters'] as Map)
             : null,
-        tags: updates['tags'] is List 
+        tags: updates['tags'] is List
             ? List<String>.from(updates['tags'] as List)
             : null,
-        overrides: updates['overrides'] is Map 
+        overrides: updates['overrides'] is Map
             ? Map<String, dynamic>.from(updates['overrides'] as Map)
             : null,
-        metadata: updates['metadata'] is Map 
+        metadata: updates['metadata'] is Map
             ? Map<String, dynamic>.from(updates['metadata'] as Map)
             : null,
         updatedAt: DateTime.now(),
@@ -453,7 +453,7 @@ class ParameterPresetManager {
 
       await _deletePresetFile(id);
       _presetCache.remove(id);
-      
+
       // 清理继承关系缓存
       _inheritanceCache.remove(id);
       for (final entry in _inheritanceCache.entries) {
@@ -472,43 +472,47 @@ class ParameterPresetManager {
   Future<List<ParameterPreset>> queryPresets(PresetQuery query) async {
     try {
       await _loadAllPresets();
-      
+
       var presets = _presetCache.values.toList();
 
       // 应用过滤条件
       if (query.type != null) {
         presets = presets.where((p) => p.type == query.type).toList();
       }
-      
+
       if (query.scope != null) {
         presets = presets.where((p) => p.scope == query.scope).toList();
       }
-      
+
       if (query.author != null) {
         presets = presets.where((p) => p.author == query.author).toList();
       }
-      
+
       if (query.tags.isNotEmpty) {
-        presets = presets.where((p) => 
-            query.tags.any((tag) => p.tags.contains(tag)),).toList();
+        presets = presets
+            .where(
+              (p) => query.tags.any((tag) => p.tags.contains(tag)),
+            )
+            .toList();
       }
-      
+
       if (query.namePattern != null) {
         final pattern = RegExp(query.namePattern!, caseSensitive: false);
         presets = presets.where((p) => pattern.hasMatch(p.name)).toList();
       }
 
       // 排序 (按更新时间倒序)
-      presets.sort((a, b) => 
-          (b.updatedAt ?? b.createdAt ?? DateTime.now())
-              .compareTo(a.updatedAt ?? a.createdAt ?? DateTime.now()),);
+      presets.sort(
+        (a, b) => (b.updatedAt ?? b.createdAt ?? DateTime.now())
+            .compareTo(a.updatedAt ?? a.createdAt ?? DateTime.now()),
+      );
 
       // 应用分页
       final startIndex = query.offset;
-      final endIndex = query.limit != null 
+      final endIndex = query.limit != null
           ? (startIndex + query.limit!).clamp(0, presets.length)
           : presets.length;
-      
+
       return presets.sublist(startIndex, endIndex);
     } catch (e) {
       cli_logger.Logger.error('查询参数预设失败', error: e);
@@ -530,7 +534,7 @@ class ParameterPresetManager {
     try {
       // 获取有效参数值 (包括继承)
       var effectiveParams = preset.parameters;
-      
+
       if (enableInheritance && preset.hasParent) {
         final parentPreset = await getPreset(preset.parentPresetId!);
         effectiveParams = preset.getEffectiveParameters(parentPreset);
@@ -542,7 +546,7 @@ class ParameterPresetManager {
       // 过滤只返回存在的参数
       final result = <String, dynamic>{};
       final parameterNames = parameters.map((p) => p.name).toSet();
-      
+
       for (final entry in effectiveParams.entries) {
         if (parameterNames.contains(entry.key)) {
           result[entry.key] = entry.value;
@@ -574,7 +578,7 @@ class ParameterPresetManager {
     // 只保存有值的参数
     final presetParameters = <String, dynamic>{};
     final parameterNames = parameters.map((p) => p.name).toSet();
-    
+
     for (final entry in values.entries) {
       if (parameterNames.contains(entry.key) && entry.value != null) {
         presetParameters[entry.key] = entry.value;
@@ -594,9 +598,9 @@ class ParameterPresetManager {
 
   /// 获取默认预设目录
   static String _getDefaultPresetDirectory() {
-    final homeDir = Platform.environment['HOME'] ?? 
-                   Platform.environment['USERPROFILE'] ?? 
-                   '.';
+    final homeDir = Platform.environment['HOME'] ??
+        Platform.environment['USERPROFILE'] ??
+        '.';
     return '$homeDir/.ming/presets';
   }
 
@@ -656,7 +660,7 @@ class ParameterPresetManager {
           final preset = await _loadPreset(id);
           if (preset != null) {
             _presetCache[id] = preset;
-            
+
             // 更新继承关系缓存
             if (preset.parentPresetId != null) {
               _inheritanceCache
@@ -706,8 +710,9 @@ class ParameterPresetManager {
 
       if (files.length > maxVersionHistory) {
         // 按修改时间排序，删除最旧的文件
-        files.sort((a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()));
-        
+        files.sort(
+            (a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()));
+
         final filesToDelete = files.take(files.length - maxVersionHistory);
         for (final file in filesToDelete) {
           await file.delete();

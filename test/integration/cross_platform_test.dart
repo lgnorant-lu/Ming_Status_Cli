@@ -52,8 +52,11 @@ void main() {
 
     group('平台检测和基础兼容性', () {
       test('应该正确检测当前平台', () {
-        expect(['Windows', 'Linux', 'macOS'].contains(currentPlatform), isTrue,
-            reason: '应该能够检测到支持的平台',);
+        expect(
+          ['Windows', 'Linux', 'macOS'].contains(currentPlatform),
+          isTrue,
+          reason: '应该能够检测到支持的平台',
+        );
 
         print('✅ 平台检测: $currentPlatform');
       });
@@ -65,8 +68,11 @@ void main() {
         );
 
         expect(helpResult.exitCode, equals(0), reason: '帮助命令应该在所有平台上成功');
-        expect(helpResult.stdout, contains('Ming Status CLI'),
-            reason: '应该显示CLI名称',);
+        expect(
+          helpResult.stdout,
+          contains('Ming Status CLI'),
+          reason: '应该显示CLI名称',
+        );
 
         print('✅ 基本命令执行正常');
       });
@@ -201,8 +207,11 @@ void main() {
               File(path.join(utf8TestDir.path, 'ming_status.yaml'));
           if (configFile.existsSync()) {
             final content = await configFile.readAsString();
-            expect(content, contains('包含中文字符的描述 🚀'),
-                reason: '配置文件应该正确保存UTF-8字符',);
+            expect(
+              content,
+              contains('包含中文字符的描述 🚀'),
+              reason: '配置文件应该正确保存UTF-8字符',
+            );
             expect(content, contains('中文作者'), reason: '配置文件应该正确保存中文作者信息');
           }
 
@@ -239,8 +248,11 @@ void main() {
         );
 
         expect(result.exitCode, equals(0), reason: '应该能执行系统命令');
-        expect(result.stdout.toString().trim(), contains('test'),
-            reason: '应该能获取命令输出',);
+        expect(
+          result.stdout.toString().trim(),
+          contains('test'),
+          reason: '应该能获取命令输出',
+        );
 
         print('✅ 子进程执行兼容性验证通过');
       });

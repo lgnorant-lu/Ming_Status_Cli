@@ -13,224 +13,224 @@ Change History:
 */
 
 /// 企业级模板类型枚举
-/// 
+///
 /// 扩展的模板类型定义，支持企业级开发场景
 enum TemplateType {
   // === 基础类型 (Phase 1 兼容) ===
   /// UI层模板 - 用户界面组件和页面
   ui,
-  
+
   /// Service层模板 - 业务逻辑和服务
   service,
-  
+
   /// Data层模板 - 数据访问和持久化
   data,
-  
+
   /// Full模板 - 完整应用程序
   full,
-  
+
   /// System模板 - 系统级配置和基础设施
   system,
-  
+
   /// Basic模板 - 基础模板
   basic,
-  
+
   // === 新增企业级类型 (Phase 2.1) ===
   /// Micro微服务模板 - 微服务架构组件
   micro,
-  
+
   /// Plugin插件模板 - 可扩展插件系统
   plugin,
-  
+
   /// Infrastructure基础设施模板 - 部署和运维
   infrastructure,
 }
 
 /// 模板子类型枚举
-/// 
+///
 /// 为每个主要类型提供更细粒度的分类
 enum TemplateSubType {
   // === UI子类型 ===
   /// 可重用UI组件
   component,
-  
+
   /// 完整页面模板
   page,
-  
+
   /// 主题和样式系统
   theme,
-  
+
   /// 布局和导航结构
   layout,
-  
+
   // === Service子类型 ===
   /// API服务层
   api,
-  
+
   /// 业务逻辑层
   business,
-  
+
   /// 第三方集成服务
   integration,
-  
+
   // === Data子类型 ===
   /// 数据模型定义
   model,
-  
+
   /// 数据仓库模式
   repository,
-  
+
   /// 缓存系统
   cache,
-  
+
   /// 数据库迁移
   migration,
-  
+
   // === Full子类型 ===
   /// 完整应用程序
   app,
-  
+
   /// 可重用包
   package,
-  
+
   /// 库和框架
   library,
-  
+
   // === System子类型 ===
   /// 配置管理
   config,
-  
+
   /// 基础设施代码
   infrastructure,
-  
+
   /// 部署和发布
   deployment,
-  
+
   // === Micro子类型 ===
   /// 独立微服务
   standalone,
-  
+
   /// 网关服务
   gateway,
-  
+
   /// 消息队列服务
   messaging,
-  
+
   // === Plugin子类型 ===
   /// 功能扩展插件
   extension,
-  
+
   /// 中间件插件
   middleware,
-  
+
   /// 工具插件
   utility,
-  
+
   // === Infrastructure子类型 ===
   /// 容器化部署
   containerization,
-  
+
   /// 监控和日志
   monitoring,
-  
+
   /// 安全和认证
   security,
 }
 
 /// 模板复杂度等级
-/// 
+///
 /// 用于评估模板的复杂程度和学习难度
 enum TemplateComplexity {
   /// 简单模板 - 适合初学者
   simple,
-  
+
   /// 中等复杂度 - 适合有经验的开发者
   medium,
-  
+
   /// 复杂模板 - 适合高级开发者
   complex,
-  
+
   /// 企业级复杂度 - 适合架构师和团队
   enterprise,
 }
 
 /// 模板成熟度等级
-/// 
+///
 /// 表示模板的稳定性和生产就绪程度
 enum TemplateMaturity {
   /// 实验性 - 仅用于概念验证
   experimental,
-  
+
   /// 开发中 - 功能不完整
   development,
-  
+
   /// 测试版 - 功能完整但可能有问题
   beta,
-  
+
   /// 稳定版 - 生产就绪
   stable,
-  
+
   /// 长期支持版 - 企业级稳定性
   lts,
-  
+
   /// 已弃用 - 不推荐使用
   deprecated,
 }
 
 /// 模板平台支持
-/// 
+///
 /// 定义模板支持的目标平台
 enum TemplatePlatform {
   /// Web平台
   web,
-  
+
   /// 移动平台 (iOS/Android)
   mobile,
-  
+
   /// 桌面平台 (Windows/macOS/Linux)
   desktop,
-  
+
   /// 服务器端
   server,
-  
+
   /// 云原生
   cloud,
-  
+
   /// 跨平台
   crossPlatform,
 }
 
 /// 模板框架支持
-/// 
+///
 /// 定义模板支持的技术框架
 enum TemplateFramework {
   /// Flutter框架
   flutter,
-  
+
   /// Dart原生
   dart,
-  
+
   /// React框架
   react,
-  
+
   /// Vue.js框架
   vue,
-  
+
   /// Angular框架
   angular,
-  
+
   /// Node.js
   nodejs,
-  
+
   /// Spring Boot
   springBoot,
-  
+
   /// 框架无关
   agnostic,
 }
 
 /// 模板类型扩展方法
-/// 
+///
 /// 为模板类型枚举提供便利方法
 extension TemplateTypeExtension on TemplateType {
   /// 获取模板类型的显示名称
@@ -256,7 +256,7 @@ extension TemplateTypeExtension on TemplateType {
         return '基础设施';
     }
   }
-  
+
   /// 获取模板类型的描述
   String get description {
     switch (this) {
@@ -280,7 +280,7 @@ extension TemplateTypeExtension on TemplateType {
         return '容器化、监控、安全和运维工具';
     }
   }
-  
+
   /// 获取支持的子类型列表
   List<TemplateSubType> get supportedSubTypes {
     switch (this) {
@@ -338,7 +338,7 @@ extension TemplateTypeExtension on TemplateType {
         ];
     }
   }
-  
+
   /// 检查是否为企业级类型
   bool get isEnterpriseType {
     return [

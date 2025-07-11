@@ -35,8 +35,10 @@ void main() {
       );
 
       expect(parameter.name, equals('database_config'));
-      expect(parameter.enterpriseType,
-          equals(EnterpriseParameterType.databaseConfig),);
+      expect(
+        parameter.enterpriseType,
+        equals(EnterpriseParameterType.databaseConfig),
+      );
       expect(parameter.sensitivity, equals(ParameterSensitivity.confidential));
       expect(parameter.category, equals('database'));
       expect(parameter.group, equals('infrastructure'));
@@ -65,7 +67,9 @@ void main() {
 
       expect(parameter.name, equals('user_password'));
       expect(
-          parameter.enterpriseType, equals(EnterpriseParameterType.password),);
+        parameter.enterpriseType,
+        equals(EnterpriseParameterType.password),
+      );
       expect(parameter.sensitivity, equals(ParameterSensitivity.secret));
       expect(parameter.category, equals('auth'));
       expect(parameter.tags, contains('auth'));
@@ -95,12 +99,16 @@ void main() {
       expect(parameter.hasDependencies, isTrue);
       expect(parameter.dependencies, hasLength(1));
       expect(parameter.dependencies.first.dependsOn, equals('auth_type'));
-      expect(parameter.dependencies.first.condition,
-          equals(DependencyCondition.equals),);
+      expect(
+        parameter.dependencies.first.condition,
+        equals(DependencyCondition.equals),
+      );
       expect(parameter.dependencies.first.whenValue, equals('oauth2'));
       expect(parameter.isComputed, isTrue);
-      expect(parameter.computation!.expression,
-          equals('auth_type + "_client_id"'),);
+      expect(
+        parameter.computation!.expression,
+        equals('auth_type + "_client_id"'),
+      );
     });
   });
 

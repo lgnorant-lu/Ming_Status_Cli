@@ -20,10 +20,15 @@ import 'package:ming_status_cli/src/commands/template_create_command.dart';
 import 'package:ming_status_cli/src/commands/template_generate_command.dart';
 import 'package:ming_status_cli/src/commands/template_info_command.dart';
 import 'package:ming_status_cli/src/commands/template_inherit_command.dart';
+import 'package:ming_status_cli/src/commands/template_install_command.dart';
 import 'package:ming_status_cli/src/commands/template_library_command.dart';
 import 'package:ming_status_cli/src/commands/template_list_command.dart';
 import 'package:ming_status_cli/src/commands/template_params_command.dart';
 import 'package:ming_status_cli/src/commands/template_search_command.dart';
+import 'package:ming_status_cli/src/commands/template_security_command.dart';
+import 'package:ming_status_cli/src/commands/template_update_command.dart';
+import 'package:ming_status_cli/src/commands/template_enterprise_command.dart';
+import 'package:ming_status_cli/src/commands/template_network_command.dart';
 
 /// 模板管理主命令
 ///
@@ -54,6 +59,19 @@ class TemplateCommand extends Command<int> {
 
     // Task 2.3.2: 企业级模板库管理系统
     addSubcommand(TemplateLibraryCommand());
+
+    // Phase 2.2 Week 2: 智能搜索和分发系统
+    addSubcommand(TemplateInstallCommand());
+    addSubcommand(TemplateUpdateCommand());
+
+    // Task 2.2.2: 企业级安全验证系统
+    addSubcommand(TemplateSecurityCommand());
+
+    // Task 2.2.4: 企业级模板管理
+    addSubcommand(TemplateEnterpriseCommand());
+
+    // Task 2.2.5: 网络通信和离线支持
+    addSubcommand(TemplateNetworkCommand());
   }
 
   @override
@@ -67,29 +85,63 @@ class TemplateCommand extends Command<int> {
 使用方法:
   ming template <子命令> [选项]
 
-可用子命令:
+📚 Phase 2.1 高级模板系统 - 10个子命令:
+
+🔍 模板发现和管理:
   list        列出可用的模板
   search      搜索模板
   info        显示模板详细信息
-  benchmark   执行性能基准测试
+
+🛠️ 模板创建工具:
   create      创建自定义模板
+  generate    生成模板实例
+
+🏗️ 高级模板功能:
+  inherit     模板继承和组合
+  conditional 条件模板生成
+
+⚙️ 参数化和库管理:
+  params      参数化系统管理
+  library     模板库管理
+
+📊 性能测试:
+  benchmark   执行性能基准测试
+
+🌐 Phase 2.2 智能搜索和分发系统 - 5个新命令:
+
+📦 分发管理:
+  install     安装模板 (支持依赖解析)
+  update      更新模板 (支持批量更新)
+
+🔒 安全验证:
+  security    模板安全验证和管理
+
+🏢 企业级管理:
+  enterprise  企业级模板管理 (私有注册表、访问控制、生命周期、合规)
+
+🌐 网络通信:
+  network     网络通信和离线支持 (HTTP优化、带宽管理、重试策略、离线缓存)
 
 示例:
-  # 列出模板
+  # 模板发现
   ming template list --type=ui --platform=flutter
-
-  # 搜索模板
-  ming template search "clean architecture"
-
-  # 查看模板信息
+  ming template search "clean architecture" --tags=mvvm
   ming template info flutter_clean_app --detailed
+
+  # 模板创建
+  ming template create --wizard
+  ming template generate my_app --template=flutter_clean
+
+  # 高级功能
+  ming template inherit base_template --extend=ui_components
+  ming template conditional --if="platform==mobile" --template=responsive
+
+  # 参数化管理
+  ming template params --set theme=dark --template=my_app
+  ming template library --add ./my_templates --name=custom
 
   # 性能测试
   ming template benchmark --templates=100 --operations=load,validate
-
-  # 创建模板
-  ming template create --wizard
-  ming template create --name my_widget --type ui
 
   # 查看帮助
   ming template --help
@@ -99,7 +151,7 @@ class TemplateCommand extends Command<int> {
   @override
   Future<int> run() async {
     // 如果没有提供子命令，显示帮助信息
-    printUsage();
+    print(usage);
     return 0;
   }
 }

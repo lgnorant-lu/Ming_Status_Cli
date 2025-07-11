@@ -20,14 +20,16 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:path/path.dart' as path;
 
 /// 脚手架配置
-/// 
+///
 /// 定义模板脚手架的配置参数
 class ScaffoldConfig {
   /// 创建脚手架配置实例
   const ScaffoldConfig({
     required this.templateName,
     required this.templateType,
-    required this.author, required this.description, this.subType,
+    required this.author,
+    required this.description,
+    this.subType,
     this.version = '1.0.0',
     this.outputPath = '.',
     this.platform = TemplatePlatform.crossPlatform,
@@ -44,58 +46,58 @@ class ScaffoldConfig {
 
   /// 模板名称
   final String templateName;
-  
+
   /// 模板类型
   final TemplateType templateType;
-  
+
   /// 模板子类型
   final TemplateSubType? subType;
-  
+
   /// 作者信息
   final String author;
-  
+
   /// 模板描述
   final String description;
-  
+
   /// 模板版本
   final String version;
-  
+
   /// 输出路径
   final String outputPath;
-  
+
   /// 目标平台
   final TemplatePlatform platform;
-  
+
   /// 技术框架
   final TemplateFramework framework;
-  
+
   /// 复杂度等级
   final TemplateComplexity complexity;
-  
+
   /// 成熟度等级
   final TemplateMaturity maturity;
-  
+
   /// 标签列表
   final List<String> tags;
-  
+
   /// 依赖列表
   final List<String> dependencies;
-  
+
   /// 是否包含测试
   final bool includeTests;
-  
+
   /// 是否包含文档
   final bool includeDocumentation;
-  
+
   /// 是否包含示例
   final bool includeExamples;
-  
+
   /// 是否启用Git初始化
   final bool enableGitInit;
 }
 
 /// 脚手架生成结果
-/// 
+///
 /// 包含脚手架生成的结果信息
 class ScaffoldResult {
   /// 创建脚手架生成结果实例
@@ -137,80 +139,80 @@ class ScaffoldResult {
 
   /// 是否成功
   final bool success;
-  
+
   /// 模板路径
   final String templatePath;
-  
+
   /// 生成的文件列表
   final List<String> generatedFiles;
-  
+
   /// 错误列表
   final List<String> errors;
-  
+
   /// 警告列表
   final List<String> warnings;
 }
 
 /// 企业级模板脚手架生成器
-/// 
+///
 /// 自动生成模板目录结构、配置文件、示例代码
 class TemplateScaffold {
   /// 创建模板脚手架生成器实例
   TemplateScaffold();
 
   /// 生成模板脚手架
-  /// 
+  ///
   /// 根据配置生成完整的模板项目结构
   Future<ScaffoldResult> generateScaffold(ScaffoldConfig config) async {
     try {
       cli_logger.Logger.info('开始生成模板脚手架: ${config.templateName}');
-      
+
       // 1. 创建模板目录
       final templatePath = await _createTemplateDirectory(config);
-      
+
       // 2. 生成基础文件结构
       final generatedFiles = <String>[];
-      
+
       // 生成元数据文件
       await _generateMetadataFile(templatePath, config);
       generatedFiles.add('template.yaml');
-      
+
       // 生成模板文件
       await _generateTemplateFiles(templatePath, config);
       generatedFiles.addAll(await _getTemplateFiles(templatePath, config));
-      
+
       // 生成配置文件
       await _generateConfigFiles(templatePath, config);
       generatedFiles.addAll(['pubspec.yaml', '.gitignore']);
-      
+
       // 生成文档
       if (config.includeDocumentation) {
         await _generateDocumentation(templatePath, config);
         generatedFiles.addAll(['README.md', 'CHANGELOG.md']);
       }
-      
+
       // 生成测试
       if (config.includeTests) {
         await _generateTests(templatePath, config);
         generatedFiles.add('test/template_test.dart');
       }
-      
+
       // 生成示例
       if (config.includeExamples) {
         await _generateExamples(templatePath, config);
         generatedFiles.add('example/example.dart');
       }
-      
+
       // Git初始化
       if (config.enableGitInit) {
         await _initializeGit(templatePath);
       }
-      
+
       cli_logger.Logger.success(
         '模板脚手架生成完成: ${config.templateName} '
         '(${generatedFiles.length}个文件)',
       );
-      
+
       return ScaffoldResult.success(
         templatePath: templatePath,
         generatedFiles: generatedFiles,
@@ -227,13 +229,13 @@ class TemplateScaffold {
   Future<String> _createTemplateDirectory(ScaffoldConfig config) async {
     final templatePath = path.join(config.outputPath, config.templateName);
     final templateDir = Directory(templatePath);
-    
+
     if (await templateDir.exists()) {
       throw Exception('模板目录已存在: $templatePath');
     }
-    
+
     await templateDir.create(recursive: true);
-    
+
     // 创建子目录
     final subDirs = [
       'templates',
@@ -242,11 +244,11 @@ class TemplateScaffold {
       if (config.includeExamples) 'example',
       if (config.includeDocumentation) 'docs',
     ];
-    
+
     for (final subDir in subDirs) {
       await Directory(path.join(templatePath, subDir)).create(recursive: true);
     }
-    
+
     return templatePath;
   }
 
@@ -274,7 +276,7 @@ class TemplateScaffold {
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
-    
+
     final metadataFile = File(path.join(templatePath, 'template.yaml'));
     await metadataFile.writeAsString(_generateMetadataYaml(metadata));
   }
@@ -285,7 +287,7 @@ class TemplateScaffold {
     ScaffoldConfig config,
   ) async {
     final templatesDir = path.join(templatePath, 'templates');
-    
+
     // 根据模板类型生成不同的模板文件
     switch (config.templateType) {
       case TemplateType.ui:
@@ -391,7 +393,7 @@ class {{serviceName}}Service {
     // 生成pubspec.yaml
     final pubspecFile = File(path.join(templatePath, 'pubspec.yaml'));
     await pubspecFile.writeAsString(_generatePubspecYaml(config));
-    
+
     // 生成.gitignore
     final gitignoreFile = File(path.join(templatePath, '.gitignore'));
     await gitignoreFile.writeAsString(_generateGitignore());
@@ -405,7 +407,7 @@ class {{serviceName}}Service {
     // 生成README.md
     final readmeFile = File(path.join(templatePath, 'README.md'));
     await readmeFile.writeAsString(_generateReadme(config));
-    
+
     // 生成CHANGELOG.md
     final changelogFile = File(path.join(templatePath, 'CHANGELOG.md'));
     await changelogFile.writeAsString(_generateChangelog(config));
@@ -416,7 +418,8 @@ class {{serviceName}}Service {
     String templatePath,
     ScaffoldConfig config,
   ) async {
-    final testFile = File(path.join(templatePath, 'test', 'template_test.dart'));
+    final testFile =
+        File(path.join(templatePath, 'test', 'template_test.dart'));
     await testFile.writeAsString(_generateTestFile(config));
   }
 
@@ -425,7 +428,8 @@ class {{serviceName}}Service {
     String templatePath,
     ScaffoldConfig config,
   ) async {
-    final exampleFile = File(path.join(templatePath, 'example', 'example.dart'));
+    final exampleFile =
+        File(path.join(templatePath, 'example', 'example.dart'));
     await exampleFile.writeAsString(_generateExampleFile(config));
   }
 
@@ -436,7 +440,7 @@ class {{serviceName}}Service {
       ['init'],
       workingDirectory: templatePath,
     );
-    
+
     if (result.exitCode != 0) {
       cli_logger.Logger.warning('Git初始化失败: ${result.stderr}');
     }
@@ -457,31 +461,38 @@ class {{serviceName}}Service {
   }
 
   // 其他模板类型的生成方法（简化实现）
-  Future<void> _generateDataTemplates(String templatesDir, ScaffoldConfig config) async {
+  Future<void> _generateDataTemplates(
+      String templatesDir, ScaffoldConfig config) async {
     // 实现数据层模板生成
   }
-  
-  Future<void> _generateFullTemplates(String templatesDir, ScaffoldConfig config) async {
+
+  Future<void> _generateFullTemplates(
+      String templatesDir, ScaffoldConfig config) async {
     // 实现完整应用模板生成
   }
-  
-  Future<void> _generateSystemTemplates(String templatesDir, ScaffoldConfig config) async {
+
+  Future<void> _generateSystemTemplates(
+      String templatesDir, ScaffoldConfig config) async {
     // 实现系统配置模板生成
   }
-  
-  Future<void> _generateBasicTemplates(String templatesDir, ScaffoldConfig config) async {
+
+  Future<void> _generateBasicTemplates(
+      String templatesDir, ScaffoldConfig config) async {
     // 实现基础模板生成
   }
-  
-  Future<void> _generateMicroTemplates(String templatesDir, ScaffoldConfig config) async {
+
+  Future<void> _generateMicroTemplates(
+      String templatesDir, ScaffoldConfig config) async {
     // 实现微服务模板生成
   }
-  
-  Future<void> _generatePluginTemplates(String templatesDir, ScaffoldConfig config) async {
+
+  Future<void> _generatePluginTemplates(
+      String templatesDir, ScaffoldConfig config) async {
     // 实现插件模板生成
   }
-  
-  Future<void> _generateInfrastructureTemplates(String templatesDir, ScaffoldConfig config) async {
+
+  Future<void> _generateInfrastructureTemplates(
+      String templatesDir, ScaffoldConfig config) async {
     // 实现基础设施模板生成
   }
 

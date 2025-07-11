@@ -185,8 +185,11 @@ void main() {
               final targetPath = path.join(docsDir.path, linkUrl.split('#')[0]);
               final targetFile = File(targetPath);
 
-              expect(targetFile.existsSync(), isTrue,
-                  reason: '在 $fileName 中发现无效链接: $linkText -> $linkUrl',);
+              expect(
+                targetFile.existsSync(),
+                isTrue,
+                reason: '在 $fileName 中发现无效链接: $linkText -> $linkUrl',
+              );
             }
           }
 
@@ -208,10 +211,12 @@ void main() {
           final headers = headerRegex
               .allMatches(content)
               .map((match) => match.group(1)!)
-              .map((header) => header
-                  .toLowerCase()
-                  .replaceAll(' ', '-')
-                  .replaceAll(RegExp(r'[^\w\-]'), ''),)
+              .map(
+                (header) => header
+                    .toLowerCase()
+                    .replaceAll(' ', '-')
+                    .replaceAll(RegExp(r'[^\w\-]'), ''),
+              )
               .toSet();
 
           for (final match in anchorMatches) {
@@ -219,9 +224,11 @@ void main() {
             final anchor = match.group(2)!;
 
             // 简单的锚点验证（可能需要更复杂的逻辑）
-            final hasMatchingHeader = headers.any((header) =>
-                header.contains(anchor.toLowerCase()) ||
-                anchor.toLowerCase().contains(header),);
+            final hasMatchingHeader = headers.any(
+              (header) =>
+                  header.contains(anchor.toLowerCase()) ||
+                  anchor.toLowerCase().contains(header),
+            );
 
             if (!hasMatchingHeader) {
               print('⚠️  可能的无效锚点链接在 $fileName: $linkText -> #$anchor');
@@ -240,8 +247,11 @@ void main() {
           final fileName = path.basename(file.path);
 
           // 检查是否有主标题（# 标题）
-          expect(content, matches(RegExp(r'^#\s+.+', multiLine: true)),
-              reason: '文档 $fileName 缺少主标题',);
+          expect(
+            content,
+            matches(RegExp(r'^#\s+.+', multiLine: true)),
+            reason: '文档 $fileName 缺少主标题',
+          );
 
           // 检查标题层级是否合理（不应该跳级）
           final headerRegex = RegExp(r'^(#+)\s+(.+)$', multiLine: true);
@@ -283,8 +293,11 @@ void main() {
                 content.contains('最后更新') ||
                 content.contains('Last updated');
 
-            expect(hasVersion || hasDate, isTrue,
-                reason: '文档 $docName 缺少版本或日期信息',);
+            expect(
+              hasVersion || hasDate,
+              isTrue,
+              reason: '文档 $docName 缺少版本或日期信息',
+            );
 
             print('✅ 验证版本信息: $docName');
           }
@@ -370,8 +383,11 @@ void main() {
         print('=' * 50);
 
         // 验证文档规模合理
-        expect(documentFiles.length, greaterThanOrEqualTo(7),
-            reason: '文档数量应该至少有7个',);
+        expect(
+          documentFiles.length,
+          greaterThanOrEqualTo(7),
+          reason: '文档数量应该至少有7个',
+        );
         expect(totalLines, greaterThan(1000), reason: '文档总行数应该超过1000行');
         expect(totalChars, greaterThan(50000), reason: '文档总字符数应该超过50000字符');
 

@@ -18,24 +18,24 @@ import 'dart:io';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 平台类型
-/// 
+///
 /// 定义支持的平台类型
 enum PlatformType {
   /// Web平台
   web,
-  
+
   /// 移动平台
   mobile,
-  
+
   /// 桌面平台
   desktop,
-  
+
   /// 服务器平台
   server,
-  
+
   /// 嵌入式平台
   embedded,
-  
+
   /// 跨平台
   crossPlatform,
 }
@@ -44,16 +44,16 @@ enum PlatformType {
 enum WebPlatformType {
   /// 渐进式Web应用
   pwa,
-  
+
   /// 单页应用
   spa,
-  
+
   /// 多页应用
   mpa,
-  
+
   /// 服务端渲染
   ssr,
-  
+
   /// 静态站点生成
   ssg,
 }
@@ -62,19 +62,19 @@ enum WebPlatformType {
 enum MobilePlatformType {
   /// iOS原生
   ios,
-  
+
   /// Android原生
   android,
-  
+
   /// Flutter跨平台
   flutter,
-  
+
   /// React Native
   reactNative,
-  
+
   /// Ionic混合应用
   ionic,
-  
+
   /// 小程序
   miniProgram,
 }
@@ -83,19 +83,19 @@ enum MobilePlatformType {
 enum DesktopPlatformType {
   /// Windows原生
   windows,
-  
+
   /// macOS原生
   macos,
-  
+
   /// Linux原生
   linux,
-  
+
   /// Electron跨平台
   electron,
-  
+
   /// Flutter桌面
   flutterDesktop,
-  
+
   /// Tauri
   tauri,
 }
@@ -104,31 +104,31 @@ enum DesktopPlatformType {
 enum FrameworkType {
   /// Flutter
   flutter,
-  
+
   /// React
   react,
-  
+
   /// Vue
   vue,
-  
+
   /// Angular
   angular,
-  
+
   /// Node.js
   nodejs,
-  
+
   /// Spring Boot
   springBoot,
-  
+
   /// Django
   django,
-  
+
   /// Express
   express,
-  
+
   /// FastAPI
   fastapi,
-  
+
   /// 未知框架
   unknown,
 }
@@ -137,16 +137,16 @@ enum FrameworkType {
 enum EnvironmentType {
   /// 开发环境
   development,
-  
+
   /// 测试环境
   testing,
-  
+
   /// 预发布环境
   staging,
-  
+
   /// 生产环境
   production,
-  
+
   /// 本地环境
   local,
 }
@@ -169,31 +169,31 @@ class DeviceCapabilities {
 
   /// 屏幕宽度
   final int? screenWidth;
-  
+
   /// 屏幕高度
   final int? screenHeight;
-  
+
   /// 像素比
   final double? pixelRatio;
-  
+
   /// 是否支持触摸
   final bool isTouch;
-  
+
   /// 是否有摄像头
   final bool hasCamera;
-  
+
   /// 是否有GPS
   final bool hasGPS;
-  
+
   /// 是否有加速度计
   final bool hasAccelerometer;
-  
+
   /// 网络类型
   final String? networkType;
-  
+
   /// 存储容量 (GB)
   final int? storageCapacity;
-  
+
   /// 内存容量 (GB)
   final int? memoryCapacity;
 }
@@ -214,25 +214,25 @@ class UserPreferences {
 
   /// 语言偏好
   final String language;
-  
+
   /// 主题偏好
   final String theme;
-  
+
   /// 字体大小
   final String fontSize;
-  
+
   /// 高对比度
   final bool highContrast;
-  
+
   /// 减少动画
   final bool reduceMotion;
-  
+
   /// 屏幕阅读器
   final bool screenReader;
-  
+
   /// 时区
   final String? timezone;
-  
+
   /// 地区设置
   final String? locale;
 }
@@ -242,7 +242,11 @@ class PlatformDetectionResult {
   /// 创建平台检测结果实例
   const PlatformDetectionResult({
     required this.primaryPlatform,
-    required this.framework, required this.environment, required this.deviceCapabilities, required this.userPreferences, this.webPlatform,
+    required this.framework,
+    required this.environment,
+    required this.deviceCapabilities,
+    required this.userPreferences,
+    this.webPlatform,
     this.mobilePlatform,
     this.desktopPlatform,
     this.confidence = 1.0,
@@ -252,40 +256,40 @@ class PlatformDetectionResult {
 
   /// 主要平台类型
   final PlatformType primaryPlatform;
-  
+
   /// Web平台子类型
   final WebPlatformType? webPlatform;
-  
+
   /// 移动平台子类型
   final MobilePlatformType? mobilePlatform;
-  
+
   /// 桌面平台子类型
   final DesktopPlatformType? desktopPlatform;
-  
+
   /// 技术框架
   final FrameworkType framework;
-  
+
   /// 环境类型
   final EnvironmentType environment;
-  
+
   /// 设备特性
   final DeviceCapabilities deviceCapabilities;
-  
+
   /// 用户偏好
   final UserPreferences userPreferences;
-  
+
   /// 检测置信度 (0.0-1.0)
   final double confidence;
-  
+
   /// 检测时间
   final DateTime? detectionTime;
-  
+
   /// 额外元数据
   final Map<String, dynamic> metadata;
 }
 
 /// 企业级平台检测器
-/// 
+///
 /// 自动检测项目环境、平台、技术栈、设备特性和用户偏好
 class PlatformDetector {
   /// 创建平台检测器实例
@@ -297,10 +301,10 @@ class PlatformDetector {
 
   /// 是否启用缓存
   final bool enableCaching;
-  
+
   /// 缓存超时时间
   final Duration cacheTimeout;
-  
+
   /// 是否启用深度检测
   final bool enableDeepDetection;
 
@@ -309,7 +313,7 @@ class PlatformDetector {
   DateTime? _cacheTime;
 
   /// 检测当前平台
-  /// 
+  ///
   /// 自动检测当前运行环境的平台信息
   Future<PlatformDetectionResult> detectPlatform({
     String? projectPath,
@@ -317,7 +321,7 @@ class PlatformDetector {
   }) async {
     try {
       cli_logger.Logger.debug('开始平台检测');
-      
+
       // 检查缓存
       if (enableCaching && _isCacheValid()) {
         cli_logger.Logger.debug('使用缓存的平台检测结果');
@@ -325,45 +329,46 @@ class PlatformDetector {
       }
 
       final startTime = DateTime.now();
-      
+
       // 1. 检测主要平台类型
       final primaryPlatform = await _detectPrimaryPlatform(projectPath);
-      
+
       // 2. 检测技术框架
       final framework = await _detectFramework(projectPath);
-      
+
       // 3. 检测环境类型
       final environment = await _detectEnvironment();
-      
+
       // 4. 检测设备特性
       final deviceCapabilities = await _detectDeviceCapabilities();
-      
+
       // 5. 检测用户偏好
       final userPreferences = await _detectUserPreferences();
-      
+
       // 6. 检测平台子类型
       WebPlatformType? webPlatform;
       MobilePlatformType? mobilePlatform;
       DesktopPlatformType? desktopPlatform;
-      
+
       switch (primaryPlatform) {
         case PlatformType.web:
           webPlatform = await _detectWebPlatform(projectPath, framework);
         case PlatformType.mobile:
           mobilePlatform = await _detectMobilePlatform(projectPath, framework);
         case PlatformType.desktop:
-          desktopPlatform = await _detectDesktopPlatform(projectPath, framework);
+          desktopPlatform =
+              await _detectDesktopPlatform(projectPath, framework);
         default:
           break;
       }
-      
+
       // 7. 计算置信度
       final confidence = _calculateConfidence(
         primaryPlatform,
         framework,
         projectPath,
       );
-      
+
       final result = PlatformDetectionResult(
         primaryPlatform: primaryPlatform,
         webPlatform: webPlatform,
@@ -376,28 +381,29 @@ class PlatformDetector {
         confidence: confidence,
         detectionTime: startTime,
         metadata: {
-          'detectionDuration': DateTime.now().difference(startTime).inMilliseconds,
+          'detectionDuration':
+              DateTime.now().difference(startTime).inMilliseconds,
           'projectPath': projectPath,
           'hints': hints,
           'deepDetection': enableDeepDetection,
         },
       );
-      
+
       // 缓存结果
       if (enableCaching) {
         _cachedResult = result;
         _cacheTime = DateTime.now();
       }
-      
+
       cli_logger.Logger.info(
         '平台检测完成: ${primaryPlatform.name} (${framework.name}) '
         '置信度: ${(confidence * 100).toStringAsFixed(1)}%',
       );
-      
+
       return result;
     } catch (e) {
       cli_logger.Logger.error('平台检测失败', error: e);
-      
+
       // 返回默认结果
       return PlatformDetectionResult(
         primaryPlatform: PlatformType.crossPlatform,
@@ -417,7 +423,7 @@ class PlatformDetector {
     if (_cachedResult == null || _cacheTime == null) {
       return false;
     }
-    
+
     final now = DateTime.now();
     return now.difference(_cacheTime!).compareTo(cacheTimeout) < 0;
   }
@@ -431,13 +437,13 @@ class PlatformDetector {
         final pubspecFile = File('$projectPath/pubspec.yaml');
         if (await pubspecFile.exists()) {
           final content = await pubspecFile.readAsString();
-          if (content.contains('flutter:') && 
-              (content.contains('windows:') || 
-               content.contains('macos:') || 
-               content.contains('linux:'))) {
+          if (content.contains('flutter:') &&
+              (content.contains('windows:') ||
+                  content.contains('macos:') ||
+                  content.contains('linux:'))) {
             return PlatformType.desktop;
           }
-          if (content.contains('flutter:') && 
+          if (content.contains('flutter:') &&
               (content.contains('android:') || content.contains('ios:'))) {
             return PlatformType.mobile;
           }
@@ -445,21 +451,21 @@ class PlatformDetector {
             return PlatformType.web;
           }
         }
-        
+
         // 检查其他Web框架标识
         if (await _hasWebFrameworkFiles(projectPath)) {
           return PlatformType.web;
         }
-        
+
         // 检查服务器框架标识
         if (await _hasServerFrameworkFiles(projectPath)) {
           return PlatformType.server;
         }
       }
-      
+
       return PlatformType.desktop;
     }
-    
+
     // 默认为跨平台
     return PlatformType.crossPlatform;
   }
@@ -475,14 +481,14 @@ class PlatformDetector {
       'nuxt.config.js',
       'angular.json',
     ];
-    
+
     for (final fileName in webFiles) {
       final file = File('$projectPath/$fileName');
       if (await file.exists()) {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -497,14 +503,14 @@ class PlatformDetector {
       'Dockerfile',
       'docker-compose.yml',
     ];
-    
+
     for (final fileName in serverFiles) {
       final file = File('$projectPath/$fileName');
       if (await file.exists()) {
         return true;
       }
     }
-    
+
     return false;
   }
 
@@ -513,7 +519,7 @@ class PlatformDetector {
     if (projectPath == null) {
       return FrameworkType.unknown;
     }
-    
+
     // 检查Flutter
     final pubspecFile = File('$projectPath/pubspec.yaml');
     if (await pubspecFile.exists()) {
@@ -522,7 +528,7 @@ class PlatformDetector {
         return FrameworkType.flutter;
       }
     }
-    
+
     // 检查Node.js框架
     final packageJsonFile = File('$projectPath/package.json');
     if (await packageJsonFile.exists()) {
@@ -533,7 +539,7 @@ class PlatformDetector {
           ...?packageJson['dependencies'] as Map<String, dynamic>?,
           ...?packageJson['devDependencies'] as Map<String, dynamic>?,
         };
-        
+
         if (dependencies.containsKey('react')) {
           return FrameworkType.react;
         }
@@ -546,13 +552,13 @@ class PlatformDetector {
         if (dependencies.containsKey('express')) {
           return FrameworkType.express;
         }
-        
+
         return FrameworkType.nodejs;
       } catch (e) {
         // JSON解析失败，继续其他检测
       }
     }
-    
+
     // 检查Python框架
     final requirementsFile = File('$projectPath/requirements.txt');
     if (await requirementsFile.exists()) {
@@ -564,7 +570,7 @@ class PlatformDetector {
         return FrameworkType.fastapi;
       }
     }
-    
+
     return FrameworkType.unknown;
   }
 
@@ -572,7 +578,7 @@ class PlatformDetector {
   Future<EnvironmentType> _detectEnvironment() async {
     // 检查环境变量
     final env = Platform.environment;
-    
+
     final nodeEnv = env['NODE_ENV']?.toLowerCase();
     if (nodeEnv != null) {
       switch (nodeEnv) {
@@ -590,7 +596,7 @@ class PlatformDetector {
           return EnvironmentType.production;
       }
     }
-    
+
     final flutterEnv = env['FLUTTER_ENV']?.toLowerCase();
     if (flutterEnv != null) {
       switch (flutterEnv) {
@@ -604,12 +610,12 @@ class PlatformDetector {
           return EnvironmentType.production;
       }
     }
-    
+
     // 检查调试模式
     if (env.containsKey('DEBUG') || env.containsKey('FLUTTER_DEBUG')) {
       return EnvironmentType.development;
     }
-    
+
     // 默认为开发环境
     return EnvironmentType.development;
   }
@@ -618,7 +624,7 @@ class PlatformDetector {
   Future<DeviceCapabilities> _detectDeviceCapabilities() async {
     // 在CLI环境中，设备特性检测有限
     // 这里提供基础实现，实际应用中可以扩展
-    
+
     return const DeviceCapabilities(
       networkType: 'ethernet', // 假设有网络连接
     );
@@ -627,7 +633,7 @@ class PlatformDetector {
   /// 检测用户偏好
   Future<UserPreferences> _detectUserPreferences() async {
     final env = Platform.environment;
-    
+
     // 检测语言偏好
     var language = 'en';
     final lang = env['LANG'] ?? env['LANGUAGE'] ?? env['LC_ALL'];
@@ -646,7 +652,7 @@ class PlatformDetector {
         language = 'de';
       }
     }
-    
+
     // 检测时区
     String? timezone;
     try {
@@ -654,7 +660,7 @@ class PlatformDetector {
     } catch (e) {
       // 忽略时区检测错误
     }
-    
+
     return UserPreferences(
       language: language,
       timezone: timezone,
@@ -668,23 +674,23 @@ class PlatformDetector {
     FrameworkType framework,
   ) async {
     if (projectPath == null) return null;
-    
+
     // 检查Next.js (SSR/SSG)
     if (await File('$projectPath/next.config.js').exists()) {
       return WebPlatformType.ssr;
     }
-    
+
     // 检查Nuxt.js (SSR/SSG)
     if (await File('$projectPath/nuxt.config.js').exists()) {
       return WebPlatformType.ssr;
     }
-    
+
     // 检查PWA配置
     if (await File('$projectPath/manifest.json').exists() ||
         await File('$projectPath/public/manifest.json').exists()) {
       return WebPlatformType.pwa;
     }
-    
+
     // 根据框架推断
     switch (framework) {
       case FrameworkType.react:
@@ -704,9 +710,9 @@ class PlatformDetector {
     if (framework == FrameworkType.flutter) {
       return MobilePlatformType.flutter;
     }
-    
+
     if (projectPath == null) return null;
-    
+
     // 检查React Native
     final packageJsonFile = File('$projectPath/package.json');
     if (await packageJsonFile.exists()) {
@@ -715,12 +721,12 @@ class PlatformDetector {
         return MobilePlatformType.reactNative;
       }
     }
-    
+
     // 检查Ionic
     if (await File('$projectPath/ionic.config.json').exists()) {
       return MobilePlatformType.ionic;
     }
-    
+
     return MobilePlatformType.flutter; // 默认Flutter
   }
 
@@ -732,9 +738,9 @@ class PlatformDetector {
     if (framework == FrameworkType.flutter) {
       return DesktopPlatformType.flutterDesktop;
     }
-    
+
     if (projectPath == null) return null;
-    
+
     // 检查Electron
     final packageJsonFile = File('$projectPath/package.json');
     if (await packageJsonFile.exists()) {
@@ -743,12 +749,12 @@ class PlatformDetector {
         return DesktopPlatformType.electron;
       }
     }
-    
+
     // 检查Tauri
     if (await File('$projectPath/src-tauri').exists()) {
       return DesktopPlatformType.tauri;
     }
-    
+
     // 根据操作系统推断
     if (Platform.isWindows) {
       return DesktopPlatformType.windows;
@@ -757,7 +763,7 @@ class PlatformDetector {
     } else if (Platform.isLinux) {
       return DesktopPlatformType.linux;
     }
-    
+
     return DesktopPlatformType.flutterDesktop; // 默认Flutter桌面
   }
 
@@ -768,20 +774,20 @@ class PlatformDetector {
     String? projectPath,
   ) {
     var confidence = 0.5; // 基础置信度
-    
+
     // 框架检测成功增加置信度
     if (framework != FrameworkType.unknown) {
       confidence += 0.3;
     }
-    
+
     // 有项目路径增加置信度
     if (projectPath != null) {
       confidence += 0.2;
     }
-    
+
     // 平台特定文件存在增加置信度
     // 这里可以添加更多的启发式规则
-    
+
     return confidence.clamp(0.0, 1.0);
   }
 
@@ -797,8 +803,8 @@ class PlatformDetector {
     return {
       'hasCachedResult': _cachedResult != null,
       'cacheTime': _cacheTime?.toIso8601String(),
-      'cacheAge': _cacheTime != null 
-          ? DateTime.now().difference(_cacheTime!).inSeconds 
+      'cacheAge': _cacheTime != null
+          ? DateTime.now().difference(_cacheTime!).inSeconds
           : null,
       'cacheTimeout': cacheTimeout.inSeconds,
     };

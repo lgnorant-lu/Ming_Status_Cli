@@ -156,7 +156,9 @@ flutter:
 
       expect(result.techStackFeatures, hasLength(2));
       expect(
-          result.techStackFeatures, contains(TechStackFeature.stateManagement),);
+        result.techStackFeatures,
+        contains(TechStackFeature.stateManagement),
+      );
       expect(result.architecturePatterns, contains(ArchitecturePattern.bloc));
       expect(result.teamSize, equals(TeamSize.small));
       expect(result.projectComplexity, equals(ProjectComplexity.medium));
@@ -191,14 +193,20 @@ dependencies:
       final result = await detector.detectFeatures(projectPath: tempDir.path);
 
       expect(
-          result.techStackFeatures, contains(TechStackFeature.stateManagement),);
+        result.techStackFeatures,
+        contains(TechStackFeature.stateManagement),
+      );
       expect(result.techStackFeatures, contains(TechStackFeature.routing));
       expect(result.techStackFeatures, contains(TechStackFeature.networking));
       expect(result.techStackFeatures, contains(TechStackFeature.caching));
       expect(
-          result.techStackFeatures, contains(TechStackFeature.authentication),);
-      expect(result.techStackFeatures,
-          contains(TechStackFeature.internationalization),);
+        result.techStackFeatures,
+        contains(TechStackFeature.authentication),
+      );
+      expect(
+        result.techStackFeatures,
+        contains(TechStackFeature.internationalization),
+      );
       expect(result.techStackFeatures, contains(TechStackFeature.testing));
 
       expect(result.architecturePatterns, contains(ArchitecturePattern.bloc));
@@ -252,9 +260,13 @@ dependencies:
 
       // 复杂项目应该有较高的复杂度评分
       expect(
-          result.projectComplexity,
-          anyOf(ProjectComplexity.medium, ProjectComplexity.complex,
-              ProjectComplexity.enterprise,),);
+        result.projectComplexity,
+        anyOf(
+          ProjectComplexity.medium,
+          ProjectComplexity.complex,
+          ProjectComplexity.enterprise,
+        ),
+      );
     });
   });
 
@@ -373,8 +385,10 @@ dependencies:
           RecommendationPriority.low: 1,
         };
 
-        expect(priorityOrder[current.priority],
-            greaterThanOrEqualTo(priorityOrder[next.priority]!),);
+        expect(
+          priorityOrder[current.priority],
+          greaterThanOrEqualTo(priorityOrder[next.priority]!),
+        );
       }
     });
 
@@ -406,8 +420,10 @@ dependencies:
 
       // 测试按优先级分组
       final byPriority = result.byPriority;
-      expect(byPriority,
-          isA<Map<RecommendationPriority, List<RecommendationItem>>>(),);
+      expect(
+        byPriority,
+        isA<Map<RecommendationPriority, List<RecommendationItem>>>(),
+      );
 
       // 测试按类型分组
       final byType = result.byType;
@@ -419,9 +435,12 @@ dependencies:
 
       for (final item in highPriority) {
         expect(
-            item.priority,
-            anyOf(
-                RecommendationPriority.high, RecommendationPriority.critical,),);
+          item.priority,
+          anyOf(
+            RecommendationPriority.high,
+            RecommendationPriority.critical,
+          ),
+        );
       }
     });
 
@@ -492,8 +511,10 @@ dependencies:
         featureResult: featureResult,
       );
 
-      expect(result1.recommendations.length,
-          equals(result2.recommendations.length),);
+      expect(
+        result1.recommendations.length,
+        equals(result2.recommendations.length),
+      );
       expect(result1.totalScore, equals(result2.totalScore));
     });
   });
@@ -551,7 +572,9 @@ dependencies:
       expect(featuresResult.value, isA<List>());
 
       final integrationsResult = await evaluator.evaluate(
-          'features.thirdPartyIntegrations', variables,);
+        'features.thirdPartyIntegrations',
+        variables,
+      );
       expect(integrationsResult.success, isTrue);
       expect(integrationsResult.value, isA<List>());
 

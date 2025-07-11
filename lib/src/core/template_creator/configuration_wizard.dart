@@ -19,27 +19,27 @@ import 'package:ming_status_cli/src/core/template_system/template_types.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 向导步骤
-/// 
+///
 /// 定义配置向导的步骤
 enum WizardStep {
   /// 基础信息
   basicInfo,
-  
+
   /// 模板类型选择
   templateType,
-  
+
   /// 技术栈配置
   techStack,
-  
+
   /// 高级选项
   advancedOptions,
-  
+
   /// 确认配置
   confirmation,
 }
 
 /// 向导上下文
-/// 
+///
 /// 保存向导过程中的状态信息
 class WizardContext {
   /// 创建向导上下文实例
@@ -68,7 +68,7 @@ class WizardContext {
 }
 
 /// 向导问题
-/// 
+///
 /// 表示向导中的一个问题
 class WizardQuestion {
   /// 创建向导问题实例
@@ -84,51 +84,51 @@ class WizardQuestion {
 
   /// 问题键
   final String key;
-  
+
   /// 问题提示
   final String prompt;
-  
+
   /// 问题类型
   final QuestionType type;
-  
+
   /// 选项列表 (用于选择题)
   final List<String> options;
-  
+
   /// 默认值
   final dynamic defaultValue;
-  
+
   /// 验证器
   final String? Function(String?)? validator;
-  
+
   /// 显示条件
   final bool Function(WizardContext)? condition;
 }
 
 /// 问题类型
-/// 
+///
 /// 定义不同类型的问题
 enum QuestionType {
   /// 文本输入
   text,
-  
+
   /// 数字输入
   number,
-  
+
   /// 布尔选择
   boolean,
-  
+
   /// 单选
   choice,
-  
+
   /// 多选
   multiChoice,
-  
+
   /// 列表输入
   list,
 }
 
 /// 企业级配置向导
-/// 
+///
 /// 交互式模板配置向导，智能推荐和验证
 class ConfigurationWizard {
   /// 创建配置向导实例
@@ -138,14 +138,14 @@ class ConfigurationWizard {
   final WizardContext _context = WizardContext();
 
   /// 运行配置向导
-  /// 
+  ///
   /// 引导用户完成模板配置
   Future<ScaffoldConfig?> runWizard() async {
     try {
       cli_logger.Logger.info('启动模板配置向导');
-      
+
       _printWelcome();
-      
+
       // 执行向导步骤
       for (final step in WizardStep.values) {
         final shouldContinue = await _executeStep(step);
@@ -154,10 +154,10 @@ class ConfigurationWizard {
           return null;
         }
       }
-      
+
       // 生成配置
       final config = _generateConfig();
-      
+
       cli_logger.Logger.success('模板配置完成');
       return config;
     } catch (e) {
@@ -185,7 +185,7 @@ class ConfigurationWizard {
   /// 收集基础信息
   Future<bool> _collectBasicInfo() async {
     _printStepHeader('基础信息配置');
-    
+
     final questions = [
       WizardQuestion(
         key: 'templateName',
@@ -253,21 +253,23 @@ class ConfigurationWizard {
   /// 选择模板类型
   Future<bool> _selectTemplateType() async {
     _printStepHeader('模板类型选择');
-    
+
     // 主类型选择
     final typeQuestion = WizardQuestion(
       key: 'templateType',
       prompt: '请选择模板类型',
       type: QuestionType.choice,
-      options: TemplateType.values.map((t) => '${t.name} - ${t.displayName}').toList(),
+      options: TemplateType.values
+          .map((t) => '${t.name} - ${t.displayName}')
+          .toList(),
     );
-    
+
     final typeAnswer = await _askQuestion(typeQuestion);
     if (typeAnswer == null) return false;
-    
+
     final selectedType = TemplateType.values[int.parse(typeAnswer) - 1];
     _context.setAnswer('templateType', selectedType);
-    
+
     // 子类型选择
     final supportedSubTypes = selectedType.supportedSubTypes;
     if (supportedSubTypes.isNotEmpty) {
@@ -280,10 +282,10 @@ class ConfigurationWizard {
           ...supportedSubTypes.map((st) => '${st.name} - ${st.displayName}'),
         ],
       );
-      
+
       final subTypeAnswer = await _askQuestion(subTypeQuestion);
       if (subTypeAnswer == null) return false;
-      
+
       if (subTypeAnswer != '1') {
         final selectedSubType = supportedSubTypes[int.parse(subTypeAnswer) - 2];
         _context.setAnswer('subType', selectedSubType);
@@ -296,7 +298,7 @@ class ConfigurationWizard {
   /// 配置技术栈
   Future<bool> _configureTechStack() async {
     _printStepHeader('技术栈配置');
-    
+
     final questions = [
       WizardQuestion(
         key: 'platform',
@@ -321,14 +323,17 @@ class ConfigurationWizard {
     for (final question in questions) {
       final answer = await _askQuestion(question);
       if (answer == null) return false;
-      
+
       switch (question.key) {
         case 'platform':
-          _context.setAnswer(question.key, TemplatePlatform.values[int.parse(answer) - 1]);
+          _context.setAnswer(
+              question.key, TemplatePlatform.values[int.parse(answer) - 1]);
         case 'framework':
-          _context.setAnswer(question.key, TemplateFramework.values[int.parse(answer) - 1]);
+          _context.setAnswer(
+              question.key, TemplateFramework.values[int.parse(answer) - 1]);
         case 'complexity':
-          _context.setAnswer(question.key, TemplateComplexity.values[int.parse(answer) - 1]);
+          _context.setAnswer(
+              question.key, TemplateComplexity.values[int.parse(answer) - 1]);
       }
     }
 
@@ -338,7 +343,7 @@ class ConfigurationWizard {
   /// 配置高级选项
   Future<bool> _configureAdvancedOptions() async {
     _printStepHeader('高级选项配置');
-    
+
     final questions = [
       const WizardQuestion(
         key: 'includeTests',
@@ -383,16 +388,16 @@ class ConfigurationWizard {
   /// 确认配置
   Future<bool> _confirmConfiguration() async {
     _printStepHeader('配置确认');
-    
+
     _printConfigurationSummary();
-    
+
     const confirmQuestion = WizardQuestion(
       key: 'confirm',
       prompt: '确认以上配置并生成模板？',
       type: QuestionType.boolean,
       defaultValue: true,
     );
-    
+
     final answer = await _askQuestion(confirmQuestion);
     return answer == true;
   }
@@ -406,26 +411,26 @@ class ConfigurationWizard {
       }
 
       _printQuestion(question);
-      
+
       final input = stdin.readLineSync()?.trim();
-      
+
       // 处理取消
       if (input?.toLowerCase() == 'q' || input?.toLowerCase() == 'quit') {
         return null;
       }
-      
+
       // 处理默认值
       if ((input == null || input.isEmpty) && question.defaultValue != null) {
         return question.defaultValue;
       }
-      
+
       // 验证输入
       final validationResult = _validateInput(input, question);
       if (validationResult != null) {
         print('❌ $validationResult');
         continue;
       }
-      
+
       // 转换输入
       return _convertInput(input, question);
     }
@@ -436,7 +441,7 @@ class ConfigurationWizard {
     if (question.validator != null) {
       return question.validator!(input);
     }
-    
+
     switch (question.type) {
       case QuestionType.number:
         if (input != null && num.tryParse(input) == null) {
@@ -445,18 +450,22 @@ class ConfigurationWizard {
       case QuestionType.choice:
         if (input != null) {
           final choice = int.tryParse(input);
-          if (choice == null || choice < 1 || choice > question.options.length) {
+          if (choice == null ||
+              choice < 1 ||
+              choice > question.options.length) {
             return '请输入有效的选项编号 (1-${question.options.length})';
           }
         }
       case QuestionType.boolean:
-        if (input != null && !['y', 'n', 'yes', 'no', 'true', 'false'].contains(input.toLowerCase())) {
+        if (input != null &&
+            !['y', 'n', 'yes', 'no', 'true', 'false']
+                .contains(input.toLowerCase())) {
           return '请输入 y/n 或 yes/no';
         }
       default:
         break;
     }
-    
+
     return null;
   }
 
@@ -465,7 +474,7 @@ class ConfigurationWizard {
     if (input == null || input.isEmpty) {
       return question.defaultValue;
     }
-    
+
     switch (question.type) {
       case QuestionType.number:
         return num.parse(input);
@@ -474,7 +483,11 @@ class ConfigurationWizard {
       case QuestionType.choice:
         return input;
       case QuestionType.list:
-        return input.split(',').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+        return input
+            .split(',')
+            .map((s) => s.trim())
+            .where((s) => s.isNotEmpty)
+            .toList();
       default:
         return input;
     }
@@ -489,11 +502,15 @@ class ConfigurationWizard {
       author: _context.getAnswer<String>('author')!,
       description: _context.getAnswer<String>('description')!,
       version: _context.getAnswer<String>('version') ?? '1.0.0',
-      platform: _context.getAnswer<TemplatePlatform>('platform') ?? TemplatePlatform.crossPlatform,
-      framework: _context.getAnswer<TemplateFramework>('framework') ?? TemplateFramework.agnostic,
-      complexity: _context.getAnswer<TemplateComplexity>('complexity') ?? TemplateComplexity.simple,
+      platform: _context.getAnswer<TemplatePlatform>('platform') ??
+          TemplatePlatform.crossPlatform,
+      framework: _context.getAnswer<TemplateFramework>('framework') ??
+          TemplateFramework.agnostic,
+      complexity: _context.getAnswer<TemplateComplexity>('complexity') ??
+          TemplateComplexity.simple,
       includeTests: _context.getAnswer<bool>('includeTests') ?? true,
-      includeDocumentation: _context.getAnswer<bool>('includeDocumentation') ?? true,
+      includeDocumentation:
+          _context.getAnswer<bool>('includeDocumentation') ?? true,
       includeExamples: _context.getAnswer<bool>('includeExamples') ?? true,
       enableGitInit: _context.getAnswer<bool>('enableGitInit') ?? true,
       tags: _context.getAnswer<List<String>>('tags') ?? [],
@@ -519,17 +536,17 @@ class ConfigurationWizard {
   /// 打印问题
   void _printQuestion(WizardQuestion question) {
     print('\n❓ ${question.prompt}');
-    
+
     if (question.type == QuestionType.choice) {
       for (var i = 0; i < question.options.length; i++) {
         print('  ${i + 1}. ${question.options[i]}');
       }
     }
-    
+
     if (question.defaultValue != null) {
       print('   (默认: ${question.defaultValue})');
     }
-    
+
     stdout.write('> ');
   }
 
@@ -541,7 +558,8 @@ class ConfigurationWizard {
     print('作者: ${_context.getAnswer('author')}');
     print('描述: ${_context.getAnswer('description')}');
     print('版本: ${_context.getAnswer('version')}');
-    print('类型: ${_context.getAnswer<TemplateType>('templateType')?.displayName}');
+    print(
+        '类型: ${_context.getAnswer<TemplateType>('templateType')?.displayName}');
     final subType = _context.getAnswer<TemplateSubType>('subType');
     if (subType != null) {
       print('子类型: ${subType.displayName}');
@@ -571,10 +589,10 @@ class ConfigurationWizard {
     } catch (e) {
       // 忽略错误
     }
-    
+
     // 尝试从环境变量获取
-    return Platform.environment['USER'] ?? 
-           Platform.environment['USERNAME'] ?? 
-           'Unknown Author';
+    return Platform.environment['USER'] ??
+        Platform.environment['USERNAME'] ??
+        'Unknown Author';
   }
 }

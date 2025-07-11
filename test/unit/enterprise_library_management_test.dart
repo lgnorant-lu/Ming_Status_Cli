@@ -332,14 +332,15 @@ void main() {
       expect(allVersions[2].version.toString(), equals('1.0.0'));
 
       // 获取最新稳定版本
-      final latestStable =
-          versionManager.getLatestVersion('multi_template');
+      final latestStable = versionManager.getLatestVersion('multi_template');
       expect(latestStable, isNotNull);
       expect(latestStable!.version.toString(), equals('1.1.0'));
 
       // 获取指定分支版本
-      final testingVersions = versionManager.getVersions('multi_template',
-          branch: VersionBranch.testing,);
+      final testingVersions = versionManager.getVersions(
+        'multi_template',
+        branch: VersionBranch.testing,
+      );
       expect(testingVersions, hasLength(1));
       expect(testingVersions.first.version.toString(), equals('2.0.0-beta'));
     });

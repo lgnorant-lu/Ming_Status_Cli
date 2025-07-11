@@ -345,9 +345,11 @@ class TemplateLibraryManager {
       if (query.namePattern != null) {
         final pattern = RegExp(query.namePattern!, caseSensitive: false);
         results = results
-            .where((t) =>
-                pattern.hasMatch(t.name) ||
-                (t.description != null && pattern.hasMatch(t.description!)),)
+            .where(
+              (t) =>
+                  pattern.hasMatch(t.name) ||
+                  (t.description != null && pattern.hasMatch(t.description!)),
+            )
             .toList();
       }
 
@@ -567,9 +569,7 @@ class TemplateLibraryManager {
       final data = {
         'version': '1.0.0',
         'updated_at': DateTime.now().toIso8601String(),
-        'templates': _libraryCache.values
-            .map(_serializeTemplateEntry)
-            .toList(),
+        'templates': _libraryCache.values.map(_serializeTemplateEntry).toList(),
       };
 
       final json = jsonEncode(data);
@@ -661,8 +661,7 @@ class TemplateLibraryManager {
       if (template.author != null) 'author': template.author,
       if (template.category != null) 'category': template.category,
       if (template.tags.isNotEmpty) 'tags': template.tags,
-      'versions':
-          template.versions.map(_serializeTemplateVersion).toList(),
+      'versions': template.versions.map(_serializeTemplateVersion).toList(),
       if (template.currentVersion != null)
         'current_version': template.currentVersion,
       'download_count': template.downloadCount,

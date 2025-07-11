@@ -21,16 +21,16 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 enum VersionType {
   /// 主版本 (Major)
   major,
-  
+
   /// 次版本 (Minor)
   minor,
-  
+
   /// 补丁版本 (Patch)
   patch,
-  
+
   /// 预发布版本 (Pre-release)
   prerelease,
-  
+
   /// 构建版本 (Build)
   build,
 }
@@ -39,19 +39,19 @@ enum VersionType {
 enum VersionBranch {
   /// 开发版
   development,
-  
+
   /// 测试版
   testing,
-  
+
   /// 候选版
   release_candidate,
-  
+
   /// 稳定版
   stable,
-  
+
   /// 长期支持版
   lts,
-  
+
   /// 已弃用
   deprecated,
 }
@@ -72,12 +72,12 @@ class SemanticVersion implements Comparable<SemanticVersion> {
     final regex = RegExp(
       r'^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$',
     );
-    
+
     final match = regex.firstMatch(version);
     if (match == null) {
       throw ArgumentError('Invalid semantic version: $version');
     }
-    
+
     return SemanticVersion(
       major: int.parse(match.group(1)!),
       minor: int.parse(match.group(2)!),
@@ -89,16 +89,16 @@ class SemanticVersion implements Comparable<SemanticVersion> {
 
   /// 主版本号
   final int major;
-  
+
   /// 次版本号
   final int minor;
-  
+
   /// 补丁版本号
   final int patch;
-  
+
   /// 预发布标识
   final String? prerelease;
-  
+
   /// 构建标识
   final String? build;
 
@@ -180,9 +180,9 @@ class SemanticVersion implements Comparable<SemanticVersion> {
       return isCompatibleWith(targetVersion);
     } else if (constraint.startsWith('~')) {
       final targetVersion = SemanticVersion.parse(constraint.substring(1));
-      return major == targetVersion.major && 
-             minor == targetVersion.minor && 
-             patch >= targetVersion.patch;
+      return major == targetVersion.major &&
+          minor == targetVersion.minor &&
+          patch >= targetVersion.patch;
     } else if (constraint.startsWith('>=')) {
       final targetVersion = SemanticVersion.parse(constraint.substring(2));
       return compareTo(targetVersion) >= 0;
@@ -207,17 +207,17 @@ class SemanticVersion implements Comparable<SemanticVersion> {
     if (major != other.major) {
       return major.compareTo(other.major);
     }
-    
+
     // 比较次版本号
     if (minor != other.minor) {
       return minor.compareTo(other.minor);
     }
-    
+
     // 比较补丁版本号
     if (patch != other.patch) {
       return patch.compareTo(other.patch);
     }
-    
+
     // 比较预发布版本
     if (prerelease == null && other.prerelease == null) {
       return 0;
@@ -243,15 +243,15 @@ class SemanticVersion implements Comparable<SemanticVersion> {
   @override
   String toString() {
     final buffer = StringBuffer('$major.$minor.$patch');
-    
+
     if (prerelease != null) {
       buffer.write('-$prerelease');
     }
-    
+
     if (build != null) {
       buffer.write('+$build');
     }
-    
+
     return buffer.toString();
   }
 }
@@ -280,7 +280,7 @@ class VersionInfo {
     return VersionInfo(
       version: SemanticVersion.parse(map['version']?.toString() ?? '0.0.0'),
       branch: _parseVersionBranch(map['branch']?.toString() ?? 'stable'),
-      releaseDate: map['release_date'] is String 
+      releaseDate: map['release_date'] is String
           ? DateTime.tryParse(map['release_date'] as String) ?? DateTime.now()
           : DateTime.now(),
       changelog: map['changelog']?.toString(),
@@ -288,10 +288,10 @@ class VersionInfo {
       commitHash: map['commit_hash']?.toString(),
       downloadUrl: map['download_url']?.toString(),
       checksum: map['checksum']?.toString(),
-      dependencies: map['dependencies'] is Map 
+      dependencies: map['dependencies'] is Map
           ? Map<String, String>.from(map['dependencies'] as Map)
           : const {},
-      metadata: map['metadata'] is Map 
+      metadata: map['metadata'] is Map
           ? Map<String, dynamic>.from(map['metadata'] as Map)
           : const {},
       isDeprecated: map['is_deprecated'] == true,
@@ -302,40 +302,40 @@ class VersionInfo {
 
   /// 版本号
   final SemanticVersion version;
-  
+
   /// 版本分支
   final VersionBranch branch;
-  
+
   /// 发布日期
   final DateTime releaseDate;
-  
+
   /// 更新日志
   final String? changelog;
-  
+
   /// 作者
   final String? author;
-  
+
   /// 提交哈希
   final String? commitHash;
-  
+
   /// 下载URL
   final String? downloadUrl;
-  
+
   /// 校验和
   final String? checksum;
-  
+
   /// 依赖关系
   final Map<String, String> dependencies;
-  
+
   /// 额外元数据
   final Map<String, dynamic> metadata;
-  
+
   /// 是否已弃用
   final bool isDeprecated;
-  
+
   /// 弃用原因
   final String? deprecationReason;
-  
+
   /// 迁移指南
   final String? migrationGuide;
 
@@ -400,19 +400,19 @@ class CompatibilityResult {
 
   /// 是否兼容
   final bool isCompatible;
-  
+
   /// 源版本
   final SemanticVersion sourceVersion;
-  
+
   /// 目标版本
   final SemanticVersion targetVersion;
-  
+
   /// 兼容性问题
   final List<String> issues;
-  
+
   /// 警告信息
   final List<String> warnings;
-  
+
   /// 迁移步骤
   final List<String> migrationSteps;
 }
@@ -433,25 +433,25 @@ class UpgradeResult {
 
   /// 是否成功
   final bool success;
-  
+
   /// 源版本
   final SemanticVersion fromVersion;
-  
+
   /// 目标版本
   final SemanticVersion toVersion;
-  
+
   /// 备份路径
   final String? backupPath;
-  
+
   /// 迁移日志
   final List<String> migrationLog;
-  
+
   /// 错误信息
   final List<String> errors;
-  
+
   /// 警告信息
   final List<String> warnings;
-  
+
   /// 升级耗时
   final Duration? duration;
 }
@@ -468,19 +468,19 @@ class VersionManager {
 
   /// 版本数据路径
   final String _versionsPath;
-  
+
   /// 是否启用自动备份
   final bool enableAutoBackup;
-  
+
   /// 最大备份数量
   final int maxBackupCount;
-  
+
   /// 是否启用兼容性检查
   final bool enableCompatibilityCheck;
 
   /// 版本信息映射 (templateId -> versions)
   final Map<String, List<VersionInfo>> _versions = {};
-  
+
   /// 最后加载时间
   DateTime? _lastLoadTime;
 
@@ -488,9 +488,9 @@ class VersionManager {
   Future<void> initialize() async {
     try {
       cli_logger.Logger.debug('初始化版本管理器');
-      
+
       await _loadVersionData();
-      
+
       cli_logger.Logger.info('版本管理器初始化完成');
     } catch (e) {
       cli_logger.Logger.error('版本管理器初始化失败', error: e);
@@ -502,26 +502,26 @@ class VersionManager {
   Future<bool> addVersion(String templateId, VersionInfo versionInfo) async {
     try {
       cli_logger.Logger.debug('添加版本: $templateId v${versionInfo.version}');
-      
+
       _versions[templateId] ??= [];
-      
+
       // 检查版本是否已存在
       final existingVersion = _versions[templateId]!
           .where((v) => v.version == versionInfo.version)
           .firstOrNull;
-      
+
       if (existingVersion != null) {
         cli_logger.Logger.warning('版本已存在: $templateId v${versionInfo.version}');
         return false;
       }
-      
+
       _versions[templateId]!.add(versionInfo);
-      
+
       // 按版本号排序
       _versions[templateId]!.sort((a, b) => b.version.compareTo(a.version));
-      
+
       await _saveVersionData();
-      
+
       cli_logger.Logger.info('版本添加成功: $templateId v${versionInfo.version}');
       return true;
     } catch (e) {
@@ -531,42 +531,44 @@ class VersionManager {
   }
 
   /// 获取版本列表
-  List<VersionInfo> getVersions(String templateId, {
+  List<VersionInfo> getVersions(
+    String templateId, {
     VersionBranch? branch,
     bool includeDeprecated = false,
   }) {
     final versions = _versions[templateId] ?? [];
-    
+
     final filtered = versions.where((v) {
       if (!includeDeprecated && v.isDeprecated) {
         return false;
       }
-      
+
       if (branch != null && v.branch != branch) {
         return false;
       }
-      
+
       return true;
     }).toList();
-    
+
     // 按版本号降序排序
     filtered.sort((a, b) => b.version.compareTo(a.version));
-    
+
     return filtered;
   }
 
   /// 获取最新版本
-  VersionInfo? getLatestVersion(String templateId, {
+  VersionInfo? getLatestVersion(
+    String templateId, {
     VersionBranch? branch,
     bool stableOnly = true,
   }) {
     final versions = getVersions(templateId, branch: branch);
-    
+
     if (stableOnly) {
       final stableVersions = versions.where((v) => v.version.isStable).toList();
       return stableVersions.isNotEmpty ? stableVersions.first : null;
     }
-    
+
     return versions.isNotEmpty ? versions.first : null;
   }
 
@@ -583,24 +585,25 @@ class VersionManager {
     SemanticVersion targetVersion,
   ) async {
     try {
-      cli_logger.Logger.debug('检查版本兼容性: $templateId $sourceVersion -> $targetVersion');
-      
+      cli_logger.Logger.debug(
+          '检查版本兼容性: $templateId $sourceVersion -> $targetVersion');
+
       final issues = <String>[];
       final warnings = <String>[];
       final migrationSteps = <String>[];
-      
+
       // 获取版本信息
       final sourceInfo = getVersion(templateId, sourceVersion);
       final targetInfo = getVersion(templateId, targetVersion);
-      
+
       if (sourceInfo == null) {
         issues.add('源版本不存在: $sourceVersion');
       }
-      
+
       if (targetInfo == null) {
         issues.add('目标版本不存在: $targetVersion');
       }
-      
+
       if (issues.isNotEmpty) {
         return CompatibilityResult(
           isCompatible: false,
@@ -609,7 +612,7 @@ class VersionManager {
           issues: issues,
         );
       }
-      
+
       // 检查主版本号变化
       if (sourceVersion.major != targetVersion.major) {
         if (targetVersion.major > sourceVersion.major) {
@@ -619,7 +622,7 @@ class VersionManager {
           issues.add('不支持主版本号降级');
         }
       }
-      
+
       // 检查是否为弃用版本
       if (targetInfo!.isDeprecated) {
         warnings.add('目标版本已弃用: ${targetInfo.deprecationReason ?? ''}');
@@ -627,11 +630,12 @@ class VersionManager {
           migrationSteps.add('迁移指南: ${targetInfo.migrationGuide}');
         }
       }
-      
+
       final isCompatible = issues.isEmpty;
-      
-      cli_logger.Logger.info('兼容性检查完成: $templateId - ${isCompatible ? '兼容' : '不兼容'}');
-      
+
+      cli_logger.Logger.info(
+          '兼容性检查完成: $templateId - ${isCompatible ? '兼容' : '不兼容'}');
+
       return CompatibilityResult(
         isCompatible: isCompatible,
         sourceVersion: sourceVersion,
@@ -659,15 +663,15 @@ class VersionManager {
     bool createBackup = true,
   }) async {
     final startTime = DateTime.now();
-    
+
     try {
       cli_logger.Logger.debug('开始版本升级: $templateId -> v$targetVersion');
-      
+
       final migrationLog = <String>[];
       final errors = <String>[];
       final warnings = <String>[];
       String? backupPath;
-      
+
       // 获取当前版本
       final currentVersionInfo = _getCurrentVersion(templateId, templatePath);
       if (currentVersionInfo == null) {
@@ -680,12 +684,13 @@ class VersionManager {
           duration: DateTime.now().difference(startTime),
         );
       }
-      
+
       final currentVersion = currentVersionInfo.version;
-      
+
       // 检查兼容性
       if (enableCompatibilityCheck) {
-        final compatibility = await checkCompatibility(templateId, currentVersion, targetVersion);
+        final compatibility =
+            await checkCompatibility(templateId, currentVersion, targetVersion);
         if (!compatibility.isCompatible) {
           errors.addAll(compatibility.issues);
           return UpgradeResult(
@@ -699,7 +704,7 @@ class VersionManager {
         warnings.addAll(compatibility.warnings);
         migrationLog.addAll(compatibility.migrationSteps);
       }
-      
+
       // 创建备份
       if (createBackup && enableAutoBackup) {
         backupPath = await _createBackup(templatePath, currentVersion);
@@ -707,7 +712,7 @@ class VersionManager {
           migrationLog.add('已创建备份: $backupPath');
         }
       }
-      
+
       // 执行升级
       final upgradeSuccess = await _performUpgrade(
         templateId,
@@ -716,15 +721,16 @@ class VersionManager {
         targetVersion,
         migrationLog,
       );
-      
+
       if (!upgradeSuccess) {
         errors.add('版本升级执行失败');
       }
-      
+
       final duration = DateTime.now().difference(startTime);
-      
-      cli_logger.Logger.info('版本升级${upgradeSuccess ? '成功' : '失败'}: $templateId $currentVersion -> $targetVersion');
-      
+
+      cli_logger.Logger.info(
+          '版本升级${upgradeSuccess ? '成功' : '失败'}: $templateId $currentVersion -> $targetVersion');
+
       return UpgradeResult(
         success: upgradeSuccess,
         fromVersion: currentVersion,
@@ -755,10 +761,10 @@ class VersionManager {
   ) async {
     try {
       cli_logger.Logger.debug('开始版本回滚: $templateId -> v$targetVersion');
-      
+
       // 这里实现版本回滚逻辑
       // 目前提供基础框架
-      
+
       cli_logger.Logger.info('版本回滚完成: $templateId -> v$targetVersion');
       return true;
     } catch (e) {
@@ -769,9 +775,9 @@ class VersionManager {
 
   /// 获取默认版本路径
   static String _getDefaultVersionsPath() {
-    final homeDir = Platform.environment['HOME'] ?? 
-                   Platform.environment['USERPROFILE'] ?? 
-                   '.';
+    final homeDir = Platform.environment['HOME'] ??
+        Platform.environment['USERPROFILE'] ??
+        '.';
     return '$homeDir/.ming/versions';
   }
 
@@ -783,18 +789,18 @@ class VersionManager {
         cli_logger.Logger.debug('版本数据文件不存在，创建空数据');
         return;
       }
-      
+
       final content = await versionsFile.readAsString();
       final data = json.decode(content) as Map<String, dynamic>;
-      
+
       _versions.clear();
-      
+
       if (data['templates'] is Map) {
         final templatesData = data['templates'] as Map<String, dynamic>;
         for (final entry in templatesData.entries) {
           final templateId = entry.key;
           final versionsData = entry.value;
-          
+
           if (versionsData is List) {
             final versions = <VersionInfo>[];
             for (final versionData in versionsData) {
@@ -806,7 +812,7 @@ class VersionManager {
           }
         }
       }
-      
+
       _lastLoadTime = DateTime.now();
       cli_logger.Logger.debug('版本数据加载完成: ${_versions.length}个模板');
     } catch (e) {
@@ -819,23 +825,25 @@ class VersionManager {
     try {
       final versionsFile = File('$_versionsPath/versions.json');
       final versionsDir = Directory(versionsFile.parent.path);
-      
+
       if (!await versionsDir.exists()) {
         await versionsDir.create(recursive: true);
       }
-      
+
       final data = {
         'version': '1.0.0',
         'updated_at': DateTime.now().toIso8601String(),
-        'templates': _versions.map((templateId, versions) => MapEntry(
-          templateId,
-          versions.map((v) => v.toMap()).toList(),
-        ),),
+        'templates': _versions.map(
+          (templateId, versions) => MapEntry(
+            templateId,
+            versions.map((v) => v.toMap()).toList(),
+          ),
+        ),
       };
-      
+
       final jsonStr = const JsonEncoder.withIndent('  ').convert(data);
       await versionsFile.writeAsString(jsonStr);
-      
+
       cli_logger.Logger.debug('版本数据保存完成');
     } catch (e) {
       cli_logger.Logger.error('保存版本数据失败', error: e);
@@ -850,14 +858,15 @@ class VersionManager {
   }
 
   /// 创建备份
-  Future<String?> _createBackup(String templatePath, SemanticVersion version) async {
+  Future<String?> _createBackup(
+      String templatePath, SemanticVersion version) async {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final backupPath = '$_versionsPath/backups/${version}_$timestamp';
-      
+
       final backupDir = Directory(backupPath);
       await backupDir.create(recursive: true);
-      
+
       // 复制模板文件到备份目录
       final templateDir = Directory(templatePath);
       await for (final entity in templateDir.list(recursive: true)) {
@@ -865,15 +874,15 @@ class VersionManager {
           final relativePath = entity.path.replaceFirst(templatePath, '');
           final backupFile = File('$backupPath$relativePath');
           final backupFileDir = Directory(backupFile.parent.path);
-          
+
           if (!await backupFileDir.exists()) {
             await backupFileDir.create(recursive: true);
           }
-          
+
           await entity.copy(backupFile.path);
         }
       }
-      
+
       return backupPath;
     } catch (e) {
       cli_logger.Logger.error('创建备份失败', error: e);
@@ -892,10 +901,10 @@ class VersionManager {
     try {
       // 这里实现具体的升级逻辑
       // 目前提供基础框架
-      
+
       migrationLog.add('开始升级: $fromVersion -> $toVersion');
       migrationLog.add('升级完成');
-      
+
       return true;
     } catch (e) {
       migrationLog.add('升级失败: $e');

@@ -902,7 +902,8 @@ Future<int> _runCreateCommand(
 
     // 创建一些模拟文件来验证生成成功
     await File('$actualOutputPath/README.md').writeAsString(
-        '# $projectName\n\nGenerated from $templateName template.',);
+      '# $projectName\n\nGenerated from $templateName template.',
+    );
     await File('$actualOutputPath/pubspec.yaml').writeAsString('''
 name: $projectName
 description: A new project

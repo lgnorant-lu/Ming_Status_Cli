@@ -172,7 +172,9 @@ void main() {
     test('FunctionCallNode should call length function', () async {
       final node = FunctionCallNode(
         functionName: 'length',
-        arguments: [LiteralNode([1, 2, 3, 4, 5])],
+        arguments: [
+          LiteralNode([1, 2, 3, 4, 5])
+        ],
       );
       final result = await node.evaluate({});
 
@@ -206,8 +208,9 @@ void main() {
 
     test('ConditionEvaluator should handle safety checks', () async {
       final unsafeEvaluator = ConditionEvaluator();
-      
-      final result = await unsafeEvaluator.evaluate('eval("malicious code")', {});
+
+      final result =
+          await unsafeEvaluator.evaluate('eval("malicious code")', {});
       expect(result.success, isFalse);
       expect(result.errors, isNotEmpty);
       expect(result.errors.first, contains('安全检查失败'));
@@ -302,7 +305,9 @@ Mobile version
 {{/if}}
 ''';
       const context = RenderContext(
-        variables: {'platform': {'mobile': true}},
+        variables: {
+          'platform': {'mobile': true}
+        },
         enableCache: false,
       );
 
@@ -319,7 +324,9 @@ Desktop version
 {{/unless}}
 ''';
       const context = RenderContext(
-        variables: {'platform': {'mobile': false}},
+        variables: {
+          'platform': {'mobile': false}
+        },
         enableCache: false,
       );
 
@@ -336,7 +343,9 @@ Item: {{this}}
 {{/each}}
 ''';
       const context = RenderContext(
-        variables: {'items': ['apple', 'banana', 'cherry']},
+        variables: {
+          'items': ['apple', 'banana', 'cherry']
+        },
         enableCache: false,
       );
 
@@ -370,7 +379,8 @@ Age: {{age}}
     });
 
     test('ConditionalRenderer should handle nested variables', () async {
-      const template = 'Platform: {{platform.name}}, Version: {{platform.version}}';
+      const template =
+          'Platform: {{platform.name}}, Version: {{platform.version}}';
       const context = RenderContext(
         variables: {
           'platform': {

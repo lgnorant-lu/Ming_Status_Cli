@@ -161,9 +161,11 @@ class MyApp extends StatelessWidget {
 
       // 检查是否有应用名称的参数化建议
       final appNameSuggestions = result.suggestions
-          .where((s) =>
-              s.originalValue.contains('Test App') ||
-              s.originalValue.contains('test_project'),)
+          .where(
+            (s) =>
+                s.originalValue.contains('Test App') ||
+                s.originalValue.contains('test_project'),
+          )
           .toList();
       expect(appNameSuggestions, isNotEmpty);
     });
@@ -207,9 +209,11 @@ database_port: 5432
 
       // 检查是否检测到配置值
       final configSuggestions = suggestions
-          .where((s) =>
-              s.filePath.contains('config.yaml') ||
-              s.filePath.contains('settings.json'),)
+          .where(
+            (s) =>
+                s.filePath.contains('config.yaml') ||
+                s.filePath.contains('settings.json'),
+          )
           .toList();
       expect(configSuggestions, isNotEmpty);
     });
@@ -486,8 +490,10 @@ description: Test template
       );
 
       expect(downloadResult.success, isTrue);
-      expect(downloadResult.localPath,
-          equals('${tempDir.path}/downloaded_template'),);
+      expect(
+        downloadResult.localPath,
+        equals('${tempDir.path}/downloaded_template'),
+      );
       expect(downloadResult.version, equals('1.0.0'));
 
       // 验证文件是否被复制

@@ -568,7 +568,9 @@ void main() {
 
 // 辅助方法：创建测试模板
 Future<void> _createTestTemplate(
-    String templatesPath, String templateName,) async {
+  String templatesPath,
+  String templateName,
+) async {
   final templateDir = Directory('$templatesPath/$templateName');
   await templateDir.create(recursive: true);
 

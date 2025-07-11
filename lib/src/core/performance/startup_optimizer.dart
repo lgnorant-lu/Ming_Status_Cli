@@ -20,16 +20,16 @@ import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 enum StartupPhase {
   /// 预初始化
   preInit,
-  
+
   /// 核心初始化
   coreInit,
-  
+
   /// 组件初始化
   componentInit,
-  
+
   /// 后初始化
   postInit,
-  
+
   /// 完成
   complete,
 }
@@ -51,28 +51,28 @@ class StartupTask {
 
   /// 任务ID
   final String id;
-  
+
   /// 任务名称
   final String name;
-  
+
   /// 启动阶段
   final StartupPhase phase;
-  
+
   /// 优先级 (数字越小优先级越高)
   final int priority;
-  
+
   /// 执行器
   final Future<void> Function() executor;
-  
+
   /// 依赖任务
   final List<String> dependencies;
-  
+
   /// 是否可以并行运行
   final bool canRunInParallel;
-  
+
   /// 是否可选
   final bool isOptional;
-  
+
   /// 超时时间
   final Duration timeout;
 }
@@ -91,19 +91,19 @@ class StartupResult {
 
   /// 是否成功
   final bool success;
-  
+
   /// 总启动时间
   final Duration totalTime;
-  
+
   /// 各阶段结果
   final Map<StartupPhase, Duration> phaseResults;
-  
+
   /// 错误列表
   final List<String> errors;
-  
+
   /// 警告列表
   final List<String> warnings;
-  
+
   /// 应用的优化
   final List<String> optimizations;
 }
@@ -121,28 +121,28 @@ class StartupOptimizer {
 
   /// 是否启用并行执行
   final bool enableParallelExecution;
-  
+
   /// 是否启用延迟加载
   final bool enableLazyLoading;
-  
+
   /// 是否启用缓存
   final bool enableCaching;
-  
+
   /// 最大并行任务数
   final int maxParallelTasks;
-  
+
   /// 目标启动时间
   final Duration targetStartupTime;
 
   /// 启动任务列表
   final List<StartupTask> _tasks = [];
-  
+
   /// 已完成的任务
   final Set<String> _completedTasks = {};
-  
+
   /// 启动历史
   final List<StartupResult> _startupHistory = [];
-  
+
   /// 缓存的初始化结果
   final Map<String, dynamic> _initCache = {};
 
@@ -166,27 +166,28 @@ class StartupOptimizer {
     final errors = <String>[];
     final warnings = <String>[];
     final optimizations = <String>[];
-    
+
     try {
       cli_logger.Logger.info('开始优化启动流程');
-      
+
       // 应用启动优化
       _applyStartupOptimizations(optimizations);
-      
+
       // 按阶段执行任务
       for (final phase in StartupPhase.values) {
         if (phase == StartupPhase.complete) continue;
-        
+
         final phaseStopwatch = Stopwatch()..start();
         await _executePhase(phase, errors, warnings);
         phaseStopwatch.stop();
-        
+
         phaseResults[phase] = phaseStopwatch.elapsed;
-        cli_logger.Logger.debug('阶段 ${phase.name} 完成: ${phaseStopwatch.elapsedMilliseconds}ms');
+        cli_logger.Logger.debug(
+            '阶段 ${phase.name} 完成: ${phaseStopwatch.elapsedMilliseconds}ms');
       }
-      
+
       totalStopwatch.stop();
-      
+
       final result = StartupResult(
         success: errors.isEmpty,
         totalTime: totalStopwatch.elapsed,
@@ -195,19 +196,19 @@ class StartupOptimizer {
         warnings: warnings,
         optimizations: optimizations,
       );
-      
+
       _startupHistory.add(result);
-      
+
       cli_logger.Logger.info(
         '启动完成: ${totalStopwatch.elapsedMilliseconds}ms '
         '(目标: ${targetStartupTime.inMilliseconds}ms)',
       );
-      
+
       return result;
     } catch (e) {
       totalStopwatch.stop();
       errors.add('启动失败: $e');
-      
+
       final result = StartupResult(
         success: false,
         totalTime: totalStopwatch.elapsed,
@@ -216,7 +217,7 @@ class StartupOptimizer {
         warnings: warnings,
         optimizations: optimizations,
       );
-      
+
       _startupHistory.add(result);
       return result;
     }
@@ -232,18 +233,20 @@ class StartupOptimizer {
     if (_startupHistory.isEmpty) {
       return {'message': '暂无启动历史数据'};
     }
-    
+
     final latest = _startupHistory.last;
     final averageTime = _startupHistory
-        .map((r) => r.totalTime.inMilliseconds)
-        .reduce((a, b) => a + b) / _startupHistory.length;
-    
+            .map((r) => r.totalTime.inMilliseconds)
+            .reduce((a, b) => a + b) /
+        _startupHistory.length;
+
     return {
       'summary': {
         'latest_startup_time_ms': latest.totalTime.inMilliseconds,
         'average_startup_time_ms': averageTime.round(),
         'target_startup_time_ms': targetStartupTime.inMilliseconds,
-        'success_rate': _startupHistory.where((r) => r.success).length / _startupHistory.length,
+        'success_rate': _startupHistory.where((r) => r.success).length /
+            _startupHistory.length,
         'total_startups': _startupHistory.length,
       },
       'latest_result': {
@@ -256,13 +259,21 @@ class StartupOptimizer {
         'errors': latest.errors,
         'warnings': latest.warnings,
       },
-      'performance_trend': _startupHistory.map((r) => {
-        'timestamp': DateTime.now().subtract(
-          Duration(minutes: _startupHistory.length - _startupHistory.indexOf(r)),
-        ).toIso8601String(),
-        'startup_time_ms': r.totalTime.inMilliseconds,
-        'success': r.success,
-      },).toList(),
+      'performance_trend': _startupHistory
+          .map(
+            (r) => {
+              'timestamp': DateTime.now()
+                  .subtract(
+                    Duration(
+                        minutes: _startupHistory.length -
+                            _startupHistory.indexOf(r)),
+                  )
+                  .toIso8601String(),
+              'startup_time_ms': r.totalTime.inMilliseconds,
+              'success': r.success,
+            },
+          )
+          .toList(),
       'recommendations': _generateStartupRecommendations(),
     };
   }
@@ -273,17 +284,17 @@ class StartupOptimizer {
       optimizations.add('启用延迟加载');
       _enableLazyLoading();
     }
-    
+
     if (enableCaching) {
       optimizations.add('启用初始化缓存');
       _enableInitializationCaching();
     }
-    
+
     if (enableParallelExecution) {
       optimizations.add('启用并行执行');
       _optimizeTaskOrder();
     }
-    
+
     optimizations.add('减少启动时I/O操作');
     optimizations.add('预编译关键组件');
   }
@@ -295,12 +306,12 @@ class StartupOptimizer {
     List<String> warnings,
   ) async {
     final phaseTasks = _tasks.where((task) => task.phase == phase).toList();
-    
+
     if (phaseTasks.isEmpty) return;
-    
+
     // 按优先级排序
     phaseTasks.sort((a, b) => a.priority.compareTo(b.priority));
-    
+
     if (enableParallelExecution) {
       await _executeTasksInParallel(phaseTasks, errors, warnings);
     } else {
@@ -316,7 +327,7 @@ class StartupOptimizer {
   ) async {
     final parallelTasks = <StartupTask>[];
     final sequentialTasks = <StartupTask>[];
-    
+
     // 分离可并行和必须串行的任务
     for (final task in tasks) {
       if (task.canRunInParallel && _areDependenciesSatisfied(task)) {
@@ -325,14 +336,15 @@ class StartupOptimizer {
         sequentialTasks.add(task);
       }
     }
-    
+
     // 并行执行可并行任务
     if (parallelTasks.isNotEmpty) {
-      final futures = parallelTasks.take(maxParallelTasks).map((task) => 
-        _executeTask(task, errors, warnings),);
+      final futures = parallelTasks.take(maxParallelTasks).map(
+            (task) => _executeTask(task, errors, warnings),
+          );
       await Future.wait(futures);
     }
-    
+
     // 串行执行剩余任务
     for (final task in sequentialTasks) {
       await _executeTask(task, errors, warnings);
@@ -357,7 +369,7 @@ class StartupOptimizer {
     List<String> warnings,
   ) async {
     if (_completedTasks.contains(task.id)) return;
-    
+
     try {
       // 检查依赖
       if (!_areDependenciesSatisfied(task)) {
@@ -366,26 +378,25 @@ class StartupOptimizer {
         }
         return;
       }
-      
+
       // 检查缓存
       if (enableCaching && _initCache.containsKey(task.id)) {
         cli_logger.Logger.debug('使用缓存结果: ${task.name}');
         _completedTasks.add(task.id);
         return;
       }
-      
+
       cli_logger.Logger.debug('执行启动任务: ${task.name}');
-      
+
       // 执行任务（带超时）
       await task.executor().timeout(task.timeout);
-      
+
       _completedTasks.add(task.id);
-      
+
       // 缓存结果
       if (enableCaching) {
         _initCache[task.id] = DateTime.now();
       }
-      
     } catch (TimeoutException) {
       final message = '任务 ${task.name} 执行超时';
       if (task.isOptional) {
@@ -432,7 +443,7 @@ class StartupOptimizer {
       // 首先按阶段排序
       final phaseComparison = a.phase.index.compareTo(b.phase.index);
       if (phaseComparison != 0) return phaseComparison;
-      
+
       // 然后按优先级排序
       return a.priority.compareTo(b.priority);
     });
@@ -441,39 +452,39 @@ class StartupOptimizer {
   /// 生成启动建议
   List<String> _generateStartupRecommendations() {
     final recommendations = <String>[];
-    
+
     if (_startupHistory.isNotEmpty) {
       final latest = _startupHistory.last;
-      
+
       if (latest.totalTime > targetStartupTime) {
         recommendations.add('启动时间超过目标，建议优化关键路径');
       }
-      
+
       if (latest.errors.isNotEmpty) {
         recommendations.add('存在启动错误，建议检查失败的组件');
       }
-      
+
       if (latest.warnings.isNotEmpty) {
         recommendations.add('存在启动警告，建议优化可选组件');
       }
-      
+
       // 分析阶段耗时
       final slowestPhase = latest.phaseResults.entries
           .reduce((a, b) => a.value > b.value ? a : b);
-      
+
       if (slowestPhase.value > const Duration(seconds: 1)) {
         recommendations.add('${slowestPhase.key.name}阶段耗时较长，建议优化');
       }
     }
-    
+
     if (!enableParallelExecution) {
       recommendations.add('建议启用并行执行以提升启动速度');
     }
-    
+
     if (!enableCaching) {
       recommendations.add('建议启用缓存以减少重复初始化');
     }
-    
+
     return recommendations;
   }
 

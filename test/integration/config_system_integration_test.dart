@@ -459,8 +459,8 @@ Future<void> _setupCompleteTestEnvironment(
   ''';
 
   await File(
-          '${tempDir.path}/templates/workspace/ming_workspace_enterprise.yaml',)
-      .writeAsString(enterpriseTemplate);
+    '${tempDir.path}/templates/workspace/ming_workspace_enterprise.yaml',
+  ).writeAsString(enterpriseTemplate);
 
   // 创建README文件
   const readmeContent = '''

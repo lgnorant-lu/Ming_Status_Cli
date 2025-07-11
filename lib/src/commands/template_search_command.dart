@@ -108,24 +108,40 @@ class TemplateSearchCommand extends Command<int> {
 使用方法:
   ming template search <关键词> [选项]
 
+🔍 Phase 2.2 Week 2: 智能搜索引擎
+
+多维度搜索选项:
+  --platform=<平台>     按平台过滤 (flutter, react, vue, angular)
+  --type=<类型>         按类型过滤 (ui, architecture, service, utility)
+  --author=<作者>       按作者过滤
+  --min-rating=<评分>   最低评分过滤 (0.0-5.0)
+  --updated-after=<日期> 按更新时间过滤 (YYYY-MM-DD)
+
+高级搜索功能:
+  --exact              精确匹配模式
+  --case-sensitive     区分大小写
+  --detailed           显示详细信息
+
+排序和显示:
+  --sort=<字段>        排序字段 (relevance, name, rating, downloads, updated)
+  --limit=<数量>       限制结果数量 (默认: 20)
+  --output=<格式>      输出格式 (table, json, yaml, list)
+
 示例:
   # 基础搜索
-  ming template search "flutter app"
+  ming template search "flutter clean architecture"
 
-  # 搜索特定架构
-  ming template search "clean architecture"
+  # 高质量移动应用模板
+  ming template search "mobile app" --platform=flutter --min-rating=4.0
 
-  # 组合条件搜索
-  ming template search "widget" --type=ui --platform=flutter
+  # 最近更新的React组件
+  ming template search "component" --platform=react --updated-after=2024-01-01 --sort=updated
 
-  # 高评分模板
-  ming template search "microservice" --min-rating=4.0 --sort=rating
+  # 精确匹配和详细信息
+  ming template search "flutter_clean_app" --exact --detailed
 
-  # 精确匹配
-  ming template search "flutter_clean_app" --exact
-
-  # 详细信息
-  ming template search "api" --detailed --limit=5
+  # JSON格式输出
+  ming template search "microservice" --sort=rating --output=json --limit=10
 ''';
 
   @override
@@ -246,7 +262,9 @@ class TemplateSearchCommand extends Command<int> {
 
   /// 显示搜索结果
   Future<void> _displayResults(
-      List<TemplateMetadata> results, String keyword,) async {
+    List<TemplateMetadata> results,
+    String keyword,
+  ) async {
     final outputFormat = argResults!['output'] as String;
     final detailed = argResults!['detailed'] as bool;
 
@@ -268,7 +286,9 @@ class TemplateSearchCommand extends Command<int> {
 
   /// 显示表格格式结果
   Future<void> _displayTableResults(
-      List<TemplateMetadata> results, bool detailed,) async {
+    List<TemplateMetadata> results,
+    bool detailed,
+  ) async {
     if (detailed) {
       for (var i = 0; i < results.length; i++) {
         final metadata = results[i];
@@ -278,8 +298,8 @@ class TemplateSearchCommand extends Command<int> {
         print('   作者: ${metadata.author}');
         print('   描述: ${metadata.description}');
         print('   平台: ${metadata.platform.name}');
-              print('   框架: ${metadata.framework.name}');
-              if (metadata.tags.isNotEmpty) {
+        print('   框架: ${metadata.framework.name}');
+        if (metadata.tags.isNotEmpty) {
           print('   标签: ${metadata.tags.join(', ')}');
         }
         print('   评分: ${metadata.rating.toStringAsFixed(1) ?? 'N/A'} ⭐');
@@ -288,7 +308,8 @@ class TemplateSearchCommand extends Command<int> {
       }
     } else {
       print(
-          '${'排名'.padRight(4)}${'名称'.padRight(25)}${'类型'.padRight(12)}${'评分'.padRight(8)}匹配度',);
+        '${'排名'.padRight(4)}${'名称'.padRight(25)}${'类型'.padRight(12)}${'评分'.padRight(8)}匹配度',
+      );
       print('─' * 80);
 
       for (var i = 0; i < results.length; i++) {
@@ -301,31 +322,39 @@ class TemplateSearchCommand extends Command<int> {
         final rating = metadata.rating.toStringAsFixed(1) ?? 'N/A';
 
         print(
-            '${rank.padRight(4)}${name.padRight(25)}${type.padRight(12)}${rating.padRight(8)}',);
+          '${rank.padRight(4)}${name.padRight(25)}${type.padRight(12)}${rating.padRight(8)}',
+        );
       }
     }
   }
 
   /// 显示JSON格式结果
   Future<void> _displayJsonResults(
-      List<TemplateMetadata> results, bool detailed,) async {
+    List<TemplateMetadata> results,
+    bool detailed,
+  ) async {
     print('JSON输出功能开发中...');
   }
 
   /// 显示YAML格式结果
   Future<void> _displayYamlResults(
-      List<TemplateMetadata> results, bool detailed,) async {
+    List<TemplateMetadata> results,
+    bool detailed,
+  ) async {
     print('YAML输出功能开发中...');
   }
 
   /// 显示列表格式结果
   Future<void> _displayListResults(
-      List<TemplateMetadata> results, bool detailed,) async {
+    List<TemplateMetadata> results,
+    bool detailed,
+  ) async {
     for (var i = 0; i < results.length; i++) {
       final metadata = results[i];
       if (detailed) {
         print(
-            '${i + 1}. ${metadata.name} (${metadata.version}) - ${metadata.description}',);
+          '${i + 1}. ${metadata.name} (${metadata.version}) - ${metadata.description}',
+        );
       } else {
         print('${i + 1}. ${metadata.name}');
       }

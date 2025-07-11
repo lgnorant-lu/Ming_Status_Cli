@@ -19,6 +19,7 @@ import 'package:ming_status_cli/src/commands/create_command.dart';
 import 'package:ming_status_cli/src/commands/doctor_command.dart';
 import 'package:ming_status_cli/src/commands/help_command.dart';
 import 'package:ming_status_cli/src/commands/init_command.dart';
+import 'package:ming_status_cli/src/commands/registry_command.dart';
 import 'package:ming_status_cli/src/commands/template_command.dart';
 import 'package:ming_status_cli/src/commands/validate_command.dart';
 import 'package:ming_status_cli/src/commands/version_command.dart';
@@ -45,8 +46,31 @@ class MingStatusCliApp {
   static const String appName = 'ming';
 
   /// 应用描述
-  static const String appDescription = 'Ming Status CLI - 强大的模块化开发工具\n'
-      '用于创建、管理和验证模块化应用的代码结构';
+  static const String appDescription = '''
+Ming Status CLI - 企业级项目管理和模板生态系统
+
+一个功能完整的企业级命令行工具，支持项目状态管理、高级模板系统和远程模板生态。
+
+🎯 核心功能:
+• 项目初始化和配置管理
+• 企业级模板系统 (10个template子命令)
+• 远程模板注册表管理 (4个registry子命令)
+• 项目状态检查和验证
+• 性能优化和监控分析
+
+📚 高级模板系统 (Phase 2.1):
+• template list/search/info - 模板发现和管理
+• template create/generate - 模板创建工具
+• template inherit/conditional - 高级模板功能
+• template params/library - 参数化和库管理
+• template benchmark - 性能测试
+
+🌐 远程模板生态 (Phase 2.2):
+• registry add/list - 注册表管理
+• registry sync/stats - 同步和统计
+
+使用 'ming help <command>' 获取特定命令的详细帮助信息。
+''';
 
   /// 初始化命令运行器
   void _initializeRunner() {
@@ -88,6 +112,9 @@ class MingStatusCliApp {
 
     // Phase 2.1: 高级模板系统命令
     _runner.addCommand(TemplateCommand());
+
+    // Phase 2.2: 远程模板生态系统命令
+    _runner.addCommand(RegistryCommand());
 
     // 注意：使用自定义帮助处理而不是添加help命令
     // 因为CommandRunner已经有内置的help命令
@@ -219,9 +246,28 @@ class MingStatusCliApp {
   bool _shouldShowCustomHelp(List<String> arguments) {
     if (arguments.isEmpty) return false;
 
+    // 如果第一个参数是已知命令，且包含--help，则不拦截，让命令自己处理
+    if (arguments.isNotEmpty && !arguments[0].startsWith('-')) {
+      final firstArg = arguments[0];
+      final knownCommands = [
+        'template',
+        'registry',
+        'init',
+        'create',
+        'config',
+        'doctor',
+        'validate',
+        'version',
+      ];
+      if (knownCommands.contains(firstArg) &&
+          (arguments.contains('--help') || arguments.contains('-h'))) {
+        return false; // 让命令自己处理--help
+      }
+    }
+
     return arguments.contains('help') ||
-        arguments.contains('--help') ||
-        arguments.contains('-h');
+        (arguments.length == 1 &&
+            (arguments.contains('--help') || arguments.contains('-h')));
   }
 
   /// 处理自定义帮助显示
