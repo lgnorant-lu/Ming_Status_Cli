@@ -15,9 +15,9 @@ Change History:
 
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/diagnostic_system.dart';
-import 'package:ming_status_cli/src/core/error_recovery_system.dart';
-import 'package:ming_status_cli/src/core/exception_handler.dart';
+import 'package:ming_status_cli/src/core/error_handling/error_recovery_system.dart';
+import 'package:ming_status_cli/src/core/error_handling/exception_handler.dart';
+import 'package:ming_status_cli/src/core/validation_system/diagnostic_system.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 

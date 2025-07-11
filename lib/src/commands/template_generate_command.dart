@@ -14,7 +14,7 @@ Change History:
 
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/core/creation/enterprise_template_creator.dart';
-import 'package:ming_status_cli/src/core/creation/template_library_manager.dart';
+
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 企业级模板生成命令
@@ -52,8 +52,14 @@ class TemplateGenerateCommand extends Command<int> {
         'analysis',
         abbr: 'a',
         help: '分析类型',
-        allowed: ['structural', 'syntactic', 'dependency', 'semantic', 'pattern'
-          , 'all', ],
+        allowed: [
+          'structural',
+          'syntactic',
+          'dependency',
+          'semantic',
+          'pattern',
+          'all',
+        ],
         defaultsTo: 'all',
       )
       ..addOption(
@@ -144,7 +150,7 @@ class TemplateGenerateCommand extends Command<int> {
 
       // 创建企业级模板创建器
       final creator = EnterpriseTemplateCreator();
-      final libraryManager = TemplateLibraryManager();
+      // final libraryManager = TemplateLibraryManager();
 
       // 显示创建计划
       _displayCreationPlan(
@@ -224,11 +230,16 @@ class TemplateGenerateCommand extends Command<int> {
   /// 获取模式描述
   String _getModeDescription(String mode) {
     switch (mode) {
-      case 'scratch': return '从零开始创建';
-      case 'project': return '从现有项目生成';
-      case 'template': return '基于现有模板扩展';
-      case 'collaborative': return '协作创建模式';
-      default: return mode;
+      case 'scratch':
+        return '从零开始创建';
+      case 'project':
+        return '从现有项目生成';
+      case 'template':
+        return '基于现有模板扩展';
+      case 'collaborative':
+        return '协作创建模式';
+      default:
+        return mode;
     }
   }
 
@@ -316,7 +327,8 @@ class TemplateGenerateCommand extends Command<int> {
   }
 
   /// 分析项目
-  Future<void> _analyzeProject(String sourcePath, String analysisType, List<String> fileTypes, bool verbose) async {
+  Future<void> _analyzeProject(String sourcePath, String analysisType,
+      List<String> fileTypes, bool verbose,) async {
     print('\n🔍 项目分析');
     print('─' * 40);
     print('源路径: $sourcePath');
@@ -331,14 +343,14 @@ class TemplateGenerateCommand extends Command<int> {
       print('    • YAML文件: 3个');
       print('    • JSON文件: 2个');
       print('    • 其他文件: 2个');
-      
+
       if (analysisType == 'all' || analysisType == 'dependency') {
         print('  🔗 依赖分析:');
         print('    • Flutter SDK: ^3.0.0');
         print('    • 第三方包: 5个');
         print('    • 开发依赖: 3个');
       }
-      
+
       if (analysisType == 'all' || analysisType == 'structural') {
         print('  🏗️ 结构分析:');
         print('    • 架构模式: MVC');
@@ -356,18 +368,43 @@ class TemplateGenerateCommand extends Command<int> {
     print('─' * 40);
 
     final suggestions = [
-      {'type': '应用名称', 'original': 'MyApp', 'parameter': '{{app_name}}', 'confidence': 95},
-      {'type': '包名', 'original': 'com.example.app', 'parameter': '{{package_name}}', 'confidence': 90},
-      {'type': '版本号', 'original': '1.0.0', 'parameter': '{{version}}', 'confidence': 85},
-      {'type': 'API端点', 'original': 'https://api.example.com', 'parameter': '{{api_base_url}}', 'confidence': 80},
+      {
+        'type': '应用名称',
+        'original': 'MyApp',
+        'parameter': '{{app_name}}',
+        'confidence': 95,
+      },
+      {
+        'type': '包名',
+        'original': 'com.example.app',
+        'parameter': '{{package_name}}',
+        'confidence': 90,
+      },
+      {
+        'type': '版本号',
+        'original': '1.0.0',
+        'parameter': '{{version}}',
+        'confidence': 85,
+      },
+      {
+        'type': 'API端点',
+        'original': 'https://api.example.com',
+        'parameter': '{{api_base_url}}',
+        'confidence': 80,
+      },
     ];
 
     for (final suggestion in suggestions) {
       final confidence = suggestion['confidence']! as int;
-      final confidenceIcon = confidence >= 90 ? '🟢' : confidence >= 80 ? '🟡' : '🔴';
-      
-      print('$confidenceIcon ${suggestion['type']}: ${suggestion['original']} → ${suggestion['parameter']} ($confidence%)');
-      
+      final confidenceIcon = confidence >= 90
+          ? '🟢'
+          : confidence >= 80
+              ? '🟡'
+              : '🔴';
+
+      print(
+          '$confidenceIcon ${suggestion['type']}: ${suggestion['original']} → ${suggestion['parameter']} ($confidence%)',);
+
       if (verbose) {
         print('   位置: lib/main.dart:15');
         print('   建议: 使用参数化提高模板复用性');
@@ -378,7 +415,8 @@ class TemplateGenerateCommand extends Command<int> {
   }
 
   /// 执行质量检查
-  Future<void> _performQualityChecks(bool bestPractices, bool qualityCheck, bool verbose) async {
+  Future<void> _performQualityChecks(
+      bool bestPractices, bool qualityCheck, bool verbose,) async {
     print('\n🔍 质量检查');
     print('─' * 40);
 
@@ -408,7 +446,8 @@ class TemplateGenerateCommand extends Command<int> {
   }
 
   /// 生成模板
-  Future<void> _generateTemplate(String templateName, String outputDir, bool dryRun, bool verbose) async {
+  Future<void> _generateTemplate(
+      String templateName, String outputDir, bool dryRun, bool verbose,) async {
     print('\n🏗️ 模板生成');
     print('─' * 40);
 
@@ -426,7 +465,7 @@ class TemplateGenerateCommand extends Command<int> {
       print('  ✅ 生成模板文件 (15/15)');
       print('  ✅ 创建配置文件');
       print('  ✅ 生成文档文件');
-      
+
       if (verbose) {
         print('\n📊 生成统计:');
         print('  • 模板文件: 15个');
@@ -435,7 +474,7 @@ class TemplateGenerateCommand extends Command<int> {
         print('  • 文档文件: 2个');
         print('  • 总大小: 245KB');
       }
-      
+
       print('\n✅ 模板生成完成: $outputDir');
       print('📋 模板名称: $templateName');
     }

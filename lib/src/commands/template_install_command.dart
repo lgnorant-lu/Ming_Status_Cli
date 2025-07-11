@@ -234,7 +234,7 @@ class TemplateInstallCommand extends Command<int> {
   ) async {
     // 模拟依赖解析
     final dependencies = await _getTemplateDependencies(templateName);
-    
+
     if (dependencies.isEmpty) {
       print('  ✅ 无依赖项');
       return;
@@ -254,7 +254,7 @@ class TemplateInstallCommand extends Command<int> {
 
     // 执行依赖解析
     final result = await resolver.resolveDependencies(dependencies);
-    
+
     if (result.isSuccessful) {
       print('  ✅ 依赖解析成功');
       if (verbose) {
@@ -397,7 +397,8 @@ class TemplateInstallCommand extends Command<int> {
   }
 
   /// 构建下载URL
-  String _buildDownloadUrl(String templateName, String? version, String format) {
+  String _buildDownloadUrl(
+      String templateName, String? version, String format,) {
     const baseUrl = 'https://templates.ming.dev';
     final versionPart = version != null ? '/v$version' : '/latest';
     return '$baseUrl/$templateName$versionPart.$format';
@@ -450,8 +451,8 @@ class TemplateInstallCommand extends Command<int> {
   /// 验证签名
   Future<void> _verifySignature(String filePath, bool verbose) async {
     // 模拟签名验证
-    await Future.delayed(const Duration(milliseconds: 500));
-    
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+
     if (verbose) {
       print('    • 检查数字签名...');
       print('    • 验证证书链...');
@@ -467,8 +468,8 @@ class TemplateInstallCommand extends Command<int> {
     bool verbose,
   ) async {
     // 模拟解压过程
-    await Future.delayed(const Duration(milliseconds: 300));
-    
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
     if (verbose) {
       print('    • 创建输出目录...');
       print('    • 解压文件...');
@@ -484,7 +485,7 @@ class TemplateInstallCommand extends Command<int> {
     print('安装位置: $outputDir');
     print('安装时间: ${DateTime.now().toLocal()}');
     print('');
-    
+
     print('💡 下一步:');
     print('  • 使用 "ming template list" 查看已安装模板');
     print('  • 使用 "ming template generate" 生成项目');

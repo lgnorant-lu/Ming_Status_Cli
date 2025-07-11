@@ -14,8 +14,8 @@ Change History:
 
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/template_exceptions.dart';
-import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_exceptions.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 // ==================== Task 36.4: 用户体验优化和反馈改进 ====================

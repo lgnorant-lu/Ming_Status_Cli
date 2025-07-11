@@ -397,8 +397,10 @@ class UpdateManager {
   }
 
   /// 创建快照
-  Future<UpdateSnapshot> createSnapshot(String name,
-      {String? description}) async {
+  Future<UpdateSnapshot> createSnapshot(
+    String name, {
+    String? description,
+  }) async {
     return _createSnapshot(description ?? name);
   }
 
@@ -554,7 +556,7 @@ class UpdateManager {
       ),
     );
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
 
     // 下载阶段
     controller.add(
@@ -568,7 +570,7 @@ class UpdateManager {
       ),
     );
 
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future<void>.delayed(const Duration(milliseconds: 1000));
 
     // 安装阶段
     controller.add(
@@ -582,7 +584,7 @@ class UpdateManager {
       ),
     );
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
 
     // 完成
     controller.add(
@@ -627,9 +629,11 @@ class UpdateManager {
 
   /// 回滚模板
   Future<void> _rollbackTemplate(
-      String templateName, Version targetVersion) async {
+    String templateName,
+    Version targetVersion,
+  ) async {
     // 模拟回滚操作
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
   }
 
   /// 快照转JSON

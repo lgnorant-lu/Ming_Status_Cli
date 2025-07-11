@@ -64,7 +64,8 @@ class Version implements Comparable<Version> {
   /// 从字符串解析版本
   factory Version.parse(String version) {
     final regex = RegExp(
-        r'^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.-]+))?(?:\+([a-zA-Z0-9.-]+))?$');
+      r'^(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9.-]+))?(?:\+([a-zA-Z0-9.-]+))?$',
+    );
     final match = regex.firstMatch(version);
 
     if (match == null) {
@@ -394,7 +395,7 @@ class DependencyResolver {
   final Map<String, List<Version>> _availableVersions = {};
 
   /// 依赖图缓存
-  final Map<String, Map<String, Dependency>> _dependencyGraphs = {};
+  // final Map<String, Map<String, Dependency>> _dependencyGraphs = {};
 
   /// 安全数据库
   final Map<String, List<String>> _vulnerabilityDatabase = {};
@@ -478,7 +479,7 @@ class DependencyResolver {
   /// 获取子依赖
   Future<List<Dependency>> _getSubDependencies(String packageName) async {
     // 模拟获取依赖信息
-    await Future.delayed(const Duration(milliseconds: 10));
+    await Future<void>.delayed(const Duration(milliseconds: 10));
 
     // 返回模拟的依赖列表
     switch (packageName) {
@@ -533,7 +534,7 @@ class DependencyResolver {
     }
 
     // 模拟获取版本信息
-    await Future.delayed(const Duration(milliseconds: 5));
+    await Future<void>.delayed(const Duration(milliseconds: 5));
 
     final versions = <Version>[];
     switch (packageName) {
@@ -558,7 +559,8 @@ class DependencyResolver {
 
   /// 检查安全漏洞
   Future<List<String>> _checkVulnerabilities(
-      Map<String, Version> resolvedVersions) async {
+    Map<String, Version> resolvedVersions,
+  ) async {
     final vulnerabilities = <String>[];
 
     for (final entry in resolvedVersions.entries) {
@@ -568,7 +570,8 @@ class DependencyResolver {
       // 模拟安全检查
       if (packageName == 'vulnerable_package' && version.major < 2) {
         vulnerabilities.add(
-            '$packageName@$version has known security vulnerability CVE-2023-1234');
+          '$packageName@$version has known security vulnerability CVE-2023-1234',
+        );
       }
     }
 
@@ -577,14 +580,16 @@ class DependencyResolver {
 
   /// 检查许可证兼容性
   Future<List<String>> _checkLicenseCompatibility(
-      Map<String, Version> resolvedVersions) async {
+    Map<String, Version> resolvedVersions,
+  ) async {
     final licenseIssues = <String>[];
 
     // 模拟许可证检查
     for (final packageName in resolvedVersions.keys) {
       if (packageName == 'gpl_package') {
         licenseIssues.add(
-            '$packageName uses GPL license which may not be compatible with commercial use');
+          '$packageName uses GPL license which may not be compatible with commercial use',
+        );
       }
     }
 

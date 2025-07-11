@@ -173,7 +173,7 @@ void main() {
       final node = FunctionCallNode(
         functionName: 'length',
         arguments: [
-          LiteralNode([1, 2, 3, 4, 5])
+          LiteralNode([1, 2, 3, 4, 5]),
         ],
       );
       final result = await node.evaluate({});
@@ -306,7 +306,7 @@ Mobile version
 ''';
       const context = RenderContext(
         variables: {
-          'platform': {'mobile': true}
+          'platform': {'mobile': true},
         },
         enableCache: false,
       );
@@ -325,7 +325,7 @@ Desktop version
 ''';
       const context = RenderContext(
         variables: {
-          'platform': {'mobile': false}
+          'platform': {'mobile': false},
         },
         enableCache: false,
       );
@@ -344,7 +344,7 @@ Item: {{this}}
 ''';
       const context = RenderContext(
         variables: {
-          'items': ['apple', 'banana', 'cherry']
+          'items': ['apple', 'banana', 'cherry'],
         },
         enableCache: false,
       );

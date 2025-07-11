@@ -586,7 +586,7 @@ class VersionManager {
   ) async {
     try {
       cli_logger.Logger.debug(
-          '检查版本兼容性: $templateId $sourceVersion -> $targetVersion');
+          '检查版本兼容性: $templateId $sourceVersion -> $targetVersion',);
 
       final issues = <String>[];
       final warnings = <String>[];
@@ -634,7 +634,7 @@ class VersionManager {
       final isCompatible = issues.isEmpty;
 
       cli_logger.Logger.info(
-          '兼容性检查完成: $templateId - ${isCompatible ? '兼容' : '不兼容'}');
+          '兼容性检查完成: $templateId - ${isCompatible ? '兼容' : '不兼容'}',);
 
       return CompatibilityResult(
         isCompatible: isCompatible,
@@ -729,7 +729,7 @@ class VersionManager {
       final duration = DateTime.now().difference(startTime);
 
       cli_logger.Logger.info(
-          '版本升级${upgradeSuccess ? '成功' : '失败'}: $templateId $currentVersion -> $targetVersion');
+          '版本升级${upgradeSuccess ? '成功' : '失败'}: $templateId $currentVersion -> $targetVersion',);
 
       return UpgradeResult(
         success: upgradeSuccess,
@@ -859,7 +859,7 @@ class VersionManager {
 
   /// 创建备份
   Future<String?> _createBackup(
-      String templatePath, SemanticVersion version) async {
+      String templatePath, SemanticVersion version,) async {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final backupPath = '$_versionsPath/backups/${version}_$timestamp';

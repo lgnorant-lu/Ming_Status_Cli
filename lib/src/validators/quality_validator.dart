@@ -15,7 +15,7 @@ Change History:
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/validator_service.dart';
+import 'package:ming_status_cli/src/core/validation_system/validator_service.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
 import 'package:path/path.dart' as path;
 

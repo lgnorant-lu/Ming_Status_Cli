@@ -453,7 +453,7 @@ class CompatibilityManager {
     return _deprecatedFeatures.values
         .where(
           (dep) => _isVersionBetween(
-              dep.deprecatedInVersion, fromVersion, toVersion),
+              dep.deprecatedInVersion, fromVersion, toVersion,),
         )
         .toList();
   }

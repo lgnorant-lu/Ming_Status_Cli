@@ -13,11 +13,12 @@ Change History:
 */
 
 import 'dart:convert';
+
 import 'package:args/command_runner.dart';
-import 'package:ming_status_cli/src/core/enterprise/private_registry.dart';
 import 'package:ming_status_cli/src/core/enterprise/access_control.dart';
-import 'package:ming_status_cli/src/core/enterprise/lifecycle_manager.dart';
 import 'package:ming_status_cli/src/core/enterprise/compliance_checker.dart';
+import 'package:ming_status_cli/src/core/enterprise/lifecycle_manager.dart';
+import 'package:ming_status_cli/src/core/enterprise/private_registry.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 模板企业级管理命令
@@ -185,28 +186,85 @@ class TemplateEnterpriseCommand extends Command<int> {
       switch (action) {
         case 'registry':
           return await _handleRegistryAction(
-              subaction, id, name, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         case 'access':
           return await _handleAccessAction(
-              subaction, id, name, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         case 'lifecycle':
           return await _handleLifecycleAction(
-              subaction, id, name, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         case 'compliance':
           return await _handleComplianceAction(
-              subaction, id, name, type, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            type,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         case 'tenant':
           return await _handleTenantAction(
-              subaction, id, name, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         case 'user':
           return await _handleUserAction(
-              subaction, id, name, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         case 'role':
           return await _handleRoleAction(
-              subaction, id, name, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         case 'audit':
           return await _handleAuditAction(
-              subaction, id, name, config, outputFormat, verbose, dryRun);
+            subaction,
+            id,
+            name,
+            config,
+            outputFormat,
+            verbose,
+            dryRun,
+          );
         default:
           print('错误: 不支持的操作类型: $action');
           return 1;
@@ -258,17 +316,14 @@ class TemplateEnterpriseCommand extends Command<int> {
           return 0;
         }
         print('✅ 注册表创建成功: ${registryConfig.name}');
-        break;
 
       case 'stats':
         final stats = registry.getRegistryStats();
         _displayRegistryStats(stats, outputFormat, verbose);
-        break;
 
       case 'list':
         print('📋 注册表列表:');
         print('  • ${registryConfig.name} (${registryConfig.type.name})');
-        break;
 
       default:
         print('错误: 不支持的注册表操作: $subaction');
@@ -297,7 +352,6 @@ class TemplateEnterpriseCommand extends Command<int> {
       case 'stats':
         final stats = accessControl.getAccessControlStats();
         _displayAccessControlStats(stats, outputFormat, verbose);
-        break;
 
       case 'list':
         final listType = argResults!['type'] as String?;
@@ -317,7 +371,6 @@ class TemplateEnterpriseCommand extends Command<int> {
           print('  使用 --type=users 查看用户列表');
           print('  使用 --type=roles 查看角色列表');
         }
-        break;
 
       default:
         print('错误: 不支持的访问控制操作: $subaction');
@@ -363,19 +416,16 @@ class TemplateEnterpriseCommand extends Command<int> {
 
           print('✅ 版本创建成功: ${version.version}');
         }
-        break;
 
       case 'stats':
         final stats = lifecycleManager.getLifecycleStats();
         _displayLifecycleStats(stats, outputFormat, verbose);
-        break;
 
       case 'list':
         print('📋 生命周期状态:');
         for (final state in LifecycleState.values) {
           print('  • ${state.name}');
         }
-        break;
 
       default:
         print('错误: 不支持的生命周期操作: $subaction');
@@ -427,7 +477,6 @@ class TemplateEnterpriseCommand extends Command<int> {
             }
           }
         }
-        break;
 
       case 'report':
         if (type != null) {
@@ -444,12 +493,10 @@ class TemplateEnterpriseCommand extends Command<int> {
 
           _displayComplianceReport(report, outputFormat, verbose);
         }
-        break;
 
       case 'stats':
         final stats = complianceChecker.getViolationStats();
         _displayComplianceStats(stats, outputFormat, verbose);
-        break;
 
       default:
         print('错误: 不支持的合规检查操作: $subaction');
@@ -472,7 +519,7 @@ class TemplateEnterpriseCommand extends Command<int> {
     print('\n🏢 租户管理');
     print('─' * 60);
 
-    final registryConfig = RegistryConfig(
+    const registryConfig = RegistryConfig(
       id: 'default_registry',
       name: 'Default Registry',
       url: 'https://registry.company.com',
@@ -510,7 +557,6 @@ class TemplateEnterpriseCommand extends Command<int> {
           print('  ID: ${tenant.id}');
           print('  域名: ${tenant.domain}');
         }
-        break;
 
       case 'list':
         final tenants = registry.getAllTenants();
@@ -522,11 +568,11 @@ class TemplateEnterpriseCommand extends Command<int> {
             print('    ID: ${tenant.id}');
             print('    状态: ${tenant.status}');
             print(
-                '    存储使用: ${(tenant.storageUsageRate * 100).toStringAsFixed(1)}%');
+              '    存储使用: ${(tenant.storageUsageRate * 100).toStringAsFixed(1)}%',
+            );
             print('    用户数: ${tenant.currentUsers}/${tenant.userLimit}');
           }
         }
-        break;
 
       default:
         print('错误: 不支持的租户操作: $subaction');
@@ -573,14 +619,12 @@ class TemplateEnterpriseCommand extends Command<int> {
           print('  ID: ${user.id}');
           print('  邮箱: ${user.email}');
         }
-        break;
 
       case 'list':
         print('📋 用户列表:');
         print('  🟢 admin (管理员)');
         print('  🟢 developer (开发者)');
         print('  🟢 viewer (查看者)');
-        break;
 
       default:
         print('错误: 不支持的用户操作: $subaction');
@@ -603,7 +647,7 @@ class TemplateEnterpriseCommand extends Command<int> {
     print('\n🎭 角色管理');
     print('─' * 60);
 
-    final accessControl = AccessControl();
+    // final accessControl = AccessControl();
 
     switch (subaction) {
       case 'list':
@@ -614,7 +658,6 @@ class TemplateEnterpriseCommand extends Command<int> {
         print('  🟢 Viewer - 只读权限');
         print('  🔵 Auditor - 审计权限');
         print('  ⚪ Guest - 访客权限');
-        break;
 
       case 'assign':
         if (id != null && config != null) {
@@ -630,7 +673,6 @@ class TemplateEnterpriseCommand extends Command<int> {
           print('  用户: $id');
           print('  角色: ${configData['roleId']}');
         }
-        break;
 
       default:
         print('错误: 不支持的角色操作: $subaction');
@@ -670,7 +712,6 @@ class TemplateEnterpriseCommand extends Command<int> {
             }
           }
         }
-        break;
 
       default:
         print('错误: 不支持的审计操作: $subaction');
@@ -682,7 +723,10 @@ class TemplateEnterpriseCommand extends Command<int> {
 
   /// 显示注册表统计
   void _displayRegistryStats(
-      Map<String, dynamic> stats, String format, bool verbose) {
+    Map<String, dynamic> stats,
+    String format,
+    bool verbose,
+  ) {
     print('📊 注册表统计:');
     print('  注册表名称: ${stats['registryName']}');
     print('  注册表类型: ${stats['registryType']}');
@@ -703,12 +747,14 @@ class TemplateEnterpriseCommand extends Command<int> {
       print('  存储统计:');
       print('    总使用量: ${_formatBytes(storage['totalUsed'] as int)}');
       print(
-          '    平均使用量: ${_formatBytes((storage['averageUsage'] as double).round())}');
+        '    平均使用量: ${_formatBytes((storage['averageUsage'] as num).round())}',
+      );
 
       print('  用户统计:');
       print('    总用户数: ${users['total']}');
       print(
-          '    平均每租户: ${(users['averagePerTenant'] as double).toStringAsFixed(1)}');
+        '    平均每租户: ${(users['averagePerTenant'] as double).toStringAsFixed(1)}',
+      );
 
       print('  联邦统计:');
       print('    总同步数: ${federation['totalSyncs']}');
@@ -719,7 +765,10 @@ class TemplateEnterpriseCommand extends Command<int> {
 
   /// 显示访问控制统计
   void _displayAccessControlStats(
-      Map<String, dynamic> stats, String format, bool verbose) {
+    Map<String, dynamic> stats,
+    String format,
+    bool verbose,
+  ) {
     print('📊 访问控制统计:');
 
     final users = stats['users'] as Map<String, dynamic>;
@@ -761,7 +810,10 @@ class TemplateEnterpriseCommand extends Command<int> {
 
   /// 显示生命周期统计
   void _displayLifecycleStats(
-      Map<String, dynamic> stats, String format, bool verbose) {
+    Map<String, dynamic> stats,
+    String format,
+    bool verbose,
+  ) {
     print('📊 生命周期统计:');
 
     final versions = stats['versions'] as Map<String, dynamic>;
@@ -800,12 +852,16 @@ class TemplateEnterpriseCommand extends Command<int> {
 
   /// 显示合规报告
   void _displayComplianceReport(
-      ComplianceReport report, String format, bool verbose) {
+    ComplianceReport report,
+    String format,
+    bool verbose,
+  ) {
     print('📊 合规报告: ${report.name}');
     print('─' * 60);
     print('标准: ${report.standard.name.toUpperCase()}');
     print(
-        '报告期间: ${_formatDate(report.periodStart)} - ${_formatDate(report.periodEnd)}');
+      '报告期间: ${_formatDate(report.periodStart)} - ${_formatDate(report.periodEnd)}',
+    );
     print('生成时间: ${_formatDate(report.generatedAt)}');
     print('');
 
@@ -854,7 +910,10 @@ class TemplateEnterpriseCommand extends Command<int> {
 
   /// 显示合规统计
   void _displayComplianceStats(
-      Map<String, dynamic> stats, String format, bool verbose) {
+    Map<String, dynamic> stats,
+    String format,
+    bool verbose,
+  ) {
     print('📊 合规统计:');
     print('  总违规: ${stats['total']}');
     print('  未解决: ${stats['open']}');
@@ -874,7 +933,8 @@ class TemplateEnterpriseCommand extends Command<int> {
       print('  按严重程度分布:');
       bySeverity.forEach((severity, count) {
         final icon = _getViolationSeverityIcon(
-            ViolationSeverity.values.firstWhere((s) => s.name == severity));
+          ViolationSeverity.values.firstWhere((s) => s.name == severity),
+        );
         print('    $icon $severity: $count');
       });
     }

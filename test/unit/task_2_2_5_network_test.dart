@@ -12,11 +12,11 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:test/test.dart';
-import 'package:ming_status_cli/src/core/network/http_client.dart';
-import 'package:ming_status_cli/src/core/network/retry_strategy.dart';
 import 'package:ming_status_cli/src/core/network/bandwidth_manager.dart';
+import 'package:ming_status_cli/src/core/network/http_client.dart';
 import 'package:ming_status_cli/src/core/network/offline_support.dart';
+import 'package:ming_status_cli/src/core/network/retry_strategy.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('Task 2.2.5: 网络通信和离线支持', () {
@@ -292,12 +292,12 @@ void main() {
       test('应该设置连接状态', () {
         offlineSupport.setConnectionStatus(ConnectionStatus.offline);
         expect(
-            offlineSupport.connectionStatus, equals(ConnectionStatus.offline));
+            offlineSupport.connectionStatus, equals(ConnectionStatus.offline),);
         expect(offlineSupport.isOffline, isTrue);
 
         offlineSupport.setConnectionStatus(ConnectionStatus.online);
         expect(
-            offlineSupport.connectionStatus, equals(ConnectionStatus.online));
+            offlineSupport.connectionStatus, equals(ConnectionStatus.online),);
         expect(offlineSupport.isOnline, isTrue);
       });
 
@@ -416,7 +416,7 @@ void main() {
 
         try {
           final result = await retryStrategy.execute(() async {
-            return await httpClient.get('https://example.com');
+            return httpClient.get('https://example.com');
           });
 
           expect(result, isA<HttpResponse>());
@@ -488,7 +488,7 @@ void main() {
 
           // 3. 执行带重试的HTTP请求
           final response = await retryStrategy.execute(() async {
-            return await httpClient.get('https://example.com/api/templates');
+            return httpClient.get('https://example.com/api/templates');
           });
 
           // 4. 缓存响应数据

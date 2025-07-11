@@ -582,7 +582,7 @@ class SmartParameterCollector {
 
   /// 从配置文件获取值
   Future<dynamic> _getConfigFileValue(
-      String projectPath, String parameterName) async {
+      String projectPath, String parameterName,) async {
     final configFiles = [
       'ming.config.json',
       'ming.config.yaml',
@@ -650,7 +650,7 @@ class SmartParameterCollector {
 
   /// 在配置中查找值
   dynamic _findValueInConfig(
-      Map<String, dynamic> config, String parameterName) {
+      Map<String, dynamic> config, String parameterName,) {
     // 直接查找
     if (config.containsKey(parameterName)) {
       return config[parameterName];
@@ -715,7 +715,7 @@ class SmartParameterCollector {
 
   /// 生成步骤描述
   String _generateStepDescription(
-      String groupName, List<EnterpriseTemplateParameter> parameters) {
+      String groupName, List<EnterpriseTemplateParameter> parameters,) {
     return '配置${_generateStepTitle(groupName)}相关的${parameters.length}个参数';
   }
 }

@@ -26,9 +26,9 @@ export 'src/commands/help_command.dart';
 export 'src/commands/init_command.dart';
 export 'src/commands/version_command.dart';
 // 导出核心服务
-export 'src/core/config_manager.dart';
-export 'src/core/module_validator.dart';
-export 'src/core/template_engine.dart';
+export 'src/core/config_management/config_manager.dart';
+export 'src/core/template_engine/template_engine.dart';
+export 'src/core/validation_system/module_validator.dart';
 export 'src/models/module_config.dart';
 export 'src/models/validation_result.dart';
 // 导出数据模型

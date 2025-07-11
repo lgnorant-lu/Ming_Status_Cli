@@ -68,6 +68,21 @@ enum CircuitBreakerState {
 
 /// 重试配置
 class RetryConfig {
+
+  const RetryConfig({
+    this.maxRetries = 3,
+    this.strategyType = RetryStrategyType.exponential,
+    this.baseDelay = const Duration(seconds: 1),
+    this.maxDelay = const Duration(seconds: 30),
+    this.backoffMultiplier = 2.0,
+    this.jitterFactor = 0.1,
+    this.retryConditions = const {
+      RetryCondition.networkError,
+      RetryCondition.timeout,
+      RetryCondition.serverError,
+    },
+    this.customRetryCondition,
+  });
   /// 最大重试次数
   final int maxRetries;
 
@@ -91,25 +106,18 @@ class RetryConfig {
 
   /// 自定义重试判断函数
   final bool Function(Exception)? customRetryCondition;
-
-  const RetryConfig({
-    this.maxRetries = 3,
-    this.strategyType = RetryStrategyType.exponential,
-    this.baseDelay = const Duration(seconds: 1),
-    this.maxDelay = const Duration(seconds: 30),
-    this.backoffMultiplier = 2.0,
-    this.jitterFactor = 0.1,
-    this.retryConditions = const {
-      RetryCondition.networkError,
-      RetryCondition.timeout,
-      RetryCondition.serverError,
-    },
-    this.customRetryCondition,
-  });
 }
 
 /// 断路器配置
 class CircuitBreakerConfig {
+
+  const CircuitBreakerConfig({
+    this.failureThreshold = 5,
+    this.successThreshold = 3,
+    this.timeout = const Duration(minutes: 1),
+    this.monitoringWindow = 100,
+    this.minimumRequests = 10,
+  });
   /// 失败阈值
   final int failureThreshold;
 
@@ -124,14 +132,6 @@ class CircuitBreakerConfig {
 
   /// 最小请求数
   final int minimumRequests;
-
-  const CircuitBreakerConfig({
-    this.failureThreshold = 5,
-    this.successThreshold = 3,
-    this.timeout = const Duration(minutes: 1),
-    this.monitoringWindow = 100,
-    this.minimumRequests = 10,
-  });
 }
 
 /// 重试统计
@@ -146,7 +146,7 @@ class RetryStats {
   int failedRetries = 0;
 
   /// 平均重试次数
-  double averageRetries = 0.0;
+  double averageRetries = 0;
 
   /// 最大重试次数
   int maxRetriesUsed = 0;
@@ -170,7 +170,7 @@ class RetryStats {
 
   /// 更新统计
   void updateStats(
-      int retryCount, Duration totalDelay, String reason, bool success) {
+      int retryCount, Duration totalDelay, String reason, bool success,) {
     totalRetries += retryCount;
     if (success) {
       successfulRetries++;
@@ -215,6 +215,9 @@ class RetryStats {
 
 /// 断路器
 class CircuitBreaker {
+
+  /// 构造函数
+  CircuitBreaker(this._config);
   /// 配置
   final CircuitBreakerConfig _config;
 
@@ -232,9 +235,6 @@ class CircuitBreaker {
 
   /// 请求历史 (用于监控窗口)
   final List<bool> _requestHistory = [];
-
-  /// 构造函数
-  CircuitBreaker(this._config);
 
   /// 当前状态
   CircuitBreakerState get state => _state;
@@ -348,6 +348,15 @@ class CircuitBreaker {
 
 /// 重试策略
 class RetryStrategy {
+
+  /// 构造函数
+  RetryStrategy({
+    RetryConfig? config,
+    CircuitBreakerConfig? circuitBreakerConfig,
+  })  : _config = config ?? const RetryConfig(),
+        _circuitBreaker = circuitBreakerConfig != null
+            ? CircuitBreaker(circuitBreakerConfig)
+            : null;
   /// 重试配置
   final RetryConfig _config;
 
@@ -360,15 +369,6 @@ class RetryStrategy {
   /// 随机数生成器
   final Random _random = Random();
 
-  /// 构造函数
-  RetryStrategy({
-    RetryConfig? config,
-    CircuitBreakerConfig? circuitBreakerConfig,
-  })  : _config = config ?? const RetryConfig(),
-        _circuitBreaker = circuitBreakerConfig != null
-            ? CircuitBreaker(circuitBreakerConfig)
-            : null;
-
   /// 执行带重试的操作
   Future<T> execute<T>(
     Future<T> Function() operation, {
@@ -378,12 +378,12 @@ class RetryStrategy {
         operationName ?? 'operation_${DateTime.now().millisecondsSinceEpoch}';
 
     // 检查断路器
-    if (_circuitBreaker != null && !_circuitBreaker!.allowRequest) {
-      throw CircuitBreakerOpenException('Circuit breaker is open');
+    if (_circuitBreaker != null && !_circuitBreaker.allowRequest) {
+      throw const CircuitBreakerOpenException('Circuit breaker is open');
     }
 
-    int attemptCount = 0;
-    Duration totalDelay = Duration.zero;
+    var attemptCount = 0;
+    var totalDelay = Duration.zero;
     Exception? lastException;
 
     while (attemptCount <= _config.maxRetries) {
@@ -408,7 +408,7 @@ class RetryStrategy {
         // 检查是否应该重试
         if (attemptCount > _config.maxRetries || !_shouldRetry(lastException)) {
           _stats.updateStats(attemptCount - 1, totalDelay,
-              _getExceptionReason(lastException), false);
+              _getExceptionReason(lastException), false,);
           rethrow;
         }
 
@@ -423,8 +423,8 @@ class RetryStrategy {
 
     // 如果到这里，说明重试次数用完了
     _stats.updateStats(_config.maxRetries, totalDelay,
-        _getExceptionReason(lastException!), false);
-    throw lastException!;
+        _getExceptionReason(lastException!), false,);
+    throw lastException;
   }
 
   /// 获取重试统计
@@ -486,30 +486,25 @@ class RetryStrategy {
     switch (_config.strategyType) {
       case RetryStrategyType.fixed:
         delay = _config.baseDelay;
-        break;
 
       case RetryStrategyType.linear:
         delay = Duration(
           milliseconds: _config.baseDelay.inMilliseconds * attemptCount,
         );
-        break;
 
       case RetryStrategyType.exponential:
         final exponentialDelay = _config.baseDelay.inMilliseconds *
             pow(_config.backoffMultiplier, attemptCount - 1);
         delay = Duration(milliseconds: exponentialDelay.round());
-        break;
 
       case RetryStrategyType.random:
         final randomDelay =
             _config.baseDelay.inMilliseconds * (0.5 + _random.nextDouble());
         delay = Duration(milliseconds: randomDelay.round());
-        break;
 
       case RetryStrategyType.custom:
         // 可以在这里实现自定义策略
         delay = _config.baseDelay;
-        break;
     }
 
     // 应用抖动
@@ -531,9 +526,9 @@ class RetryStrategy {
 
 /// 断路器打开异常
 class CircuitBreakerOpenException implements Exception {
-  final String message;
 
   const CircuitBreakerOpenException(this.message);
+  final String message;
 
   @override
   String toString() => 'CircuitBreakerOpenException: $message';
@@ -545,12 +540,6 @@ class RetryUtils {
   static RetryStrategy createNetworkRetryStrategy() {
     return RetryStrategy(
       config: const RetryConfig(
-        maxRetries: 3,
-        strategyType: RetryStrategyType.exponential,
-        baseDelay: Duration(seconds: 1),
-        maxDelay: Duration(seconds: 30),
-        backoffMultiplier: 2.0,
-        jitterFactor: 0.1,
         retryConditions: {
           RetryCondition.networkError,
           RetryCondition.timeout,
@@ -559,11 +548,7 @@ class RetryUtils {
         },
       ),
       circuitBreakerConfig: const CircuitBreakerConfig(
-        failureThreshold: 5,
-        successThreshold: 3,
-        timeout: Duration(minutes: 1),
-        monitoringWindow: 100,
-        minimumRequests: 10,
+        
       ),
     );
   }
@@ -573,7 +558,6 @@ class RetryUtils {
     return RetryStrategy(
       config: const RetryConfig(
         maxRetries: 5,
-        strategyType: RetryStrategyType.exponential,
         baseDelay: Duration(milliseconds: 500),
         maxDelay: Duration(seconds: 60),
         backoffMultiplier: 1.5,
@@ -616,7 +600,7 @@ class RetryUtils {
     String? operationName,
   }) async {
     final retryStrategy = strategy ?? createNetworkRetryStrategy();
-    return await retryStrategy.execute(request, operationName: operationName);
+    return retryStrategy.execute(request, operationName: operationName);
   }
 
   /// 执行带重试的API调用
@@ -626,7 +610,7 @@ class RetryUtils {
     String? operationName,
   }) async {
     final retryStrategy = strategy ?? createApiRetryStrategy();
-    return await retryStrategy.execute(apiCall, operationName: operationName);
+    return retryStrategy.execute(apiCall, operationName: operationName);
   }
 
   /// 执行带重试的文件操作
@@ -636,7 +620,7 @@ class RetryUtils {
     String? operationName,
   }) async {
     final retryStrategy = strategy ?? createFileRetryStrategy();
-    return await retryStrategy.execute(fileOperation,
-        operationName: operationName);
+    return retryStrategy.execute(fileOperation,
+        operationName: operationName,);
   }
 }

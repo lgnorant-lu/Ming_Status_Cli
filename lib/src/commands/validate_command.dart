@@ -18,10 +18,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:ming_status_cli/src/commands/base_command.dart';
-import 'package:ming_status_cli/src/core/auto_fix_manager.dart';
-import 'package:ming_status_cli/src/core/ci_cd_integration.dart';
-import 'package:ming_status_cli/src/core/validation_report_generator.dart';
-import 'package:ming_status_cli/src/core/validator_service.dart';
+import 'package:ming_status_cli/src/core/error_handling/auto_fix_manager.dart';
+import 'package:ming_status_cli/src/core/integration/ci_cd_integration.dart';
+import 'package:ming_status_cli/src/core/validation_system/validation_report_generator.dart';
+import 'package:ming_status_cli/src/core/validation_system/validator_service.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 import 'package:ming_status_cli/src/validators/dependency_validator.dart';

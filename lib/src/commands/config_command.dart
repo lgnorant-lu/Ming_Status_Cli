@@ -13,8 +13,8 @@ Change History:
 */
 
 import 'package:ming_status_cli/src/commands/base_command.dart';
-import 'package:ming_status_cli/src/core/config_manager.dart';
-import 'package:ming_status_cli/src/core/user_config_manager.dart';
+import 'package:ming_status_cli/src/core/config_management/config_manager.dart';
+import 'package:ming_status_cli/src/core/config_management/user_config_manager.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 
 /// 配置管理命令

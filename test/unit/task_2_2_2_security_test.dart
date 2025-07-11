@@ -13,11 +13,12 @@ Change History:
 */
 
 import 'dart:typed_data';
-import 'package:test/test.dart';
+
 import 'package:ming_status_cli/src/core/security/digital_signature.dart';
-import 'package:ming_status_cli/src/core/security/trusted_source_manager.dart';
 import 'package:ming_status_cli/src/core/security/malware_detector.dart';
 import 'package:ming_status_cli/src/core/security/security_validator.dart';
+import 'package:ming_status_cli/src/core/security/trusted_source_manager.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('Task 2.2.2: 企业级安全验证系统', () {
@@ -199,7 +200,7 @@ void main() {
       });
 
       test('应该创建安全问题', () {
-        final issue = SecurityIssue(
+        const issue = SecurityIssue(
           id: 'test_issue',
           title: 'Test Security Issue',
           description: 'This is a test security issue',

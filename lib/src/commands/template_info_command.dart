@@ -188,7 +188,7 @@ class TemplateInfoCommand extends Command<int> {
     // 评分和统计
     print('\n📊 统计信息');
     print('─' * 30);
-    print('评分: ${metadata.rating.toStringAsFixed(1) ?? 'N/A'} ⭐');
+    print('评分: ${metadata.rating.toStringAsFixed(1)} ⭐');
     print('下载次数: ${metadata.downloadCount}');
     print('评价数量: ${metadata.reviewCount}');
     print('创建时间: ${metadata.createdAt.toString().substring(0, 10)}');

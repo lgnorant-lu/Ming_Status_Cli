@@ -25,10 +25,10 @@ import 'package:ming_status_cli/src/core/managers/hook_manager.dart';
 import 'package:ming_status_cli/src/core/strategies/default_hooks.dart';
 import 'package:ming_status_cli/src/core/strategies/hook_implementations.dart'
     as hook_impl;
-import 'package:ming_status_cli/src/core/template_exceptions.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_exceptions.dart';
 // 导入分离的模块
-import 'package:ming_status_cli/src/core/template_models.dart';
-import 'package:ming_status_cli/src/core/template_parameter_system.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_parameter_system.dart';
 import 'package:ming_status_cli/src/models/template_variable.dart';
 import 'package:ming_status_cli/src/utils/file_utils.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;

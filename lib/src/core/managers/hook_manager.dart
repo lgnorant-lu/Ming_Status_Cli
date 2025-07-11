@@ -13,7 +13,7 @@ Change History:
 
 import 'dart:async';
 
-import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 钩子注册表

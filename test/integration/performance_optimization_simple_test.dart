@@ -17,9 +17,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:ming_status_cli/src/core/cache_manager.dart';
 import 'package:ming_status_cli/src/core/performance_monitor.dart';
-import 'package:ming_status_cli/src/core/resource_manager.dart';
+import 'package:ming_status_cli/src/core/system_management/cache_manager.dart';
+import 'package:ming_status_cli/src/core/system_management/resource_manager.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 

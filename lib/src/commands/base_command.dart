@@ -16,9 +16,9 @@ Change History:
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:ming_status_cli/src/core/config_manager.dart';
-import 'package:ming_status_cli/src/core/module_validator.dart';
-import 'package:ming_status_cli/src/core/template_engine.dart';
+import 'package:ming_status_cli/src/core/config_management/config_manager.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_engine.dart';
+import 'package:ming_status_cli/src/core/validation_system/module_validator.dart';
 import 'package:ming_status_cli/src/models/workspace_config.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 

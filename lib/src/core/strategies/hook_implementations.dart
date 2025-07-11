@@ -16,7 +16,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 脚本执行钩子配置

@@ -358,7 +358,7 @@ class DependencyResolver {
             .firstWhere((dep) => dep.name == dependency.templateId);
 
         if (!_isVersionCompatible(
-            dependency.templateVersion, requiredDep.version)) {
+            dependency.templateVersion, requiredDep.version,)) {
           conflicts.add(
             '版本冲突: ${node.templateName} 需要 ${dependency.templateName} '
             '版本 ${requiredDep.version}, 但找到版本 ${dependency.templateVersion}',

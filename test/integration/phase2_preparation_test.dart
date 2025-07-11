@@ -16,7 +16,7 @@ Change History:
 import 'dart:io';
 
 import 'package:ming_status_cli/src/core/compatibility_manager.dart';
-import 'package:ming_status_cli/src/core/extension_manager.dart';
+import 'package:ming_status_cli/src/core/system_management/extension_manager.dart';
 import 'package:ming_status_cli/src/interfaces/extension_interface.dart';
 import 'package:test/test.dart';
 

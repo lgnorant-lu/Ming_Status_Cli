@@ -15,11 +15,12 @@ Change History:
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:args/command_runner.dart';
-import 'package:ming_status_cli/src/core/security/security_validator.dart';
 import 'package:ming_status_cli/src/core/security/digital_signature.dart';
-import 'package:ming_status_cli/src/core/security/trusted_source_manager.dart';
 import 'package:ming_status_cli/src/core/security/malware_detector.dart';
+import 'package:ming_status_cli/src/core/security/security_validator.dart';
+import 'package:ming_status_cli/src/core/security/trusted_source_manager.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 模板安全命令
@@ -227,7 +228,11 @@ class TemplateSecurityCommand extends Command<int> {
     if (signatureOnly) {
       // 仅验证数字签名
       await _performSignatureVerification(
-          filePath, fileData, outputFormat, verbose);
+        filePath,
+        fileData,
+        outputFormat,
+        verbose,
+      );
     } else if (malwareOnly) {
       // 仅检测恶意代码
       await _performMalwareDetection(filePath, fileData, outputFormat, verbose);
@@ -269,7 +274,7 @@ class TemplateSecurityCommand extends Command<int> {
 
     // 显示安全等级
     final levelIcon = _getSecurityLevelIcon(result.securityLevel);
-    final levelColor = _getSecurityLevelColor(result.securityLevel);
+    // final levelColor = _getSecurityLevelColor(result.securityLevel);
     print('$levelIcon 安全等级: ${result.securityLevel.name.toUpperCase()}');
     print('✅ 验证通过: ${result.isValid ? '是' : '否'}');
     print('⏱️ 验证耗时: ${result.validationDuration.inMilliseconds}ms');
@@ -435,7 +440,8 @@ class TemplateSecurityCommand extends Command<int> {
         print('  验证次数: ${matchingSource.verificationCount}');
         print('  失败次数: ${matchingSource.failureCount}');
         print(
-            '  成功率: ${(matchingSource.successRate * 100).toStringAsFixed(1)}%');
+          '  成功率: ${(matchingSource.successRate * 100).toStringAsFixed(1)}%',
+        );
         print('  标签: ${matchingSource.tags.join(', ')}');
         print('');
       }
@@ -488,13 +494,15 @@ class TemplateSecurityCommand extends Command<int> {
 
     if (outputFormat == 'json') {
       print('\n📄 JSON格式报告:');
-      print(JsonEncoder.withIndent('  ').convert(report));
+      print(const JsonEncoder.withIndent('  ').convert(report));
     }
   }
 
   /// 显示安全事件
   Future<void> _showSecurityEvents(
-      SecurityValidator validator, bool verbose) async {
+    SecurityValidator validator,
+    bool verbose,
+  ) async {
     print('\n🚨 安全事件');
     print('─' * 60);
 
@@ -609,19 +617,21 @@ class TemplateSecurityCommand extends Command<int> {
       'policy': result.policy.name,
       'stepResults': result.stepResults.map((k, v) => MapEntry(k.name, v)),
       'securityIssues': result.securityIssues
-          .map((issue) => {
-                'id': issue.id,
-                'title': issue.title,
-                'description': issue.description,
-                'threatType': issue.threatType.name,
-                'severity': issue.severity.name,
-                'confidence': issue.confidence,
-              })
+          .map(
+            (issue) => {
+              'id': issue.id,
+              'title': issue.title,
+              'description': issue.description,
+              'threatType': issue.threatType.name,
+              'severity': issue.severity.name,
+              'confidence': issue.confidence,
+            },
+          )
           .toList(),
     };
 
     print('\n📄 JSON结果:');
-    print(JsonEncoder.withIndent('  ').convert(jsonData));
+    print(const JsonEncoder.withIndent('  ').convert(jsonData));
   }
 
   /// 输出详细结果

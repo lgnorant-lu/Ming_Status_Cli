@@ -296,7 +296,7 @@ class TemplateDownloader {
           _downloadStats.values.fold(0, (sum, count) => sum + count),
       'activeDownloads': _activeDownloads.length,
       'cacheSize': _getCacheSize(),
-      'downloadsByFormat': Map.from(_downloadStats),
+      'downloadsByFormat': Map<String, dynamic>.from(_downloadStats),
     };
   }
 
@@ -394,7 +394,8 @@ class TemplateDownloader {
 
       // 打开文件写入流
       final sink = outputFile.openWrite(
-          mode: startByte > 0 ? FileMode.append : FileMode.write);
+        mode: startByte > 0 ? FileMode.append : FileMode.write,
+      );
 
       // 监听下载进度
       await for (final chunk in response) {
@@ -428,7 +429,8 @@ class TemplateDownloader {
         if (actualHash != task.expectedHash) {
           await outputFile.delete();
           throw Exception(
-              'File integrity check failed: expected ${task.expectedHash}, got $actualHash');
+            'File integrity check failed: expected ${task.expectedHash}, got $actualHash',
+          );
         }
       }
 

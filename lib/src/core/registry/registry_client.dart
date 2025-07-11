@@ -464,19 +464,19 @@ class RegistryClient {
 
   /// 设置请求头
   void _setRequestHeaders(
-      HttpClientRequest request, Map<String, String>? headers) {
+      HttpClientRequest request, Map<String, String>? headers,) {
     // 设置认证头
     if (_authConfig != null) {
       switch (_authConfig!.type) {
         case AuthType.token:
           request.headers.set(
-              'Authorization', 'Bearer ${_authConfig!.credentials['token']}');
+              'Authorization', 'Bearer ${_authConfig!.credentials['token']}',);
         case AuthType.apiKey:
           final header = _authConfig!.credentials['header'] ?? 'X-API-Key';
           request.headers.set(header, _authConfig!.credentials['apiKey']!);
         case AuthType.oauth2:
           request.headers.set('Authorization',
-              'Bearer ${_authConfig!.credentials['accessToken']}');
+              'Bearer ${_authConfig!.credentials['accessToken']}',);
         case AuthType.certificate:
           // TODO: 实现证书认证
           break;

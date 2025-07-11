@@ -270,7 +270,7 @@ class InheritanceValidator {
           suggestion: '考虑重构继承关系以减少深度',
           details: {
             'actualDepth': inheritanceChain.length,
-            'maxDepth': maxChainDepth
+            'maxDepth': maxChainDepth,
           },
         ),
       );

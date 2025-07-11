@@ -472,12 +472,12 @@ class RegistryIndex {
         if (tf > 0) {
           // 简单的TF-IDF评分
           final idf = log(_templates.length / _getDocumentFrequency(term));
-          score += tf * idf;
+          score += (tf * idf).toInt();
         }
       }
 
       if (score > 0) {
-        results[templateId] = score;
+        results[templateId] = score.toDouble();
       }
     }
 
@@ -549,14 +549,14 @@ class RegistryIndex {
       final metadata = _templates[templateId];
       if (metadata == null) continue;
 
-      var score = 1;
+      var score = 1.0;
       final matchedFields = <String>[];
       final highlights = <String, String>{};
 
       // 文本匹配评分
       if (query.text != null && query.text!.isNotEmpty) {
         final textScore = _calculateTextScore(query.text!, metadata);
-        score *= textScore;
+        score = score * textScore;
         if (textScore > 0.1) {
           matchedFields.add('text');
           highlights['description'] =
@@ -567,7 +567,7 @@ class RegistryIndex {
       // 标签匹配评分
       if (query.tags != null) {
         final tagScore = _calculateTagScore(query.tags!, metadata.tags);
-        score *= 1.0 + tagScore;
+        score = score * (1.0 + tagScore);
         if (tagScore > 0) {
           matchedFields.add('tags');
         }
@@ -629,7 +629,10 @@ class RegistryIndex {
 
   /// 排序结果
   void _sortResults(
-      List<SearchResultItem> results, String sortBy, bool ascending) {
+    List<SearchResultItem> results,
+    String sortBy,
+    bool ascending,
+  ) {
     results.sort((a, b) {
       int comparison;
       switch (sortBy) {
@@ -747,13 +750,15 @@ class RegistryIndex {
 
   /// 基于内容的推荐
   List<String> _generateContentBasedRecommendations(
-      TemplateMetadataV2 template, int limit) {
+    TemplateMetadataV2 template,
+    int limit,
+  ) {
     final scores = <String, double>{};
 
     for (final candidate in _templates.values) {
       if (candidate.id == template.id) continue;
 
-      var score = 0;
+      var score = 0.0;
 
       // 标签相似度
       final tagSimilarity = _calculateTagScore(template.tags, candidate.tags);
@@ -789,7 +794,9 @@ class RegistryIndex {
 
   /// 协同过滤推荐
   List<String> _generateCollaborativeRecommendations(
-      String templateId, int limit) {
+    String templateId,
+    int limit,
+  ) {
     // 简单实现：基于相似用户的行为
     // 这里需要用户行为数据，暂时返回随机推荐
     final candidates = _templates.keys.where((id) => id != templateId).toList();

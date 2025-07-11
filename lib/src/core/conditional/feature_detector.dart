@@ -413,7 +413,7 @@ class FeatureDetector {
 
   /// 检测技术栈特性
   Future<Set<TechStackFeature>> _detectTechStackFeatures(
-      String projectPath) async {
+      String projectPath,) async {
     final features = <TechStackFeature>{};
 
     // 检查Flutter项目
@@ -551,7 +551,7 @@ class FeatureDetector {
 
   /// 检测架构模式
   Future<Set<ArchitecturePattern>> _detectArchitecturePatterns(
-      String projectPath) async {
+      String projectPath,) async {
     final patterns = <ArchitecturePattern>{};
 
     // 检查目录结构
@@ -616,7 +616,7 @@ class FeatureDetector {
 
   /// 检测第三方集成
   Future<Set<ThirdPartyIntegration>> _detectThirdPartyIntegrations(
-      String projectPath) async {
+      String projectPath,) async {
     final integrations = <ThirdPartyIntegration>{};
 
     // 检查Flutter项目
@@ -676,7 +676,7 @@ class FeatureDetector {
 
   /// 检测开发工具
   Future<Set<DevelopmentTool>> _detectDevelopmentTools(
-      String projectPath) async {
+      String projectPath,) async {
     final tools = <DevelopmentTool>{};
 
     // 检查Git
@@ -778,7 +778,7 @@ class FeatureDetector {
           '*.js',
           '-o',
           '-name',
-          '*.ts'
+          '*.ts',
         ],
       );
 
@@ -857,7 +857,7 @@ class FeatureDetector {
       'oldestCacheAge': _cacheTime.values.isNotEmpty
           ? DateTime.now()
               .difference(
-                  _cacheTime.values.reduce((a, b) => a.isBefore(b) ? a : b))
+                  _cacheTime.values.reduce((a, b) => a.isBefore(b) ? a : b),)
               .inSeconds
           : null,
     };

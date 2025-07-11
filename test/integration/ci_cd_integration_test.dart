@@ -14,8 +14,8 @@ Change History:
 
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/ci_cd_integration.dart';
-import 'package:ming_status_cli/src/core/validation_report_generator.dart';
+import 'package:ming_status_cli/src/core/integration/ci_cd_integration.dart';
+import 'package:ming_status_cli/src/core/validation_system/validation_report_generator.dart';
 import 'package:ming_status_cli/src/models/validation_result.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';

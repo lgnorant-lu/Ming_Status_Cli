@@ -17,18 +17,18 @@ import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/commands/template_benchmark_command.dart';
 import 'package:ming_status_cli/src/commands/template_conditional_command.dart';
 import 'package:ming_status_cli/src/commands/template_create_command.dart';
+import 'package:ming_status_cli/src/commands/template_enterprise_command.dart';
 import 'package:ming_status_cli/src/commands/template_generate_command.dart';
 import 'package:ming_status_cli/src/commands/template_info_command.dart';
 import 'package:ming_status_cli/src/commands/template_inherit_command.dart';
 import 'package:ming_status_cli/src/commands/template_install_command.dart';
 import 'package:ming_status_cli/src/commands/template_library_command.dart';
 import 'package:ming_status_cli/src/commands/template_list_command.dart';
+import 'package:ming_status_cli/src/commands/template_network_command.dart';
 import 'package:ming_status_cli/src/commands/template_params_command.dart';
 import 'package:ming_status_cli/src/commands/template_search_command.dart';
 import 'package:ming_status_cli/src/commands/template_security_command.dart';
 import 'package:ming_status_cli/src/commands/template_update_command.dart';
-import 'package:ming_status_cli/src/commands/template_enterprise_command.dart';
-import 'package:ming_status_cli/src/commands/template_network_command.dart';
 
 /// 模板管理主命令
 ///

@@ -63,6 +63,13 @@ enum QosType {
 
 /// 带宽限制配置
 class BandwidthLimit {
+
+  const BandwidthLimit({
+    required this.maxDownloadSpeed,
+    required this.maxUploadSpeed,
+    required this.maxConnections,
+    this.enabled = true,
+  });
   /// 最大下载速度 (字节/秒)
   final int maxDownloadSpeed;
 
@@ -74,13 +81,6 @@ class BandwidthLimit {
 
   /// 是否启用
   final bool enabled;
-
-  const BandwidthLimit({
-    required this.maxDownloadSpeed,
-    required this.maxUploadSpeed,
-    required this.maxConnections,
-    this.enabled = true,
-  });
 
   /// 无限制配置
   static const unlimited = BandwidthLimit(
@@ -95,7 +95,6 @@ class BandwidthLimit {
     maxDownloadSpeed: 1024 * 1024, // 1MB/s
     maxUploadSpeed: 512 * 1024, // 512KB/s
     maxConnections: 5,
-    enabled: true,
   );
 
   /// WiFi配置
@@ -103,12 +102,20 @@ class BandwidthLimit {
     maxDownloadSpeed: 10 * 1024 * 1024, // 10MB/s
     maxUploadSpeed: 5 * 1024 * 1024, // 5MB/s
     maxConnections: 20,
-    enabled: true,
   );
 }
 
 /// 网络请求
 class NetworkRequest {
+
+  NetworkRequest({
+    required this.id,
+    required this.url,
+    required this.size,
+    required this.priority,
+    required this.qosType,
+    DateTime? createdAt,
+  }) : createdAt = createdAt ?? DateTime.now();
   /// 请求ID
   final String id;
 
@@ -145,15 +152,6 @@ class NetworkRequest {
   /// 传输进度
   double get progress => size > 0 ? transferredBytes / size : 0.0;
 
-  NetworkRequest({
-    required this.id,
-    required this.url,
-    required this.size,
-    required this.priority,
-    required this.qosType,
-    DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
-
   /// 开始传输
   void start() {
     startedAt = DateTime.now();
@@ -180,22 +178,22 @@ class BandwidthStats {
   int totalUploadBytes = 0;
 
   /// 当前下载速度 (字节/秒)
-  double currentDownloadSpeed = 0.0;
+  double currentDownloadSpeed = 0;
 
   /// 当前上传速度 (字节/秒)
-  double currentUploadSpeed = 0.0;
+  double currentUploadSpeed = 0;
 
   /// 平均下载速度 (字节/秒)
-  double averageDownloadSpeed = 0.0;
+  double averageDownloadSpeed = 0;
 
   /// 平均上传速度 (字节/秒)
-  double averageUploadSpeed = 0.0;
+  double averageUploadSpeed = 0;
 
   /// 峰值下载速度 (字节/秒)
-  double peakDownloadSpeed = 0.0;
+  double peakDownloadSpeed = 0;
 
   /// 峰值上传速度 (字节/秒)
-  double peakUploadSpeed = 0.0;
+  double peakUploadSpeed = 0;
 
   /// 活跃连接数
   int activeConnections = 0;
@@ -243,10 +241,10 @@ class BandwidthStats {
 
 /// 优先级队列
 class PriorityQueue<T> {
-  final List<T> _items = [];
-  final int Function(T, T) _compare;
 
   PriorityQueue(this._compare);
+  final List<T> _items = [];
+  final int Function(T, T) _compare;
 
   /// 添加元素
   void add(T item) {
@@ -277,6 +275,11 @@ class PriorityQueue<T> {
 
 /// 带宽管理器
 class BandwidthManager {
+
+  /// 构造函数
+  BandwidthManager() {
+    _startMonitoring();
+  }
   /// 当前网络类型
   NetworkType _networkType = NetworkType.wifi;
 
@@ -310,11 +313,6 @@ class BandwidthManager {
 
   /// 是否启用
   bool _enabled = true;
-
-  /// 构造函数
-  BandwidthManager() {
-    _startMonitoring();
-  }
 
   /// 当前网络类型
   NetworkType get networkType => _networkType;
@@ -499,10 +497,10 @@ class BandwidthManager {
 
   /// 模拟网络请求
   Future<void> _simulateNetworkRequest(NetworkRequest request) async {
-    final chunkSize = 8192; // 8KB chunks
+    const chunkSize = 8192; // 8KB chunks
     final totalChunks = (request.size / chunkSize).ceil();
 
-    for (int i = 0; i < totalChunks; i++) {
+    for (var i = 0; i < totalChunks; i++) {
       // 检查带宽限制
       await _applyBandwidthThrottling();
 
@@ -526,7 +524,7 @@ class BandwidthManager {
     if (!limit.enabled) return;
 
     // 计算需要的延迟
-    int delay = 0;
+    var delay = 0;
 
     if (limit.maxDownloadSpeed > 0 &&
         _stats.currentDownloadSpeed > limit.maxDownloadSpeed) {
@@ -617,7 +615,6 @@ class BandwidthManager {
       maxDownloadSpeed: 512 * 1024, // 512KB/s
       maxUploadSpeed: 256 * 1024, // 256KB/s
       maxConnections: 3,
-      enabled: true,
     );
   }
 
@@ -628,7 +625,6 @@ class BandwidthManager {
       maxDownloadSpeed: 20 * 1024 * 1024, // 20MB/s
       maxUploadSpeed: 10 * 1024 * 1024, // 10MB/s
       maxConnections: 50,
-      enabled: true,
     );
   }
 
@@ -666,9 +662,9 @@ class BandwidthManager {
       case NetworkType.mobile:
         return 0.1; // $0.1 per MB
       case NetworkType.wifi:
-        return 0.0; // Free
+        return 0; // Free
       case NetworkType.ethernet:
-        return 0.0; // Free
+        return 0; // Free
       case NetworkType.unknown:
         return 0.05; // $0.05 per MB
     }

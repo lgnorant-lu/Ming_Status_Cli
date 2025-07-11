@@ -379,10 +379,10 @@ class TemplateMetadataV2 {
           .map((dep) => DependencyInfo.fromJson(dep as Map<String, dynamic>))
           .toList(),
       compatibility: CompatibilityInfo.fromJson(
-          json['compatibility'] as Map<String, dynamic>),
+          json['compatibility'] as Map<String, dynamic>,),
       localizations: (json['localizations'] as Map<String, dynamic>).map(
         (key, value) => MapEntry(
-            key, LocalizationInfo.fromJson(value as Map<String, dynamic>)),
+            key, LocalizationInfo.fromJson(value as Map<String, dynamic>),),
       ),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),

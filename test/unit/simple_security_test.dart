@@ -29,7 +29,7 @@ void main() {
       final testList = [
         'digital_signature',
         'trusted_source',
-        'malware_detector'
+        'malware_detector',
       ];
       expect(testList.length, equals(3));
       expect(testList.contains('digital_signature'), isTrue);

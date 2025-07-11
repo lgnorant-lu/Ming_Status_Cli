@@ -15,8 +15,8 @@ Change History:
 import 'dart:io';
 
 import 'package:ming_status_cli/src/commands/create_command.dart';
-import 'package:ming_status_cli/src/core/config_manager.dart';
-import 'package:ming_status_cli/src/core/template_engine.dart';
+import 'package:ming_status_cli/src/core/config_management/config_manager.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_engine.dart';
 import 'package:test/test.dart';
 
 void main() {

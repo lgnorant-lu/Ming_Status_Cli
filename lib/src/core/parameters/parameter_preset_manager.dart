@@ -711,7 +711,7 @@ class ParameterPresetManager {
       if (files.length > maxVersionHistory) {
         // 按修改时间排序，删除最旧的文件
         files.sort(
-            (a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()));
+            (a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()),);
 
         final filesToDelete = files.take(files.length - maxVersionHistory);
         for (final file in filesToDelete) {

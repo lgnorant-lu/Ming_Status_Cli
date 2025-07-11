@@ -243,7 +243,7 @@ class TemplateRegistry {
 
   /// 更新注册表配置
   Future<void> updateRegistry(
-      String registryId, RegistryConfig newConfig) async {
+      String registryId, RegistryConfig newConfig,) async {
     final index = _registries.indexWhere((r) => r.id == registryId);
     if (index == -1) {
       throw Exception('Registry with ID $registryId not found');

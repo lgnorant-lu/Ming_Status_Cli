@@ -13,11 +13,11 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:typed_data';
-import 'digital_signature.dart';
-import 'trusted_source_manager.dart';
-import 'malware_detector.dart';
+
+import 'package:ming_status_cli/src/core/security/digital_signature.dart';
+import 'package:ming_status_cli/src/core/security/malware_detector.dart';
+import 'package:ming_status_cli/src/core/security/trusted_source_manager.dart';
 
 /// 安全等级枚举
 enum SecurityLevel {
@@ -63,6 +63,15 @@ enum ValidationStep {
 
 /// 安全验证结果
 class SecurityValidationResult {
+  const SecurityValidationResult({
+    required this.securityLevel,
+    required this.isValid,
+    required this.stepResults,
+    required this.securityIssues, required this.validatedAt, required this.validationDuration, required this.policy, required this.validatorVersion, required this.metadata, this.signatureResult,
+    this.trustedSourceResult,
+    this.malwareResult,
+  });
+
   /// 安全等级
   final SecurityLevel securityLevel;
 
@@ -99,21 +108,6 @@ class SecurityValidationResult {
   /// 额外信息
   final Map<String, dynamic> metadata;
 
-  const SecurityValidationResult({
-    required this.securityLevel,
-    required this.isValid,
-    required this.stepResults,
-    this.signatureResult,
-    this.trustedSourceResult,
-    this.malwareResult,
-    required this.securityIssues,
-    required this.validatedAt,
-    required this.validationDuration,
-    required this.policy,
-    required this.validatorVersion,
-    required this.metadata,
-  });
-
   /// 是否有签名
   bool get hasSigned => signatureResult?.hasSigned ?? false;
 
@@ -134,6 +128,16 @@ class SecurityValidationResult {
 
 /// 安全事件
 class SecurityEvent {
+  const SecurityEvent({
+    required this.id,
+    required this.eventType,
+    required this.description,
+    required this.severity,
+    required this.timestamp, required this.eventData, this.filePath,
+    this.sourceUrl,
+    this.userId,
+  });
+
   /// 事件ID
   final String id;
 
@@ -160,22 +164,18 @@ class SecurityEvent {
 
   /// 事件数据
   final Map<String, dynamic> eventData;
-
-  const SecurityEvent({
-    required this.id,
-    required this.eventType,
-    required this.description,
-    required this.severity,
-    this.filePath,
-    this.sourceUrl,
-    required this.timestamp,
-    this.userId,
-    required this.eventData,
-  });
 }
 
 /// 安全审计日志
 class SecurityAuditLog {
+  const SecurityAuditLog({
+    required this.id,
+    required this.operation,
+    required this.success,
+    required this.timestamp, required this.details, this.userId,
+    this.resourcePath,
+  });
+
   /// 日志ID
   final String id;
 
@@ -196,20 +196,21 @@ class SecurityAuditLog {
 
   /// 详细信息
   final Map<String, dynamic> details;
-
-  const SecurityAuditLog({
-    required this.id,
-    required this.operation,
-    required this.success,
-    this.userId,
-    this.resourcePath,
-    required this.timestamp,
-    required this.details,
-  });
 }
 
 /// 安全验证器
 class SecurityValidator {
+  /// 构造函数
+  SecurityValidator({
+    DigitalSignature? digitalSignature,
+    TrustedSourceManager? trustedSourceManager,
+    MalwareDetector? malwareDetector,
+    SecurityPolicy policy = SecurityPolicy.standard,
+  })  : _digitalSignature = digitalSignature ?? DigitalSignature(),
+        _trustedSourceManager = trustedSourceManager ?? TrustedSourceManager(),
+        _malwareDetector = malwareDetector ?? MalwareDetector(),
+        _policy = policy;
+
   /// 数字签名验证器
   final DigitalSignature _digitalSignature;
 
@@ -237,17 +238,6 @@ class SecurityValidator {
     'signature_failures_per_hour': 10,
     'untrusted_source_attempts_per_hour': 20,
   };
-
-  /// 构造函数
-  SecurityValidator({
-    DigitalSignature? digitalSignature,
-    TrustedSourceManager? trustedSourceManager,
-    MalwareDetector? malwareDetector,
-    SecurityPolicy policy = SecurityPolicy.standard,
-  })  : _digitalSignature = digitalSignature ?? DigitalSignature(),
-        _trustedSourceManager = trustedSourceManager ?? TrustedSourceManager(),
-        _malwareDetector = malwareDetector ?? MalwareDetector(),
-        _policy = policy;
 
   /// 验证模板安全性
   Future<SecurityValidationResult> validateTemplateSecurity(
@@ -281,17 +271,20 @@ class SecurityValidator {
             signatureResult.isValid;
 
         if (!signatureResult.isValid && _policy == SecurityPolicy.enterprise) {
-          securityIssues
-              .addAll(signatureResult.errors.map((error) => SecurityIssue(
-                    id: 'signature_error',
-                    title: 'Signature Verification Failed',
-                    description: error,
-                    threatType: ThreatType.suspiciousBehavior,
-                    severity: ThreatLevel.high,
-                    filePath: filePath,
-                    references: [],
-                    confidence: 90,
-                  )));
+          securityIssues.addAll(
+            signatureResult.errors.map(
+              (error) => SecurityIssue(
+                id: 'signature_error',
+                title: 'Signature Verification Failed',
+                description: error,
+                threatType: ThreatType.suspiciousBehavior,
+                severity: ThreatLevel.high,
+                filePath: filePath,
+                references: [],
+                confidence: 90,
+              ),
+            ),
+          );
         }
       } catch (e) {
         stepResults[ValidationStep.signatureVerification] = false;
@@ -314,19 +307,21 @@ class SecurityValidator {
               trustedSourceResult;
 
           if (!trustedSourceResult) {
-            securityIssues.add(SecurityIssue(
-              id: 'untrusted_source',
-              title: 'Untrusted Source',
-              description:
-                  'Template comes from an untrusted source: $sourceUrl',
-              threatType: ThreatType.suspiciousBehavior,
-              severity: _policy == SecurityPolicy.enterprise
-                  ? ThreatLevel.high
-                  : ThreatLevel.medium,
-              filePath: filePath,
-              references: [],
-              confidence: 80,
-            ));
+            securityIssues.add(
+              SecurityIssue(
+                id: 'untrusted_source',
+                title: 'Untrusted Source',
+                description:
+                    'Template comes from an untrusted source: $sourceUrl',
+                threatType: ThreatType.suspiciousBehavior,
+                severity: _policy == SecurityPolicy.enterprise
+                    ? ThreatLevel.high
+                    : ThreatLevel.medium,
+                filePath: filePath,
+                references: [],
+                confidence: 80,
+              ),
+            );
 
             await _recordSecurityEvent(
               'untrusted_source_access',
@@ -466,7 +461,7 @@ class SecurityValidator {
   ) async {
     final results = <SecurityValidationResult>[];
 
-    for (int i = 0; i < filePaths.length; i++) {
+    for (var i = 0; i < filePaths.length; i++) {
       final result = await validateTemplateSecurity(
         filePaths[i],
         fileDataList[i],
@@ -551,13 +546,15 @@ class SecurityValidator {
       },
       'recentSecurityEvents': recentEvents
           .take(10)
-          .map((event) => {
-                'id': event.id,
-                'type': event.eventType,
-                'severity': event.severity.name,
-                'timestamp': event.timestamp.toIso8601String(),
-                'description': event.description,
-              })
+          .map(
+            (event) => {
+              'id': event.id,
+              'type': event.eventType,
+              'severity': event.severity.name,
+              'timestamp': event.timestamp.toIso8601String(),
+              'description': event.description,
+            },
+          )
           .toList(),
       'alertThresholds': Map.from(_alertThresholds),
       'componentStatus': {
@@ -714,9 +711,11 @@ class SecurityValidator {
 
     // 检查恶意代码检测告警
     final malwareEvents = _securityEvents
-        .where((event) =>
-            event.eventType == 'malware_detected' &&
-            event.timestamp.isAfter(oneHourAgo))
+        .where(
+          (event) =>
+              event.eventType == 'malware_detected' &&
+              event.timestamp.isAfter(oneHourAgo),
+        )
         .length;
 
     if (malwareEvents >= _alertThresholds['malware_detections_per_hour']!) {

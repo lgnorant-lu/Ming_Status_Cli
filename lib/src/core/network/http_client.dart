@@ -64,6 +64,19 @@ enum NetworkQuality {
 
 /// HTTP请求配置
 class HttpRequestConfig {
+
+  const HttpRequestConfig({
+    this.timeout = const Duration(seconds: 30),
+    this.connectTimeout = const Duration(seconds: 10),
+    this.readTimeout = const Duration(seconds: 20),
+    this.maxRetries = 3,
+    this.followRedirects = true,
+    this.maxRedirects = 5,
+    this.compression = CompressionType.gzip,
+    this.verifySsl = true,
+    this.userAgent = 'Ming-CLI/1.0',
+    this.headers = const {},
+  });
   /// 请求超时时间
   final Duration timeout;
 
@@ -93,23 +106,20 @@ class HttpRequestConfig {
 
   /// 自定义头部
   final Map<String, String> headers;
-
-  const HttpRequestConfig({
-    this.timeout = const Duration(seconds: 30),
-    this.connectTimeout = const Duration(seconds: 10),
-    this.readTimeout = const Duration(seconds: 20),
-    this.maxRetries = 3,
-    this.followRedirects = true,
-    this.maxRedirects = 5,
-    this.compression = CompressionType.gzip,
-    this.verifySsl = true,
-    this.userAgent = 'Ming-CLI/1.0',
-    this.headers = const {},
-  });
 }
 
 /// HTTP响应
 class HttpResponse {
+
+  const HttpResponse({
+    required this.statusCode,
+    required this.headers,
+    required this.body,
+    required this.responseTime,
+    required this.fromCache,
+    required this.compression,
+    required this.contentLength,
+  });
   /// 状态码
   final int statusCode;
 
@@ -130,16 +140,6 @@ class HttpResponse {
 
   /// 内容长度
   final int contentLength;
-
-  const HttpResponse({
-    required this.statusCode,
-    required this.headers,
-    required this.body,
-    required this.responseTime,
-    required this.fromCache,
-    required this.compression,
-    required this.contentLength,
-  });
 
   /// 是否成功
   bool get isSuccess => statusCode >= 200 && statusCode < 300;
@@ -162,6 +162,11 @@ class HttpResponse {
 
 /// 连接池信息
 class ConnectionPool {
+
+  ConnectionPool({
+    this.maxConnections = 100,
+    this.keepAliveTimeout = const Duration(minutes: 5),
+  });
   /// 最大连接数
   final int maxConnections;
 
@@ -179,11 +184,6 @@ class ConnectionPool {
 
   /// 连接使用统计
   final Map<String, int> connectionUsage = {};
-
-  ConnectionPool({
-    this.maxConnections = 100,
-    this.keepAliveTimeout = const Duration(minutes: 5),
-  });
 
   /// 是否可以创建新连接
   bool get canCreateConnection => activeConnections < maxConnections;
@@ -241,7 +241,7 @@ class NetworkQualityDetector {
   /// 计算网络质量
   static NetworkQuality _calculateQuality(int latency, int bandwidth) {
     // 延迟评分
-    NetworkQuality latencyQuality = NetworkQuality.poor;
+    var latencyQuality = NetworkQuality.poor;
     for (final entry in _latencyThresholds.entries) {
       if (latency <= entry.value) {
         latencyQuality = entry.key;
@@ -250,7 +250,7 @@ class NetworkQualityDetector {
     }
 
     // 带宽评分
-    NetworkQuality bandwidthQuality = NetworkQuality.poor;
+    var bandwidthQuality = NetworkQuality.poor;
     for (final entry in _bandwidthThresholds.entries.toList().reversed) {
       if (bandwidth >= entry.value) {
         bandwidthQuality = entry.key;
@@ -267,6 +267,15 @@ class NetworkQualityDetector {
 
 /// HTTP客户端
 class HttpClient {
+
+  /// 构造函数
+  HttpClient({
+    HttpRequestConfig? config,
+    ConnectionPool? connectionPool,
+  })  : _config = config ?? const HttpRequestConfig(),
+        _connectionPool = connectionPool ?? ConnectionPool() {
+    _initializeClient();
+  }
   /// 请求配置
   final HttpRequestConfig _config;
 
@@ -288,22 +297,13 @@ class HttpClient {
   /// 认证信息
   String? _authToken;
 
-  /// 构造函数
-  HttpClient({
-    HttpRequestConfig? config,
-    ConnectionPool? connectionPool,
-  })  : _config = config ?? const HttpRequestConfig(),
-        _connectionPool = connectionPool ?? ConnectionPool() {
-    _initializeClient();
-  }
-
   /// GET请求
   Future<HttpResponse> get(
     String url, {
     Map<String, String>? headers,
     Map<String, String>? queryParams,
   }) async {
-    return await _makeRequest(
+    return _makeRequest(
       'GET',
       url,
       headers: headers,
@@ -318,7 +318,7 @@ class HttpClient {
     dynamic body,
     String? contentType,
   }) async {
-    return await _makeRequest(
+    return _makeRequest(
       'POST',
       url,
       headers: headers,
@@ -334,7 +334,7 @@ class HttpClient {
     dynamic body,
     String? contentType,
   }) async {
-    return await _makeRequest(
+    return _makeRequest(
       'PUT',
       url,
       headers: headers,
@@ -348,7 +348,7 @@ class HttpClient {
     String url, {
     Map<String, String>? headers,
   }) async {
-    return await _makeRequest(
+    return _makeRequest(
       'DELETE',
       url,
       headers: headers,
@@ -388,7 +388,7 @@ class HttpClient {
     // 模拟进度回调
     onProgress?.call(fileBytes.length, fileBytes.length);
 
-    return await post(
+    return post(
       url,
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -512,7 +512,7 @@ class HttpClient {
       return uri.replace(queryParameters: {
         ...uri.queryParameters,
         ...queryParams,
-      });
+      },);
     }
     return uri;
   }
@@ -636,7 +636,7 @@ class HttpClient {
     if (cached != null) {
       // 检查缓存是否过期 (简化实现)
       final cacheAge = DateTime.now().difference(
-          DateTime.parse(cached.headers['Date'] ?? DateTime.now().toString()));
+          DateTime.parse(cached.headers['Date'] ?? DateTime.now().toString()),);
 
       if (cacheAge.inMinutes < 5) {
         return HttpResponse(

@@ -13,7 +13,6 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:convert';
 
 /// 合规标准枚举
 enum ComplianceStandard {
@@ -77,6 +76,21 @@ enum ViolationSeverity {
 
 /// 合规规则
 class ComplianceRule {
+  const ComplianceRule({
+    required this.id,
+    required this.name,
+    required this.standard,
+    required this.description,
+    required this.ruleType,
+    required this.severity,
+    required this.enabled,
+    required this.conditions,
+    required this.remediation,
+    required this.references,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
   /// 规则ID
   final String id;
 
@@ -112,25 +126,27 @@ class ComplianceRule {
 
   /// 更新时间
   final DateTime updatedAt;
-
-  const ComplianceRule({
-    required this.id,
-    required this.name,
-    required this.standard,
-    required this.description,
-    required this.ruleType,
-    required this.severity,
-    required this.enabled,
-    required this.conditions,
-    required this.remediation,
-    required this.references,
-    required this.createdAt,
-    required this.updatedAt,
-  });
 }
 
 /// 合规违规
 class ComplianceViolation {
+  const ComplianceViolation({
+    required this.id,
+    required this.ruleId,
+    required this.resourceId,
+    required this.resourceType,
+    required this.description,
+    required this.severity,
+    required this.discoveredAt,
+    required this.status,
+    required this.details,
+    required this.evidence,
+    this.assignee,
+    this.dueDate,
+    this.remediationStatus,
+    this.remediatedAt,
+  });
+
   /// 违规ID
   final String id;
 
@@ -173,23 +189,6 @@ class ComplianceViolation {
   /// 证据
   final List<String> evidence;
 
-  const ComplianceViolation({
-    required this.id,
-    required this.ruleId,
-    required this.resourceId,
-    required this.resourceType,
-    required this.description,
-    required this.severity,
-    required this.discoveredAt,
-    required this.status,
-    this.assignee,
-    this.dueDate,
-    this.remediationStatus,
-    this.remediatedAt,
-    required this.details,
-    required this.evidence,
-  });
-
   /// 是否已修复
   bool get isRemediated => status == 'remediated';
 
@@ -203,6 +202,24 @@ class ComplianceViolation {
 
 /// 合规报告
 class ComplianceReport {
+  const ComplianceReport({
+    required this.id,
+    required this.name,
+    required this.standard,
+    required this.generatedAt,
+    required this.periodStart,
+    required this.periodEnd,
+    required this.overallLevel,
+    required this.totalResources,
+    required this.compliantResources,
+    required this.totalViolations,
+    required this.violationsBySeverity,
+    required this.violations,
+    required this.complianceScore,
+    required this.trends,
+    required this.recommendations,
+  });
+
   /// 报告ID
   final String id;
 
@@ -246,24 +263,6 @@ class ComplianceReport {
   /// 建议
   final List<String> recommendations;
 
-  const ComplianceReport({
-    required this.id,
-    required this.name,
-    required this.standard,
-    required this.generatedAt,
-    required this.periodStart,
-    required this.periodEnd,
-    required this.overallLevel,
-    required this.totalResources,
-    required this.compliantResources,
-    required this.totalViolations,
-    required this.violationsBySeverity,
-    required this.violations,
-    required this.complianceScore,
-    required this.trends,
-    required this.recommendations,
-  });
-
   /// 合规率
   double get complianceRate =>
       totalResources > 0 ? compliantResources / totalResources : 0.0;
@@ -274,6 +273,11 @@ class ComplianceReport {
 
 /// 合规检查器
 class ComplianceChecker {
+  /// 构造函数
+  ComplianceChecker() {
+    _initializeDefaultRules();
+  }
+
   /// 合规规则列表
   final Map<String, ComplianceRule> _rules = {};
 
@@ -288,11 +292,6 @@ class ComplianceChecker {
 
   /// 配置
   final Map<String, dynamic> _config = {};
-
-  /// 构造函数
-  ComplianceChecker() {
-    _initializeDefaultRules();
-  }
 
   /// 添加合规规则
   Future<void> addRule(ComplianceRule rule) async {
@@ -400,9 +399,11 @@ class ComplianceChecker {
 
     // 获取期间内的违规
     final periodViolations = _violations
-        .where((v) =>
-            v.discoveredAt.isAfter(periodStart) &&
-            v.discoveredAt.isBefore(periodEnd))
+        .where(
+          (v) =>
+              v.discoveredAt.isAfter(periodStart) &&
+              v.discoveredAt.isBefore(periodEnd),
+        )
         .toList();
 
     // 按严重程度分组
@@ -553,7 +554,9 @@ class ComplianceChecker {
 
   /// 获取适用的规则
   List<ComplianceRule> _getApplicableRules(
-      String resourceType, ComplianceStandard? standard) {
+    String resourceType,
+    ComplianceStandard? standard,
+  ) {
     return _rules.values.where((rule) {
       if (standard != null && rule.standard != standard) return false;
       if (!rule.enabled) return false;
@@ -581,7 +584,7 @@ class ComplianceChecker {
     // 模拟规则检查逻辑
     final checkResult = await _executeRuleCheck(rule, resourceData);
 
-    if (!checkResult['passed'] as bool) {
+    if (checkResult['passed'] != true) {
       final violation = ComplianceViolation(
         id: _generateViolationId(),
         ruleId: rule.id,
@@ -607,7 +610,7 @@ class ComplianceChecker {
     Map<String, dynamic> resourceData,
   ) async {
     // 模拟规则检查
-    await Future.delayed(const Duration(milliseconds: 10));
+    await Future<void>.delayed(const Duration(milliseconds: 10));
 
     // 简化的检查逻辑
     switch (rule.ruleType) {
@@ -623,7 +626,7 @@ class ComplianceChecker {
         return {
           'passed': true,
           'description': 'Rule check passed',
-          'details': {},
+          'details': <String, dynamic>{},
           'evidence': <String>[],
         };
     }
@@ -631,7 +634,9 @@ class ComplianceChecker {
 
   /// 检查数据保留
   Map<String, dynamic> _checkDataRetention(
-      ComplianceRule rule, Map<String, dynamic> data) {
+    ComplianceRule rule,
+    Map<String, dynamic> data,
+  ) {
     final retentionPeriod = rule.conditions['retentionPeriod'] as int? ?? 365;
     final createdAt = DateTime.tryParse(data['createdAt'] as String? ?? '');
 
@@ -653,14 +658,16 @@ class ComplianceChecker {
     return {
       'passed': true,
       'description': 'Data retention check passed',
-      'details': {},
+      'details': <String, dynamic>{},
       'evidence': <String>[],
     };
   }
 
   /// 检查访问控制
   Map<String, dynamic> _checkAccessControl(
-      ComplianceRule rule, Map<String, dynamic> data) {
+    ComplianceRule rule,
+    Map<String, dynamic> data,
+  ) {
     final requiredPermissions =
         rule.conditions['requiredPermissions'] as List<String>? ?? [];
     final actualPermissions = data['permissions'] as List<String>? ?? [];
@@ -685,14 +692,16 @@ class ComplianceChecker {
     return {
       'passed': true,
       'description': 'Access control check passed',
-      'details': {},
+      'details': <String, dynamic>{},
       'evidence': <String>[],
     };
   }
 
   /// 检查加密
   Map<String, dynamic> _checkEncryption(
-      ComplianceRule rule, Map<String, dynamic> data) {
+    ComplianceRule rule,
+    Map<String, dynamic> data,
+  ) {
     final requiresEncryption =
         rule.conditions['requiresEncryption'] as bool? ?? true;
     final isEncrypted = data['encrypted'] as bool? ?? false;
@@ -712,14 +721,16 @@ class ComplianceChecker {
     return {
       'passed': true,
       'description': 'Encryption check passed',
-      'details': {},
+      'details': <String, dynamic>{},
       'evidence': <String>[],
     };
   }
 
   /// 检查审计日志
   Map<String, dynamic> _checkAuditLogging(
-      ComplianceRule rule, Map<String, dynamic> data) {
+    ComplianceRule rule,
+    Map<String, dynamic> data,
+  ) {
     final requiresAuditLog =
         rule.conditions['requiresAuditLog'] as bool? ?? true;
     final hasAuditLog = data['auditLogEnabled'] as bool? ?? false;
@@ -739,7 +750,7 @@ class ComplianceChecker {
     return {
       'passed': true,
       'description': 'Audit logging check passed',
-      'details': {},
+      'details': <String, dynamic>{},
       'evidence': <String>[],
     };
   }
@@ -750,29 +761,24 @@ class ComplianceChecker {
     int compliantResources,
     List<ComplianceViolation> violations,
   ) {
-    if (totalResources == 0) return 100.0;
+    if (totalResources == 0) return 100;
 
     final baseScore = (compliantResources / totalResources) * 100;
 
     // 根据违规严重程度调整分数
-    double penalty = 0.0;
+    var penalty = 0.0;
     for (final violation in violations) {
       switch (violation.severity) {
         case ViolationSeverity.critical:
           penalty += 10.0;
-          break;
         case ViolationSeverity.high:
           penalty += 5.0;
-          break;
         case ViolationSeverity.medium:
           penalty += 2.0;
-          break;
         case ViolationSeverity.low:
           penalty += 1.0;
-          break;
         case ViolationSeverity.info:
           penalty += 0.5;
-          break;
       }
     }
 

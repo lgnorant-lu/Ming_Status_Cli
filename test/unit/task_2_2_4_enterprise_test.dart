@@ -12,11 +12,11 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:test/test.dart';
-import 'package:ming_status_cli/src/core/enterprise/private_registry.dart';
 import 'package:ming_status_cli/src/core/enterprise/access_control.dart';
-import 'package:ming_status_cli/src/core/enterprise/lifecycle_manager.dart';
 import 'package:ming_status_cli/src/core/enterprise/compliance_checker.dart';
+import 'package:ming_status_cli/src/core/enterprise/lifecycle_manager.dart';
+import 'package:ming_status_cli/src/core/enterprise/private_registry.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('Task 2.2.4: 企业级模板管理', () {
@@ -24,7 +24,7 @@ void main() {
       late PrivateRegistry privateRegistry;
 
       setUp(() {
-        final config = RegistryConfig(
+        const config = RegistryConfig(
           id: 'test_registry',
           name: 'Test Registry',
           url: 'https://test.registry.com',
@@ -45,7 +45,6 @@ void main() {
         final tenant = await privateRegistry.createTenant(
           name: 'test-tenant',
           domain: 'test.example.com',
-          storageQuota: 1024 * 1024 * 1024, // 1GB
           userLimit: 50,
         );
 
@@ -125,7 +124,7 @@ void main() {
           permissions: {
             Permission.read,
             Permission.download,
-            Permission.upload
+            Permission.upload,
           },
           createdBy: 'admin',
         );
@@ -344,7 +343,7 @@ void main() {
 
     group('Integration Tests', () {
       test('应该集成私有注册表和访问控制', () async {
-        final registryConfig = RegistryConfig(
+        const registryConfig = RegistryConfig(
           id: 'test_registry',
           name: 'Test Registry',
           url: 'https://test.registry.com',
@@ -410,7 +409,7 @@ void main() {
 
       test('应该完整的企业级管理流程', () async {
         // 创建所有组件
-        final registryConfig = RegistryConfig(
+        const registryConfig = RegistryConfig(
           id: 'enterprise_registry',
           name: 'Enterprise Registry',
           url: 'https://enterprise.registry.com',
@@ -451,7 +450,7 @@ void main() {
           permissions: {
             Permission.read,
             Permission.download,
-            Permission.upload
+            Permission.upload,
           },
           createdBy: 'admin',
         );

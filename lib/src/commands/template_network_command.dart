@@ -12,12 +12,11 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:convert';
 import 'package:args/command_runner.dart';
-import 'package:ming_status_cli/src/core/network/http_client.dart';
-import 'package:ming_status_cli/src/core/network/retry_strategy.dart';
 import 'package:ming_status_cli/src/core/network/bandwidth_manager.dart';
+import 'package:ming_status_cli/src/core/network/http_client.dart';
 import 'package:ming_status_cli/src/core/network/offline_support.dart';
+import 'package:ming_status_cli/src/core/network/retry_strategy.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 模板网络通信命令
@@ -180,12 +179,22 @@ class TemplateNetworkCommand extends Command<int> {
       switch (action) {
         case 'status':
           return await _handleStatusAction(
-              subaction, url, outputFormat, verbose, monitor);
+            subaction,
+            url,
+            outputFormat,
+            verbose,
+            monitor,
+          );
         case 'config':
           return await _handleConfigAction(subaction, outputFormat, verbose);
         case 'bandwidth':
           return await _handleBandwidthAction(
-              subaction, limit, networkType, outputFormat, verbose);
+            subaction,
+            limit,
+            networkType,
+            outputFormat,
+            verbose,
+          );
         case 'offline':
           return await _handleOfflineAction(subaction, outputFormat, verbose);
         case 'retry':
@@ -223,8 +232,11 @@ class TemplateNetworkCommand extends Command<int> {
     switch (subaction) {
       case 'show':
         _displayNetworkStatus(
-            httpClient, offlineSupport, outputFormat, verbose);
-        break;
+          httpClient,
+          offlineSupport,
+          outputFormat,
+          verbose,
+        );
 
       case 'detect':
         final testUrl = url ?? 'https://www.google.com';
@@ -235,12 +247,14 @@ class TemplateNetworkCommand extends Command<int> {
 
         print('网络质量: ${httpClient.networkQuality.name}');
         print('连接状态: ${connectionStatus.name}');
-        break;
 
       default:
         _displayNetworkStatus(
-            httpClient, offlineSupport, outputFormat, verbose);
-        break;
+          httpClient,
+          offlineSupport,
+          outputFormat,
+          verbose,
+        );
     }
 
     httpClient.close();
@@ -260,15 +274,12 @@ class TemplateNetworkCommand extends Command<int> {
     switch (subaction) {
       case 'show':
         _displayNetworkConfig(outputFormat, verbose);
-        break;
 
       case 'set':
         print('✅ 网络配置已更新');
-        break;
 
       default:
         _displayNetworkConfig(outputFormat, verbose);
-        break;
     }
 
     return 0;
@@ -292,7 +303,6 @@ class TemplateNetworkCommand extends Command<int> {
         if (limit != null) {
           print('✅ 带宽限制已设置: $limit');
         }
-        break;
 
       case 'optimize':
         if (networkType != null) {
@@ -301,12 +311,10 @@ class TemplateNetworkCommand extends Command<int> {
           bandwidthManager.optimizeNetworkUsage();
           print('✅ 网络已优化为: ${type.name}');
         }
-        break;
 
       case 'show':
       default:
         _displayBandwidthStats(bandwidthManager, outputFormat, verbose);
-        break;
     }
 
     bandwidthManager.dispose();
@@ -327,11 +335,9 @@ class TemplateNetworkCommand extends Command<int> {
     switch (subaction) {
       case 'enable':
         print('✅ 离线支持已启用');
-        break;
 
       case 'disable':
         print('❌ 离线支持已禁用');
-        break;
 
       case 'sync':
         try {
@@ -340,12 +346,10 @@ class TemplateNetworkCommand extends Command<int> {
         } catch (e) {
           print('❌ 离线数据同步失败: $e');
         }
-        break;
 
       case 'show':
       default:
         _displayOfflineStatus(offlineSupport, outputFormat, verbose);
-        break;
     }
 
     offlineSupport.dispose();
@@ -367,7 +371,6 @@ class TemplateNetworkCommand extends Command<int> {
       case 'show':
       default:
         _displayRetryStats(retryStrategy, outputFormat, verbose);
-        break;
     }
 
     return 0;
@@ -429,17 +432,27 @@ class TemplateNetworkCommand extends Command<int> {
       print('');
 
       // 简化的监控实现
-      for (int i = 0; i < 10; i++) {
+      for (var i = 0; i < 10; i++) {
         print('=== 监控周期 ${i + 1} ===');
-        _displayAllStats(httpClient, bandwidthManager, offlineSupport,
-            outputFormat, verbose);
+        _displayAllStats(
+          httpClient,
+          bandwidthManager,
+          offlineSupport,
+          outputFormat,
+          verbose,
+        );
         print('');
 
-        await Future.delayed(const Duration(seconds: 5));
+        await Future<void>.delayed(const Duration(seconds: 5));
       }
     } else {
       _displayAllStats(
-          httpClient, bandwidthManager, offlineSupport, outputFormat, verbose);
+        httpClient,
+        bandwidthManager,
+        offlineSupport,
+        outputFormat,
+        verbose,
+      );
     }
 
     httpClient.close();
@@ -465,12 +478,10 @@ class TemplateNetworkCommand extends Command<int> {
         httpClient.clearCache();
         offlineSupport.clearCache();
         print('✅ 缓存已清理');
-        break;
 
       case 'show':
       default:
         _displayCacheStats(httpClient, offlineSupport, outputFormat, verbose);
-        break;
     }
 
     httpClient.close();
@@ -497,7 +508,8 @@ class TemplateNetworkCommand extends Command<int> {
       print('    活跃连接数: ${connectionPool.activeConnections}');
       print('    空闲连接数: ${connectionPool.idleConnections}');
       print(
-          '    使用率: ${(connectionPool.utilizationRate * 100).toStringAsFixed(1)}%');
+        '    使用率: ${(connectionPool.utilizationRate * 100).toStringAsFixed(1)}%',
+      );
     }
   }
 
@@ -579,7 +591,8 @@ class TemplateNetworkCommand extends Command<int> {
       print('    过期条目: ${cacheStats['expiredEntries']}');
       print('    缓存大小: ${_formatBytes(cacheStats['totalSizeBytes'] as int)}');
       print(
-          '    命中率: ${((cacheStats['hitRate'] as double) * 100).toStringAsFixed(1)}%');
+        '    命中率: ${((cacheStats['hitRate'] as double) * 100).toStringAsFixed(1)}%',
+      );
     }
   }
 
@@ -597,7 +610,8 @@ class TemplateNetworkCommand extends Command<int> {
     print('  成功重试: ${stats['successfulRetries']}');
     print('  失败重试: ${stats['failedRetries']}');
     print(
-        '  成功率: ${((stats['successRate'] as double) * 100).toStringAsFixed(1)}%');
+      '  成功率: ${((stats['successRate'] as double) * 100).toStringAsFixed(1)}%',
+    );
 
     if (verbose && circuitStats != null) {
       print('  断路器状态:');
@@ -605,7 +619,8 @@ class TemplateNetworkCommand extends Command<int> {
       print('    失败计数: ${circuitStats['failureCount']}');
       print('    成功计数: ${circuitStats['successCount']}');
       print(
-          '    失败率: ${((circuitStats['failureRate'] as double) * 100).toStringAsFixed(1)}%');
+        '    失败率: ${((circuitStats['failureRate'] as double) * 100).toStringAsFixed(1)}%',
+      );
     }
   }
 
@@ -641,7 +656,8 @@ class TemplateNetworkCommand extends Command<int> {
 
     print('📊 缓存统计:');
     print(
-        '  HTTP缓存命中率: ${((httpStats['cacheHitRate'] as double) * 100).toStringAsFixed(1)}%');
+      '  HTTP缓存命中率: ${((httpStats['cacheHitRate'] as double) * 100).toStringAsFixed(1)}%',
+    );
     print('  离线缓存条目: ${cacheStats['activeEntries']}');
     print('  缓存大小: ${_formatBytes(cacheStats['totalSizeBytes'] as int)}');
 
@@ -650,7 +666,8 @@ class TemplateNetworkCommand extends Command<int> {
       print('    HTTP总请求: ${httpStats['totalRequests']}');
       print('    过期缓存: ${cacheStats['expiredEntries']}');
       print(
-          '    缓存命中率: ${((cacheStats['hitRate'] as double) * 100).toStringAsFixed(1)}%');
+        '    缓存命中率: ${((cacheStats['hitRate'] as double) * 100).toStringAsFixed(1)}%',
+      );
     }
   }
 

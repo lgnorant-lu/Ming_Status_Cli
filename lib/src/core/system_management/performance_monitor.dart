@@ -356,7 +356,7 @@ class PerformanceMonitor {
 
   /// 计算类型评分
   double _calculateTypeScore(
-      PerformanceMetricType type, List<PerformanceMetric> metrics) {
+      PerformanceMetricType type, List<PerformanceMetric> metrics,) {
     if (metrics.isEmpty) return 100;
 
     switch (type) {
@@ -415,7 +415,7 @@ class PerformanceMonitor {
 
   /// 获取瓶颈描述
   String _getBottleneckDescription(
-      PerformanceMetricType type, List<PerformanceMetric> metrics) {
+      PerformanceMetricType type, List<PerformanceMetric> metrics,) {
     switch (type) {
       case PerformanceMetricType.memory:
         final maxMemory =
@@ -432,7 +432,7 @@ class PerformanceMonitor {
 
   /// 获取优化建议
   List<String> _getRecommendations(
-      PerformanceMetricType type, List<PerformanceMetric> metrics) {
+      PerformanceMetricType type, List<PerformanceMetric> metrics,) {
     switch (type) {
       case PerformanceMetricType.memory:
         return [
@@ -464,8 +464,9 @@ class PerformanceMonitor {
   String _formatBytes(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024)
+    if (bytes < 1024 * 1024 * 1024) {
       return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 

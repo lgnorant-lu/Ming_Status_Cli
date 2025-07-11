@@ -13,7 +13,6 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:convert';
 
 /// 注册表类型枚举
 enum RegistryType {
@@ -89,6 +88,21 @@ enum SyncStatus {
 
 /// 租户信息
 class TenantInfo {
+  const TenantInfo({
+    required this.id,
+    required this.name,
+    required this.domain,
+    required this.status,
+    required this.createdAt,
+    required this.lastActiveAt,
+    required this.storageQuota,
+    required this.storageUsed,
+    required this.userLimit,
+    required this.currentUsers,
+    required this.config,
+    required this.metadata,
+  });
+
   /// 租户ID
   final String id;
 
@@ -125,21 +139,6 @@ class TenantInfo {
   /// 元数据
   final Map<String, dynamic> metadata;
 
-  const TenantInfo({
-    required this.id,
-    required this.name,
-    required this.domain,
-    required this.status,
-    required this.createdAt,
-    required this.lastActiveAt,
-    required this.storageQuota,
-    required this.storageUsed,
-    required this.userLimit,
-    required this.currentUsers,
-    required this.config,
-    required this.metadata,
-  });
-
   /// 存储使用率
   double get storageUsageRate =>
       storageQuota > 0 ? storageUsed / storageQuota : 0.0;
@@ -156,6 +155,21 @@ class TenantInfo {
 
 /// 注册表配置
 class RegistryConfig {
+  const RegistryConfig({
+    required this.id,
+    required this.name,
+    required this.url,
+    required this.type,
+    required this.deploymentMode,
+    required this.authType,
+    required this.authConfig,
+    required this.multiTenant,
+    required this.federationEnabled,
+    required this.syncConfig,
+    required this.storageConfig,
+    required this.networkConfig,
+  });
+
   /// 注册表ID
   final String id;
 
@@ -191,25 +205,23 @@ class RegistryConfig {
 
   /// 网络配置
   final Map<String, dynamic> networkConfig;
-
-  const RegistryConfig({
-    required this.id,
-    required this.name,
-    required this.url,
-    required this.type,
-    required this.deploymentMode,
-    required this.authType,
-    required this.authConfig,
-    required this.multiTenant,
-    required this.federationEnabled,
-    required this.syncConfig,
-    required this.storageConfig,
-    required this.networkConfig,
-  });
 }
 
 /// 联邦同步信息
 class FederationSync {
+  const FederationSync({
+    required this.id,
+    required this.sourceRegistry,
+    required this.targetRegistry,
+    required this.status,
+    required this.strategy,
+    required this.lastSyncTime,
+    required this.nextSyncTime,
+    required this.syncedTemplates,
+    required this.conflicts,
+    required this.config, this.error,
+  });
+
   /// 同步ID
   final String id;
 
@@ -243,20 +255,6 @@ class FederationSync {
   /// 同步配置
   final Map<String, dynamic> config;
 
-  const FederationSync({
-    required this.id,
-    required this.sourceRegistry,
-    required this.targetRegistry,
-    required this.status,
-    required this.strategy,
-    required this.lastSyncTime,
-    required this.nextSyncTime,
-    required this.syncedTemplates,
-    required this.conflicts,
-    this.error,
-    required this.config,
-  });
-
   /// 是否需要同步
   bool get needsSync => DateTime.now().isAfter(nextSyncTime);
 
@@ -271,6 +269,13 @@ class FederationSync {
 
 /// 私有注册表
 class PrivateRegistry {
+  /// 构造函数
+  PrivateRegistry({
+    required RegistryConfig config,
+  }) : _config = config {
+    _initializeRegistry();
+  }
+
   /// 注册表配置
   final RegistryConfig _config;
 
@@ -291,13 +296,6 @@ class PrivateRegistry {
 
   /// 事件监听器
   final List<Function(String, Map<String, dynamic>)> _eventListeners = [];
-
-  /// 构造函数
-  PrivateRegistry({
-    required RegistryConfig config,
-  }) : _config = config {
-    _initializeRegistry();
-  }
 
   /// 创建租户
   Future<TenantInfo> createTenant({
@@ -422,9 +420,11 @@ class PrivateRegistry {
       status: SyncStatus.paused,
       strategy: strategy,
       lastSyncTime: DateTime.now(),
-      nextSyncTime: DateTime.now().add(Duration(
-        minutes: config['intervalMinutes'] as int? ?? 60,
-      )),
+      nextSyncTime: DateTime.now().add(
+        Duration(
+          minutes: config['intervalMinutes'] as int? ?? 60,
+        ),
+      ),
       syncedTemplates: 0,
       conflicts: 0,
       config: config,
@@ -476,13 +476,16 @@ class PrivateRegistry {
         id: sync.id,
         sourceRegistry: sync.sourceRegistry,
         targetRegistry: sync.targetRegistry,
-        status:
-            result['conflicts'] > 0 ? SyncStatus.conflict : SyncStatus.synced,
+        status: (result['conflicts'] as int? ?? 0) > 0
+            ? SyncStatus.conflict
+            : SyncStatus.synced,
         strategy: sync.strategy,
         lastSyncTime: DateTime.now(),
-        nextSyncTime: DateTime.now().add(Duration(
-          minutes: sync.config['intervalMinutes'] as int? ?? 60,
-        )),
+        nextSyncTime: DateTime.now().add(
+          Duration(
+            minutes: sync.config['intervalMinutes'] as int? ?? 60,
+          ),
+        ),
         syncedTemplates: result['syncedTemplates'] as int,
         conflicts: result['conflicts'] as int,
         config: sync.config,
@@ -651,7 +654,7 @@ class PrivateRegistry {
   /// 生成租户ID
   String _generateTenantId(String name) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final normalized = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    final normalized = name.toLowerCase().replaceAll(RegExp('[^a-z0-9]'), '');
     return '${normalized}_$timestamp';
   }
 

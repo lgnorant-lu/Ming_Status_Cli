@@ -160,35 +160,35 @@ class RegistrySyncCommand extends Command<int> {
 
     if (verbose) {
       print('  🔍 检查注册表状态...');
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
       print('  ✅ 注册表状态: 健康');
 
       print('  🔍 检查本地索引...');
-      await Future.delayed(const Duration(milliseconds: 150));
+      await Future<void>.delayed(const Duration(milliseconds: 150));
       print('  ✅ 本地索引: 已存在');
 
       if (incremental) {
         print('  🔍 检查更新...');
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future<void>.delayed(const Duration(milliseconds: 300));
         print('  📥 发现 15 个更新');
         print('  📥 发现 3 个新模板');
         print('  📥 发现 2 个删除');
       } else {
         print('  🔍 获取完整索引...');
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future<void>.delayed(const Duration(milliseconds: 500));
         print('  📥 下载索引: 1.2MB');
       }
 
       print('  🔄 更新本地索引...');
-      await Future.delayed(const Duration(milliseconds: 400));
+      await Future<void>.delayed(const Duration(milliseconds: 400));
       print('  ✅ 索引更新完成');
 
       print('  🔍 验证数据完整性...');
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
       print('  ✅ 数据验证通过');
     } else {
       // 简化输出
-      await Future.delayed(const Duration(milliseconds: 800));
+      await Future<void>.delayed(const Duration(milliseconds: 800));
     }
 
     // 显示同步结果

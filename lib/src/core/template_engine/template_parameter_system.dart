@@ -9,7 +9,7 @@ Description:        模板参数系统 (Template parameter system)
 ---------------------------------------------------------------
 */
 
-import 'package:ming_status_cli/src/core/template_variable_processor.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_variable_processor.dart';
 import 'package:ming_status_cli/src/models/template_variable.dart';
 
 /// 模板参数系统

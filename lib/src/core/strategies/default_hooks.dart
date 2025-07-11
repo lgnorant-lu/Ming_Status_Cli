@@ -12,7 +12,7 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:ming_status_cli/src/utils/string_utils.dart';
 

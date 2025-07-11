@@ -183,7 +183,7 @@ class StartupOptimizer {
 
         phaseResults[phase] = phaseStopwatch.elapsed;
         cli_logger.Logger.debug(
-            '阶段 ${phase.name} 完成: ${phaseStopwatch.elapsedMilliseconds}ms');
+            '阶段 ${phase.name} 完成: ${phaseStopwatch.elapsedMilliseconds}ms',);
       }
 
       totalStopwatch.stop();
@@ -266,7 +266,7 @@ class StartupOptimizer {
                   .subtract(
                     Duration(
                         minutes: _startupHistory.length -
-                            _startupHistory.indexOf(r)),
+                            _startupHistory.indexOf(r),),
                   )
                   .toIso8601String(),
               'startup_time_ms': r.totalTime.inMilliseconds,

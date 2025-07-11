@@ -16,8 +16,8 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:ming_status_cli/src/commands/base_command.dart';
-import 'package:ming_status_cli/src/core/config_manager.dart';
-import 'package:ming_status_cli/src/core/template_engine.dart';
+import 'package:ming_status_cli/src/core/config_management/config_manager.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_engine.dart';
 import 'package:ming_status_cli/src/models/template_variable.dart';
 import 'package:ming_status_cli/src/models/user_config.dart';
 import 'package:ming_status_cli/src/utils/color_output.dart';

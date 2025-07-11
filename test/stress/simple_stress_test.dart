@@ -208,7 +208,7 @@ void main() {
         expect(snapshots.length, equals(5));
         expect(snapshots.every((s) => s.containsKey('used_bytes')), isTrue);
         expect(
-            snapshots.every((s) => s.containsKey('usage_percentage')), isTrue);
+            snapshots.every((s) => s.containsKey('usage_percentage')), isTrue,);
 
         print('✅ 内存趋势监控测试通过');
         print('  快照数量: ${snapshots.length}');
@@ -305,7 +305,7 @@ Future<void> _simulateOperation() async {
 
   // 模拟I/O操作
   await Future<void>.delayed(
-      Duration(milliseconds: math.Random().nextInt(10) + 5));
+      Duration(milliseconds: math.Random().nextInt(10) + 5),);
 
   // 模拟内存操作
   final tempList = List.generate(100, (i) => 'temp_$i$sum');
@@ -316,7 +316,8 @@ Future<void> _simulateOperation() async {
 String _formatBytes(int bytes) {
   if (bytes < 1024) return '${bytes}B';
   if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)}KB';
-  if (bytes < 1024 * 1024 * 1024)
+  if (bytes < 1024 * 1024 * 1024) {
     return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
+  }
   return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)}GB';
 }

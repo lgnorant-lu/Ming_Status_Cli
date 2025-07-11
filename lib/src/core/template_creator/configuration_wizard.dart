@@ -267,7 +267,8 @@ class ConfigurationWizard {
     final typeAnswer = await _askQuestion(typeQuestion);
     if (typeAnswer == null) return false;
 
-    final selectedType = TemplateType.values[int.parse(typeAnswer) - 1];
+    final selectedType =
+        TemplateType.values[int.parse(typeAnswer.toString()) - 1];
     _context.setAnswer('templateType', selectedType);
 
     // 子类型选择
@@ -287,7 +288,8 @@ class ConfigurationWizard {
       if (subTypeAnswer == null) return false;
 
       if (subTypeAnswer != '1') {
-        final selectedSubType = supportedSubTypes[int.parse(subTypeAnswer) - 2];
+        final selectedSubType =
+            supportedSubTypes[int.parse(subTypeAnswer.toString()) - 2];
         _context.setAnswer('subType', selectedSubType);
       }
     }
@@ -327,13 +329,19 @@ class ConfigurationWizard {
       switch (question.key) {
         case 'platform':
           _context.setAnswer(
-              question.key, TemplatePlatform.values[int.parse(answer) - 1]);
+            question.key,
+            TemplatePlatform.values[int.parse(answer.toString()) - 1],
+          );
         case 'framework':
           _context.setAnswer(
-              question.key, TemplateFramework.values[int.parse(answer) - 1]);
+            question.key,
+            TemplateFramework.values[int.parse(answer.toString()) - 1],
+          );
         case 'complexity':
           _context.setAnswer(
-              question.key, TemplateComplexity.values[int.parse(answer) - 1]);
+            question.key,
+            TemplateComplexity.values[int.parse(answer.toString()) - 1],
+          );
       }
     }
 
@@ -559,7 +567,8 @@ class ConfigurationWizard {
     print('描述: ${_context.getAnswer('description')}');
     print('版本: ${_context.getAnswer('version')}');
     print(
-        '类型: ${_context.getAnswer<TemplateType>('templateType')?.displayName}');
+      '类型: ${_context.getAnswer<TemplateType>('templateType')?.displayName}',
+    );
     final subType = _context.getAnswer<TemplateSubType>('subType');
     if (subType != null) {
       print('子类型: ${subType.displayName}');
@@ -567,10 +576,14 @@ class ConfigurationWizard {
     print('平台: ${_context.getAnswer<TemplatePlatform>('platform')?.name}');
     print('框架: ${_context.getAnswer<TemplateFramework>('framework')?.name}');
     print('复杂度: ${_context.getAnswer<TemplateComplexity>('complexity')?.name}');
-    print('包含测试: ${_context.getAnswer('includeTests') ? '是' : '否'}');
-    print('包含文档: ${_context.getAnswer('includeDocumentation') ? '是' : '否'}');
-    print('包含示例: ${_context.getAnswer('includeExamples') ? '是' : '否'}');
-    print('Git初始化: ${_context.getAnswer('enableGitInit') ? '是' : '否'}');
+    print(
+        '包含测试: ${_context.getAnswer<bool>('includeTests') == true ? '是' : '否'}',);
+    print(
+        '包含文档: ${_context.getAnswer<bool>('includeDocumentation') == true ? '是' : '否'}',);
+    print(
+        '包含示例: ${_context.getAnswer<bool>('includeExamples') == true ? '是' : '否'}',);
+    print(
+        'Git初始化: ${_context.getAnswer<bool>('enableGitInit') == true ? '是' : '否'}',);
     final tags = _context.getAnswer<List<String>>('tags');
     if (tags != null && tags.isNotEmpty) {
       print('标签: ${tags.join(', ')}');

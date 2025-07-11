@@ -13,7 +13,6 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:convert';
 
 /// 权限类型枚举
 enum Permission {
@@ -101,6 +100,19 @@ enum AccessResult {
 
 /// 用户信息
 class UserInfo {
+  const UserInfo({
+    required this.id,
+    required this.username,
+    required this.email,
+    required this.displayName,
+    required this.tenantId,
+    required this.status,
+    required this.createdAt,
+    required this.attributes, required this.groups, this.lastLoginAt,
+    this.department,
+    this.position,
+  });
+
   /// 用户ID
   final String id;
 
@@ -137,21 +149,6 @@ class UserInfo {
   /// 职位
   final String? position;
 
-  const UserInfo({
-    required this.id,
-    required this.username,
-    required this.email,
-    required this.displayName,
-    required this.tenantId,
-    required this.status,
-    required this.createdAt,
-    this.lastLoginAt,
-    required this.attributes,
-    required this.groups,
-    this.department,
-    this.position,
-  });
-
   /// 是否活跃
   bool get isActive => status == 'active';
 
@@ -163,6 +160,17 @@ class UserInfo {
 
 /// 角色定义
 class Role {
+  const Role({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.description,
+    required this.permissions,
+    required this.resourceScope,
+    required this.inheritable,
+    required this.createdAt, required this.createdBy, required this.metadata, this.parentRoleId,
+  });
+
   /// 角色ID
   final String id;
 
@@ -196,20 +204,6 @@ class Role {
   /// 角色元数据
   final Map<String, dynamic> metadata;
 
-  const Role({
-    required this.id,
-    required this.name,
-    required this.type,
-    required this.description,
-    required this.permissions,
-    required this.resourceScope,
-    required this.inheritable,
-    this.parentRoleId,
-    required this.createdAt,
-    required this.createdBy,
-    required this.metadata,
-  });
-
   /// 是否有权限
   bool hasPermission(Permission permission) {
     return permissions.contains(permission);
@@ -227,6 +221,17 @@ class Role {
 
 /// 用户角色分配
 class UserRoleAssignment {
+  const UserRoleAssignment({
+    required this.id,
+    required this.userId,
+    required this.roleId,
+    required this.resourceScope,
+    required this.assignedAt,
+    required this.assignedBy,
+    required this.active, required this.conditions, this.expiresAt,
+    this.reason,
+  });
+
   /// 分配ID
   final String id;
 
@@ -257,19 +262,6 @@ class UserRoleAssignment {
   /// 条件
   final Map<String, dynamic> conditions;
 
-  const UserRoleAssignment({
-    required this.id,
-    required this.userId,
-    required this.roleId,
-    required this.resourceScope,
-    required this.assignedAt,
-    required this.assignedBy,
-    this.expiresAt,
-    required this.active,
-    this.reason,
-    required this.conditions,
-  });
-
   /// 是否过期
   bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
 
@@ -279,6 +271,19 @@ class UserRoleAssignment {
 
 /// 访问请求
 class AccessRequest {
+  const AccessRequest({
+    required this.id,
+    required this.userId,
+    required this.resourceType,
+    required this.resourceId,
+    required this.permission,
+    required this.requestTime,
+    required this.context,
+    this.ipAddress,
+    this.userAgent,
+    this.sessionId,
+  });
+
   /// 请求ID
   final String id;
 
@@ -308,23 +313,18 @@ class AccessRequest {
 
   /// 会话ID
   final String? sessionId;
-
-  const AccessRequest({
-    required this.id,
-    required this.userId,
-    required this.resourceType,
-    required this.resourceId,
-    required this.permission,
-    required this.requestTime,
-    required this.context,
-    this.ipAddress,
-    this.userAgent,
-    this.sessionId,
-  });
 }
 
 /// 访问决策
 class AccessDecision {
+  const AccessDecision({
+    required this.result,
+    required this.reason,
+    required this.decisionTime,
+    required this.conditions, required this.auditInfo, this.decisionMaker,
+    this.validity,
+  });
+
   /// 决策结果
   final AccessResult result;
 
@@ -346,16 +346,6 @@ class AccessDecision {
   /// 审计信息
   final Map<String, dynamic> auditInfo;
 
-  const AccessDecision({
-    required this.result,
-    required this.reason,
-    required this.decisionTime,
-    this.decisionMaker,
-    this.validity,
-    required this.conditions,
-    required this.auditInfo,
-  });
-
   /// 是否允许访问
   bool get isAllowed => result == AccessResult.allow;
 
@@ -370,6 +360,19 @@ class AccessDecision {
 
 /// 审计日志条目
 class AuditLogEntry {
+  const AuditLogEntry({
+    required this.id,
+    required this.userId,
+    required this.operation,
+    required this.resourceType,
+    required this.resourceId,
+    required this.success,
+    required this.timestamp,
+    required this.details, this.ipAddress,
+    this.userAgent,
+    this.error,
+  });
+
   /// 日志ID
   final String id;
 
@@ -402,24 +405,15 @@ class AuditLogEntry {
 
   /// 错误信息
   final String? error;
-
-  const AuditLogEntry({
-    required this.id,
-    required this.userId,
-    required this.operation,
-    required this.resourceType,
-    required this.resourceId,
-    required this.success,
-    required this.timestamp,
-    this.ipAddress,
-    this.userAgent,
-    required this.details,
-    this.error,
-  });
 }
 
 /// 访问控制系统
 class AccessControl {
+  /// 构造函数
+  AccessControl() {
+    _initializeDefaultRoles();
+  }
+
   /// 用户列表
   final Map<String, UserInfo> _users = {};
 
@@ -440,11 +434,6 @@ class AccessControl {
 
   /// 会话管理
   final Map<String, Map<String, dynamic>> _sessions = {};
-
-  /// 构造函数
-  AccessControl() {
-    _initializeDefaultRoles();
-  }
 
   /// 创建用户
   Future<UserInfo> createUser({
@@ -498,10 +487,10 @@ class AccessControl {
     required RoleType type,
     required String description,
     required Set<Permission> permissions,
+    required String createdBy,
     Map<ResourceType, List<String>>? resourceScope,
     bool inheritable = true,
     String? parentRoleId,
-    required String createdBy,
     Map<String, dynamic>? metadata,
   }) async {
     final roleId = _generateRoleId(name);
@@ -543,8 +532,8 @@ class AccessControl {
   Future<UserRoleAssignment> assignRoleToUser({
     required String userId,
     required String roleId,
-    Map<ResourceType, List<String>>? resourceScope,
     required String assignedBy,
+    Map<ResourceType, List<String>>? resourceScope,
     DateTime? expiresAt,
     String? reason,
     Map<String, dynamic>? conditions,
@@ -611,7 +600,7 @@ class AccessControl {
       }
 
       // 检查权限
-      bool hasPermission = false;
+      var hasPermission = false;
       String? grantingRole;
 
       for (final roleAssignment in userRoles) {
@@ -624,7 +613,9 @@ class AccessControl {
         if (role.hasPermission(request.permission)) {
           // 检查资源范围
           if (role.canAccessResource(
-              request.resourceType, request.resourceId)) {
+            request.resourceType,
+            request.resourceId,
+          )) {
             hasPermission = true;
             grantingRole = role.name;
             break;
@@ -709,7 +700,8 @@ class AccessControl {
   Future<List<UserRoleAssignment>> _getUserRoles(String userId) async {
     return _userRoleAssignments
         .where(
-            (assignment) => assignment.userId == userId && assignment.isValid)
+          (assignment) => assignment.userId == userId && assignment.isValid,
+        )
         .toList();
   }
 
@@ -722,8 +714,9 @@ class AccessControl {
   }) {
     var logs = _auditLogs.where((log) {
       if (userId != null && log.userId != userId) return false;
-      if (resourceType != null && log.resourceType != resourceType)
+      if (resourceType != null && log.resourceType != resourceType) {
         return false;
+      }
       if (since != null && log.timestamp.isBefore(since)) return false;
       return true;
     }).toList();
@@ -765,7 +758,8 @@ class AccessControl {
         'totalLogs': _auditLogs.length,
         'recentLogs': _auditLogs
             .where(
-                (log) => DateTime.now().difference(log.timestamp).inHours < 24)
+              (log) => DateTime.now().difference(log.timestamp).inHours < 24,
+            )
             .length,
       },
       'sso': {
@@ -904,7 +898,7 @@ class AccessControl {
   /// 生成角色ID
   String _generateRoleId(String name) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final normalized = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '_');
+    final normalized = name.toLowerCase().replaceAll(RegExp('[^a-z0-9]'), '_');
     return 'role_${normalized}_$timestamp';
   }
 

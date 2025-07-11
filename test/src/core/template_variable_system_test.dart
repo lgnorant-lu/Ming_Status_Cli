@@ -11,9 +11,9 @@ Description:        模板变量系统测试 (Template variable system tests)
 
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/template_engine.dart';
-import 'package:ming_status_cli/src/core/template_parameter_system.dart';
-import 'package:ming_status_cli/src/core/template_variable_processor.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_engine.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_parameter_system.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_variable_processor.dart';
 import 'package:ming_status_cli/src/models/template_variable.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';

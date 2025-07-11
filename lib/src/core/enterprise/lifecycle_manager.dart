@@ -13,7 +13,6 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:convert';
 
 /// 生命周期状态枚举
 enum LifecycleState {
@@ -98,6 +97,14 @@ enum LifecycleEventType {
 
 /// 模板版本信息
 class TemplateVersion {
+  const TemplateVersion({
+    required this.id,
+    required this.templateId,
+    required this.version,
+    required this.description, required this.state, required this.createdAt, required this.createdBy, required this.changelog, required this.dependencies, required this.compatibility, required this.metadata, this.name,
+    this.releasedAt,
+  });
+
   /// 版本ID
   final String id;
 
@@ -137,22 +144,6 @@ class TemplateVersion {
   /// 元数据
   final Map<String, dynamic> metadata;
 
-  const TemplateVersion({
-    required this.id,
-    required this.templateId,
-    required this.version,
-    this.name,
-    required this.description,
-    required this.state,
-    required this.createdAt,
-    this.releasedAt,
-    required this.createdBy,
-    required this.changelog,
-    required this.dependencies,
-    required this.compatibility,
-    required this.metadata,
-  });
-
   /// 是否已发布
   bool get isReleased => state == LifecycleState.released;
 
@@ -168,6 +159,23 @@ class TemplateVersion {
 
 /// 审批请求
 class ApprovalRequest {
+  const ApprovalRequest({
+    required this.id,
+    required this.versionId,
+    required this.requestType,
+    required this.requestedBy,
+    required this.requestedAt,
+    required this.targetState,
+    required this.currentState,
+    required this.status,
+    required this.approvers,
+    required this.approvedBy,
+    required this.rejectedBy,
+    required this.reason,
+    required this.comments,
+    this.expiresAt,
+  });
+
   /// 请求ID
   final String id;
 
@@ -210,23 +218,6 @@ class ApprovalRequest {
   /// 过期时间
   final DateTime? expiresAt;
 
-  const ApprovalRequest({
-    required this.id,
-    required this.versionId,
-    required this.requestType,
-    required this.requestedBy,
-    required this.requestedAt,
-    required this.targetState,
-    required this.currentState,
-    required this.status,
-    required this.approvers,
-    required this.approvedBy,
-    required this.rejectedBy,
-    required this.reason,
-    required this.comments,
-    this.expiresAt,
-  });
-
   /// 是否需要审批
   bool get needsApproval => status == ApprovalStatus.pending;
 
@@ -240,6 +231,16 @@ class ApprovalRequest {
 
 /// 生命周期事件
 class LifecycleEvent {
+  const LifecycleEvent({
+    required this.id,
+    required this.versionId,
+    required this.eventType,
+    required this.timestamp,
+    required this.actor,
+    required this.description, required this.data, required this.automated, this.fromState,
+    this.toState,
+  });
+
   /// 事件ID
   final String id;
 
@@ -269,23 +270,18 @@ class LifecycleEvent {
 
   /// 是否自动化
   final bool automated;
-
-  const LifecycleEvent({
-    required this.id,
-    required this.versionId,
-    required this.eventType,
-    required this.timestamp,
-    required this.actor,
-    this.fromState,
-    this.toState,
-    required this.description,
-    required this.data,
-    required this.automated,
-  });
 }
 
 /// 版本策略配置
 class VersionStrategyConfig {
+  const VersionStrategyConfig({
+    required this.strategy,
+    required this.format,
+    required this.incrementRules,
+    required this.branchStrategy,
+    required this.tagStrategy,
+  });
+
   /// 策略类型
   final VersionStrategy strategy;
 
@@ -300,18 +296,16 @@ class VersionStrategyConfig {
 
   /// 标签策略
   final Map<String, String> tagStrategy;
-
-  const VersionStrategyConfig({
-    required this.strategy,
-    required this.format,
-    required this.incrementRules,
-    required this.branchStrategy,
-    required this.tagStrategy,
-  });
 }
 
 /// 生命周期管理器
 class LifecycleManager {
+  /// 构造函数
+  LifecycleManager() {
+    _initializeDefaultStrategies();
+    _initializeAutomationRules();
+  }
+
   /// 模板版本列表
   final Map<String, TemplateVersion> _versions = {};
 
@@ -330,19 +324,13 @@ class LifecycleManager {
   /// 通知配置
   final Map<String, List<String>> _notificationConfig = {};
 
-  /// 构造函数
-  LifecycleManager() {
-    _initializeDefaultStrategies();
-    _initializeAutomationRules();
-  }
-
   /// 创建模板版本
   Future<TemplateVersion> createVersion({
     required String templateId,
     required String version,
-    String? name,
     required String description,
     required String createdBy,
+    String? name,
     List<String>? changelog,
     Map<String, String>? dependencies,
     Map<String, dynamic>? compatibility,
@@ -401,11 +389,12 @@ class LifecycleManager {
     // 检查状态转换是否有效
     if (!_isValidStateTransition(version.state, targetState)) {
       throw Exception(
-          'Invalid state transition: ${version.state} -> $targetState');
+        'Invalid state transition: ${version.state} -> $targetState',
+      );
     }
 
     final requestId = _generateRequestId(versionId);
-    final requestType = 'state_change';
+    const requestType = 'state_change';
 
     // 确定审批者
     final finalApprovers = approvers ?? await _getDefaultApprovers(targetState);
@@ -492,8 +481,7 @@ class LifecycleManager {
     }
 
     // 检查是否所有审批者都已审批
-    final allApproved =
-        request.approvers.every((a) => updatedApprovedBy.contains(a));
+    final allApproved = request.approvers.every(updatedApprovedBy.contains);
     final newStatus =
         allApproved ? ApprovalStatus.approved : ApprovalStatus.pending;
 
@@ -533,7 +521,10 @@ class LifecycleManager {
     // 如果全部审批通过，执行状态变更
     if (allApproved) {
       await _executeStateChange(
-          request.versionId, request.targetState, 'system');
+        request.versionId,
+        request.targetState,
+        'system',
+      );
     }
   }
 
@@ -674,8 +665,9 @@ class LifecycleManager {
     return _approvalRequests.values.where((request) {
       if (request.status != ApprovalStatus.pending) return false;
       if (request.isExpired) return false;
-      if (approver != null && !request.approvers.contains(approver))
+      if (approver != null && !request.approvers.contains(approver)) {
         return false;
+      }
       return true;
     }).toList()
       ..sort((a, b) => a.requestedAt.compareTo(b.requestedAt));
@@ -832,11 +824,11 @@ class LifecycleManager {
     required String versionId,
     required LifecycleEventType eventType,
     required String actor,
-    LifecycleState? fromState,
-    LifecycleState? toState,
     required String description,
     required Map<String, dynamic> data,
     required bool automated,
+    LifecycleState? fromState,
+    LifecycleState? toState,
   }) async {
     final event = LifecycleEvent(
       id: _generateEventId(),
@@ -861,14 +853,18 @@ class LifecycleManager {
 
   /// 发送通知
   Future<void> _sendNotifications(
-      String type, Map<String, dynamic> data) async {
+    String type,
+    Map<String, dynamic> data,
+  ) async {
     // 模拟通知发送
     await Future.delayed(const Duration(milliseconds: 50));
   }
 
   /// 执行自动化规则
   Future<void> _executeAutomationRules(
-      String versionId, LifecycleState state) async {
+    String versionId,
+    LifecycleState state,
+  ) async {
     final rules = _automationRules[state.name];
     if (rules == null) return;
 
@@ -927,14 +923,11 @@ class LifecycleManager {
         major++;
         minor = 0;
         patch = 0;
-        break;
       case 'minor':
         minor++;
         patch = 0;
-        break;
       case 'patch':
         patch++;
-        break;
     }
 
     return '$major.$minor.$patch';
@@ -942,7 +935,9 @@ class LifecycleManager {
 
   /// 应用自定义版本策略
   String _applyCustomVersionStrategy(
-      VersionStrategyConfig strategy, String currentVersion) {
+    VersionStrategyConfig strategy,
+    String currentVersion,
+  ) {
     // 简化实现
     return currentVersion;
   }

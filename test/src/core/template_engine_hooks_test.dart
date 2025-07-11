@@ -12,8 +12,8 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:ming_status_cli/src/core/template_engine.dart';
-import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_engine.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
 import 'package:test/test.dart';
 
 /// 简单的测试钩子

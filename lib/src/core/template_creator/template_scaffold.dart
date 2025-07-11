@@ -462,37 +462,37 @@ class {{serviceName}}Service {
 
   // 其他模板类型的生成方法（简化实现）
   Future<void> _generateDataTemplates(
-      String templatesDir, ScaffoldConfig config) async {
+      String templatesDir, ScaffoldConfig config,) async {
     // 实现数据层模板生成
   }
 
   Future<void> _generateFullTemplates(
-      String templatesDir, ScaffoldConfig config) async {
+      String templatesDir, ScaffoldConfig config,) async {
     // 实现完整应用模板生成
   }
 
   Future<void> _generateSystemTemplates(
-      String templatesDir, ScaffoldConfig config) async {
+      String templatesDir, ScaffoldConfig config,) async {
     // 实现系统配置模板生成
   }
 
   Future<void> _generateBasicTemplates(
-      String templatesDir, ScaffoldConfig config) async {
+      String templatesDir, ScaffoldConfig config,) async {
     // 实现基础模板生成
   }
 
   Future<void> _generateMicroTemplates(
-      String templatesDir, ScaffoldConfig config) async {
+      String templatesDir, ScaffoldConfig config,) async {
     // 实现微服务模板生成
   }
 
   Future<void> _generatePluginTemplates(
-      String templatesDir, ScaffoldConfig config) async {
+      String templatesDir, ScaffoldConfig config,) async {
     // 实现插件模板生成
   }
 
   Future<void> _generateInfrastructureTemplates(
-      String templatesDir, ScaffoldConfig config) async {
+      String templatesDir, ScaffoldConfig config,) async {
     // 实现基础设施模板生成
   }
 

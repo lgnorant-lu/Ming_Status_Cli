@@ -259,11 +259,12 @@ class RegistryAddCommand extends Command<int> {
   }
 
   /// 构建认证配置
-  Map<String, String>? _buildAuthConfig(String authType, String? authToken, String authHeader) {
+  Map<String, String>? _buildAuthConfig(
+      String authType, String? authToken, String authHeader,) {
     if (authType == 'none') return null;
 
     final auth = <String, String>{};
-    
+
     switch (authType) {
       case 'token':
       case 'oauth2':
@@ -288,8 +289,8 @@ class RegistryAddCommand extends Command<int> {
     try {
       // TODO: 实现实际的连接验证
       // 这里应该发送HTTP请求验证注册表是否可访问
-      await Future.delayed(const Duration(milliseconds: 500));
-      
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+
       // 模拟验证过程
       print('  • 检查URL格式: ✅');
       print('  • 测试网络连接: ✅');
@@ -312,7 +313,7 @@ class RegistryAddCommand extends Command<int> {
     print('状态: ${config.enabled ? '启用' : '禁用'}');
     print('创建时间: ${config.createdAt.toLocal()}');
     print('');
-    
+
     print('💡 提示:');
     print('  • 使用 "ming registry list" 查看所有注册表');
     print('  • 使用 "ming registry sync --registry=${config.id}" 同步数据');

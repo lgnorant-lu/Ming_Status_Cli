@@ -249,7 +249,7 @@ class TemplateConditionalCommand extends Command<int> {
     // 功能特性
     if (detectFeatures) {
       cli_logger.Logger.info('自动检测项目特性...');
-      final features = await featureDetector.detectFeatures(projectPath: '.');
+      // final features = await featureDetector.detectFeatures(projectPath: '.');
       context['features'] = {
         'offline': true,
         'auth': false,

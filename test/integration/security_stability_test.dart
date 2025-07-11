@@ -15,9 +15,9 @@ Change History:
 
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/dependency_security_checker.dart';
-import 'package:ming_status_cli/src/core/file_security_manager.dart';
-import 'package:ming_status_cli/src/core/security_validator.dart';
+import 'package:ming_status_cli/src/core/security_system/dependency_security_checker.dart';
+import 'package:ming_status_cli/src/core/security_system/file_security_manager.dart';
+import 'package:ming_status_cli/src/core/security_system/security_validator.dart';
 import 'package:path/path.dart' as path;
 import 'package:test/test.dart';
 
@@ -127,12 +127,12 @@ void main() {
 
         expect(
             PathSecurityValidator.isPathWithinAllowedDirectory(
-                validPath, allowed),
-            isTrue);
+                validPath, allowed,),
+            isTrue,);
         expect(
             PathSecurityValidator.isPathWithinAllowedDirectory(
-                invalidPath, allowed),
-            isFalse);
+                invalidPath, allowed,),
+            isFalse,);
         print('✅ 路径范围检查通过');
       });
     });
@@ -369,7 +369,7 @@ dev_dependencies:
 
         expect(recommendations, isNotEmpty);
         expect(recommendations.any((r) => r.contains('vulnerable_package')),
-            isTrue);
+            isTrue,);
 
         print('✅ 安全建议生成测试通过 (${recommendations.length}条建议)');
       });

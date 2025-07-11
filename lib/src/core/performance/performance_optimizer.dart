@@ -236,7 +236,7 @@ class PerformanceOptimizer {
       _currentMetrics = afterMetrics;
 
       cli_logger.Logger.info(
-          '性能优化完成: ${strategy.name} - ${result.success ? '成功' : '失败'}');
+          '性能优化完成: ${strategy.name} - ${result.success ? '成功' : '失败'}',);
       return result;
     } catch (e) {
       cli_logger.Logger.error('性能优化失败: ${strategy.name}', error: e);

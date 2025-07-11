@@ -557,7 +557,7 @@ class CacheStrategy {
   /// 获取CDN数据 (模拟)
   Future<Uint8List?> _getCdnData(String key) async {
     // 模拟CDN延迟
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
 
     // 模拟CDN命中率 (30%)
     if (DateTime.now().millisecondsSinceEpoch % 10 < 3) {

@@ -16,8 +16,8 @@ import 'package:ming_status_cli/src/core/managers/async_manager.dart';
 import 'package:ming_status_cli/src/core/managers/cache_manager.dart';
 import 'package:ming_status_cli/src/core/managers/error_recovery_manager.dart';
 import 'package:ming_status_cli/src/core/managers/ux_manager.dart';
-import 'package:ming_status_cli/src/core/template_exceptions.dart';
-import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_exceptions.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 基础模板引擎接口

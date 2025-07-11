@@ -15,8 +15,8 @@ import 'package:ming_status_cli/src/core/managers/hook_manager.dart'
     as hook_mgr;
 import 'package:ming_status_cli/src/core/strategies/hook_implementations.dart'
     as hook_impl;
-import 'package:ming_status_cli/src/core/template_engine.dart';
-import 'package:ming_status_cli/src/core/template_models.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_engine.dart';
+import 'package:ming_status_cli/src/core/template_engine/template_models.dart';
 import 'package:test/test.dart';
 
 /// 测试用的简单脚本钩子

@@ -81,6 +81,16 @@ enum ConflictResolution {
 
 /// 离线操作
 class OfflineOperation {
+
+  OfflineOperation({
+    required this.id,
+    required this.type,
+    required this.resourceType,
+    required this.resourceId,
+    required this.data,
+    DateTime? createdAt,
+    this.maxRetries = 3,
+  }) : createdAt = createdAt ?? DateTime.now();
   /// 操作ID
   final String id;
 
@@ -110,16 +120,6 @@ class OfflineOperation {
 
   /// 错误信息
   String? error;
-
-  OfflineOperation({
-    required this.id,
-    required this.type,
-    required this.resourceType,
-    required this.resourceId,
-    required this.data,
-    DateTime? createdAt,
-    this.maxRetries = 3,
-  }) : createdAt = createdAt ?? DateTime.now();
 
   /// 转换为JSON
   Map<String, dynamic> toJson() {
@@ -162,6 +162,14 @@ class OfflineOperation {
 
 /// 缓存条目
 class CacheEntry {
+
+  CacheEntry({
+    required this.key,
+    required this.value,
+    DateTime? createdAt,
+    this.expiresAt,
+  })  : createdAt = createdAt ?? DateTime.now(),
+        lastAccessedAt = createdAt ?? DateTime.now();
   /// 键
   final String key;
 
@@ -179,14 +187,6 @@ class CacheEntry {
 
   /// 最后访问时间
   DateTime lastAccessedAt;
-
-  CacheEntry({
-    required this.key,
-    required this.value,
-    DateTime? createdAt,
-    this.expiresAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        lastAccessedAt = createdAt ?? DateTime.now();
 
   /// 是否过期
   bool get isExpired {
@@ -225,7 +225,7 @@ class CacheEntry {
 
     entry.accessCount = json['accessCount'] as int? ?? 0;
     entry.lastAccessedAt = DateTime.parse(
-        json['lastAccessedAt'] as String? ?? entry.createdAt.toIso8601String());
+        json['lastAccessedAt'] as String? ?? entry.createdAt.toIso8601String(),);
 
     return entry;
   }
@@ -233,6 +233,15 @@ class CacheEntry {
 
 /// 同步冲突
 class SyncConflict {
+
+  SyncConflict({
+    required this.id,
+    required this.resourceType,
+    required this.resourceId,
+    required this.clientData,
+    required this.serverData,
+    DateTime? conflictTime,
+  }) : conflictTime = conflictTime ?? DateTime.now();
   /// 冲突ID
   final String id;
 
@@ -260,15 +269,6 @@ class SyncConflict {
   /// 解决数据
   Map<String, dynamic>? resolvedData;
 
-  SyncConflict({
-    required this.id,
-    required this.resourceType,
-    required this.resourceId,
-    required this.clientData,
-    required this.serverData,
-    DateTime? conflictTime,
-  }) : conflictTime = conflictTime ?? DateTime.now();
-
   /// 是否已解决
   bool get isResolved => resolution != null && resolvedAt != null;
 
@@ -282,6 +282,14 @@ class SyncConflict {
 
 /// 离线支持
 class OfflineSupport {
+
+  /// 构造函数
+  OfflineSupport({
+    String? cacheDir,
+  })  : _cacheFilePath = '${cacheDir ?? './cache'}/offline_cache.json',
+        _queueFilePath = '${cacheDir ?? './cache'}/operation_queue.json' {
+    _initializeOfflineSupport();
+  }
   /// 连接状态
   ConnectionStatus _connectionStatus = ConnectionStatus.online;
 
@@ -311,14 +319,6 @@ class OfflineSupport {
 
   /// 同步状态变化监听器
   final List<Function(SyncStatus)> _syncListeners = [];
-
-  /// 构造函数
-  OfflineSupport({
-    String? cacheDir,
-  })  : _cacheFilePath = '${cacheDir ?? './cache'}/offline_cache.json',
-        _queueFilePath = '${cacheDir ?? './cache'}/operation_queue.json' {
-    _initializeOfflineSupport();
-  }
 
   /// 当前连接状态
   ConnectionStatus get connectionStatus => _connectionStatus;
@@ -496,16 +496,14 @@ class OfflineSupport {
     switch (strategy) {
       case ConflictResolution.clientWins:
         resolvedData = conflict.clientData;
-        break;
       case ConflictResolution.serverWins:
         resolvedData = conflict.serverData;
-        break;
       case ConflictResolution.latestWins:
         // 简化实现：比较时间戳
         final clientTime = DateTime.tryParse(
-            conflict.clientData['updatedAt'] as String? ?? '');
+            conflict.clientData['updatedAt'] as String? ?? '',);
         final serverTime = DateTime.tryParse(
-            conflict.serverData['updatedAt'] as String? ?? '');
+            conflict.serverData['updatedAt'] as String? ?? '',);
 
         if (clientTime != null && serverTime != null) {
           resolvedData = clientTime.isAfter(serverTime)
@@ -514,10 +512,8 @@ class OfflineSupport {
         } else {
           resolvedData = conflict.serverData;
         }
-        break;
       case ConflictResolution.manual:
         resolvedData = customData ?? conflict.serverData;
-        break;
     }
 
     conflict.resolve(strategy, resolvedData);
@@ -689,7 +685,7 @@ class OfflineSupport {
 
   /// 计算缓存大小
   int _calculateCacheSize() {
-    int totalSize = 0;
+    var totalSize = 0;
     for (final entry in _cache.values) {
       try {
         final json = jsonEncode(entry.value);

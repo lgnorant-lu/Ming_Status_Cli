@@ -17,7 +17,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
-import 'package:ming_status_cli/src/core/security_validator.dart';
+import 'package:ming_status_cli/src/core/security_system/security_validator.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 import 'package:path/path.dart' as path;
 
@@ -40,7 +40,7 @@ class FileSecurityPolicy {
       '.yml',
       '.json',
       '.md',
-      '.txt'
+      '.txt',
     },
     this.blockedExtensions = const {'.exe', '.bat', '.cmd', '.sh', '.ps1'},
     this.maxFileSize = 10 * 1024 * 1024, // 10MB
@@ -163,7 +163,7 @@ class FileSecurityManager {
 
   /// 验证文件路径安全性
   SecurityValidationResult _validateFilePath(
-      String filePath, FileOperationType operation) {
+      String filePath, FileOperationType operation,) {
     // 基本路径验证
     PathSecurityValidator.validatePath(filePath);
 
@@ -501,8 +501,9 @@ class FileSecurityManager {
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024)
+    if (bytes < 1024 * 1024 * 1024) {
       return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
