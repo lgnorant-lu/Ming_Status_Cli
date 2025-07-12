@@ -1,0 +1,2727 @@
+/*
+---------------------------------------------------------------
+File name:          template_scaffold.dart
+Author:             lgnorant-lu
+Date created:       2025/07/10
+Last modified:      2025/07/12
+Dart Version:       3.2+
+Description:        企业级模板脚手架生成器 (Enterprise Template Scaffold Generator)
+---------------------------------------------------------------
+Change History:
+    2025/07/10: Initial creation - Phase 2.1 自定义模板创建工具;
+    2025/07/12: Add dependencies and devDependencies - 自定义模板创建工具;
+---------------------------------------------------------------
+*/
+
+import 'dart:io';
+
+import 'package:ming_status_cli/src/core/template_system/template_metadata.dart';
+import 'package:ming_status_cli/src/core/template_system/template_types.dart';
+import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
+import 'package:path/path.dart' as path;
+
+/// 脚手架配置
+///
+/// 定义模板脚手架的配置参数
+class ScaffoldConfig {
+  /// 创建脚手架配置实例
+  const ScaffoldConfig({
+    required this.templateName,
+    required this.templateType,
+    required this.author,
+    required this.description,
+    this.subType,
+    this.version = '1.0.0',
+    this.outputPath = '.',
+    this.platform = TemplatePlatform.crossPlatform,
+    this.framework = TemplateFramework.agnostic,
+    this.complexity = TemplateComplexity.simple,
+    this.maturity = TemplateMaturity.development,
+    this.tags = const [],
+    this.dependencies = const [],
+    this.includeTests = true,
+    this.includeDocumentation = true,
+    this.includeExamples = true,
+    this.enableGitInit = true,
+  });
+
+  /// 模板名称
+  final String templateName;
+
+  /// 模板类型
+  final TemplateType templateType;
+
+  /// 模板子类型
+  final TemplateSubType? subType;
+
+  /// 作者信息
+  final String author;
+
+  /// 模板描述
+  final String description;
+
+  /// 模板版本
+  final String version;
+
+  /// 输出路径
+  final String outputPath;
+
+  /// 目标平台
+  final TemplatePlatform platform;
+
+  /// 技术框架
+  final TemplateFramework framework;
+
+  /// 复杂度等级
+  final TemplateComplexity complexity;
+
+  /// 成熟度等级
+  final TemplateMaturity maturity;
+
+  /// 标签列表
+  final List<String> tags;
+
+  /// 依赖列表
+  final List<String> dependencies;
+
+  /// 是否包含测试
+  final bool includeTests;
+
+  /// 是否包含文档
+  final bool includeDocumentation;
+
+  /// 是否包含示例
+  final bool includeExamples;
+
+  /// 是否启用Git初始化
+  final bool enableGitInit;
+}
+
+/// 脚手架生成结果
+///
+/// 包含脚手架生成的结果信息
+class ScaffoldResult {
+  /// 创建脚手架生成结果实例
+  const ScaffoldResult({
+    required this.success,
+    required this.templatePath,
+    this.generatedFiles = const [],
+    this.errors = const [],
+    this.warnings = const [],
+  });
+
+  /// 创建成功结果
+  factory ScaffoldResult.success({
+    required String templatePath,
+    required List<String> generatedFiles,
+    List<String> warnings = const [],
+  }) {
+    return ScaffoldResult(
+      success: true,
+      templatePath: templatePath,
+      generatedFiles: generatedFiles,
+      warnings: warnings,
+    );
+  }
+
+  /// 创建失败结果
+  factory ScaffoldResult.failure({
+    required List<String> errors,
+    String templatePath = '',
+    List<String> warnings = const [],
+  }) {
+    return ScaffoldResult(
+      success: false,
+      templatePath: templatePath,
+      errors: errors,
+      warnings: warnings,
+    );
+  }
+
+  /// 是否成功
+  final bool success;
+
+  /// 模板路径
+  final String templatePath;
+
+  /// 生成的文件列表
+  final List<String> generatedFiles;
+
+  /// 错误列表
+  final List<String> errors;
+
+  /// 警告列表
+  final List<String> warnings;
+}
+
+/// 企业级模板脚手架生成器
+///
+/// 自动生成模板目录结构、配置文件、示例代码
+class TemplateScaffold {
+  /// 创建模板脚手架生成器实例
+  TemplateScaffold();
+
+  /// 生成模板脚手架
+  ///
+  /// 根据配置生成完整的模板项目结构
+  Future<ScaffoldResult> generateScaffold(ScaffoldConfig config) async {
+    try {
+      cli_logger.Logger.info('开始生成模板脚手架: ${config.templateName}');
+
+      // 1. 创建模板目录
+      final templatePath = await _createTemplateDirectory(config);
+
+      // 2. 生成基础文件结构
+      final generatedFiles = <String>[];
+
+      // 生成元数据文件
+      await _generateMetadataFile(templatePath, config);
+      generatedFiles.add('template.yaml');
+
+      // 生成模板文件
+      await _generateTemplateFiles(templatePath, config);
+      generatedFiles.addAll(await _getTemplateFiles(templatePath, config));
+
+      // 生成配置文件
+      await _generateConfigFiles(templatePath, config);
+      generatedFiles.addAll(['pubspec.yaml', '.gitignore']);
+
+      // 添加Flutter特定配置文件
+      if (config.framework == TemplateFramework.flutter) {
+        generatedFiles.addAll([
+          'analysis_options.yaml',
+          'l10n.yaml',
+          'build.yaml',
+          'flutter_gen.yaml',
+        ]);
+
+        // 添加条件配置文件
+        if (config.templateType == TemplateType.full ||
+            config.templateType == TemplateType.micro) {
+          generatedFiles.add('melos.yaml');
+        }
+
+        if (config.templateType == TemplateType.full) {
+          generatedFiles.add('shorebird.yaml');
+        }
+      }
+
+      // 生成文档
+      if (config.includeDocumentation) {
+        await _generateDocumentation(templatePath, config);
+        generatedFiles.addAll(['README.md', 'CHANGELOG.md']);
+      }
+
+      // 生成测试
+      if (config.includeTests) {
+        await _generateTests(templatePath, config);
+        generatedFiles.add('test/template_test.dart');
+      }
+
+      // 生成示例
+      if (config.includeExamples) {
+        await _generateExamples(templatePath, config);
+        generatedFiles.add('example/example.dart');
+      }
+
+      // Git初始化
+      if (config.enableGitInit) {
+        await _initializeGit(templatePath);
+      }
+
+      cli_logger.Logger.success(
+        '模板脚手架生成完成: ${config.templateName} '
+        '(${generatedFiles.length}个文件)',
+      );
+
+      return ScaffoldResult.success(
+        templatePath: templatePath,
+        generatedFiles: generatedFiles,
+      );
+    } catch (e) {
+      cli_logger.Logger.error('模板脚手架生成失败', error: e);
+      return ScaffoldResult.failure(
+        errors: ['脚手架生成异常: $e'],
+      );
+    }
+  }
+
+  /// 创建模板目录
+  Future<String> _createTemplateDirectory(ScaffoldConfig config) async {
+    final templatePath = path.join(config.outputPath, config.templateName);
+    final templateDir = Directory(templatePath);
+
+    if (await templateDir.exists()) {
+      throw Exception('模板目录已存在: $templatePath');
+    }
+
+    await templateDir.create(recursive: true);
+
+    // 根据框架类型创建不同的目录结构
+    if (config.framework == TemplateFramework.flutter) {
+      await _createFlutterDirectoryStructure(templatePath, config);
+    } else {
+      await _createDartDirectoryStructure(templatePath, config);
+    }
+
+    return templatePath;
+  }
+
+  /// 创建Flutter项目目录结构
+  Future<void> _createFlutterDirectoryStructure(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    // Flutter项目的完整目录结构
+    final flutterDirs = [
+      // 核心源码目录
+      'lib',
+      'lib/src',
+      'lib/src/models',
+      'lib/src/services',
+      'lib/src/widgets',
+      'lib/src/screens',
+      'lib/src/utils',
+      'lib/src/constants',
+      'lib/src/providers',
+      'lib/src/repositories',
+      'lib/generated', // flutter_gen生成的文件
+
+      // 测试目录
+      if (config.includeTests) 'test',
+      if (config.includeTests) 'test/unit',
+      if (config.includeTests) 'test/widget',
+      if (config.includeTests) 'integration_test',
+
+      // 资源目录
+      'assets',
+      'assets/images',
+      'assets/icons',
+      'assets/fonts',
+
+      // 国际化目录
+      'l10n',
+
+      // 平台特定目录
+      if (config.platform == TemplatePlatform.mobile ||
+          config.platform == TemplatePlatform.crossPlatform) ...[
+        'android',
+        'android/app',
+        'android/app/src',
+        'android/app/src/main',
+        'android/app/src/main/kotlin',
+        'ios',
+        'ios/Runner',
+      ],
+      if (config.platform == TemplatePlatform.web ||
+          config.platform == TemplatePlatform.crossPlatform) ...[
+        'web',
+      ],
+      if (config.platform == TemplatePlatform.desktop ||
+          config.platform == TemplatePlatform.crossPlatform) ...[
+        'windows',
+        'macos',
+        'linux',
+      ],
+
+      // 文档和示例
+      if (config.includeDocumentation) 'docs',
+      if (config.includeExamples) 'example',
+
+      // 模板特定目录
+      'templates',
+      'config',
+    ];
+
+    for (final dir in flutterDirs) {
+      await Directory(path.join(templatePath, dir)).create(recursive: true);
+    }
+  }
+
+  /// 创建Dart项目目录结构
+  Future<void> _createDartDirectoryStructure(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    // Dart项目的基础目录结构
+    final dartDirs = [
+      // 核心源码目录
+      'lib',
+      'lib/src',
+
+      // 测试目录
+      if (config.includeTests) 'test',
+
+      // 文档和示例
+      if (config.includeDocumentation) 'docs',
+      if (config.includeExamples) 'example',
+
+      // 模板特定目录
+      'templates',
+      'config',
+    ];
+
+    for (final dir in dartDirs) {
+      await Directory(path.join(templatePath, dir)).create(recursive: true);
+    }
+  }
+
+  /// 生成元数据文件
+  Future<void> _generateMetadataFile(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final metadata = TemplateMetadata(
+      id: _generateTemplateId(config.templateName),
+      name: config.templateName,
+      version: config.version,
+      author: config.author,
+      description: config.description,
+      type: config.templateType,
+      subType: config.subType,
+      tags: config.tags,
+      complexity: config.complexity,
+      maturity: config.maturity,
+      platform: config.platform,
+      framework: config.framework,
+      dependencies: config.dependencies
+          .map((dep) => TemplateDependency(name: dep, version: '^1.0.0'))
+          .toList(),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    final metadataFile = File(path.join(templatePath, 'template.yaml'));
+    await metadataFile.writeAsString(_generateMetadataYaml(metadata));
+  }
+
+  /// 生成模板文件
+  Future<void> _generateTemplateFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final templatesDir = path.join(templatePath, 'templates');
+
+    // 根据模板类型生成不同的模板文件
+    switch (config.templateType) {
+      case TemplateType.ui:
+        await _generateUITemplates(templatesDir, config);
+      case TemplateType.service:
+        await _generateServiceTemplates(templatesDir, config);
+      case TemplateType.data:
+        await _generateDataTemplates(templatesDir, config);
+      case TemplateType.full:
+        await _generateFullTemplates(templatesDir, config);
+      case TemplateType.system:
+        await _generateSystemTemplates(templatesDir, config);
+      case TemplateType.basic:
+        await _generateBasicTemplates(templatesDir, config);
+      case TemplateType.micro:
+        await _generateMicroTemplates(templatesDir, config);
+      case TemplateType.plugin:
+        await _generatePluginTemplates(templatesDir, config);
+      case TemplateType.infrastructure:
+        await _generateInfrastructureTemplates(templatesDir, config);
+    }
+  }
+
+  /// 生成UI模板
+  Future<void> _generateUITemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    final mainFile = File(path.join(templatesDir, 'main.dart.template'));
+    await mainFile.writeAsString('''
+{{#if platform.flutter}}
+import 'package:flutter/material.dart';
+
+class {{componentName}} extends StatelessWidget {
+  const {{componentName}}({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return {{#if subType.page}}Scaffold(
+      appBar: AppBar(
+        title: Text('{{title}}'),
+      ),
+      body: Center(
+        child: Text('{{description}}'),
+      ),
+    ){{else}}Container(
+      child: Text('{{description}}'),
+    ){{/if}};
+  }
+}
+{{else}}
+// {{description}}
+class {{componentName}} {
+  // Implementation for {{platform.name}}
+}
+{{/if}}
+''');
+  }
+
+  /// 生成Service模板
+  Future<void> _generateServiceTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    final serviceFile = File(path.join(templatesDir, 'service.dart.template'));
+    await serviceFile.writeAsString(r'''
+{{#if subType.api}}
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class {{serviceName}}Service {
+  final String baseUrl;
+  
+  {{serviceName}}Service({required this.baseUrl});
+  
+  Future<Map<String, dynamic>> getData() async {
+    final response = await http.get(Uri.parse('$baseUrl/{{endpoint}}'));
+    
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+}
+{{else}}
+class {{serviceName}}Service {
+  // {{description}}
+  
+  Future<void> execute() async {
+    // Implementation
+  }
+}
+{{/if}}
+''');
+  }
+
+  /// 生成配置文件
+  Future<void> _generateConfigFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    // 生成pubspec.yaml
+    final pubspecFile = File(path.join(templatePath, 'pubspec.yaml'));
+    await pubspecFile.writeAsString(_generatePubspecYaml(config));
+
+    // 生成.gitignore
+    final gitignoreFile = File(path.join(templatePath, '.gitignore'));
+    await gitignoreFile.writeAsString(_generateGitignore());
+
+    // 根据框架类型生成特定配置文件
+    if (config.framework == TemplateFramework.flutter) {
+      await _generateFlutterConfigFiles(templatePath, config);
+    }
+  }
+
+  /// 生成Flutter特定配置文件
+  Future<void> _generateFlutterConfigFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    // 生成analysis_options.yaml
+    final analysisFile = File(path.join(templatePath, 'analysis_options.yaml'));
+    await analysisFile.writeAsString(_generateAnalysisOptions());
+
+    // 生成l10n.yaml
+    final l10nFile = File(path.join(templatePath, 'l10n.yaml'));
+    await l10nFile.writeAsString(_generateL10nConfig());
+
+    // 生成build.yaml
+    final buildFile = File(path.join(templatePath, 'build.yaml'));
+    await buildFile.writeAsString(_generateBuildConfig());
+
+    // 生成l10n ARB文件
+    await _generateL10nFiles(templatePath, config);
+
+    // 生成flutter_gen资源文件
+    await _generateFlutterGenAssets(templatePath, config);
+
+    // 生成melos.yaml (如果是多包项目)
+    if (config.templateType == TemplateType.full ||
+        config.templateType == TemplateType.micro) {
+      final melosFile = File(path.join(templatePath, 'melos.yaml'));
+      await melosFile.writeAsString(_generateMelosConfig(config));
+    }
+
+    // 生成flutter_gen配置
+    final flutterGenFile = File(path.join(templatePath, 'flutter_gen.yaml'));
+    await flutterGenFile.writeAsString(_generateFlutterGenConfig());
+
+    // 生成shorenbird配置 (如果是完整应用)
+    if (config.templateType == TemplateType.full) {
+      final shorebirdFile = File(path.join(templatePath, 'shorebird.yaml'));
+      await shorebirdFile.writeAsString(_generateShorebirdConfig(config));
+    }
+  }
+
+  /// 生成文档
+  Future<void> _generateDocumentation(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    // 生成README.md
+    final readmeFile = File(path.join(templatePath, 'README.md'));
+    await readmeFile.writeAsString(_generateReadme(config));
+
+    // 生成CHANGELOG.md
+    final changelogFile = File(path.join(templatePath, 'CHANGELOG.md'));
+    await changelogFile.writeAsString(_generateChangelog(config));
+  }
+
+  /// 生成测试
+  Future<void> _generateTests(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final testFile =
+        File(path.join(templatePath, 'test', 'template_test.dart'));
+    await testFile.writeAsString(_generateTestFile(config));
+  }
+
+  /// 生成示例
+  Future<void> _generateExamples(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final exampleFile =
+        File(path.join(templatePath, 'example', 'example.dart'));
+    await exampleFile.writeAsString(_generateExampleFile(config));
+  }
+
+  /// 初始化Git
+  Future<void> _initializeGit(String templatePath) async {
+    final result = await Process.run(
+      'git',
+      ['init'],
+      workingDirectory: templatePath,
+    );
+
+    if (result.exitCode != 0) {
+      cli_logger.Logger.warning('Git初始化失败: ${result.stderr}');
+    }
+  }
+
+  /// 生成模板ID
+  String _generateTemplateId(String templateName) {
+    return templateName.toLowerCase().replaceAll(RegExp('[^a-z0-9]'), '_');
+  }
+
+  /// 获取模板文件列表
+  Future<List<String>> _getTemplateFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    // 简化实现，返回基础文件列表
+    return ['templates/main.dart.template'];
+  }
+
+  // 其他模板类型的生成方法（简化实现）
+  Future<void> _generateDataTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    // 实现数据层模板生成
+  }
+
+  Future<void> _generateFullTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    // 生成现代化Flutter应用的完整模板文件
+    await _generateModernMainDart(templatesDir, config);
+    await _generateAppWidget(templatesDir, config);
+    await _generateRouterConfig(templatesDir, config);
+    await _generateThemeConfig(templatesDir, config);
+    await _generateProviders(templatesDir, config);
+    await _generateModels(templatesDir, config);
+    await _generateServices(templatesDir, config);
+    await _generateScreens(templatesDir, config);
+    await _generateWidgets(templatesDir, config);
+    await _generateConstants(templatesDir, config);
+    await _generateUtils(templatesDir, config);
+  }
+
+  Future<void> _generateSystemTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    // 实现系统配置模板生成
+  }
+
+  Future<void> _generateBasicTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    // 实现基础模板生成
+  }
+
+  Future<void> _generateMicroTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    // 实现微服务模板生成
+  }
+
+  Future<void> _generatePluginTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    // 实现插件模板生成
+  }
+
+  Future<void> _generateInfrastructureTemplates(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    // 实现基础设施模板生成
+  }
+
+  // 辅助方法用于生成各种配置文件内容
+  String _generateMetadataYaml(TemplateMetadata metadata) {
+    return '''
+name: ${metadata.name}
+version: ${metadata.version}
+author: ${metadata.author}
+description: ${metadata.description}
+type: ${metadata.type.name}
+${metadata.subType != null ? 'subType: ${metadata.subType!.name}' : ''}
+platform: ${metadata.platform.name}
+framework: ${metadata.framework.name}
+complexity: ${metadata.complexity.name}
+maturity: ${metadata.maturity.name}
+tags: ${metadata.tags}
+dependencies: ${metadata.dependencies.map((d) => '${d.name}: ${d.version}').toList()}
+''';
+  }
+
+  String _generatePubspecYaml(ScaffoldConfig config) {
+    // 根据模板类型和框架确定依赖
+    final dependencies = _generateDependencies(config);
+    final devDependencies = _generateDevDependencies(config);
+
+    return '''
+name: ${config.templateName}
+description: ${config.description}
+version: ${config.version}
+publish_to: 'none' # 防止意外发布
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+${dependencies.map((dep) => '  $dep').join('\n')}
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+${devDependencies.map((dep) => '  $dep').join('\n')}
+
+# Flutter配置
+flutter:
+  uses-material-design: true
+
+  # 资源配置
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  # 字体配置
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: fonts/Roboto-Regular.ttf
+        - asset: fonts/Roboto-Bold.ttf
+          weight: 700
+
+# 代码生成配置
+flutter_gen:
+  output: lib/generated/
+  line_length: 80
+  integrations:
+    flutter_svg: true
+    flare_flutter: true
+''';
+  }
+
+  String _generateGitignore() {
+    return '''
+# Files and directories created by pub
+.dart_tool/
+.packages
+build/
+pubspec.lock
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+''';
+  }
+
+  String _generateReadme(ScaffoldConfig config) {
+    return '''
+# ${config.templateName}
+
+${config.description}
+
+## 使用方法
+
+1. 安装依赖：
+   ```bash
+   dart pub get
+   ```
+
+2. 使用模板：
+   ```bash
+   ming template generate ${config.templateName}
+   ```
+
+## 特性
+
+- 类型：${config.templateType.displayName}
+- 平台：${config.platform.name}
+- 框架：${config.framework.name}
+- 复杂度：${config.complexity.name}
+
+## 作者
+
+${config.author}
+
+## 许可证
+
+MIT License
+''';
+  }
+
+  String _generateChangelog(ScaffoldConfig config) {
+    return '''
+# Changelog
+
+## [${config.version}] - ${DateTime.now().toIso8601String().split('T')[0]}
+
+### Added
+- 初始版本发布
+- ${config.description}
+
+### Features
+- 支持${config.platform.name}平台
+- 基于${config.framework.name}框架
+- ${config.complexity.name}复杂度等级
+''';
+  }
+
+  String _generateTestFile(ScaffoldConfig config) {
+    return '''
+import 'package:test/test.dart';
+
+void main() {
+  group('${config.templateName} Template Tests', () {
+    test('should generate correctly', () {
+      // TODO: 实现模板测试
+      expect(true, isTrue);
+    });
+  });
+}
+''';
+  }
+
+  String _generateExampleFile(ScaffoldConfig config) {
+    return '''
+// ${config.templateName} 使用示例
+
+void main() {
+  print('${config.templateName} 模板示例');
+  print('描述: ${config.description}');
+  print('类型: ${config.templateType.displayName}');
+}
+''';
+  }
+
+  /// 生成依赖列表
+  List<String> _generateDependencies(ScaffoldConfig config) {
+    final dependencies = <String>[];
+
+    // 基础依赖
+    if (config.framework == TemplateFramework.flutter) {
+      // Flutter核心依赖
+      dependencies.addAll([
+        'flutter_localizations:',
+        '  sdk: flutter',
+        '',
+        '# 状态管理',
+        'flutter_riverpod: ^2.4.9',
+        'riverpod_annotation: ^2.3.3',
+        '',
+        '# 路由导航',
+        'go_router: ^12.1.3',
+        '',
+        '# 数据类生成',
+        'freezed_annotation: ^2.4.1',
+        'json_annotation: ^4.8.1',
+        '',
+        '# 网络请求',
+        'dio: ^5.4.0',
+        'retrofit: ^4.0.3',
+        '',
+        '# 本地存储',
+        'shared_preferences: ^2.2.2',
+        'hive: ^2.2.3',
+        'hive_flutter: ^1.1.0',
+        '',
+        '# UI组件',
+        'flutter_svg: ^2.0.9',
+        'cached_network_image: ^3.3.0',
+        'shimmer: ^3.0.0',
+        '',
+        '# 工具库',
+        'intl: ^0.19.0',
+        'equatable: ^2.0.5',
+        'uuid: ^4.2.1',
+      ]);
+
+      // 根据模板类型添加特定依赖
+      switch (config.templateType) {
+        case TemplateType.ui:
+          dependencies.addAll([
+            '',
+            '# UI特定依赖',
+            'flutter_staggered_grid_view: ^0.7.0',
+            'flutter_animate: ^4.3.0',
+          ]);
+        case TemplateType.full:
+          dependencies.addAll([
+            '',
+            '# 完整应用依赖',
+            'firebase_core: ^2.24.2',
+            'firebase_auth: ^4.15.3',
+            'cloud_firestore: ^4.13.6',
+            'firebase_storage: ^11.5.6',
+          ]);
+        case TemplateType.micro:
+          dependencies.addAll([
+            '',
+            '# 微服务依赖',
+            'shelf: ^1.4.1',
+            'shelf_router: ^1.1.4',
+            'shelf_cors_headers: ^0.1.5',
+          ]);
+        case TemplateType.service:
+        case TemplateType.data:
+        case TemplateType.system:
+        case TemplateType.basic:
+        case TemplateType.plugin:
+        case TemplateType.infrastructure:
+          // 其他类型使用基础依赖
+          break;
+      }
+    } else {
+      // 非Flutter项目的基础依赖
+      dependencies.addAll([
+        'args: ^2.4.2',
+        'path: ^1.8.3',
+        'yaml: ^3.1.2',
+      ]);
+    }
+
+    return dependencies;
+  }
+
+  /// 生成开发依赖列表
+  List<String> _generateDevDependencies(ScaffoldConfig config) {
+    final devDependencies = <String>[];
+
+    if (config.framework == TemplateFramework.flutter) {
+      devDependencies.addAll([
+        '# 代码生成',
+        'build_runner: ^2.4.7',
+        'freezed: ^2.4.6',
+        'json_serializable: ^6.7.1',
+        'riverpod_generator: ^2.3.9',
+        'retrofit_generator: ^8.0.6',
+        '',
+        '# 资源生成',
+        'flutter_gen_runner: ^5.4.0',
+        '',
+        '# 测试',
+        'flutter_test:',
+        '  sdk: flutter',
+        'integration_test:',
+        '  sdk: flutter',
+        'mockito: ^5.4.4',
+        'build_verify: ^3.1.0',
+        '',
+        '# 代码质量',
+        'flutter_lints: ^3.0.1',
+        'very_good_analysis: ^5.1.0',
+        '',
+        '# 工具',
+        'flutter_launcher_icons: ^0.13.1',
+        'flutter_native_splash: ^2.3.8',
+      ]);
+
+      // 根据模板类型添加特定开发依赖
+      switch (config.templateType) {
+        case TemplateType.full:
+          devDependencies.addAll([
+            '',
+            '# 完整应用开发工具',
+            'patrol: ^2.6.0',
+            'golden_toolkit: ^0.15.0',
+          ]);
+        case TemplateType.ui:
+        case TemplateType.service:
+        case TemplateType.data:
+        case TemplateType.system:
+        case TemplateType.basic:
+        case TemplateType.micro:
+        case TemplateType.plugin:
+        case TemplateType.infrastructure:
+          // 其他类型使用基础开发依赖
+          break;
+      }
+    } else {
+      devDependencies.addAll([
+        'test: ^1.24.9',
+        'lints: ^3.0.0',
+      ]);
+    }
+
+    return devDependencies;
+  }
+
+  /// 生成analysis_options.yaml配置
+  String _generateAnalysisOptions() {
+    return '''
+# 代码分析配置
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.gr.dart"
+    - "**/generated/**"
+    - "build/**"
+    - "lib/generated/**"
+
+linter:
+  rules:
+    # 自定义规则
+    prefer_single_quotes: true
+    sort_constructors_first: true
+    sort_unnamed_constructors_first: true
+    always_use_package_imports: true
+    avoid_print: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+
+    # 禁用某些规则
+    public_member_api_docs: false
+    lines_longer_than_80_chars: false
+''';
+  }
+
+  /// 生成l10n.yaml配置
+  String _generateL10nConfig() {
+    return '''
+# Flutter国际化配置
+# 更多信息: https://docs.flutter.dev/development/accessibility-and-localization/internationalization
+
+# ARB文件目录
+arb-dir: l10n
+
+# 模板ARB文件（英语作为基础语言）
+template-arb-file: app_en.arb
+
+# 生成的本地化文件名
+output-localization-file: app_localizations.dart
+
+# 生成的本地化类名
+output-class: AppLocalizations
+
+# 输出目录
+output-dir: lib/generated/l10n
+
+# 支持的语言列表（按优先级排序）
+preferred-supported-locales: ["en", "zh", "ja", "ko", "es", "fr", "de", "ru", "ar", "hi"]
+
+# 头文件（包含版权信息等）
+header-file: l10n/header.txt
+
+# 内联头信息
+header: |
+  /// Generated file. Do not edit.
+  ///
+  /// Original: {arb-file}
+  /// To regenerate, run: `flutter gen-l10n`
+  ///
+  /// This file was automatically generated from ARB files.
+
+# 是否生成可空的getter
+nullable-getter: false
+
+# 是否使用合成包
+synthetic-package: false
+
+# 是否生成未翻译消息的警告
+untranslated-messages-file: l10n/untranslated.json
+
+# 是否验证ARB文件
+validate-only: false
+
+# 是否生成setter方法
+generate-setters: false
+
+# 是否使用转义序列
+use-escaping: true
+
+# 是否生成本地化委托
+generate-localization-delegate: true
+''';
+  }
+
+  /// 生成build.yaml配置
+  String _generateBuildConfig() {
+    return r'''
+# Build Runner配置 - 企业级代码生成
+# 更多信息: https://pub.dev/packages/build_runner
+
+targets:
+  $default:
+    builders:
+      # === 数据类生成器 ===
+
+      # Freezed - 不可变数据类生成
+      freezed:
+        enabled: true
+        options:
+          # 生成copyWith方法
+          copy_with: true
+          # 生成equal和hashCode
+          equal: true
+          # 生成toString方法
+          to_string: true
+          # 生成when/map方法
+          when: true
+          map: true
+          # 生成maybeWhen/maybeMap方法
+          maybe_when: true
+          maybe_map: true
+          # 添加assert检查
+          assert_size: true
+          # 生成构造函数重定向
+          constructor_redirect: true
+          # 自定义toString格式
+          to_string_override: false
+          # 生成可变版本
+          mutable: false
+        generate_for:
+          - lib/src/models/**
+          - lib/src/entities/**
+          - lib/src/data/**
+          - lib/src/domain/**
+        exclude:
+          - "**/*.g.dart"
+          - "**/*.freezed.dart"
+          - "**/generated/**"
+
+      # JSON Serializable - JSON序列化代码生成
+      json_serializable:
+        enabled: true
+        options:
+          # 生成toJson方法
+          explicit_to_json: true
+          # 字段重命名策略
+          field_rename: snake
+          # 包含null字段
+          include_if_null: false
+          # 生成fromJson构造函数
+          create_factory: true
+          # 生成toJson方法
+          create_to_json: true
+          # 检查必需字段
+          checked: true
+          # 禁用未知字段
+          disallow_unrecognized_keys: false
+          # 生成泛型工厂
+          generic_argument_factories: true
+          # 任意Map键类型
+          any_map: false
+          # 忽略未知字段
+          ignore_unannotated: false
+        generate_for:
+          - lib/src/models/**
+          - lib/src/entities/**
+          - lib/src/data/**
+          - lib/src/api/**
+        exclude:
+          - "**/*.freezed.dart"
+          - "**/generated/**"
+
+      # === 状态管理生成器 ===
+
+      # Riverpod Generator - 状态管理代码生成
+      riverpod_generator:
+        enabled: true
+        options:
+          # 生成keepAlive
+          keep_alive: true
+          # 生成依赖
+          dependencies: true
+          # 生成family
+          family: true
+          # 生成autoDispose
+          auto_dispose: true
+          # 生成缓存
+          cache: true
+          # 生成调试名称
+          debug_name: true
+          # 生成文档
+          documentation: true
+        generate_for:
+          - lib/src/providers/**
+          - lib/src/services/**
+          - lib/src/repositories/**
+          - lib/src/controllers/**
+          - lib/src/notifiers/**
+        exclude:
+          - "**/*.g.dart"
+          - "**/generated/**"
+
+      # === 路由生成器 ===
+
+      # Go Router Generator - 路由代码生成
+      go_router_builder:
+        enabled: true
+        options:
+          # 生成类型安全路由
+          type_safe: true
+          # 生成路由名称
+          generate_route_names: true
+          # 生成路由路径
+          generate_route_paths: true
+          # 生成导航扩展
+          generate_navigation_extensions: true
+        generate_for:
+          - lib/src/router/**
+          - lib/src/navigation/**
+        exclude:
+          - "**/*.g.dart"
+
+      # === API生成器 ===
+
+      # Retrofit Generator - HTTP客户端代码生成
+      retrofit_generator:
+        enabled: true
+        options:
+          # 生成额外方法
+          generate_extra_methods: true
+          # 生成查询参数
+          generate_query_parameters: true
+          # 生成请求体
+          generate_request_body: true
+          # 生成响应类型
+          generate_response_type: true
+        generate_for:
+          - lib/src/api/**
+          - lib/src/services/**
+        exclude:
+          - "**/*.g.dart"
+
+      # === 依赖注入生成器 ===
+
+      # Injectable Generator - 依赖注入代码生成
+      injectable_generator:
+        enabled: true
+        options:
+          # 生成单例
+          singleton: true
+          # 生成懒加载单例
+          lazy_singleton: true
+          # 生成工厂
+          factory: true
+          # 生成环境配置
+          environments: true
+          # 自动注册
+          auto_register: true
+        generate_for:
+          - lib/src/services/**
+          - lib/src/repositories/**
+          - lib/src/data/**
+          - lib/src/core/**
+        exclude:
+          - "**/*.g.dart"
+          - "**/generated/**"
+
+# === 全局配置 ===
+global_options:
+  # 构建扩展配置
+  build_extensions:
+    ".dart":
+      - ".g.dart"
+      - ".freezed.dart"
+      - ".gr.dart"
+      - ".config.dart"
+      - ".mocks.dart"
+    ".json":
+      - ".g.dart"
+
+  # 构建过滤器
+  build_filters:
+    exclude:
+      - "**/*.g.dart"
+      - "**/*.freezed.dart"
+      - "**/*.gr.dart"
+      - "**/*.config.dart"
+      - "**/*.mocks.dart"
+      - "**/generated/**"
+      - "**/.dart_tool/**"
+      - "**/build/**"
+
+  # 性能配置
+  performance:
+    # 启用增量构建
+    incremental: true
+    # 并行构建
+    parallel: true
+    # 最大并行数
+    max_concurrency: 4
+    # 缓存配置
+    cache:
+      enabled: true
+      max_size: "500MB"
+      ttl: "7d"
+''';
+  }
+
+  /// 生成melos.yaml配置
+  String _generateMelosConfig(ScaffoldConfig config) {
+    return '''
+# Melos配置 - 企业级Monorepo管理
+# 更多信息: https://melos.invertase.dev/
+
+name: ${config.templateName}
+repository: https://github.com/your-org/${config.templateName}
+
+# 包配置
+packages:
+  - packages/**
+  - apps/**
+  - modules/**
+  - plugins/**
+
+# 忽略的包
+ignore:
+  - "**/example/**"
+  - "**/build/**"
+  - "**/.dart_tool/**"
+
+# 命令配置
+command:
+  version:
+    # 版本管理
+    updateGitTagRefs: true
+    workspaceChangelog: true
+    linkToCommits: true
+    workspaceChangelogHeader: |
+      # Changelog
+
+      All notable changes to this project will be documented in this file.
+
+    # 版本策略
+    strategy: all-changed
+
+    # 提交消息模板
+    message: |
+      chore(release): publish packages
+
+      {new_package_versions}
+
+  bootstrap:
+    # 依赖管理
+    runPubGetInParallel: true
+    usePubspecOverrides: true
+
+    # 环境配置
+    environment:
+      sdk: ">=3.0.0 <4.0.0"
+      flutter: ">=3.10.0"
+
+# 脚本配置
+scripts:
+  # === 开发脚本 ===
+
+  # 代码生成
+  generate:
+    run: |
+      echo "🔄 开始代码生成..."
+      melos exec -c 1 --fail-fast -- "dart run build_runner build --delete-conflicting-outputs"
+      echo "✅ 代码生成完成"
+    description: 运行所有包的代码生成
+
+  # 代码生成（监听模式）
+  generate:watch:
+    run: |
+      echo "👀 启动代码生成监听模式..."
+      melos exec -c 1 --fail-fast -- "dart run build_runner watch --delete-conflicting-outputs"
+    description: 监听模式运行代码生成
+
+  # === 质量保证脚本 ===
+
+  # 代码分析
+  analyze:
+    run: |
+      echo "🔍 开始代码分析..."
+      melos exec --fail-fast -- "dart analyze . --fatal-infos"
+      echo "✅ 代码分析完成"
+    description: 分析所有包的代码质量
+
+  # 代码格式化
+  format:
+    run: |
+      echo "🎨 开始代码格式化..."
+      melos exec --fail-fast -- "dart format . --set-exit-if-changed"
+      echo "✅ 代码格式化完成"
+    description: 格式化所有包的代码
+
+  # 代码格式化（修复模式）
+  format:fix:
+    run: |
+      echo "🔧 开始修复代码格式..."
+      melos exec --fail-fast -- "dart format . --fix"
+      echo "✅ 代码格式修复完成"
+    description: 自动修复代码格式问题
+
+  # === 测试脚本 ===
+
+  # 单元测试
+  test:
+    run: |
+      echo "🧪 开始运行单元测试..."
+      melos exec --fail-fast --dir-exists=test -- "dart test --coverage=coverage"
+      echo "✅ 单元测试完成"
+    description: 运行所有包的单元测试
+
+  # 测试覆盖率
+  test:coverage:
+    run: |
+      echo "📊 开始生成测试覆盖率报告..."
+      melos exec --fail-fast --dir-exists=test -- "dart test --coverage=coverage"
+      melos exec --fail-fast --dir-exists=coverage -- "genhtml coverage/lcov.info -o coverage/html"
+      echo "✅ 测试覆盖率报告生成完成"
+    description: 生成测试覆盖率报告
+
+  # 集成测试
+  test:integration:
+    run: |
+      echo "🔗 开始运行集成测试..."
+      melos exec --fail-fast --dir-exists=integration_test -- "flutter test integration_test"
+      echo "✅ 集成测试完成"
+    description: 运行集成测试
+
+  # === 构建脚本 ===
+
+  # 构建所有包
+  build:
+    run: |
+      echo "🏗️ 开始构建所有包..."
+      melos exec --fail-fast --flutter -- "flutter build apk --release"
+      echo "✅ 构建完成"
+    description: 构建所有Flutter应用
+
+  # 清理构建产物
+  clean:
+    run: |
+      echo "🧹 开始清理构建产物..."
+      melos exec --fail-fast -- "dart clean"
+      melos exec --fail-fast --flutter -- "flutter clean"
+      echo "✅ 清理完成"
+    description: 清理所有包的构建产物
+
+  # === 依赖管理脚本 ===
+
+  # 获取依赖
+  get:
+    run: |
+      echo "📦 开始获取依赖..."
+      melos bootstrap
+      echo "✅ 依赖获取完成"
+    description: 获取所有包的依赖
+
+  # 升级依赖
+  upgrade:
+    run: |
+      echo "⬆️ 开始升级依赖..."
+      melos exec --fail-fast -- "dart pub upgrade"
+      echo "✅ 依赖升级完成"
+    description: 升级所有包的依赖
+
+  # 检查过期依赖
+  outdated:
+    run: |
+      echo "📅 检查过期依赖..."
+      melos exec --fail-fast -- "dart pub outdated"
+    description: 检查所有包的过期依赖
+
+# IDE配置
+ide:
+  intellij:
+    enabled: true
+    moduleFileExtensions: ["dart", "yaml"]
+
+# 开发依赖
+dev_dependencies:
+  melos: ^3.2.0
+  very_good_analysis: ^5.1.0
+''';
+  }
+
+  /// 生成flutter_gen.yaml配置
+  String _generateFlutterGenConfig() {
+    return r'''
+# Flutter Gen配置 - 企业级资源生成和类型安全
+# 更多信息: https://pub.dev/packages/flutter_gen
+
+flutter_gen:
+  # 输出目录
+  output: lib/generated/
+
+  # 代码格式配置
+  line_length: 80
+
+  # 是否生成null safety代码
+  null_safety: true
+
+  # 是否生成文档注释
+  generate_docs: true
+
+  # 第三方库集成配置
+  integrations:
+    # SVG图片支持
+    flutter_svg: true
+
+    # Flare动画支持
+    flare_flutter: true
+
+    # Rive动画支持
+    rive: true
+
+    # Lottie动画支持
+    lottie: true
+
+    # 网络图片缓存
+    cached_network_image: true
+
+    # 图片压缩
+    flutter_image_compress: true
+
+  # 资源文件配置
+  assets:
+    # 是否启用资源生成
+    enabled: true
+
+    # 是否生成包参数
+    package_parameter_enabled: false
+
+    # 命名风格
+    style: dot-delimiter  # dot-delimiter, camel-case, snake-case
+
+    # 资源类名
+    class_name: "Assets"
+
+    # 是否生成常量
+    generate_const: true
+
+    # 是否生成扩展方法
+    generate_extensions: true
+
+    # 排除的文件模式
+    exclude:
+      - "**/.DS_Store"
+      - "**/Thumbs.db"
+      - "**/*.tmp"
+      - "**/*.temp"
+
+    # 图片资源特殊配置
+    images:
+      # 是否生成图片尺寸信息
+      generate_size_info: true
+
+      # 支持的图片格式
+      supported_formats:
+        - png
+        - jpg
+        - jpeg
+        - gif
+        - webp
+        - svg
+
+      # 图片压缩配置
+      compression:
+        enabled: true
+        quality: 85
+
+      # 多分辨率支持
+      density_aware: true
+
+      # 图片预加载
+      preload_images: false
+
+  # 字体配置
+  fonts:
+    # 是否启用字体生成
+    enabled: true
+
+    # 字体类名
+    class_name: "FontFamily"
+
+    # 是否生成字体权重常量
+    generate_font_weights: true
+
+    # 是否生成字体样式常量
+    generate_font_styles: true
+
+    # 字体文件配置
+    font_files:
+      # 是否生成字体文件路径常量
+      generate_paths: true
+
+      # 支持的字体格式
+      supported_formats:
+        - ttf
+        - otf
+        - woff
+        - woff2
+
+    # 自定义字体配置
+    custom_fonts:
+      # 是否自动检测字体权重
+      auto_detect_weights: true
+
+      # 默认字体权重
+      default_weight: 400
+
+      # 字体回退配置
+      fallback_fonts:
+        - "Roboto"
+        - "Arial"
+        - "sans-serif"
+
+  # 颜色配置
+  colors:
+    # 是否启用颜色生成
+    enabled: true
+
+    # 颜色类名
+    class_name: "AppColors"
+
+    # 颜色输入文件
+    inputs:
+      - assets/colors/colors.xml
+      - assets/colors/material_colors.xml
+      - assets/colors/brand_colors.json
+
+    # 颜色格式配置
+    formats:
+      # 支持的颜色格式
+      supported:
+        - hex
+        - rgb
+        - argb
+        - hsl
+        - hsv
+
+      # 默认输出格式
+      default_output: hex
+
+    # 颜色主题配置
+    themes:
+      # 是否生成主题相关颜色
+      generate_theme_colors: true
+
+      # 支持的主题
+      supported_themes:
+        - light
+        - dark
+        - high_contrast
+
+      # 主题颜色映射
+      theme_mapping:
+        primary: "primary_color"
+        secondary: "secondary_color"
+        surface: "surface_color"
+        background: "background_color"
+        error: "error_color"
+
+    # 颜色验证
+    validation:
+      # 是否验证颜色对比度
+      check_contrast: true
+
+      # 最小对比度要求
+      min_contrast_ratio: 4.5
+
+      # 是否检查无障碍性
+      accessibility_check: true
+
+  # 本地化资源配置
+  localization:
+    # 是否启用本地化资源生成
+    enabled: true
+
+    # 本地化类名
+    class_name: "L10nAssets"
+
+    # 支持的语言
+    supported_locales:
+      - en
+      - zh
+      - ja
+      - ko
+      - es
+      - fr
+      - de
+      - ru
+
+    # 本地化资源路径
+    assets_path: "assets/l10n/"
+
+  # 代码生成配置
+  code_generation:
+    # 是否生成构建器方法
+    generate_builders: true
+
+    # 是否生成工厂方法
+    generate_factories: true
+
+    # 是否生成扩展方法
+    generate_extensions: true
+
+    # 是否生成混入类
+    generate_mixins: false
+
+    # 代码模板配置
+    templates:
+      # 类模板
+      class_template: |
+        /// Generated class for {class_name}
+        ///
+        /// This class provides type-safe access to {resource_type} resources.
+        /// Generated by flutter_gen on {generation_time}.
+        class {class_name} {{
+          {class_name}._();
+          {content}
+        }}
+
+      # 常量模板
+      const_template: |
+        /// {description}
+        static const {type} {name} = {value};
+
+  # 性能优化配置
+  performance:
+    # 是否启用懒加载
+    lazy_loading: true
+
+    # 是否启用缓存
+    caching: true
+
+    # 缓存策略
+    cache_strategy: "memory"  # memory, disk, hybrid
+
+    # 最大缓存大小（MB）
+    max_cache_size: 100
+
+    # 是否预加载关键资源
+    preload_critical: true
+
+  # 调试配置
+  debug:
+    # 是否生成调试信息
+    generate_debug_info: true
+
+    # 是否输出详细日志
+    verbose_logging: false
+
+    # 是否生成资源使用统计
+    generate_usage_stats: true
+
+    # 调试输出格式
+    debug_output_format: "json"  # json, yaml, xml
+
+  # 验证配置
+  validation:
+    # 是否验证资源完整性
+    check_integrity: true
+
+    # 是否检查重复资源
+    check_duplicates: true
+
+    # 是否验证命名规范
+    check_naming_convention: true
+
+    # 命名规范
+    naming_convention:
+      # 资源名称模式
+      pattern: "^[a-z][a-z0-9_]*$"
+
+      # 是否允许数字开头
+      allow_leading_digits: false
+
+      # 是否强制小写
+      force_lowercase: true
+''';
+  }
+
+  /// 生成shorenbird.yaml配置
+  String _generateShorebirdConfig(ScaffoldConfig config) {
+    return '''
+# Shorebird配置 - 企业级代码推送和热更新
+# 更多信息: https://docs.shorebird.dev/
+
+# 应用标识符
+app_id: ${config.templateName.toLowerCase().replaceAll('_', '-')}
+
+# 多环境配置
+flavors:
+  # 开发环境
+  development:
+    app_id: ${config.templateName.toLowerCase().replaceAll('_', '-')}-dev
+    description: "开发环境 - 用于内部测试和开发"
+    auto_update:
+      enabled: true
+      check_interval: 1800  # 30分钟检查一次
+      force_update: false
+    rollback:
+      enabled: true
+      max_rollback_patches: 10
+
+  # 测试环境
+  staging:
+    app_id: ${config.templateName.toLowerCase().replaceAll('_', '-')}-staging
+    description: "测试环境 - 用于QA测试和预发布验证"
+    auto_update:
+      enabled: true
+      check_interval: 3600  # 1小时检查一次
+      force_update: false
+    rollback:
+      enabled: true
+      max_rollback_patches: 8
+
+  # 生产环境
+  production:
+    app_id: ${config.templateName.toLowerCase().replaceAll('_', '-')}-prod
+    description: "生产环境 - 正式发布版本"
+    auto_update:
+      enabled: true
+      check_interval: 7200  # 2小时检查一次
+      force_update: false
+    rollback:
+      enabled: true
+      max_rollback_patches: 5
+
+# 全局自动更新配置
+auto_update:
+  # 是否启用自动更新
+  enabled: true
+
+  # 检查更新间隔（秒）
+  check_interval: 3600
+
+  # 是否强制更新
+  force_update: false
+
+  # 更新策略
+  strategy: "background"  # background, immediate, manual
+
+  # 网络条件要求
+  network_policy:
+    wifi_only: false
+    cellular_allowed: true
+    roaming_allowed: false
+
+  # 电池条件要求
+  battery_policy:
+    min_battery_level: 20  # 最低电量20%
+    charging_required: false
+
+  # 用户体验配置
+  user_experience:
+    show_update_dialog: true
+    allow_user_defer: true
+    max_defer_count: 3
+
+# 回滚配置
+rollback:
+  # 是否启用回滚功能
+  enabled: true
+
+  # 最大回滚补丁数量
+  max_rollback_patches: 5
+
+  # 自动回滚条件
+  auto_rollback:
+    enabled: true
+
+    # 崩溃率阈值（百分比）
+    crash_rate_threshold: 5.0
+
+    # 监控时间窗口（分钟）
+    monitoring_window: 30
+
+    # 最小样本数量
+    min_sample_size: 100
+
+  # 手动回滚策略
+  manual_rollback:
+    enabled: true
+    require_confirmation: true
+    admin_approval_required: false
+
+# 发布配置
+release:
+  # 发布策略
+  strategy: "staged"  # immediate, staged, manual
+
+  # 分阶段发布配置
+  staged_rollout:
+    enabled: true
+
+    # 发布阶段配置
+    stages:
+      - percentage: 1    # 第一阶段：1%用户
+        duration: 24     # 持续24小时
+      - percentage: 5    # 第二阶段：5%用户
+        duration: 48     # 持续48小时
+      - percentage: 25   # 第三阶段：25%用户
+        duration: 72     # 持续72小时
+      - percentage: 100  # 最终阶段：100%用户
+
+    # 暂停条件
+    pause_conditions:
+      crash_rate_threshold: 2.0
+      error_rate_threshold: 5.0
+      negative_feedback_threshold: 10.0
+
+  # A/B测试配置
+  ab_testing:
+    enabled: false
+    test_percentage: 10  # 10%用户参与A/B测试
+
+# 监控和分析配置
+monitoring:
+  # 性能监控
+  performance:
+    enabled: true
+
+    # 关键指标
+    metrics:
+      - app_start_time
+      - memory_usage
+      - cpu_usage
+      - network_latency
+      - crash_rate
+      - error_rate
+
+    # 报告频率
+    reporting_interval: 300  # 5分钟
+
+  # 用户反馈
+  feedback:
+    enabled: true
+    collection_rate: 0.1  # 10%用户收集反馈
+
+  # 崩溃报告
+  crash_reporting:
+    enabled: true
+    include_user_data: false
+    include_device_info: true
+
+# 安全配置
+security:
+  # 代码签名验证
+  code_signing:
+    enabled: true
+    verify_signature: true
+
+  # 传输加密
+  encryption:
+    enabled: true
+    algorithm: "AES-256"
+
+  # 访问控制
+  access_control:
+    require_authentication: true
+    allowed_domains: []
+    blocked_domains: []
+
+# 缓存配置
+cache:
+  # 补丁缓存
+  patch_cache:
+    enabled: true
+    max_size_mb: 100
+    ttl_hours: 168  # 7天
+
+  # 元数据缓存
+  metadata_cache:
+    enabled: true
+    max_size_mb: 10
+    ttl_hours: 24   # 1天
+
+# 日志配置
+logging:
+  # 日志级别
+  level: "info"  # debug, info, warn, error
+
+  # 日志输出
+  outputs:
+    - console
+    - file
+
+  # 日志文件配置
+  file_config:
+    max_size_mb: 50
+    max_files: 5
+    rotation: "daily"
+
+# 开发者工具配置
+dev_tools:
+  # 调试模式
+  debug_mode: false
+
+  # 测试模式
+  test_mode: false
+
+  # 详细日志
+  verbose_logging: false
+
+  # 性能分析
+  profiling: false
+
+# 兼容性配置
+compatibility:
+  # 最低支持版本
+  min_app_version: "1.0.0"
+
+  # 最低系统版本
+  min_os_version:
+    android: "21"  # Android 5.0
+    ios: "12.0"    # iOS 12.0
+
+  # 设备要求
+  device_requirements:
+    min_ram_mb: 1024
+    min_storage_mb: 100
+''';
+  }
+
+  /// 生成现代化main.dart
+  Future<void> _generateModernMainDart(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    final mainFile = File(path.join(templatesDir, 'main.dart.template'));
+    await mainFile.writeAsString('''
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:{{packageName}}/src/app.dart';
+import 'package:{{packageName}}/src/core/providers/app_providers.dart';
+import 'package:{{packageName}}/generated/l10n/app_localizations.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 初始化Firebase (如果需要)
+  {{#if firebase}}
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  {{/if}}
+
+  // 初始化Hive (如果需要)
+  {{#if hive}}
+  await Hive.initFlutter();
+  {{/if}}
+
+  runApp(
+    ProviderScope(
+      child: {{appName}}App(),
+    ),
+  );
+}
+''');
+  }
+
+  /// 生成App Widget
+  Future<void> _generateAppWidget(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    final appFile = File(path.join(templatesDir, 'app.dart.template'));
+    await appFile.writeAsString('''
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:{{packageName}}/src/core/router/app_router.dart';
+import 'package:{{packageName}}/src/core/theme/app_theme.dart';
+import 'package:{{packageName}}/generated/l10n/app_localizations.dart';
+
+class {{appName}}App extends ConsumerWidget {
+  const {{appName}}App({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+    final themeMode = ref.watch(themeModeProvider);
+
+    return MaterialApp.router(
+      title: '{{appTitle}}',
+      debugShowCheckedModeBanner: false,
+
+      // 路由配置
+      routerConfig: router,
+
+      // 主题配置
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+
+      // 国际化配置
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
+    );
+  }
+}
+''');
+  }
+
+  /// 生成路由配置
+  Future<void> _generateRouterConfig(
+    String templatesDir,
+    ScaffoldConfig config,
+  ) async {
+    final routerFile =
+        File(path.join(templatesDir, 'app_router.dart.template'));
+    await routerFile.writeAsString(r'''
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{packageName}}/src/screens/home/home_screen.dart';
+import 'package:{{packageName}}/src/screens/settings/settings_screen.dart';
+import 'package:{{packageName}}/src/screens/splash/splash_screen.dart';
+
+// 路由提供者
+final appRouterProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    initialLocation: '/splash',
+    routes: [
+      // 启动页
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
+      // 主页
+      GoRoute(
+        path: '/home',
+        name: 'home',
+        builder: (context, state) => const HomeScreen(),
+      ),
+
+      // 设置页
+      GoRoute(
+        path: '/settings',
+        name: 'settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+    ],
+
+    // 错误页面
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Text('页面未找到: \${state.location}'),
+      ),
+    ),
+  );
+});
+''');
+  }
+
+  // 临时简化版本的剩余方法
+  Future<void> _generateThemeConfig(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现主题配置生成
+  }
+
+  Future<void> _generateProviders(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现Providers生成
+  }
+
+  Future<void> _generateModels(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现Models生成
+  }
+
+  Future<void> _generateServices(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现Services生成
+  }
+
+  Future<void> _generateScreens(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现Screens生成
+  }
+
+  Future<void> _generateWidgets(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现Widgets生成
+  }
+
+  Future<void> _generateConstants(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现Constants生成
+  }
+
+  Future<void> _generateUtils(
+      String templatesDir, ScaffoldConfig config,) async {
+    // TODO: 实现Utils生成
+  }
+
+  /// 生成l10n国际化文件
+  Future<void> _generateL10nFiles(
+      String templatePath, ScaffoldConfig config,) async {
+    // 创建l10n目录
+    final l10nDir = Directory(path.join(templatePath, 'l10n'));
+    await l10nDir.create(recursive: true);
+
+    // 生成header.txt文件
+    final headerFile = File(path.join(l10nDir.path, 'header.txt'));
+    await headerFile.writeAsString(_generateL10nHeader(config));
+
+    // 生成英语ARB文件（模板文件）
+    final enArbFile = File(path.join(l10nDir.path, 'app_en.arb'));
+    await enArbFile.writeAsString(_generateEnglishArb(config));
+
+    // 生成中文ARB文件
+    final zhArbFile = File(path.join(l10nDir.path, 'app_zh.arb'));
+    await zhArbFile.writeAsString(_generateChineseArb(config));
+  }
+
+  /// 生成l10n头文件
+  String _generateL10nHeader(ScaffoldConfig config) {
+    return '''
+Generated by Ming Status CLI Template Generator
+Project: ${config.templateName}
+Author: ${config.author}
+Generated: ${DateTime.now().toIso8601String()}
+
+This file contains copyright and license information for generated localization files.
+''';
+  }
+
+  /// 生成英语ARB文件
+  String _generateEnglishArb(ScaffoldConfig config) {
+    return '''
+{
+  "@@locale": "en",
+  "@@last_modified": "${DateTime.now().toIso8601String()}",
+  "@@author": "${config.author}",
+
+  "appTitle": "${config.templateName}",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+
+  "welcome": "Welcome",
+  "@welcome": {
+    "description": "Welcome message"
+  },
+
+  "hello": "Hello",
+  "@hello": {
+    "description": "Greeting message"
+  },
+
+  "helloUser": "Hello, {name}!",
+  "@helloUser": {
+    "description": "Personalized greeting message",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings page title"
+  },
+
+  "language": "Language",
+  "@language": {
+    "description": "Language selection label"
+  },
+
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme selection label"
+  },
+
+  "lightTheme": "Light",
+  "@lightTheme": {
+    "description": "Light theme option"
+  },
+
+  "darkTheme": "Dark",
+  "@darkTheme": {
+    "description": "Dark theme option"
+  },
+
+  "systemTheme": "System",
+  "@systemTheme": {
+    "description": "System theme option"
+  },
+
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+
+  "error": "Error",
+  "@error": {
+    "description": "Error message title"
+  },
+
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading indicator text"
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Retry button text"
+  },
+
+  "itemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@itemCount": {
+    "description": "Number of items with pluralization",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  }
+}
+''';
+  }
+
+  /// 生成中文ARB文件
+  String _generateChineseArb(ScaffoldConfig config) {
+    return '''
+{
+  "@@locale": "zh",
+  "@@last_modified": "${DateTime.now().toIso8601String()}",
+  "@@author": "${config.author}",
+
+  "appTitle": "${config.templateName}",
+  "welcome": "欢迎",
+  "hello": "你好",
+  "helloUser": "你好，{name}！",
+  "settings": "设置",
+  "language": "语言",
+  "theme": "主题",
+  "lightTheme": "浅色",
+  "darkTheme": "深色",
+  "systemTheme": "跟随系统",
+  "save": "保存",
+  "cancel": "取消",
+  "ok": "确定",
+  "error": "错误",
+  "loading": "加载中...",
+  "retry": "重试",
+  "itemCount": "{count, plural, =0{没有项目} other{{count} 个项目}}"
+}
+''';
+  }
+
+  /// 生成flutter_gen资源文件
+  Future<void> _generateFlutterGenAssets(
+      String templatePath, ScaffoldConfig config,) async {
+    // 创建assets目录结构
+    await _createAssetsDirectories(templatePath);
+
+    // 生成颜色资源文件
+    await _generateColorAssets(templatePath, config);
+
+    // 生成示例图片资源
+    await _generateImageAssets(templatePath, config);
+
+    // 生成字体资源
+    await _generateFontAssets(templatePath, config);
+  }
+
+  /// 创建资源目录结构
+  Future<void> _createAssetsDirectories(String templatePath) async {
+    final directories = [
+      'assets',
+      'assets/images',
+      'assets/icons',
+      'assets/fonts',
+      'assets/colors',
+      'assets/l10n',
+    ];
+
+    for (final dir in directories) {
+      final directory = Directory(path.join(templatePath, dir));
+      await directory.create(recursive: true);
+    }
+  }
+
+  /// 生成颜色资源文件
+  Future<void> _generateColorAssets(
+      String templatePath, ScaffoldConfig config,) async {
+    // 生成colors.xml文件
+    final colorsXmlFile =
+        File(path.join(templatePath, 'assets', 'colors', 'colors.xml'));
+    await colorsXmlFile.writeAsString('''
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 主色调 -->
+    <color name="primary_color">#2196F3</color>
+    <color name="primary_variant">#1976D2</color>
+    <color name="secondary_color">#03DAC6</color>
+    <color name="secondary_variant">#018786</color>
+
+    <!-- 表面颜色 -->
+    <color name="surface_color">#FFFFFF</color>
+    <color name="background_color">#FAFAFA</color>
+    <color name="error_color">#B00020</color>
+
+    <!-- 文本颜色 -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#000000</color>
+    <color name="on_surface">#000000</color>
+    <color name="on_background">#000000</color>
+    <color name="on_error">#FFFFFF</color>
+
+    <!-- 深色主题颜色 -->
+    <color name="dark_primary_color">#BB86FC</color>
+    <color name="dark_primary_variant">#3700B3</color>
+    <color name="dark_secondary_color">#03DAC6</color>
+    <color name="dark_surface_color">#121212</color>
+    <color name="dark_background_color">#121212</color>
+
+    <!-- 功能颜色 -->
+    <color name="success_color">#4CAF50</color>
+    <color name="warning_color">#FF9800</color>
+    <color name="info_color">#2196F3</color>
+
+    <!-- 灰度颜色 -->
+    <color name="grey_50">#FAFAFA</color>
+    <color name="grey_100">#F5F5F5</color>
+    <color name="grey_200">#EEEEEE</color>
+    <color name="grey_300">#E0E0E0</color>
+    <color name="grey_400">#BDBDBD</color>
+    <color name="grey_500">#9E9E9E</color>
+    <color name="grey_600">#757575</color>
+    <color name="grey_700">#616161</color>
+    <color name="grey_800">#424242</color>
+    <color name="grey_900">#212121</color>
+</resources>
+''');
+
+    // 生成Material Design颜色文件
+    final materialColorsXmlFile = File(
+        path.join(templatePath, 'assets', 'colors', 'material_colors.xml'),);
+    await materialColorsXmlFile.writeAsString('''
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material Design 3.0 颜色系统 -->
+
+    <!-- 品牌颜色 -->
+    <color name="brand_primary">#6750A4</color>
+    <color name="brand_secondary">#625B71</color>
+    <color name="brand_tertiary">#7D5260</color>
+
+    <!-- 中性颜色 -->
+    <color name="neutral_10">#1C1B1F</color>
+    <color name="neutral_20">#313033</color>
+    <color name="neutral_30">#484649</color>
+    <color name="neutral_40">#605D62</color>
+    <color name="neutral_50">#787579</color>
+    <color name="neutral_60">#939094</color>
+    <color name="neutral_70">#AEA9AE</color>
+    <color name="neutral_80">#CAC4C9</color>
+    <color name="neutral_90">#E6E0E5</color>
+    <color name="neutral_95">#F3EDF2</color>
+    <color name="neutral_99">#FFFBFE</color>
+
+    <!-- 中性变体颜色 -->
+    <color name="neutral_variant_10">#1D1A22</color>
+    <color name="neutral_variant_20">#322F37</color>
+    <color name="neutral_variant_30">#49454F</color>
+    <color name="neutral_variant_40">#605D66</color>
+    <color name="neutral_variant_50">#79747E</color>
+    <color name="neutral_variant_60">#938F99</color>
+    <color name="neutral_variant_70">#AEA9B4</color>
+    <color name="neutral_variant_80">#CAC4D0</color>
+    <color name="neutral_variant_90">#E7E0EC</color>
+    <color name="neutral_variant_95">#F5EEFA</color>
+    <color name="neutral_variant_99">#FFFBFE</color>
+</resources>
+''');
+
+    // 生成品牌颜色JSON文件
+    final brandColorsJsonFile =
+        File(path.join(templatePath, 'assets', 'colors', 'brand_colors.json'));
+    await brandColorsJsonFile.writeAsString('''
+{
+  "brand": {
+    "primary": "#6750A4",
+    "secondary": "#625B71",
+    "tertiary": "#7D5260",
+    "accent": "#03DAC6"
+  },
+  "semantic": {
+    "success": "#4CAF50",
+    "warning": "#FF9800",
+    "error": "#F44336",
+    "info": "#2196F3"
+  },
+  "gradients": {
+    "primary_gradient": ["#6750A4", "#8E24AA"],
+    "secondary_gradient": ["#625B71", "#757575"],
+    "sunset_gradient": ["#FF6B6B", "#FFE66D", "#4ECDC4"]
+  }
+}
+''');
+  }
+
+  /// 生成示例图片资源
+  Future<void> _generateImageAssets(
+      String templatePath, ScaffoldConfig config,) async {
+    // 创建README文件说明图片资源
+    final imagesReadmeFile =
+        File(path.join(templatePath, 'assets', 'images', 'README.md'));
+    await imagesReadmeFile.writeAsString('''
+# 图片资源目录
+
+这个目录用于存放应用的图片资源。
+
+## 目录结构
+
+```
+images/
+├── icons/          # 应用图标
+├── logos/          # 品牌标志
+├── backgrounds/    # 背景图片
+├── illustrations/  # 插图
+└── avatars/        # 头像图片
+```
+
+## 支持的格式
+
+- PNG (推荐用于图标和透明图片)
+- JPG/JPEG (推荐用于照片)
+- WebP (推荐用于网络优化)
+- SVG (推荐用于矢量图标)
+
+## 命名规范
+
+- 使用小写字母和下划线
+- 描述性命名：`user_avatar_placeholder.png`
+- 包含尺寸信息：`app_icon_48x48.png`
+- 状态标识：`button_pressed.png`
+
+## 多分辨率支持
+
+为不同屏幕密度提供多个版本：
+
+```
+images/
+├── app_icon.png        # 1x (mdpi)
+├── 1.5x/
+│   └── app_icon.png    # 1.5x (hdpi)
+├── 2.0x/
+│   └── app_icon.png    # 2x (xhdpi)
+├── 3.0x/
+│   └── app_icon.png    # 3x (xxhdpi)
+└── 4.0x/
+    └── app_icon.png    # 4x (xxxhdpi)
+```
+
+## 使用方式
+
+通过flutter_gen生成的代码访问：
+
+```dart
+import 'package:${config.templateName}/generated/assets.gen.dart';
+
+// 使用图片
+Image.asset(Assets.images.appIcon.path)
+
+// 使用SVG
+SvgPicture.asset(Assets.images.logo.path)
+```
+''');
+
+    // 创建图标目录的README
+    final iconsReadmeFile =
+        File(path.join(templatePath, 'assets', 'icons', 'README.md'));
+    await iconsReadmeFile.writeAsString('''
+# 图标资源目录
+
+这个目录用于存放应用的图标资源。
+
+## 推荐的图标库
+
+- [Material Icons](https://fonts.google.com/icons)
+- [Cupertino Icons](https://pub.dev/packages/cupertino_icons)
+- [Font Awesome](https://pub.dev/packages/font_awesome_flutter)
+- [Feather Icons](https://pub.dev/packages/feather_icons)
+
+## 自定义图标
+
+如果需要自定义图标，推荐使用SVG格式：
+
+```dart
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:${config.templateName}/generated/assets.gen.dart';
+
+SvgPicture.asset(
+  Assets.icons.customIcon.path,
+  width: 24,
+  height: 24,
+  color: Theme.of(context).iconTheme.color,
+)
+```
+''');
+  }
+
+  /// 生成字体资源
+  Future<void> _generateFontAssets(
+      String templatePath, ScaffoldConfig config,) async {
+    // 创建字体目录的README
+    final fontsReadmeFile =
+        File(path.join(templatePath, 'assets', 'fonts', 'README.md'));
+    await fontsReadmeFile.writeAsString('''
+# 字体资源目录
+
+这个目录用于存放应用的自定义字体文件。
+
+## 支持的字体格式
+
+- TTF (TrueType Font)
+- OTF (OpenType Font)
+- WOFF/WOFF2 (Web字体，主要用于Web平台)
+
+## 字体文件组织
+
+```
+fonts/
+├── Roboto/
+│   ├── Roboto-Regular.ttf
+│   ├── Roboto-Bold.ttf
+│   ├── Roboto-Italic.ttf
+│   └── Roboto-BoldItalic.ttf
+└── CustomFont/
+    ├── CustomFont-Light.ttf
+    ├── CustomFont-Regular.ttf
+    ├── CustomFont-Medium.ttf
+    └── CustomFont-Bold.ttf
+```
+
+## pubspec.yaml配置
+
+字体需要在pubspec.yaml中声明：
+
+```yaml
+flutter:
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto/Roboto-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Roboto/Roboto-Italic.ttf
+          style: italic
+```
+
+## 使用方式
+
+通过flutter_gen生成的代码访问：
+
+```dart
+import 'package:${config.templateName}/generated/fonts.gen.dart';
+
+Text(
+  'Hello World',
+  style: TextStyle(
+    fontFamily: FontFamily.roboto,
+    fontWeight: FontWeight.bold,
+  ),
+)
+```
+
+## 推荐字体
+
+### 系统字体
+- **iOS**: San Francisco
+- **Android**: Roboto
+- **Web**: System fonts
+
+### Google Fonts
+可以使用google_fonts包：
+
+```dart
+import 'package:google_fonts/google_fonts.dart';
+
+Text(
+  'Hello World',
+  style: GoogleFonts.roboto(),
+)
+```
+
+### 开源字体推荐
+- **Roboto**: Material Design默认字体
+- **Open Sans**: 清晰易读的无衬线字体
+- **Lato**: 现代感强的无衬线字体
+- **Source Sans Pro**: Adobe开源字体
+- **Noto Sans**: Google多语言字体
+''');
+  }
+}
