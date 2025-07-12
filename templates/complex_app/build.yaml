@@ -1,0 +1,183 @@
+# Build Runner配置 - 企业级代码生成
+# 更多信息: https://pub.dev/packages/build_runner
+
+targets:
+  $default:
+    builders:
+      # === 数据类生成器 ===
+
+      # Freezed - 不可变数据类生成
+      freezed:
+        enabled: true
+        options:
+          # 生成copyWith方法
+          copy_with: true
+          # 生成equal和hashCode
+          equal: true
+          # 生成toString方法
+          to_string: true
+          # 生成when/map方法
+          when: true
+          map: true
+          # 生成maybeWhen/maybeMap方法
+          maybe_when: true
+          maybe_map: true
+          # 添加assert检查
+          assert_size: true
+        generate_for:
+          - lib/src/models/**
+          - lib/src/entities/**
+          - lib/src/data/**
+          - lib/src/domain/**
+        exclude:
+          - "**/*.g.dart"
+          - "**/*.freezed.dart"
+          - "**/generated/**"
+
+      # JSON Serializable - JSON序列化代码生成
+      json_serializable:
+        enabled: true
+        options:
+          # 生成toJson方法
+          explicit_to_json: true
+          # 字段重命名策略
+          field_rename: snake
+          # 包含null字段
+          include_if_null: false
+          # 生成fromJson构造函数
+          create_factory: true
+          # 生成toJson方法
+          create_to_json: true
+          # 检查必需字段
+          checked: true
+        generate_for:
+          - lib/src/models/**
+          - lib/src/entities/**
+          - lib/src/data/**
+          - lib/src/api/**
+        exclude:
+          - "**/*.freezed.dart"
+          - "**/generated/**"
+
+      # === 状态管理生成器 ===
+
+      # Riverpod Generator - 状态管理代码生成
+      riverpod_generator:
+        enabled: true
+        options:
+          # 生成keepAlive
+          keep_alive: true
+          # 生成依赖
+          dependencies: true
+          # 生成family
+          family: true
+          # 生成autoDispose
+          auto_dispose: true
+          # 生成缓存
+          cache: true
+        generate_for:
+          - lib/src/providers/**
+          - lib/src/services/**
+          - lib/src/repositories/**
+          - lib/src/controllers/**
+          - lib/src/notifiers/**
+        exclude:
+          - "**/*.g.dart"
+          - "**/generated/**"
+
+      # === 路由生成器 ===
+
+      # Go Router Generator - 路由代码生成
+      go_router_builder:
+        enabled: true
+        options:
+          # 生成类型安全路由
+          type_safe: true
+          # 生成路由名称
+          generate_route_names: true
+          # 生成路由路径
+          generate_route_paths: true
+          # 生成导航扩展
+          generate_navigation_extensions: true
+        generate_for:
+          - lib/src/router/**
+          - lib/src/navigation/**
+        exclude:
+          - "**/*.g.dart"
+
+      # === API生成器 ===
+
+      # Retrofit Generator - HTTP客户端代码生成
+      retrofit_generator:
+        enabled: true
+        options:
+          # 生成额外方法
+          generate_extra_methods: true
+          # 生成查询参数
+          generate_query_parameters: true
+          # 生成请求体
+          generate_request_body: true
+          # 生成响应类型
+          generate_response_type: true
+        generate_for:
+          - lib/src/api/**
+          - lib/src/services/**
+        exclude:
+          - "**/*.g.dart"
+
+      # === 测试生成器 ===
+
+      # Mockito Generator - Mock对象生成
+      mockito:
+        enabled: true
+        options:
+          # 生成缺失的Mock
+          missing_mocks: "warn"
+          # 生成空Mock
+          null_safety: true
+          # 生成回退Mock
+          fallback_generators: true
+        generate_for:
+          - test/**
+          - test_driver/**
+        exclude:
+          - "**/*.mocks.dart"
+
+# === 全局配置 ===
+global_options:
+  # 构建扩展配置
+  build_extensions:
+    ".dart":
+      - ".g.dart"
+      - ".freezed.dart"
+      - ".gr.dart"
+      - ".config.dart"
+      - ".mocks.dart"
+    ".json":
+      - ".g.dart"
+
+  # 构建过滤器
+  build_filters:
+    exclude:
+      - "**/*.g.dart"
+      - "**/*.freezed.dart"
+      - "**/*.gr.dart"
+      - "**/*.config.dart"
+      - "**/*.mocks.dart"
+      - "**/generated/**"
+      - "**/.dart_tool/**"
+      - "**/build/**"
+
+  # 性能配置
+  performance:
+    # 启用增量构建
+    incremental: true
+    # 并行构建
+    parallel: true
+    # 最大并行数
+    max_concurrency: 4
+    # 缓存配置
+    cache:
+      enabled: true
+      max_size: "500MB"
+      ttl: "7d"

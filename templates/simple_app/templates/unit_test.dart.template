@@ -1,0 +1,96 @@
+/*
+---------------------------------------------------------------
+File name:          unit_test.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        simple_app单元测试
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - simple_app单元测试;
+---------------------------------------------------------------
+*/
+
+
+import 'package:test/test.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:simple_app/simple_app.dart';
+
+// Mock类生成注解
+@GenerateMocks([
+  // 在这里添加需要Mock的类
+  // ExampleService,
+  // ExampleRepository,
+])
+
+import 'unit_test.mocks.dart';
+
+void main() {
+  group('simple_app', () {
+    late MockExampleService mockService;
+    late ExampleClass exampleClass;
+
+    setUp(() {
+      mockService = MockExampleService();
+      exampleClass = ExampleClass(service: mockService);
+    });
+
+    tearDown(() {
+      // 清理资源
+    });
+
+    test('should return expected result when method is called', () {
+      // Arrange
+      const expectedResult = 'expected';
+      when(mockService.getData()).thenReturn(expectedResult);
+
+      // Act
+      final result = exampleClass.processData();
+
+      // Assert
+      expect(result, equals(expectedResult));
+      verify(mockService.getData()).called(1);
+    });
+
+    test('should throw exception when invalid input is provided', () {
+      // Arrange
+      when(mockService.getData()).thenThrow(Exception('Invalid input'));
+
+      // Act & Assert
+      expect(
+        () => exampleClass.processData(),
+        throwsA(isA<Exception>()),
+      );
+    });
+
+    group('边界条件测试', () {
+      test('should handle null input correctly', () {
+        // TODO: 实现null输入测试
+      });
+
+      test('should handle empty input correctly', () {
+        // TODO: 实现空输入测试
+      });
+    });
+  });
+}
+
+// 示例类（实际使用时请替换为真实的类）
+class ExampleClass {
+  const ExampleClass({required this.service});
+
+  final ExampleService service;
+
+  String processData() {
+    return service.getData();
+  }
+}
+
+// 示例服务接口
+abstract class ExampleService {
+  String getData();
+}

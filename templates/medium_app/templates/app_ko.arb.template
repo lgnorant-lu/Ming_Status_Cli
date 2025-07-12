@@ -1,0 +1,58 @@
+{
+  "@@locale": "ko",
+  "@@last_modified": "2025-07-12T07:13:52.802586",
+  "@@author": "Test User",
+  "appTitle": "내 앱",
+  "welcome": "환영합니다",
+  "hello": "안녕하세요, {name}님！",
+  "settings": "설정",
+  "about": "정보",
+  "ok": "확인",
+  "cancel": "취소",
+  "home": "홈",
+  "profile": "프로필",
+  "notifications": "알림",
+  "search": "검색",
+  "loading": "로딩 중...",
+  "error": "오류",
+  "retry": "다시 시도",
+  "save": "저장",
+  "delete": "삭제",
+  "edit": "편집",
+  "itemCount": "{count, plural, =0{항목 없음} =1{1개 항목} other{{count}개 항목}}",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "@welcome": {
+    "description": "Welcome message displayed on the home screen"
+  },
+  "@hello": {
+    "description": "Personalized greeting message",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John",
+        "description": "User name"
+      }
+    }
+  },
+  "@itemCount": {
+    "description": "Number of items with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "appName": "medium_app",
+  "appDescription": "Flutter로 구축된 현대적인 애플리케이션",
+  "@appName": {
+    "description": "Application name",
+    "context": "app_info"
+  },
+  "@appDescription": {
+    "description": "Application description",
+    "context": "app_info"
+  }
+}

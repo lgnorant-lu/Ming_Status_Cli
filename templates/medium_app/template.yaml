@@ -1,0 +1,17 @@
+id: medium_app
+name: medium_app
+version: 1.0.0
+author: Test User
+description: 中等复杂度模板测试
+type: basic
+platform: crossPlatform
+framework: flutter
+complexity: medium
+maturity: development
+tags: []
+keywords: []
+dependencies: []
+category: basic
+createdAt: "2025-07-12T07:13:52.823250Z"
+updatedAt: "2025-07-12T07:13:52.823250Z"
+parameters: []

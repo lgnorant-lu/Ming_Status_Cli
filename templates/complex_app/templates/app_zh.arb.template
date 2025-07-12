@@ -1,0 +1,100 @@
+{
+  "@@locale": "zh",
+  "@@last_modified": "2025-07-12T07:14:10.725466",
+  "@@author": "Test User",
+  "appTitle": "我的应用",
+  "welcome": "欢迎",
+  "hello": "你好，{name}！",
+  "settings": "设置",
+  "about": "关于",
+  "ok": "确定",
+  "cancel": "取消",
+  "home": "首页",
+  "profile": "个人资料",
+  "notifications": "通知",
+  "search": "搜索",
+  "loading": "加载中...",
+  "error": "错误",
+  "retry": "重试",
+  "save": "保存",
+  "delete": "删除",
+  "edit": "编辑",
+  "itemCount": "{count, plural, =0{没有项目} =1{1个项目} other{{count}个项目}}",
+  "login": "登录",
+  "logout": "登出",
+  "register": "注册",
+  "forgotPassword": "忘记密码",
+  "email": "邮箱",
+  "password": "密码",
+  "confirmPassword": "确认密码",
+  "firstName": "名字",
+  "lastName": "姓氏",
+  "phoneNumber": "电话号码",
+  "address": "地址",
+  "city": "城市",
+  "country": "国家",
+  "language": "语言",
+  "theme": "主题",
+  "darkMode": "暗色模式",
+  "lightMode": "亮色模式",
+  "systemMode": "跟随系统",
+  "lastUpdated": "最后更新：{date}",
+  "version": "版本",
+  "privacyPolicy": "隐私政策",
+  "termsOfService": "服务条款",
+  "contactUs": "联系我们",
+  "feedback": "反馈",
+  "rateApp": "评价应用",
+  "shareApp": "分享应用",
+  "@appTitle": {
+    "description": "The title of the application displayed in the app bar",
+    "context": "app_bar"
+  },
+  "@welcome": {
+    "description": "Welcome message displayed on the home screen",
+    "context": "home_screen"
+  },
+  "@hello": {
+    "description": "Personalized greeting message with user name",
+    "context": "greeting",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John Doe",
+        "description": "Full name of the user"
+      }
+    }
+  },
+  "@itemCount": {
+    "description": "Number of items with plural support",
+    "context": "item_list",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact",
+        "description": "Total number of items"
+      }
+    }
+  },
+  "@lastUpdated": {
+    "description": "Last updated timestamp",
+    "context": "status",
+    "placeholders": {
+      "date": {
+        "type": "DateTime",
+        "format": "yMd",
+        "description": "Date when content was last updated"
+      }
+    }
+  },
+  "appName": "complex_app",
+  "appDescription": "一个使用Flutter构建的现代化应用程序",
+  "@appName": {
+    "description": "Application name",
+    "context": "app_info"
+  },
+  "@appDescription": {
+    "description": "Application description",
+    "context": "app_info"
+  }
+}

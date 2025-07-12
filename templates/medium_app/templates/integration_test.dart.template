@@ -1,0 +1,73 @@
+/*
+---------------------------------------------------------------
+File name:          integration_test.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        medium_app集成测试
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - medium_app集成测试;
+---------------------------------------------------------------
+*/
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:medium_app/main.dart' as app;
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  group('medium_app Integration Tests', () {
+    testWidgets('complete user flow test', (tester) async {
+      // 启动应用
+      app.main();
+      await tester.pumpAndSettle();
+
+      // 验证初始状态
+      expect(find.text('Welcome'), findsOneWidget);
+
+      // 执行用户操作
+      await tester.tap(find.text('Get Started'));
+      await tester.pumpAndSettle();
+
+      // 验证导航结果
+      expect(find.text('Home'), findsOneWidget);
+
+      // 测试设置页面
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Settings'), findsOneWidget);
+    });
+
+    testWidgets('theme switching test', (tester) async {
+      app.main();
+      await tester.pumpAndSettle();
+
+      // 导航到设置页面
+      await tester.tap(find.byIcon(Icons.settings));
+      await tester.pumpAndSettle();
+
+      // 切换主题
+      await tester.tap(find.text('Dark Mode'));
+      await tester.pumpAndSettle();
+
+      // 验证主题变化
+      // TODO: 添加主题验证逻辑
+    });
+
+    testWidgets('data persistence test', (tester) async {
+      // TODO: 实现数据持久化测试
+    });
+
+    testWidgets('network connectivity test', (tester) async {
+      // TODO: 实现网络连接测试
+    });
+  });
+}

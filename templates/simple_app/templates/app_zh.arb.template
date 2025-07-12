@@ -1,0 +1,37 @@
+{
+  "@@locale": "zh",
+  "@@last_modified": "2025-07-12T07:13:34.930188",
+  "@@author": "Test User",
+  "appTitle": "我的应用",
+  "welcome": "欢迎",
+  "hello": "你好，{name}！",
+  "settings": "设置",
+  "about": "关于",
+  "ok": "确定",
+  "cancel": "取消",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "@welcome": {
+    "description": "Welcome message"
+  },
+  "@hello": {
+    "description": "Greeting message",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+  "appName": "simple_app",
+  "appDescription": "一个使用Flutter构建的现代化应用程序",
+  "@appName": {
+    "description": "Application name",
+    "context": "app_info"
+  },
+  "@appDescription": {
+    "description": "Application description",
+    "context": "app_info"
+  }
+}

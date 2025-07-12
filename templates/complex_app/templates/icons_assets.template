@@ -1,0 +1,83 @@
+/*
+---------------------------------------------------------------
+File name:          icons.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        complex_app应用程序图标资源
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - complex_app应用程序图标资源;
+---------------------------------------------------------------
+*/
+
+
+import 'package:flutter/material.dart';
+
+/// 图标资源常量
+///
+/// 定义应用程序中使用的所有图标
+class AppIcons {
+  /// 私有构造函数，防止实例化
+  AppIcons._();
+
+  /// === Material Design 图标 ===
+  
+  /// 首页图标
+  static const IconData home = Icons.home;
+  
+  /// 设置图标
+  static const IconData settings = Icons.settings;
+  
+  /// 用户图标
+  static const IconData person = Icons.person;
+  
+  /// 搜索图标
+  static const IconData search = Icons.search;
+  
+  /// 通知图标
+  static const IconData notifications = Icons.notifications;
+  
+  /// 菜单图标
+  static const IconData menu = Icons.menu;
+  
+  /// 返回图标
+  static const IconData back = Icons.arrow_back;
+  
+  /// 关闭图标
+  static const IconData close = Icons.close;
+  
+  /// 编辑图标
+  static const IconData edit = Icons.edit;
+  
+  /// 删除图标
+  static const IconData delete = Icons.delete;
+  
+  /// 保存图标
+  static const IconData save = Icons.save;
+  
+  /// 分享图标
+  static const IconData share = Icons.share;
+  
+  /// 收藏图标
+  static const IconData favorite = Icons.favorite;
+  
+  /// 收藏边框图标
+  static const IconData favoriteBorder = Icons.favorite_border;
+  
+  /// 添加图标
+  static const IconData add = Icons.add;
+  
+  /// 移除图标
+  static const IconData remove = Icons.remove;
+  
+  /// 刷新图标
+  static const IconData refresh = Icons.refresh;
+  
+  /// 下载图标
+  static const IconData download = Icons.download;
+  
+  /// 上传图标
+  static const IconData upload = Icons.upload;
+}

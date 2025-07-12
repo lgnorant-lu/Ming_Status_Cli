@@ -1,0 +1,105 @@
+/*
+---------------------------------------------------------------
+File name:          widget_test.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        simple_appWidget测试
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - simple_appWidget测试;
+---------------------------------------------------------------
+*/
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockito/mockito.dart';
+import 'package:mockito/annotations.dart';
+
+import 'package:simple_app/src/app.dart';
+
+// Mock类生成注解
+@GenerateMocks([
+  // 在这里添加需要Mock的类
+  // ExampleService,
+])
+
+import 'widget_test.mocks.dart';
+
+void main() {
+  group('simple_app Widget Tests', () {
+    testWidgets('should display expected UI elements', (tester) async {
+      // Arrange
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: ExampleWidget(),
+          ),
+        ),
+      );
+
+      // Act
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Expected Text'), findsOneWidget);
+      expect(find.byType(ElevatedButton), findsOneWidget);
+    });
+
+    testWidgets('should respond to user interactions', (tester) async {
+      // Arrange
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: ExampleWidget(),
+          ),
+        ),
+      );
+
+      // Act
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+
+      // Assert
+      expect(find.text('Button Pressed'), findsOneWidget);
+    });
+
+    testWidgets('should handle loading states correctly', (tester) async {
+      // TODO: 实现加载状态测试
+    });
+
+    testWidgets('should handle error states correctly', (tester) async {
+      // TODO: 实现错误状态测试
+    });
+  });
+}
+
+// 示例Widget（实际使用时请替换为真实的Widget）
+class ExampleWidget extends StatelessWidget {
+  const ExampleWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Example Widget'),
+      ),
+      body: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Expected Text'),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: null,
+              child: Text('Test Button'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

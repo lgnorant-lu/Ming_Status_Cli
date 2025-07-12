@@ -1,0 +1,68 @@
+/*
+---------------------------------------------------------------
+File name:          performance_test.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        complex_app性能测试
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - complex_app性能测试;
+---------------------------------------------------------------
+*/
+
+
+import 'package:test/test.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:complex_app/complex_app.dart';
+
+void main() {
+  group('complex_app Performance Tests', () {
+    test('should complete operation within time limit', () async {
+      // Arrange
+      const timeLimit = Duration(milliseconds: 100);
+      final stopwatch = Stopwatch()..start();
+
+      // Act
+      await performExpensiveOperation();
+      stopwatch.stop();
+
+      // Assert
+      expect(stopwatch.elapsed, lessThan(timeLimit));
+    });
+
+    test('should handle large data sets efficiently', () async {
+      // Arrange
+      final largeDataSet = List.generate(10000, (index) => index);
+      final stopwatch = Stopwatch()..start();
+
+      // Act
+      final result = processLargeDataSet(largeDataSet);
+      stopwatch.stop();
+
+      // Assert
+      expect(result, isNotNull);
+      expect(stopwatch.elapsed, lessThan(const Duration(seconds: 1)));
+    });
+
+    test('memory usage should remain stable', () async {
+      // TODO: 实现内存使用测试
+      // 可以使用 dart:developer 的 Timeline 或其他工具
+    });
+  });
+}
+
+// 示例性能测试函数
+Future<void> performExpensiveOperation() async {
+  // 模拟耗时操作
+  await Future.delayed(const Duration(milliseconds: 50));
+}
+
+List<int> processLargeDataSet(List<int> data) {
+  // 模拟大数据集处理
+  return data.where((item) => item % 2 == 0).toList();
+}

@@ -1,0 +1,85 @@
+/*
+---------------------------------------------------------------
+File name:          app.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        complex_app应用程序主Widget
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - complex_app应用程序主Widget;
+---------------------------------------------------------------
+*/
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'core/router/app_router.dart';
+import 'core/theme/app_theme.dart';
+import 'core/providers/theme_provider.dart';
+import 'core/providers/locale_provider.dart';
+
+/// {className}应用程序主Widget
+///
+/// 应用程序的根Widget，配置路由、主题和国际化
+class {className}App extends ConsumerWidget {
+  /// 创建{className}App实例
+  const {className}App({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 监听主题变化
+    final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
+    
+    return MaterialApp.router(
+      title: '{description}',
+      debugShowCheckedModeBanner: false,
+      
+      // 动态主题配置
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
+      
+      // 动态国际化配置
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''), // English
+        Locale('zh', ''), // 中文
+        Locale('ja', ''), // 日本語
+        Locale('ko', ''), // 한국어
+        Locale('es', ''), // Español
+        Locale('fr', ''), // Français
+        Locale('de', ''), // Deutsch
+        Locale('ru', ''), // Русский
+        Locale('ar', ''), // العربية
+        Locale('hi', ''), // हिन्दी
+      ],
+      
+      // 路由配置
+      routerConfig: AppRouter.router,
+      
+      // 构建器配置
+      builder: (context, child) {
+        return MediaQuery(
+          // 禁用系统字体缩放
+          data: MediaQuery.of(context).copyWith(
+            textScaleFactor: 1.0,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+    );
+  }
+}

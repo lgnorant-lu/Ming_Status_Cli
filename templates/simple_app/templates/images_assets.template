@@ -1,0 +1,51 @@
+/*
+---------------------------------------------------------------
+File name:          images.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        simple_app应用程序图片资源
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - simple_app应用程序图片资源;
+---------------------------------------------------------------
+*/
+
+
+/// 图片资源路径常量
+///
+/// 定义应用程序中使用的所有图片资源路径
+class ImageAssets {
+  /// 私有构造函数，防止实例化
+  ImageAssets._();
+
+  /// 资源根路径
+  static const String _basePath = 'assets/images';
+
+  /// 应用图标
+  static const String logo = '$_basePath/logo.png';
+
+  /// 启动画面
+  static const String splash = '$_basePath/splash.png';
+
+  /// 占位符图片
+  static const String placeholder = '$_basePath/placeholder.png';
+
+  /// 获取完整的图片路径
+  ///
+  /// [imageName] 图片文件名
+  /// 返回完整的资源路径
+  static String getImagePath(String imageName) {
+    return '$_basePath/$imageName';
+  }
+
+  /// 检查图片是否存在
+  ///
+  /// [imagePath] 图片路径
+  /// 返回图片是否存在
+  static bool imageExists(String imagePath) {
+    // 在实际应用中，这里可以检查资源是否存在
+    return true;
+  }
+}

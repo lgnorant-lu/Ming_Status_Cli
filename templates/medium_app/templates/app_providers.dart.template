@@ -1,0 +1,109 @@
+/*
+---------------------------------------------------------------
+File name:          app_providers.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        medium_app应用程序状态管理Provider
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - medium_app应用程序状态管理Provider;
+---------------------------------------------------------------
+*/
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+part 'app_providers.g.dart';
+
+/// SharedPreferences Provider
+///
+/// 提供SharedPreferences实例
+@riverpod
+Future<SharedPreferences> sharedPreferences(
+  SharedPreferencesRef ref,
+) async {
+  return await SharedPreferences.getInstance();
+}
+
+/// 主题模式Provider
+///
+/// 管理应用程序的主题模式，支持持久化
+@riverpod
+class ThemeModeNotifier extends _$ThemeModeNotifier {
+  static const String _key = 'theme_mode';
+
+  @override
+  Future<ThemeMode> build() async {
+    final prefs = await ref.watch(sharedPreferencesProvider.future);
+    final themeModeIndex = prefs.getInt(_key) ?? 0;
+    return ThemeMode.values[themeModeIndex];
+  }
+
+  /// 设置主题模式
+  Future<void> setThemeMode(ThemeMode themeMode) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setInt(_key, themeMode.index);
+    state = AsyncValue.data(themeMode);
+  }
+
+  /// 切换主题
+  Future<void> toggleTheme() async {
+    final currentTheme = await future;
+    final newTheme = currentTheme == ThemeMode.light
+        ? ThemeMode.dark
+        : ThemeMode.light;
+    await setThemeMode(newTheme);
+  }
+}
+
+/// 语言Provider
+///
+/// 管理应用程序的语言设置
+@riverpod
+class LocaleNotifier extends _$LocaleNotifier {
+  static const String _key = 'locale';
+
+  @override
+  Future<Locale> build() async {
+    final prefs = await ref.watch(sharedPreferencesProvider.future);
+    final localeCode = prefs.getString(_key) ?? 'en';
+    return Locale(localeCode);
+  }
+
+  /// 设置语言
+  Future<void> setLocale(Locale locale) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setString(_key, locale.languageCode);
+    state = AsyncValue.data(locale);
+  }
+}
+
+/// 应用设置Provider
+///
+/// 管理应用程序的各种设置
+@riverpod
+class AppSettings extends _$AppSettings {
+  @override
+  Map<String, dynamic> build() {
+    return {
+      'notifications': true,
+      'autoSave': true,
+      'fontSize': 14.0,
+    };
+  }
+
+  /// 更新设置
+  void updateSetting(String key, dynamic value) {
+    state = {...state, key: value};
+  }
+
+  /// 获取设置值
+  T? getSetting<T>(String key) {
+    return state[key] as T?;
+  }
+}

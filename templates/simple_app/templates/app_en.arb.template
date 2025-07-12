@@ -1,0 +1,37 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2025-07-12T07:13:34.924188",
+  "@@author": "Test User",
+  "appTitle": "My App",
+  "welcome": "Welcome",
+  "hello": "Hello, {name}!",
+  "settings": "Settings",
+  "about": "About",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "@welcome": {
+    "description": "Welcome message"
+  },
+  "@hello": {
+    "description": "Greeting message",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John"
+      }
+    }
+  },
+  "appName": "simple_app",
+  "appDescription": "简单模板测试",
+  "@appName": {
+    "description": "Application name",
+    "context": "app_info"
+  },
+  "@appDescription": {
+    "description": "Application description",
+    "context": "app_info"
+  }
+}

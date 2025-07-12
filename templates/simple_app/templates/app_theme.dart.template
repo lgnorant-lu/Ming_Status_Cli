@@ -1,0 +1,57 @@
+/*
+---------------------------------------------------------------
+File name:          app_theme.dart
+Author:             Test User
+Date created:       2025-07-12
+Last modified:      2025-07-12
+Dart Version:       3.2+
+Description:        simple_app应用程序主题配置
+---------------------------------------------------------------
+Change History:
+    2025-07-12: Initial creation - simple_app应用程序主题配置;
+---------------------------------------------------------------
+*/
+
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+/// {className}应用程序主题配置
+///
+/// 定义应用程序的亮色和暗色主题
+class AppTheme {
+  /// 私有构造函数，防止实例化
+  AppTheme._();
+
+  /// 亮色主题
+  static ThemeData get lightTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.light,
+      ),
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+      ),
+    );
+  }
+
+  /// 暗色主题
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.dark,
+      ),
+      appBarTheme: const AppBarTheme(
+        centerTitle: true,
+        elevation: 0,
+      ),
+    );
+  }
+}

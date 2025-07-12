@@ -1,0 +1,58 @@
+{
+  "@@locale": "en",
+  "@@last_modified": "2025-07-12T07:13:52.798047",
+  "@@author": "Test User",
+  "appTitle": "My App",
+  "welcome": "Welcome",
+  "hello": "Hello, {name}!",
+  "settings": "Settings",
+  "about": "About",
+  "ok": "OK",
+  "cancel": "Cancel",
+  "home": "Home",
+  "profile": "Profile",
+  "notifications": "Notifications",
+  "search": "Search",
+  "loading": "Loading...",
+  "error": "Error",
+  "retry": "Retry",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "itemCount": "{count, plural, =0{No items} =1{1 item} other{{count} items}}",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "@welcome": {
+    "description": "Welcome message displayed on the home screen"
+  },
+  "@hello": {
+    "description": "Personalized greeting message",
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "John",
+        "description": "User name"
+      }
+    }
+  },
+  "@itemCount": {
+    "description": "Number of items with plural support",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "compact"
+      }
+    }
+  },
+  "appName": "medium_app",
+  "appDescription": "中等复杂度模板测试",
+  "@appName": {
+    "description": "Application name",
+    "context": "app_info"
+  },
+  "@appDescription": {
+    "description": "Application description",
+    "context": "app_info"
+  }
+}
