@@ -12,7 +12,7 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'dart:io';
+// import 'dart:io';  // 未使用，已注释
 
 import 'package:ming_status_cli/src/core/creation/template_library_manager.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
@@ -209,15 +209,16 @@ class IndexStatistics {
 class LibraryIndex {
   /// 创建索引系统实例
   LibraryIndex({
-    String? indexPath,
     this.searchWeights = const SearchWeights(),
     this.enableIncrementalUpdate = true,
     this.maxCacheSize = 1000,
     this.enableQueryCache = true,
-  }) : _indexPath = indexPath ?? _getDefaultIndexPath();
+  }) {
+    // 索引路径初始化已移除
+  }
 
-  /// 索引文件路径
-  final String _indexPath;
+  // 索引文件路径已移除 - 当前未使用
+  // final String _indexPath;
 
   /// 搜索权重配置
   final SearchWeights searchWeights;
@@ -246,8 +247,7 @@ class LibraryIndex {
   /// 索引统计
   IndexStatistics? _statistics;
 
-  /// 最后更新时间
-  DateTime? _lastUpdateTime;
+  // 最后更新时间已移除 - 当前未使用
 
   /// 初始化索引系统
   Future<void> initialize() async {
@@ -294,7 +294,7 @@ class LibraryIndex {
       // 更新统计信息
       await _updateStatistics(startTime);
 
-      _lastUpdateTime = DateTime.now();
+      // _lastUpdateTime = DateTime.now();  // 已移除
 
       cli_logger.Logger.info('索引构建完成: ${_getTotalEntries()}个条目');
     } catch (e) {
@@ -327,7 +327,7 @@ class LibraryIndex {
       // 保存索引数据
       await _saveIndexData();
 
-      _lastUpdateTime = DateTime.now();
+      // _lastUpdateTime = DateTime.now();  // 已移除
 
       cli_logger.Logger.info('增量索引更新完成');
     } catch (e) {
@@ -431,13 +431,7 @@ class LibraryIndex {
     cli_logger.Logger.debug('索引缓存已清理');
   }
 
-  /// 获取默认索引路径
-  static String _getDefaultIndexPath() {
-    final homeDir = Platform.environment['HOME'] ??
-        Platform.environment['USERPROFILE'] ??
-        '.';
-    return '$homeDir/.ming/index';
-  }
+  // 获取默认索引路径方法已删除 - 未使用
 
   /// 索引模板
   Future<void> _indexTemplate(TemplateLibraryEntry template) async {

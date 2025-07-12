@@ -434,8 +434,7 @@ class LibraryManager {
   /// 当前同步任务数
   int _activeSyncs = 0;
 
-  /// 最后加载时间
-  DateTime? _lastLoadTime;
+  // 最后加载时间已移除 - 当前未使用
 
   /// 初始化库管理器
   Future<void> initialize() async {
@@ -739,7 +738,7 @@ class LibraryManager {
         }
       }
 
-      _lastLoadTime = DateTime.now();
+      // _lastLoadTime = DateTime.now();  // 已移除
       cli_logger.Logger.debug('加载库配置完成: ${_libraries.length}个库');
     } catch (e) {
       cli_logger.Logger.error('加载库配置失败', error: e);

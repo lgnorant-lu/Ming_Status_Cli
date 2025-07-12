@@ -397,11 +397,8 @@ class DependencyResolver {
   /// 依赖图缓存
   // final Map<String, Map<String, Dependency>> _dependencyGraphs = {};
 
-  /// 安全数据库
-  final Map<String, List<String>> _vulnerabilityDatabase = {};
-
-  /// 许可证兼容性矩阵
-  final Map<String, List<String>> _licenseCompatibility = {};
+  // 安全数据库和许可证兼容性矩阵已移除 - 当前未使用
+  // 未来可以在需要时重新添加
 
   /// 解析依赖
   Future<ResolutionResult> resolveDependencies(

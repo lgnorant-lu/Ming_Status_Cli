@@ -417,7 +417,7 @@ class TrustedSourceManager {
   /// 检查证书透明度
   Future<bool> checkCertificateTransparency(String domain) async {
     // 模拟CT日志查询
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
 
     final ctLog = _ctLogs.firstWhere(
       (log) => log.domain == domain,
@@ -482,7 +482,7 @@ class TrustedSourceManager {
     if (_lastUpdateTime == null ||
         now.difference(_lastUpdateTime!).inHours >= _updateInterval) {
       // 模拟从远程服务器更新可信源列表
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
 
       // 检查过期的源
       final expiredSources =

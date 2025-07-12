@@ -139,7 +139,7 @@ class DependencyGraph {
 
   /// 拓扑排序
   List<DependencyNode> topologicalSort() {
-    final result = <DependencyNode>[];
+    // final result = <DependencyNode>[];  // 未使用，注释掉
     final visited = <String>{};
     final stack = <DependencyNode>[];
 
@@ -358,7 +358,9 @@ class DependencyResolver {
             .firstWhere((dep) => dep.name == dependency.templateId);
 
         if (!_isVersionCompatible(
-            dependency.templateVersion, requiredDep.version,)) {
+          dependency.templateVersion,
+          requiredDep.version,
+        )) {
           conflicts.add(
             '版本冲突: ${node.templateName} 需要 ${dependency.templateName} '
             '版本 ${requiredDep.version}, 但找到版本 ${dependency.templateVersion}',

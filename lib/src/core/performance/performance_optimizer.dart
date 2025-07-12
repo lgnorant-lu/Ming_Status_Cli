@@ -216,7 +216,7 @@ class PerformanceOptimizer {
       }
 
       // 等待优化生效
-      await Future.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 2));
 
       final afterMetrics = await _collectMetrics();
       final improvements = _calculateImprovements(beforeMetrics, afterMetrics);
@@ -236,7 +236,8 @@ class PerformanceOptimizer {
       _currentMetrics = afterMetrics;
 
       cli_logger.Logger.info(
-          '性能优化完成: ${strategy.name} - ${result.success ? '成功' : '失败'}',);
+        '性能优化完成: ${strategy.name} - ${result.success ? '成功' : '失败'}',
+      );
       return result;
     } catch (e) {
       cli_logger.Logger.error('性能优化失败: ${strategy.name}', error: e);
@@ -274,7 +275,7 @@ class PerformanceOptimizer {
       },
       'improvements': baseline != null && current != null
           ? _calculateImprovements(baseline, current)
-          : {},
+          : <String, dynamic>{},
       'history': _optimizationHistory
           .map(
             (r) => {
@@ -286,7 +287,7 @@ class PerformanceOptimizer {
           )
           .toList(),
       'recommendations':
-          current != null ? _generateRecommendations(current) : [],
+          current != null ? _generateRecommendations(current) : <String>[],
     };
   }
 
@@ -302,7 +303,7 @@ class PerformanceOptimizer {
 
     // 模拟响应时间测量
     final responseStopwatch = Stopwatch()..start();
-    await Future.delayed(const Duration(milliseconds: 10)); // 模拟操作
+    await Future<void>.delayed(const Duration(milliseconds: 10)); // 模拟操作
     final responseTime = responseStopwatch.elapsedMilliseconds;
 
     // 计算吞吐量 (简化计算)
@@ -406,7 +407,7 @@ class PerformanceOptimizer {
     list.clear();
 
     // 等待一小段时间让GC有机会运行
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
   }
 
   /// 计算改进情况

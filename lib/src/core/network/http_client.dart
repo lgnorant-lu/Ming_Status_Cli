@@ -64,7 +64,6 @@ enum NetworkQuality {
 
 /// HTTP请求配置
 class HttpRequestConfig {
-
   const HttpRequestConfig({
     this.timeout = const Duration(seconds: 30),
     this.connectTimeout = const Duration(seconds: 10),
@@ -77,6 +76,7 @@ class HttpRequestConfig {
     this.userAgent = 'Ming-CLI/1.0',
     this.headers = const {},
   });
+
   /// 请求超时时间
   final Duration timeout;
 
@@ -110,7 +110,6 @@ class HttpRequestConfig {
 
 /// HTTP响应
 class HttpResponse {
-
   const HttpResponse({
     required this.statusCode,
     required this.headers,
@@ -120,6 +119,7 @@ class HttpResponse {
     required this.compression,
     required this.contentLength,
   });
+
   /// 状态码
   final int statusCode;
 
@@ -162,11 +162,11 @@ class HttpResponse {
 
 /// 连接池信息
 class ConnectionPool {
-
   ConnectionPool({
     this.maxConnections = 100,
     this.keepAliveTimeout = const Duration(minutes: 5),
   });
+
   /// 最大连接数
   final int maxConnections;
 
@@ -267,7 +267,6 @@ class NetworkQualityDetector {
 
 /// HTTP客户端
 class HttpClient {
-
   /// 构造函数
   HttpClient({
     HttpRequestConfig? config,
@@ -276,6 +275,7 @@ class HttpClient {
         _connectionPool = connectionPool ?? ConnectionPool() {
     _initializeClient();
   }
+
   /// 请求配置
   final HttpRequestConfig _config;
 
@@ -291,11 +291,9 @@ class HttpClient {
   /// 响应缓存
   final Map<String, HttpResponse> _responseCache = {};
 
-  /// 代理配置
-  String? _proxyUrl;
+  // 代理配置已移除 - 当前未使用
 
-  /// 认证信息
-  String? _authToken;
+  // 认证信息已移除 - 当前未使用
 
   /// GET请求
   Future<HttpResponse> get(
@@ -359,7 +357,7 @@ class HttpClient {
   Future<HttpResponse> download(
     String url,
     String outputPath, {
-    Function(int downloaded, int total)? onProgress,
+    void Function(int downloaded, int total)? onProgress,
   }) async {
     final response = await get(url);
 
@@ -380,7 +378,7 @@ class HttpClient {
     String filePath, {
     Map<String, String>? headers,
     Map<String, String>? fields,
-    Function(int uploaded, int total)? onProgress,
+    void Function(int uploaded, int total)? onProgress,
   }) async {
     final file = io.File(filePath);
     final fileBytes = await file.readAsBytes();
@@ -400,12 +398,12 @@ class HttpClient {
 
   /// 设置代理
   void setProxy(String proxyUrl) {
-    _proxyUrl = proxyUrl;
+    // _proxyUrl = proxyUrl;  // 代理功能已移除
   }
 
   /// 设置认证令牌
   void setAuthToken(String token) {
-    _authToken = token;
+    // _authToken = token;  // 认证功能已移除
   }
 
   /// 检测网络质量
@@ -424,7 +422,7 @@ class HttpClient {
     return {
       'totalRequests':
           _requestStats.values.fold(0, (sum, count) => sum + count),
-      'requestsByMethod': Map.from(_requestStats),
+      'requestsByMethod': Map<String, int>.from(_requestStats),
       'cacheHitRate': _calculateCacheHitRate(),
       'connectionPoolUtilization': _connectionPool.utilizationRate,
       'networkQuality': _networkQuality.name,
@@ -475,10 +473,10 @@ class HttpClient {
       _connectionPool.activeConnections++;
 
       // 构建请求头
-      final requestHeaders = _buildHeaders(headers, contentType);
+      // final requestHeaders = _buildHeaders(headers, contentType);  // 未使用，注释掉
 
       // 模拟HTTP请求
-      await Future.delayed(Duration(milliseconds: _getRequestDelay()));
+      await Future<void>.delayed(Duration(milliseconds: _getRequestDelay()));
 
       // 模拟响应
       final response =
@@ -509,53 +507,19 @@ class HttpClient {
   Uri _buildUri(String url, Map<String, String>? queryParams) {
     final uri = Uri.parse(url);
     if (queryParams != null && queryParams.isNotEmpty) {
-      return uri.replace(queryParameters: {
-        ...uri.queryParameters,
-        ...queryParams,
-      },);
+      return uri.replace(
+        queryParameters: {
+          ...uri.queryParameters,
+          ...queryParams,
+        },
+      );
     }
     return uri;
   }
 
-  /// 构建请求头
-  Map<String, String> _buildHeaders(
-    Map<String, String>? headers,
-    String? contentType,
-  ) {
-    final requestHeaders = <String, String>{
-      'User-Agent': _config.userAgent,
-      'Accept-Encoding': _getAcceptEncoding(),
-      ..._config.headers,
-    };
+  // 构建请求头方法已删除 - 未使用
 
-    if (contentType != null) {
-      requestHeaders['Content-Type'] = contentType;
-    }
-
-    if (_authToken != null) {
-      requestHeaders['Authorization'] = 'Bearer $_authToken';
-    }
-
-    if (headers != null) {
-      requestHeaders.addAll(headers);
-    }
-
-    return requestHeaders;
-  }
-
-  /// 获取Accept-Encoding头
-  String _getAcceptEncoding() {
-    switch (_config.compression) {
-      case CompressionType.gzip:
-        return 'gzip, deflate';
-      case CompressionType.brotli:
-        return 'br, gzip, deflate';
-      case CompressionType.deflate:
-        return 'deflate';
-      case CompressionType.none:
-        return 'identity';
-    }
-  }
+  // 获取Accept-Encoding头方法已删除 - 未使用
 
   /// 获取请求延迟 (根据网络质量)
   int _getRequestDelay() {
@@ -636,7 +600,8 @@ class HttpClient {
     if (cached != null) {
       // 检查缓存是否过期 (简化实现)
       final cacheAge = DateTime.now().difference(
-          DateTime.parse(cached.headers['Date'] ?? DateTime.now().toString()),);
+        DateTime.parse(cached.headers['Date'] ?? DateTime.now().toString()),
+      );
 
       if (cacheAge.inMinutes < 5) {
         return HttpResponse(

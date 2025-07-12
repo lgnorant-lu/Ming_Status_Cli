@@ -290,8 +290,7 @@ class ComplianceChecker {
   /// 检查历史
   final List<Map<String, dynamic>> _checkHistory = [];
 
-  /// 配置
-  final Map<String, dynamic> _config = {};
+  // 配置字段已移除 - 当前未使用
 
   /// 添加合规规则
   Future<void> addRule(ComplianceRule rule) async {

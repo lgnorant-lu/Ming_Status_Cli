@@ -63,13 +63,13 @@ enum QosType {
 
 /// 带宽限制配置
 class BandwidthLimit {
-
   const BandwidthLimit({
     required this.maxDownloadSpeed,
     required this.maxUploadSpeed,
     required this.maxConnections,
     this.enabled = true,
   });
+
   /// 最大下载速度 (字节/秒)
   final int maxDownloadSpeed;
 
@@ -107,7 +107,6 @@ class BandwidthLimit {
 
 /// 网络请求
 class NetworkRequest {
-
   NetworkRequest({
     required this.id,
     required this.url,
@@ -116,6 +115,7 @@ class NetworkRequest {
     required this.qosType,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
+
   /// 请求ID
   final String id;
 
@@ -241,7 +241,6 @@ class BandwidthStats {
 
 /// 优先级队列
 class PriorityQueue<T> {
-
   PriorityQueue(this._compare);
   final List<T> _items = [];
   final int Function(T, T) _compare;
@@ -275,11 +274,11 @@ class PriorityQueue<T> {
 
 /// 带宽管理器
 class BandwidthManager {
-
   /// 构造函数
   BandwidthManager() {
     _startMonitoring();
   }
+
   /// 当前网络类型
   NetworkType _networkType = NetworkType.wifi;
 
@@ -513,7 +512,7 @@ class BandwidthManager {
       _updateSpeedStats(chunkBytes, true);
 
       // 模拟网络延迟
-      await Future.delayed(Duration(milliseconds: _getNetworkDelay()));
+      await Future<void>.delayed(Duration(milliseconds: _getNetworkDelay()));
     }
   }
 
@@ -537,7 +536,7 @@ class BandwidthManager {
     }
 
     if (delay > 0) {
-      await Future.delayed(Duration(milliseconds: delay));
+      await Future<void>.delayed(Duration(milliseconds: delay));
     }
   }
 

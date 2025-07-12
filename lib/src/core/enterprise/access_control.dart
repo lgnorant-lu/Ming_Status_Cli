@@ -108,7 +108,9 @@ class UserInfo {
     required this.tenantId,
     required this.status,
     required this.createdAt,
-    required this.attributes, required this.groups, this.lastLoginAt,
+    required this.attributes,
+    required this.groups,
+    this.lastLoginAt,
     this.department,
     this.position,
   });
@@ -168,7 +170,10 @@ class Role {
     required this.permissions,
     required this.resourceScope,
     required this.inheritable,
-    required this.createdAt, required this.createdBy, required this.metadata, this.parentRoleId,
+    required this.createdAt,
+    required this.createdBy,
+    required this.metadata,
+    this.parentRoleId,
   });
 
   /// 角色ID
@@ -228,7 +233,9 @@ class UserRoleAssignment {
     required this.resourceScope,
     required this.assignedAt,
     required this.assignedBy,
-    required this.active, required this.conditions, this.expiresAt,
+    required this.active,
+    required this.conditions,
+    this.expiresAt,
     this.reason,
   });
 
@@ -321,7 +328,9 @@ class AccessDecision {
     required this.result,
     required this.reason,
     required this.decisionTime,
-    required this.conditions, required this.auditInfo, this.decisionMaker,
+    required this.conditions,
+    required this.auditInfo,
+    this.decisionMaker,
     this.validity,
   });
 
@@ -368,7 +377,8 @@ class AuditLogEntry {
     required this.resourceId,
     required this.success,
     required this.timestamp,
-    required this.details, this.ipAddress,
+    required this.details,
+    this.ipAddress,
     this.userAgent,
     this.error,
   });
@@ -426,14 +436,8 @@ class AccessControl {
   /// 审计日志
   final List<AuditLogEntry> _auditLogs = [];
 
-  /// 访问策略
-  final Map<String, dynamic> _accessPolicies = {};
-
-  /// SSO配置
-  final Map<String, dynamic> _ssoConfig = {};
-
-  /// 会话管理
-  final Map<String, Map<String, dynamic>> _sessions = {};
+  // 访问策略、SSO配置和会话管理已移除 - 当前未使用
+  // 未来可以在需要时重新添加
 
   /// 创建用户
   Future<UserInfo> createUser({
@@ -689,11 +693,8 @@ class AccessControl {
     required String provider,
     required Map<String, dynamic> config,
   }) async {
-    _ssoConfig[provider] = {
-      'config': config,
-      'configuredAt': DateTime.now().toIso8601String(),
-      'enabled': true,
-    };
+    // SSO配置功能已移除 - 当前未实现
+    // 可以在需要时重新添加SSO支持
   }
 
   /// 获取用户角色
@@ -763,10 +764,8 @@ class AccessControl {
             .length,
       },
       'sso': {
-        'providers': _ssoConfig.keys.toList(),
-        'enabled': _ssoConfig.values
-            .where((config) => config['enabled'] == true)
-            .length,
+        'providers': <String>[],
+        'enabled': 0,
       },
     };
   }

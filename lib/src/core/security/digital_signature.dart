@@ -332,7 +332,7 @@ class DigitalSignature {
   Future<CertificateInfo?> getCertificateInfo(String certificatePath) async {
     try {
       // 模拟证书解析
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
 
       return CertificateInfo(
         subject: 'CN=Example Template Publisher, O=Example Corp, C=US',
@@ -365,7 +365,7 @@ class DigitalSignature {
       }
 
       // 模拟CRL检查
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
       // 更新缓存
       _crlCache[cacheKey] = DateTime.now();
@@ -408,7 +408,7 @@ class DigitalSignature {
       'crlCacheSize': _crlCache.length,
       'timestampServers': _timestampServers.length,
       'policy': _policy.name,
-      'verificationsByResult': Map.from(_verificationStats),
+      'verificationsByResult': Map<String, int>.from(_verificationStats),
     };
   }
 
@@ -423,7 +423,7 @@ class DigitalSignature {
     Uint8List fileData,
   ) async {
     // 模拟签名提取
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future<void>.delayed(const Duration(milliseconds: 50));
 
     // 检查文件是否有签名标记
     final fileContent = String.fromCharCodes(fileData);
@@ -518,7 +518,7 @@ class DigitalSignature {
     SignatureAlgorithm algorithm,
   ) async {
     // 模拟签名验证
-    await Future.delayed(const Duration(milliseconds: 10));
+    await Future<void>.delayed(const Duration(milliseconds: 10));
 
     // 计算数据哈希
     final hash = sha256.convert(data);

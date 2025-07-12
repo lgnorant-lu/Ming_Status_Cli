@@ -67,7 +67,13 @@ class SecurityValidationResult {
     required this.securityLevel,
     required this.isValid,
     required this.stepResults,
-    required this.securityIssues, required this.validatedAt, required this.validationDuration, required this.policy, required this.validatorVersion, required this.metadata, this.signatureResult,
+    required this.securityIssues,
+    required this.validatedAt,
+    required this.validationDuration,
+    required this.policy,
+    required this.validatorVersion,
+    required this.metadata,
+    this.signatureResult,
     this.trustedSourceResult,
     this.malwareResult,
   });
@@ -133,7 +139,9 @@ class SecurityEvent {
     required this.eventType,
     required this.description,
     required this.severity,
-    required this.timestamp, required this.eventData, this.filePath,
+    required this.timestamp,
+    required this.eventData,
+    this.filePath,
     this.sourceUrl,
     this.userId,
   });
@@ -172,7 +180,9 @@ class SecurityAuditLog {
     required this.id,
     required this.operation,
     required this.success,
-    required this.timestamp, required this.details, this.userId,
+    required this.timestamp,
+    required this.details,
+    this.userId,
     this.resourcePath,
   });
 
@@ -540,7 +550,7 @@ class SecurityValidator {
       'statistics': {
         'totalValidations':
             _validationStats.values.fold(0, (sum, count) => sum + count),
-        'validationsByLevel': Map.from(_validationStats),
+        'validationsByLevel': Map<String, int>.from(_validationStats),
         'recentEvents': recentEvents.length,
         'recentAuditLogs': recentLogs.length,
       },
@@ -556,7 +566,7 @@ class SecurityValidator {
             },
           )
           .toList(),
-      'alertThresholds': Map.from(_alertThresholds),
+      'alertThresholds': Map<String, int>.from(_alertThresholds),
       'componentStatus': {
         'digitalSignature': 'active',
         'trustedSourceManager': 'active',

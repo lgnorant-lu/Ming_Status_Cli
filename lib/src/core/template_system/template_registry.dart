@@ -414,22 +414,47 @@ class TemplateRegistry {
     cli_logger.Logger.debug('更新搜索索引: ${metadata.id}');
   }
 
-  /// 获取所有模板元数据
+  /// 获取所有模板元数据 (带缓存优化)
   Future<List<TemplateMetadata>> _getAllTemplateMetadata() async {
+    // 检查缓存
+    if (cacheEnabled && _metadataCache.isNotEmpty) {
+      final cacheAge = DateTime.now().difference(_cacheTimestamps.values.first);
+      if (cacheAge < cacheTimeout) {
+        cli_logger.Logger.debug('使用缓存的模板元数据 (${_metadataCache.length}个)');
+        return _metadataCache.values.toList();
+      }
+    }
+
     final templates = <TemplateMetadata>[];
+    final startTime = DateTime.now();
 
     try {
       final registryDir = Directory(registryPath);
+      cli_logger.Logger.debug('开始扫描注册表路径: $registryPath');
 
       // 如果注册表目录不存在，尝试扫描当前目录
       if (!await registryDir.exists()) {
         final currentDir = Directory.current;
+        cli_logger.Logger.debug('注册表目录不存在，扫描当前目录: ${currentDir.path}');
         await _scanDirectoryForTemplates(currentDir, templates);
       } else {
+        cli_logger.Logger.debug('扫描注册表目录: ${registryDir.path}');
         await _scanDirectoryForTemplates(registryDir, templates);
       }
 
-      cli_logger.Logger.debug('找到 ${templates.length} 个模板');
+      // 更新缓存
+      if (cacheEnabled) {
+        _metadataCache.clear();
+        _cacheTimestamps.clear();
+        final now = DateTime.now();
+        for (final template in templates) {
+          _metadataCache[template.id] = template;
+          _cacheTimestamps[template.id] = now;
+        }
+      }
+
+      final duration = DateTime.now().difference(startTime);
+      cli_logger.Logger.info('找到 ${templates.length} 个模板 (耗时: ${duration.inMilliseconds}ms)');
       return templates;
     } catch (e) {
       cli_logger.Logger.error('获取模板元数据失败', error: e);
@@ -437,38 +462,63 @@ class TemplateRegistry {
     }
   }
 
-  /// 扫描目录查找模板
+  /// 扫描目录查找模板 (并发优化版本)
   Future<void> _scanDirectoryForTemplates(
     Directory directory,
     List<TemplateMetadata> templates,
   ) async {
     try {
-      await for (final entity in directory.list()) {
-        if (entity is Directory) {
-          // 跳过隐藏目录和系统目录
-          final dirName = entity.path.split(Platform.pathSeparator).last;
-          if (dirName.startsWith('.') ||
-              dirName == 'node_modules' ||
-              dirName == 'build' ||
-              dirName == '.dart_tool') {
-            continue;
-          }
+      cli_logger.Logger.debug('开始并发扫描目录: ${directory.path}');
 
-          final templateYaml = File('${entity.path}/template.yaml');
-          if (await templateYaml.exists()) {
-            try {
-              final content = await templateYaml.readAsString();
-              final yaml = loadYaml(content);
-              final jsonMap = _yamlToJson(yaml) as Map<String, dynamic>;
-              final metadata = TemplateMetadata.fromJson(jsonMap);
-              templates.add(metadata);
-              cli_logger.Logger.debug('加载模板: ${metadata.name}');
-            } catch (e) {
-              cli_logger.Logger.warning('解析模板失败: ${entity.path} - $e');
-            }
+      // 获取所有目录实体
+      final entities = await directory.list().toList();
+      final directories = entities.whereType<Directory>().toList();
+
+      // 过滤掉系统目录
+      final validDirectories = directories.where((dir) {
+        final dirName = dir.path.split(Platform.pathSeparator).last;
+        return !dirName.startsWith('.') &&
+               dirName != 'node_modules' &&
+               dirName != 'build' &&
+               dirName != '.dart_tool';
+      }).toList();
+
+      // 并发检查模板文件
+      final futures = validDirectories.map((dir) async {
+        final templateYaml = File('${dir.path}/template.yaml');
+        if (await templateYaml.exists()) {
+          try {
+            cli_logger.Logger.debug('找到模板文件: ${templateYaml.path}');
+            final content = await templateYaml.readAsString();
+            final yaml = loadYaml(content);
+            final jsonMap = _yamlToJson(yaml) as Map<String, dynamic>;
+            final metadata = TemplateMetadata.fromJson(jsonMap);
+            cli_logger.Logger.info(
+                '成功加载模板: ${metadata.name} 从 ${dir.path}',);
+            return metadata;
+          } catch (e) {
+            cli_logger.Logger.warning('解析模板失败: ${dir.path} - $e');
+            return null;
           }
         }
+        return null;
+      }).toList();
+
+      // 等待所有并发操作完成
+      final results = await Future.wait(futures);
+
+      // 添加有效的模板到列表
+      for (final metadata in results) {
+        if (metadata != null) {
+          templates.add(metadata);
+        }
       }
+
+      // 并发递归扫描子目录
+      final recursiveFutures = validDirectories.map((dir) =>
+          _scanDirectoryForTemplates(dir, templates),).toList();
+      await Future.wait(recursiveFutures);
+
     } catch (e) {
       cli_logger.Logger.error('扫描目录失败: ${directory.path} - $e');
     }
@@ -491,7 +541,80 @@ class TemplateRegistry {
 
   /// 检查模板是否匹配查询条件
   bool _matchesQuery(TemplateMetadata template, TemplateSearchQuery query) {
-    // 实现查询匹配逻辑
+    // 1. 关键词匹配
+    if (query.keyword != null && query.keyword!.isNotEmpty) {
+      final keyword = query.keyword!.toLowerCase();
+      final nameMatch = template.name.toLowerCase().contains(keyword);
+      final descMatch = template.description.toLowerCase().contains(keyword);
+      final tagMatch =
+          template.tags.any((tag) => tag.toLowerCase().contains(keyword));
+      final authorMatch = template.author.toLowerCase().contains(keyword);
+      final keywordMatch =
+          template.keywords.any((kw) => kw.toLowerCase().contains(keyword));
+
+      if (!nameMatch &&
+          !descMatch &&
+          !tagMatch &&
+          !authorMatch &&
+          !keywordMatch) {
+        return false;
+      }
+    }
+
+    // 2. 类型匹配
+    if (query.type != null && template.type != query.type) {
+      return false;
+    }
+
+    // 3. 子类型匹配
+    if (query.subType != null && template.subType != query.subType) {
+      return false;
+    }
+
+    // 4. 平台匹配
+    if (query.platform != null && template.platform != query.platform) {
+      return false;
+    }
+
+    // 5. 框架匹配
+    if (query.framework != null && template.framework != query.framework) {
+      return false;
+    }
+
+    // 6. 复杂度匹配
+    if (query.complexity != null && template.complexity != query.complexity) {
+      return false;
+    }
+
+    // 7. 成熟度匹配
+    if (query.maturity != null && template.maturity != query.maturity) {
+      return false;
+    }
+
+    // 8. 标签匹配
+    if (query.tags.isNotEmpty) {
+      final hasAllTags = query.tags.every(
+        (tag) => template.tags.any(
+          (templateTag) =>
+              templateTag.toLowerCase().contains(tag.toLowerCase()),
+        ),
+      );
+      if (!hasAllTags) {
+        return false;
+      }
+    }
+
+    // 9. 作者匹配
+    if (query.author != null &&
+        !template.author.toLowerCase().contains(query.author!.toLowerCase())) {
+      return false;
+    }
+
+    // 10. 最低评分匹配
+    if (query.minRating != null && template.rating < query.minRating!) {
+      return false;
+    }
+
     return true;
   }
 
@@ -501,7 +624,34 @@ class TemplateRegistry {
     TemplateSortBy sortBy,
     SortOrder sortOrder,
   ) {
-    // 实现排序逻辑
+    templates.sort((a, b) {
+      int comparison;
+
+      switch (sortBy) {
+        case TemplateSortBy.name:
+          comparison = a.name.compareTo(b.name);
+        case TemplateSortBy.rating:
+          comparison = a.rating.compareTo(b.rating);
+        case TemplateSortBy.downloadCount:
+          comparison = a.downloadCount.compareTo(b.downloadCount);
+        case TemplateSortBy.updatedAt:
+          comparison = a.updatedAt.compareTo(b.updatedAt);
+        case TemplateSortBy.createdAt:
+          comparison = a.createdAt.compareTo(b.createdAt);
+        case TemplateSortBy.relevance:
+          // 相关性排序：综合评分、下载量、更新时间
+          final aScore = a.rating * 0.4 +
+              (a.downloadCount / 1000) * 0.3 +
+              (DateTime.now().difference(a.updatedAt).inDays < 30 ? 0.3 : 0.0);
+          final bScore = b.rating * 0.4 +
+              (b.downloadCount / 1000) * 0.3 +
+              (DateTime.now().difference(b.updatedAt).inDays < 30 ? 0.3 : 0.0);
+          comparison = aScore.compareTo(bScore);
+      }
+
+      // 应用排序顺序
+      return sortOrder == SortOrder.ascending ? comparison : -comparison;
+    });
   }
 
   /// 生成搜索建议

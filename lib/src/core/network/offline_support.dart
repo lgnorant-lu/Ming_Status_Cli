@@ -81,7 +81,6 @@ enum ConflictResolution {
 
 /// 离线操作
 class OfflineOperation {
-
   OfflineOperation({
     required this.id,
     required this.type,
@@ -91,6 +90,7 @@ class OfflineOperation {
     DateTime? createdAt,
     this.maxRetries = 3,
   }) : createdAt = createdAt ?? DateTime.now();
+
   /// 操作ID
   final String id;
 
@@ -162,7 +162,6 @@ class OfflineOperation {
 
 /// 缓存条目
 class CacheEntry {
-
   CacheEntry({
     required this.key,
     required this.value,
@@ -170,6 +169,7 @@ class CacheEntry {
     this.expiresAt,
   })  : createdAt = createdAt ?? DateTime.now(),
         lastAccessedAt = createdAt ?? DateTime.now();
+
   /// 键
   final String key;
 
@@ -225,7 +225,8 @@ class CacheEntry {
 
     entry.accessCount = json['accessCount'] as int? ?? 0;
     entry.lastAccessedAt = DateTime.parse(
-        json['lastAccessedAt'] as String? ?? entry.createdAt.toIso8601String(),);
+      json['lastAccessedAt'] as String? ?? entry.createdAt.toIso8601String(),
+    );
 
     return entry;
   }
@@ -233,7 +234,6 @@ class CacheEntry {
 
 /// 同步冲突
 class SyncConflict {
-
   SyncConflict({
     required this.id,
     required this.resourceType,
@@ -242,6 +242,7 @@ class SyncConflict {
     required this.serverData,
     DateTime? conflictTime,
   }) : conflictTime = conflictTime ?? DateTime.now();
+
   /// 冲突ID
   final String id;
 
@@ -282,7 +283,6 @@ class SyncConflict {
 
 /// 离线支持
 class OfflineSupport {
-
   /// 构造函数
   OfflineSupport({
     String? cacheDir,
@@ -290,6 +290,7 @@ class OfflineSupport {
         _queueFilePath = '${cacheDir ?? './cache'}/operation_queue.json' {
     _initializeOfflineSupport();
   }
+
   /// 连接状态
   ConnectionStatus _connectionStatus = ConnectionStatus.online;
 
@@ -315,10 +316,10 @@ class OfflineSupport {
   Timer? _syncTimer;
 
   /// 连接状态变化监听器
-  final List<Function(ConnectionStatus)> _connectionListeners = [];
+  final List<void Function(ConnectionStatus)> _connectionListeners = [];
 
   /// 同步状态变化监听器
-  final List<Function(SyncStatus)> _syncListeners = [];
+  final List<void Function(SyncStatus)> _syncListeners = [];
 
   /// 当前连接状态
   ConnectionStatus get connectionStatus => _connectionStatus;
@@ -330,22 +331,22 @@ class OfflineSupport {
   bool get isOffline => _connectionStatus == ConnectionStatus.offline;
 
   /// 添加连接状态监听器
-  void addConnectionListener(Function(ConnectionStatus) listener) {
+  void addConnectionListener(void Function(ConnectionStatus) listener) {
     _connectionListeners.add(listener);
   }
 
   /// 移除连接状态监听器
-  void removeConnectionListener(Function(ConnectionStatus) listener) {
+  void removeConnectionListener(void Function(ConnectionStatus) listener) {
     _connectionListeners.remove(listener);
   }
 
   /// 添加同步状态监听器
-  void addSyncListener(Function(SyncStatus) listener) {
+  void addSyncListener(void Function(SyncStatus) listener) {
     _syncListeners.add(listener);
   }
 
   /// 移除同步状态监听器
-  void removeSyncListener(Function(SyncStatus) listener) {
+  void removeSyncListener(void Function(SyncStatus) listener) {
     _syncListeners.remove(listener);
   }
 
@@ -501,9 +502,11 @@ class OfflineSupport {
       case ConflictResolution.latestWins:
         // 简化实现：比较时间戳
         final clientTime = DateTime.tryParse(
-            conflict.clientData['updatedAt'] as String? ?? '',);
+          conflict.clientData['updatedAt'] as String? ?? '',
+        );
         final serverTime = DateTime.tryParse(
-            conflict.serverData['updatedAt'] as String? ?? '',);
+          conflict.serverData['updatedAt'] as String? ?? '',
+        );
 
         if (clientTime != null && serverTime != null) {
           resolvedData = clientTime.isAfter(serverTime)
@@ -576,7 +579,7 @@ class OfflineSupport {
   Future<void> _syncOperation(OfflineOperation operation) async {
     try {
       // 模拟网络请求
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
 
       // 模拟成功
       operation.isCompleted = true;

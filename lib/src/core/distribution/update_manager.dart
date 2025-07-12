@@ -15,7 +15,17 @@ Change History:
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
+import 'package:path/path.dart' as path;
+import 'package:pub_semver/pub_semver.dart' as semver;
+import 'package:yaml/yaml.dart';
+
+import 'package:ming_status_cli/src/core/configuration_management/configuration_manager.dart';
+import 'package:ming_status_cli/src/core/configuration_management/models/configuration_set.dart';
+import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
+import 'package:ming_status_cli/src/core/configuration_management/incremental_updater.dart';
 import 'package:ming_status_cli/src/core/distribution/dependency_resolver.dart';
+import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 更新类型枚举
 enum UpdateType {
@@ -249,13 +259,13 @@ class UpdateManager {
   /// 构造函数
   UpdateManager({
     UpdateConfig? config,
-    DependencyResolver? dependencyResolver,
     String? cacheDir,
     String? snapshotDir,
+    ConfigurationManager? configurationManager,
   })  : _config = config ?? const UpdateConfig(),
-        _dependencyResolver = dependencyResolver ?? DependencyResolver(),
         _cacheDir = cacheDir ?? '.ming_cache/updates',
         _snapshotDir = snapshotDir ?? '.ming_cache/snapshots' {
+    _configurationManager = configurationManager ?? ConfigurationManager();
     _initializeDirectories();
     _loadSnapshots();
   }
@@ -269,14 +279,16 @@ class UpdateManager {
   /// 更新快照列表
   final List<UpdateSnapshot> _snapshots = [];
 
-  /// 依赖解析器
-  final DependencyResolver _dependencyResolver;
+  // 依赖解析器已移除 - 当前未使用
 
   /// 更新缓存目录
   final String _cacheDir;
 
   /// 快照目录
   final String _snapshotDir;
+
+  /// 配置管理器
+  late final ConfigurationManager _configurationManager;
 
   /// 检查可用更新
   Future<List<UpdateInfo>> checkForUpdates({
@@ -466,12 +478,113 @@ class UpdateManager {
 
   /// 获取已安装的模板
   Future<Map<String, Version>> _getInstalledTemplates() async {
-    // 模拟获取已安装模板
-    return {
-      'flutter_clean_app': Version.parse('1.0.0'),
-      'react_dashboard': Version.parse('2.1.0'),
-      'vue_component': Version.parse('1.5.0'),
-    };
+    final templates = <String, Version>{};
+
+    try {
+      // 获取模板目录路径
+      final templatesDir = _getTemplatesDirectory();
+      final directory = Directory(templatesDir);
+
+      if (!await directory.exists()) {
+        cli_logger.Logger.debug('模板目录不存在: $templatesDir');
+        return templates;
+      }
+
+      // 扫描模板目录
+      await for (final entity in directory.list()) {
+        if (entity is Directory) {
+          final templateName = path.basename(entity.path);
+
+          // 跳过特殊目录
+          if (templateName.startsWith('.') || templateName == 'workspace') {
+            continue;
+          }
+
+          // 尝试读取模板版本
+          final version = await _getTemplateVersion(entity.path);
+          if (version != null) {
+            templates[templateName] = version;
+            cli_logger.Logger.debug('发现模板: $templateName v$version');
+          }
+        }
+      }
+
+      cli_logger.Logger.info('扫描到 ${templates.length} 个已安装模板');
+      return templates;
+    } catch (e) {
+      cli_logger.Logger.error('获取已安装模板失败', error: e);
+      return templates;
+    }
+  }
+
+  /// 获取模板目录路径
+  String _getTemplatesDirectory() {
+    // 首先尝试当前工作目录
+    final currentDir = Directory.current.path;
+    final localTemplatesPath = path.join(currentDir, 'templates');
+
+    if (Directory(localTemplatesPath).existsSync()) {
+      return localTemplatesPath;
+    }
+
+    // 尝试查找项目根目录
+    var searchDir = Directory(currentDir);
+    for (var i = 0; i < 5; i++) {
+      final templatesPath = path.join(searchDir.path, 'templates');
+      if (Directory(templatesPath).existsSync()) {
+        return templatesPath;
+      }
+
+      final parent = searchDir.parent;
+      if (parent.path == searchDir.path) break; // 已到根目录
+      searchDir = parent;
+    }
+
+    // 回退到默认路径
+    return localTemplatesPath;
+  }
+
+  /// 获取模板版本
+  Future<Version?> _getTemplateVersion(String templatePath) async {
+    try {
+      // 尝试读取 brick.yaml
+      final brickYamlPath = path.join(templatePath, 'brick.yaml');
+      if (File(brickYamlPath).existsSync()) {
+        final content = await File(brickYamlPath).readAsString();
+        final yaml = loadYaml(content) as Map;
+        final versionString = yaml['version']?.toString();
+        if (versionString != null) {
+          return Version.parse(versionString);
+        }
+      }
+
+      // 尝试读取 template.yaml
+      final templateYamlPath = path.join(templatePath, 'template.yaml');
+      if (File(templateYamlPath).existsSync()) {
+        final content = await File(templateYamlPath).readAsString();
+        final yaml = loadYaml(content) as Map;
+        final versionString = yaml['version']?.toString();
+        if (versionString != null) {
+          return Version.parse(versionString);
+        }
+      }
+
+      // 尝试读取 pubspec.yaml
+      final pubspecPath = path.join(templatePath, 'pubspec.yaml');
+      if (File(pubspecPath).existsSync()) {
+        final content = await File(pubspecPath).readAsString();
+        final yaml = loadYaml(content) as Map;
+        final versionString = yaml['version']?.toString();
+        if (versionString != null) {
+          return Version.parse(versionString);
+        }
+      }
+
+      return null;
+    } catch (e) {
+      cli_logger.Logger.debug('读取模板版本失败: $templatePath, 错误: $e');
+      return null;
+    }
   }
 
   /// 获取可用版本
@@ -664,11 +777,227 @@ class UpdateManager {
     );
   }
 
+  /// 检查配置兼容性
+  Future<bool> checkConfigurationCompatibility({
+    required String templateName,
+    Map<String, String>? dependencies,
+  }) async {
+    try {
+      // 创建配置集合
+      final config =
+          await _createConfigurationFromTemplate(templateName, dependencies);
+
+      // 检查兼容性
+      return await _configurationManager
+          .checkConfigurationCompatibility(config);
+    } catch (e) {
+      cli_logger.Logger.error('配置兼容性检查失败: $e');
+      return false;
+    }
+  }
+
+  /// 获取配置兼容性问题
+  Future<List<String>> getConfigurationIssues({
+    required String templateName,
+    Map<String, String>? dependencies,
+  }) async {
+    try {
+      // 创建配置集合
+      final config =
+          await _createConfigurationFromTemplate(templateName, dependencies);
+
+      // 获取兼容性问题
+      return await _configurationManager.getCompatibilityIssues(config);
+    } catch (e) {
+      cli_logger.Logger.error('获取配置问题失败: $e');
+      return ['配置分析失败: $e'];
+    }
+  }
+
+  /// 优化模板配置
+  Future<ConfigurationResult> optimizeTemplateConfiguration({
+    required String templateName,
+    ConfigurationStrategy strategy = ConfigurationStrategy.balanced,
+    Map<String, String>? currentDependencies,
+  }) async {
+    try {
+      // 创建当前配置（从模板读取实际依赖）
+      final currentConfig = await _createConfigurationFromTemplate(
+          templateName, currentDependencies);
+
+      // 提取模板中的包名列表
+      final packageNames = currentConfig.allDependencies.keys.toList();
+
+      // 获取优化配置
+      return await _configurationManager.getOptimizedConfig(
+        currentConfig: currentConfig,
+        packageNames: packageNames,  // 传递实际的包名列表
+        strategy: strategy,
+      );
+    } catch (e) {
+      cli_logger.Logger.error('配置优化失败: $e');
+      rethrow;
+    }
+  }
+
+  /// 获取更新建议
+  Future<List<DependencyChange>> getUpdateSuggestions({
+    required String templateName,
+    Map<String, String>? currentDependencies,
+    double? maxImpactThreshold,
+  }) async {
+    try {
+      if (currentDependencies == null || currentDependencies.isEmpty) {
+        return [];
+      }
+
+      // 创建当前配置
+      final currentConfig = await _createConfigurationFromTemplate(
+          templateName, currentDependencies,);
+
+      // 获取更新建议
+      return await _configurationManager.getUpdateSuggestions(
+        currentConfig: currentConfig,
+        maxImpactThreshold: maxImpactThreshold,
+      );
+    } catch (e) {
+      cli_logger.Logger.error('获取更新建议失败: $e');
+      return [];
+    }
+  }
+
+  /// 从模板创建配置集合
+  Future<ConfigurationSet> _createConfigurationFromTemplate(
+    String templateName,
+    Map<String, String>? dependencies,
+  ) async {
+    final versionInfos = <String, VersionInfo>{};
+    final devVersionInfos = <String, VersionInfo>{};
+
+    // 如果提供了依赖参数，使用参数中的依赖
+    if (dependencies != null) {
+      for (final entry in dependencies.entries) {
+        try {
+          final version = semver.Version.parse(entry.value);
+          versionInfos[entry.key] = VersionInfo(
+            packageName: entry.key,
+            version: version,
+            publishedAt: DateTime.now(),
+          );
+        } catch (e) {
+          cli_logger.Logger.warning('无法解析版本 ${entry.key}:${entry.value}');
+        }
+      }
+    } else {
+      // 否则从模板的 pubspec.yaml 文件读取依赖
+      try {
+        final templatePath = path.join('templates', templateName);
+        final pubspecPath = path.join(templatePath, 'pubspec.yaml');
+        final pubspecFile = File(pubspecPath);
+
+        if (await pubspecFile.exists()) {
+          final content = await pubspecFile.readAsString();
+          final yaml = loadYaml(content);
+
+          if (yaml is Map) {
+            final yamlMap = Map<String, dynamic>.from(yaml);
+
+            // 解析 dependencies
+            if (yamlMap.containsKey('dependencies')) {
+              final deps = Map<String, dynamic>.from(yamlMap['dependencies'] as Map);
+              for (final entry in deps.entries) {
+                if (entry.key == 'flutter' && entry.value is Map) {
+                  // 跳过 flutter SDK 依赖
+                  continue;
+                }
+                if (entry.value is String) {
+                  try {
+                    // 解析版本约束，取最低版本作为当前版本
+                    final versionConstraint = entry.value as String;
+                    final cleanVersion = _extractVersionFromConstraint(versionConstraint);
+                    if (cleanVersion != null) {
+                      final version = semver.Version.parse(cleanVersion);
+                      versionInfos[entry.key] = VersionInfo(
+                        packageName: entry.key,
+                        version: version,
+                        publishedAt: DateTime.now(),
+                      );
+                    }
+                  } catch (e) {
+                    cli_logger.Logger.warning('无法解析依赖版本 ${entry.key}:${entry.value}');
+                  }
+                }
+              }
+            }
+
+            // 解析 dev_dependencies
+            if (yamlMap.containsKey('dev_dependencies')) {
+              final devDeps = Map<String, dynamic>.from(yamlMap['dev_dependencies'] as Map);
+              for (final entry in devDeps.entries) {
+                if (entry.key == 'flutter_test' && entry.value is Map) {
+                  // 跳过 flutter_test SDK 依赖
+                  continue;
+                }
+                if (entry.value is String) {
+                  try {
+                    final versionConstraint = entry.value as String;
+                    final cleanVersion = _extractVersionFromConstraint(versionConstraint);
+                    if (cleanVersion != null) {
+                      final version = semver.Version.parse(cleanVersion);
+                      devVersionInfos[entry.key] = VersionInfo(
+                        packageName: entry.key,
+                        version: version,
+                        publishedAt: DateTime.now(),
+                      );
+                    }
+                  } catch (e) {
+                    cli_logger.Logger.warning('无法解析开发依赖版本 ${entry.key}:${entry.value}');
+                  }
+                }
+              }
+            }
+          }
+        } else {
+          cli_logger.Logger.warning('模板 $templateName 的 pubspec.yaml 文件不存在');
+        }
+      } catch (e) {
+        cli_logger.Logger.error('读取模板 $templateName 的配置失败: $e');
+      }
+    }
+
+    return ConfigurationSet(
+      id: '${templateName}_${DateTime.now().millisecondsSinceEpoch}',
+      name: '$templateName Configuration',
+      description: 'Configuration for template $templateName',
+      essentialDependencies: versionInfos,
+      devDependencies: devVersionInfos,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  /// 从版本约束中提取版本号
+  String? _extractVersionFromConstraint(String constraint) {
+    // 移除约束符号，提取版本号
+    final cleaned = constraint.replaceAll(RegExp(r'[\^~>=<\s]'), '');
+    if (cleaned.isEmpty) return null;
+
+    try {
+      // 验证是否为有效版本
+      semver.Version.parse(cleaned);
+      return cleaned;
+    } catch (e) {
+      // 如果解析失败，尝试提取数字部分
+      final match = RegExp(r'(\d+\.\d+\.\d+)').firstMatch(constraint);
+      return match?.group(1);
+    }
+  }
+
   /// 释放资源
   void dispose() {
     for (final controller in _updateStreams.values) {
       controller.close();
     }
     _updateStreams.clear();
+    _configurationManager.dispose();
   }
 }

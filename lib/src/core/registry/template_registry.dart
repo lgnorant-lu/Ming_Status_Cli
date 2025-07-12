@@ -243,7 +243,9 @@ class TemplateRegistry {
 
   /// 更新注册表配置
   Future<void> updateRegistry(
-      String registryId, RegistryConfig newConfig,) async {
+    String registryId,
+    RegistryConfig newConfig,
+  ) async {
     final index = _registries.indexWhere((r) => r.id == registryId);
     if (index == -1) {
       throw Exception('Registry with ID $registryId not found');
@@ -334,7 +336,7 @@ class TemplateRegistry {
   Future<void> _validateRegistry(RegistryConfig config) async {
     // TODO: 实现实际的网络连接验证
     // 这里应该发送HTTP请求验证注册表是否可访问
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
   }
 
   /// 执行健康检查
@@ -343,7 +345,7 @@ class TemplateRegistry {
 
     try {
       // TODO: 实现实际的健康检查逻辑
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
 
       final responseTime = DateTime.now().difference(startTime).inMilliseconds;
 

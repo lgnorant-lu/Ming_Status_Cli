@@ -183,7 +183,8 @@ class StartupOptimizer {
 
         phaseResults[phase] = phaseStopwatch.elapsed;
         cli_logger.Logger.debug(
-            '阶段 ${phase.name} 完成: ${phaseStopwatch.elapsedMilliseconds}ms',);
+          '阶段 ${phase.name} 完成: ${phaseStopwatch.elapsedMilliseconds}ms',
+        );
       }
 
       totalStopwatch.stop();
@@ -265,8 +266,9 @@ class StartupOptimizer {
               'timestamp': DateTime.now()
                   .subtract(
                     Duration(
-                        minutes: _startupHistory.length -
-                            _startupHistory.indexOf(r),),
+                      minutes:
+                          _startupHistory.length - _startupHistory.indexOf(r),
+                    ),
                   )
                   .toIso8601String(),
               'startup_time_ms': r.totalTime.inMilliseconds,
@@ -397,15 +399,14 @@ class StartupOptimizer {
       if (enableCaching) {
         _initCache[task.id] = DateTime.now();
       }
-    } catch (TimeoutException) {
-      final message = '任务 ${task.name} 执行超时';
-      if (task.isOptional) {
-        warnings.add(message);
-      } else {
-        errors.add(message);
-      }
     } catch (e) {
-      final message = '任务 ${task.name} 执行失败: $e';
+      String message;
+      if (e is TimeoutException) {
+        message = '任务 ${task.name} 执行超时';
+      } else {
+        message = '任务 ${task.name} 执行失败: $e';
+      }
+
       if (task.isOptional) {
         warnings.add(message);
       } else {

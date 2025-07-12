@@ -68,7 +68,6 @@ enum CircuitBreakerState {
 
 /// 重试配置
 class RetryConfig {
-
   const RetryConfig({
     this.maxRetries = 3,
     this.strategyType = RetryStrategyType.exponential,
@@ -83,6 +82,7 @@ class RetryConfig {
     },
     this.customRetryCondition,
   });
+
   /// 最大重试次数
   final int maxRetries;
 
@@ -110,7 +110,6 @@ class RetryConfig {
 
 /// 断路器配置
 class CircuitBreakerConfig {
-
   const CircuitBreakerConfig({
     this.failureThreshold = 5,
     this.successThreshold = 3,
@@ -118,6 +117,7 @@ class CircuitBreakerConfig {
     this.monitoringWindow = 100,
     this.minimumRequests = 10,
   });
+
   /// 失败阈值
   final int failureThreshold;
 
@@ -170,7 +170,11 @@ class RetryStats {
 
   /// 更新统计
   void updateStats(
-      int retryCount, Duration totalDelay, String reason, bool success,) {
+    int retryCount,
+    Duration totalDelay,
+    String reason,
+    bool success,
+  ) {
     totalRetries += retryCount;
     if (success) {
       successfulRetries++;
@@ -208,16 +212,16 @@ class RetryStats {
       'averageRetries': averageRetries,
       'maxRetriesUsed': maxRetriesUsed,
       'averageDelayMs': avgDelay,
-      'retryReasons': Map.from(retryReasons),
+      'retryReasons': Map<String, int>.from(retryReasons),
     };
   }
 }
 
 /// 断路器
 class CircuitBreaker {
-
   /// 构造函数
   CircuitBreaker(this._config);
+
   /// 配置
   final CircuitBreakerConfig _config;
 
@@ -348,7 +352,6 @@ class CircuitBreaker {
 
 /// 重试策略
 class RetryStrategy {
-
   /// 构造函数
   RetryStrategy({
     RetryConfig? config,
@@ -357,6 +360,7 @@ class RetryStrategy {
         _circuitBreaker = circuitBreakerConfig != null
             ? CircuitBreaker(circuitBreakerConfig)
             : null;
+
   /// 重试配置
   final RetryConfig _config;
 
@@ -374,8 +378,8 @@ class RetryStrategy {
     Future<T> Function() operation, {
     String? operationName,
   }) async {
-    final operationId =
-        operationName ?? 'operation_${DateTime.now().millisecondsSinceEpoch}';
+    // final operationId =
+    //     operationName ?? 'operation_${DateTime.now().millisecondsSinceEpoch}';  // 未使用，注释掉
 
     // 检查断路器
     if (_circuitBreaker != null && !_circuitBreaker.allowRequest) {
@@ -407,8 +411,12 @@ class RetryStrategy {
 
         // 检查是否应该重试
         if (attemptCount > _config.maxRetries || !_shouldRetry(lastException)) {
-          _stats.updateStats(attemptCount - 1, totalDelay,
-              _getExceptionReason(lastException), false,);
+          _stats.updateStats(
+            attemptCount - 1,
+            totalDelay,
+            _getExceptionReason(lastException),
+            false,
+          );
           rethrow;
         }
 
@@ -417,13 +425,17 @@ class RetryStrategy {
         totalDelay += delay;
 
         // 等待重试
-        await Future.delayed(delay);
+        await Future<void>.delayed(delay);
       }
     }
 
     // 如果到这里，说明重试次数用完了
-    _stats.updateStats(_config.maxRetries, totalDelay,
-        _getExceptionReason(lastException!), false,);
+    _stats.updateStats(
+      _config.maxRetries,
+      totalDelay,
+      _getExceptionReason(lastException!),
+      false,
+    );
     throw lastException;
   }
 
@@ -526,7 +538,6 @@ class RetryStrategy {
 
 /// 断路器打开异常
 class CircuitBreakerOpenException implements Exception {
-
   const CircuitBreakerOpenException(this.message);
   final String message;
 
@@ -547,9 +558,7 @@ class RetryUtils {
           RetryCondition.serviceUnavailable,
         },
       ),
-      circuitBreakerConfig: const CircuitBreakerConfig(
-        
-      ),
+      circuitBreakerConfig: const CircuitBreakerConfig(),
     );
   }
 
@@ -620,7 +629,9 @@ class RetryUtils {
     String? operationName,
   }) async {
     final retryStrategy = strategy ?? createFileRetryStrategy();
-    return retryStrategy.execute(fileOperation,
-        operationName: operationName,);
+    return retryStrategy.execute(
+      fileOperation,
+      operationName: operationName,
+    );
   }
 }

@@ -18,14 +18,7 @@ export 'config_management/index.dart';
 // 模板创建模块 (隐藏与企业模块冲突的TemplateVersion)
 export 'creation/index.dart' hide TemplateVersion;
 
-// 独立文件 (隐藏与安全系统模块冲突的多个类型)
-export 'dependency_security_checker.dart'
-    hide
-        DependencyInfo,
-        DependencySecurityChecker,
-        DependencySecurityLevel,
-        DependencySecurityReport,
-        DependencyVulnerability;
+// 独立文件已移除 - dependency_security_checker.dart 现在位于 security_system 目录
 
 // 分发管理模块 (隐藏与继承模块冲突的DependencyResolver)
 export 'distribution/index.dart' hide DependencyResolver;

@@ -200,7 +200,7 @@ class MemoryOptimizer {
   final List<MemoryUsage> _usageHistory = [];
 
   /// 内存池映射
-  final Map<Type, MemoryPool> _memoryPools = {};
+  final Map<Type, MemoryPool<dynamic>> _memoryPools = {};
 
   /// 缓存映射
   final Map<String, dynamic> _cacheMap = {};
@@ -256,7 +256,7 @@ class MemoryOptimizer {
       optimizations.add('执行垃圾回收');
 
       // 等待GC完成
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
 
       final afterUsage = await _getCurrentMemoryUsage();
       final freedBytes = beforeUsage.usedBytes - afterUsage.usedBytes;
@@ -349,8 +349,9 @@ class MemoryOptimizer {
         'total_entries': _cacheMap.length,
         'estimated_size_bytes': _estimateCacheSize(),
       },
-      'recommendations':
-          currentUsage != null ? _generateRecommendations(currentUsage) : [],
+      'recommendations': currentUsage != null
+          ? _generateRecommendations(currentUsage)
+          : <String>[],
     };
   }
 
@@ -432,7 +433,7 @@ class MemoryOptimizer {
     tempObjects.clear();
 
     // 等待GC有机会运行
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
   }
 
   /// 估算缓存大小

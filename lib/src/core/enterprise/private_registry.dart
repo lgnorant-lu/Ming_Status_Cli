@@ -219,7 +219,8 @@ class FederationSync {
     required this.nextSyncTime,
     required this.syncedTemplates,
     required this.conflicts,
-    required this.config, this.error,
+    required this.config,
+    this.error,
   });
 
   /// 同步ID
@@ -295,7 +296,7 @@ class PrivateRegistry {
   final Map<String, dynamic> _metrics = {};
 
   /// 事件监听器
-  final List<Function(String, Map<String, dynamic>)> _eventListeners = [];
+  final List<void Function(String, Map<String, dynamic>)> _eventListeners = [];
 
   /// 创建租户
   Future<TenantInfo> createTenant({
@@ -587,12 +588,13 @@ class PrivateRegistry {
   }
 
   /// 添加事件监听器
-  void addEventListener(Function(String, Map<String, dynamic>) listener) {
+  void addEventListener(void Function(String, Map<String, dynamic>) listener) {
     _eventListeners.add(listener);
   }
 
   /// 移除事件监听器
-  void removeEventListener(Function(String, Map<String, dynamic>) listener) {
+  void removeEventListener(
+      void Function(String, Map<String, dynamic>) listener,) {
     _eventListeners.remove(listener);
   }
 
@@ -621,27 +623,27 @@ class PrivateRegistry {
   /// 初始化租户存储
   Future<void> _initializeTenantStorage(TenantInfo tenant) async {
     // 模拟存储初始化
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
 
     // 创建租户目录结构
-    final tenantPath = './registry_data/tenants/${tenant.id}';
+    // final tenantPath = './registry_data/tenants/${tenant.id}';
     // 在实际实现中，这里会创建实际的目录结构
   }
 
   /// 清理租户数据
   Future<void> _cleanupTenantData(TenantInfo tenant) async {
     // 模拟数据清理
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
 
     // 删除租户数据
-    final tenantPath = './registry_data/tenants/${tenant.id}';
+    // final tenantPath = './registry_data/tenants/${tenant.id}';
     // 在实际实现中，这里会删除实际的数据
   }
 
   /// 执行同步
   Future<Map<String, dynamic>> _performSync(FederationSync sync) async {
     // 模拟同步过程
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
 
     // 模拟同步结果
     return {

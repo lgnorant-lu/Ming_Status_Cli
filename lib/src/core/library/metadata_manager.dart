@@ -735,14 +735,14 @@ class EnterpriseTemplateMetadata {
 class MetadataManager {
   /// 创建元数据管理器实例
   MetadataManager({
-    String? metadataPath,
     this.enableValidation = true,
     this.enableAutoSync = true,
     this.syncInterval = const Duration(hours: 1),
-  }) : _metadataPath = metadataPath ?? _getDefaultMetadataPath();
+  }) {
+    // 元数据路径初始化已移除
+  }
 
-  /// 元数据存储路径
-  final String _metadataPath;
+  // 元数据存储路径已移除 - 当前未使用
 
   /// 是否启用验证
   final bool enableValidation;
@@ -759,8 +759,7 @@ class MetadataManager {
   /// 模板元数据映射
   final Map<String, EnterpriseTemplateMetadata> _metadata = {};
 
-  /// 最后同步时间
-  DateTime? _lastSyncTime;
+  // 最后同步时间已移除 - 当前未使用
 
   /// 初始化元数据管理器
   Future<void> initialize() async {
@@ -921,10 +920,7 @@ class MetadataManager {
     }
   }
 
-  /// 获取默认元数据路径
-  static String _getDefaultMetadataPath() {
-    return '.ming/metadata';
-  }
+  // 获取默认元数据路径方法已删除 - 未使用
 
   /// 加载默认模式
   Future<void> _loadDefaultSchemas() async {

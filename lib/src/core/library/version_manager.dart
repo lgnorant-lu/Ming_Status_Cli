@@ -481,8 +481,7 @@ class VersionManager {
   /// 版本信息映射 (templateId -> versions)
   final Map<String, List<VersionInfo>> _versions = {};
 
-  /// 最后加载时间
-  DateTime? _lastLoadTime;
+  // 最后加载时间已移除 - 当前未使用
 
   /// 初始化版本管理器
   Future<void> initialize() async {
@@ -586,7 +585,8 @@ class VersionManager {
   ) async {
     try {
       cli_logger.Logger.debug(
-          '检查版本兼容性: $templateId $sourceVersion -> $targetVersion',);
+        '检查版本兼容性: $templateId $sourceVersion -> $targetVersion',
+      );
 
       final issues = <String>[];
       final warnings = <String>[];
@@ -634,7 +634,8 @@ class VersionManager {
       final isCompatible = issues.isEmpty;
 
       cli_logger.Logger.info(
-          '兼容性检查完成: $templateId - ${isCompatible ? '兼容' : '不兼容'}',);
+        '兼容性检查完成: $templateId - ${isCompatible ? '兼容' : '不兼容'}',
+      );
 
       return CompatibilityResult(
         isCompatible: isCompatible,
@@ -729,7 +730,8 @@ class VersionManager {
       final duration = DateTime.now().difference(startTime);
 
       cli_logger.Logger.info(
-          '版本升级${upgradeSuccess ? '成功' : '失败'}: $templateId $currentVersion -> $targetVersion',);
+        '版本升级${upgradeSuccess ? '成功' : '失败'}: $templateId $currentVersion -> $targetVersion',
+      );
 
       return UpgradeResult(
         success: upgradeSuccess,
@@ -813,7 +815,7 @@ class VersionManager {
         }
       }
 
-      _lastLoadTime = DateTime.now();
+      // _lastLoadTime = DateTime.now();  // 已移除
       cli_logger.Logger.debug('版本数据加载完成: ${_versions.length}个模板');
     } catch (e) {
       cli_logger.Logger.error('加载版本数据失败', error: e);
@@ -859,7 +861,9 @@ class VersionManager {
 
   /// 创建备份
   Future<String?> _createBackup(
-      String templatePath, SemanticVersion version,) async {
+    String templatePath,
+    SemanticVersion version,
+  ) async {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final backupPath = '$_versionsPath/backups/${version}_$timestamp';

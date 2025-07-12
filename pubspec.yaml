@@ -15,6 +15,7 @@ dependencies:
   mason: ^0.1.1
   mason_api: ^0.1.1
   path: ^1.8.3
+  pub_semver: ^2.1.4
   yaml: ^3.1.2
 
   crypto: any

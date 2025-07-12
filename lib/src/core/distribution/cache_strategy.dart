@@ -281,15 +281,7 @@ class CacheStrategy {
     if (cdnData != null) {
       _stats[CacheLevel.cdn]!.hits++;
 
-      // 创建缓存条目并存储到L1和L2
-      final entry = CacheEntry(
-        key: key,
-        data: cdnData,
-        createdAt: DateTime.now(),
-        size: cdnData.length,
-        ttl: _config.defaultTtl,
-      );
-
+      // 存储到L1和L2缓存
       await put(key, cdnData);
       return cdnData;
     } else {

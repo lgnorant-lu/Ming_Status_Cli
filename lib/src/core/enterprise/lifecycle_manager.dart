@@ -101,7 +101,15 @@ class TemplateVersion {
     required this.id,
     required this.templateId,
     required this.version,
-    required this.description, required this.state, required this.createdAt, required this.createdBy, required this.changelog, required this.dependencies, required this.compatibility, required this.metadata, this.name,
+    required this.description,
+    required this.state,
+    required this.createdAt,
+    required this.createdBy,
+    required this.changelog,
+    required this.dependencies,
+    required this.compatibility,
+    required this.metadata,
+    this.name,
     this.releasedAt,
   });
 
@@ -237,7 +245,10 @@ class LifecycleEvent {
     required this.eventType,
     required this.timestamp,
     required this.actor,
-    required this.description, required this.data, required this.automated, this.fromState,
+    required this.description,
+    required this.data,
+    required this.automated,
+    this.fromState,
     this.toState,
   });
 
@@ -321,8 +332,7 @@ class LifecycleManager {
   /// 自动化规则
   final Map<String, Map<String, dynamic>> _automationRules = {};
 
-  /// 通知配置
-  final Map<String, List<String>> _notificationConfig = {};
+  // 通知配置已移除 - 当前未使用
 
   /// 创建模板版本
   Future<TemplateVersion> createVersion({
@@ -857,7 +867,7 @@ class LifecycleManager {
     Map<String, dynamic> data,
   ) async {
     // 模拟通知发送
-    await Future.delayed(const Duration(milliseconds: 50));
+    await Future<void>.delayed(const Duration(milliseconds: 50));
   }
 
   /// 执行自动化规则
@@ -869,7 +879,7 @@ class LifecycleManager {
     if (rules == null) return;
 
     // 模拟自动化规则执行
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
   }
 
   /// 初始化默认策略

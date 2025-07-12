@@ -388,7 +388,7 @@ class TemplateDownloader {
         throw Exception('HTTP ${response.statusCode}: Failed to download');
       }
 
-      final totalBytes = (response.contentLength ?? 0) + startByte;
+      final totalBytes = response.contentLength + startByte;
       var downloadedBytes = startByte;
       final startTime = DateTime.now();
 
