@@ -57,12 +57,18 @@ class RegistryStatsCommand extends Command<int> {
 使用方法:
   ming registry stats [选项]
 
+选项:
+      --registry=<ID>      指定注册表ID
+  -d, --detailed           显示详细统计信息
+  -p, --performance        显示性能统计
+  -u, --usage              显示使用统计
+
 示例:
   # 显示所有注册表统计
   ming registry stats
 
   # 显示指定注册表统计
-  ming registry stats --registry=official
+  ming registry stats --registry=local
 
   # 显示详细统计信息
   ming registry stats --detailed
@@ -85,17 +91,27 @@ class RegistryStatsCommand extends Command<int> {
       final dataService = RegistryDataService();
       await dataService.initialize();
 
+      cli_logger.Logger.info('数据服务初始化完成');
+
       if (registryId != null) {
+        cli_logger.Logger.info('显示单个注册表统计: $registryId');
         await _displayRegistryStats(
-            dataService, registryId, detailed, performance, usage,);
+          dataService,
+          registryId,
+          detailed,
+          performance,
+          usage,
+        );
       } else {
+        cli_logger.Logger.info('显示所有注册表统计');
         await _displayAllStats(dataService, detailed, performance, usage);
       }
 
       cli_logger.Logger.success('统计信息获取完成');
       return 0;
-    } catch (e) {
+    } catch (e, stackTrace) {
       cli_logger.Logger.error('获取统计信息失败', error: e);
+      cli_logger.Logger.error('堆栈跟踪: $stackTrace');
       return 1;
     }
   }
@@ -121,7 +137,8 @@ class RegistryStatsCommand extends Command<int> {
       print('  • 已弃用: ${detailedStats.deprecatedTemplates}');
       print('  • 索引大小: ${dataService.formatFileSize(detailedStats.indexSize)}');
       print(
-          '  • 最后同步: ${dataService.formatTimeDifference(detailedStats.lastSync)}',);
+        '  • 最后同步: ${dataService.formatTimeDifference(detailedStats.lastSync)}',
+      );
       print('');
     } catch (e) {
       print('\n❌ 无法获取注册表统计信息: $registryId');
@@ -167,7 +184,8 @@ class RegistryStatsCommand extends Command<int> {
       print('  • 错误率: ${dataService.formatPercentage(perfStats.errorRate)}');
       print('  • 带宽使用: ${perfStats.dailyBandwidth.toStringAsFixed(1)}MB/天');
       print(
-          '  • 缓存命中率: ${dataService.formatPercentage(perfStats.cacheHitRate)}',);
+        '  • 缓存命中率: ${dataService.formatPercentage(perfStats.cacheHitRate)}',
+      );
       print('');
     }
 
@@ -179,7 +197,8 @@ class RegistryStatsCommand extends Command<int> {
       print('  • 今日搜索: ${usageStats.todaySearches}次');
       print('  • 今日下载: ${usageStats.todayDownloads}次');
       print(
-          '  • 热门模板: ${usageStats.popularTemplate} (${usageStats.popularTemplateDownloads}次)',);
+        '  • 热门模板: ${usageStats.popularTemplate} (${usageStats.popularTemplateDownloads}次)',
+      );
       print('  • 活跃用户: ${usageStats.activeUsers}人');
       print('  • 峰值时段: ${usageStats.peakHours}');
       print('');

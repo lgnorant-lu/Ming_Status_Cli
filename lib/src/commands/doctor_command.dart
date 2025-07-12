@@ -91,6 +91,45 @@ class DoctorCommand extends BaseCommand {
   @override
   String get invocation => 'ming doctor';
 
+  @override
+  String get usage => '''
+检查开发环境和工作空间状态
+
+使用方法:
+  ming doctor [选项]
+
+选项:
+  -d, --detailed         显示详细的检查信息
+  -f, --fix              自动修复可修复的问题
+  -c, --config           执行配置深度检查
+
+检查项目:
+  • Dart环境 - SDK版本、操作系统信息
+  • 工作空间配置 - 初始化状态、配置文件有效性
+  • 依赖包状态 - pubspec.yaml和依赖安装情况
+  • 文件权限 - 目录读写权限验证
+  • 配置深度检查 - 详细的配置项验证
+
+示例:
+  # 基础环境检查
+  ming doctor
+
+  # 详细检查信息
+  ming doctor --detailed
+
+  # 自动修复问题
+  ming doctor --fix
+
+  # 仅检查配置
+  ming doctor --config
+
+  # 详细检查并自动修复
+  ming doctor --detailed --fix
+
+更多信息:
+  使用 'ming help doctor' 查看详细文档
+''';
+
   /// 执行环境检查命令
   ///
   /// 运行所有已配置的健康检查器，生成详细的环境状态报告。
@@ -449,10 +488,19 @@ class WorkspaceConfigChecker extends HealthChecker {
 
         final config = await configManager.loadWorkspaceConfig();
         if (config != null) {
+          // 获取实际的配置信息
+          const configFilePath = 'ming_workspace.yaml'; // 默认配置文件名
+          var workspaceName = '未知';
+          var workspaceVersion = '未知';
+
+          // config总是WorkspaceConfig类型，直接使用
+          workspaceName = config.workspace.name;
+          workspaceVersion = config.workspace.version;
+
           result
-            ..addSuccess(r'配置文件有效: $configFilePath')
-            ..addInfo(r'工作空间名称: $workspaceName')
-            ..addInfo(r'工作空间版本: $workspaceVersion');
+            ..addSuccess('配置文件有效: $configFilePath')
+            ..addInfo('工作空间名称: $workspaceName')
+            ..addInfo('工作空间版本: $workspaceVersion');
         } else {
           result.addError('配置文件无法加载');
         }

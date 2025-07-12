@@ -11,6 +11,8 @@ Change History:
     2025/07/11: Initial creation - 模板列表命令;
 */
 
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/core/template_system/template_metadata.dart';
 import 'package:ming_status_cli/src/core/template_system/template_registry.dart';
@@ -32,11 +34,45 @@ class TemplateListCommand extends Command<int> {
   String get description => '列出可用的模板';
 
   @override
+  String get usage => '''
+列出可用的模板
+
+使用方法:
+  ming template list [选项]
+
+过滤选项:
+  -t, --type=<类型>          按模板类型过滤
+  -p, --platform=<平台>      按目标平台过滤
+
+显示选项:
+  -d, --detailed             显示详细信息
+
+示例:
+  # 列出所有模板
+  ming template list
+
+  # 按类型过滤
+  ming template list --type=ui
+
+  # 按平台过滤
+  ming template list --platform=flutter
+
+  # 显示详细信息
+  ming template list --detailed
+
+  # 组合过滤
+  ming template list --type=ui --platform=flutter --detailed
+
+更多信息:
+  使用 'ming help template list' 查看详细文档
+''';
+
+  @override
   Future<int> run() async {
     try {
       cli_logger.Logger.info('正在获取模板列表...');
 
-      final registry = TemplateRegistry(registryPath: './templates');
+      final registry = TemplateRegistry(registryPath: Directory.current.path);
       const query = TemplateSearchQuery();
       final searchResult = await registry.searchTemplates(query);
 
@@ -71,7 +107,8 @@ class TemplateListCommand extends Command<int> {
     } else {
       for (final metadata in results) {
         print(
-            '${metadata.name.padRight(25)} ${metadata.type.name.padRight(12)} ${metadata.author}',);
+          '${metadata.name.padRight(25)} ${metadata.type.name.padRight(12)} ${metadata.author}',
+        );
       }
     }
   }

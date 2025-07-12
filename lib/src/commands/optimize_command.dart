@@ -86,6 +86,53 @@ class OptimizeCommand extends Command<int> {
   @override
   String get category => '性能工具';
 
+  @override
+  String get usage => '''
+执行性能优化和分析
+
+使用方法:
+  ming optimize [选项]
+
+优化选项:
+  -s, --strategy=<策略>      优化策略 (默认: comprehensive)
+                            允许: startup, memory, response, concurrency, cache, comprehensive
+      --target-memory=<MB>   目标内存使用限制 (默认: 500MB)
+      --target-response=<ms> 目标响应时间 (默认: 3000ms)
+  -a, --auto                 启用自动优化
+
+输出选项:
+  -r, --[no-]report         生成优化报告 (默认: on)
+  -o, --output=<目录>       报告输出目录 (默认: reports)
+  -v, --verbose             显示详细输出
+
+优化策略说明:
+  • startup       - 启动时间优化
+  • memory        - 内存使用优化
+  • response      - 响应时间优化
+  • concurrency   - 并发性能优化
+  • cache         - 缓存策略优化
+  • comprehensive - 综合优化 (推荐)
+
+示例:
+  # 综合性能优化
+  ming optimize
+
+  # 专注启动时间优化
+  ming optimize --strategy=startup
+
+  # 内存优化，设置目标限制
+  ming optimize --strategy=memory --target-memory=256
+
+  # 自动优化并生成详细报告
+  ming optimize --auto --verbose --output=./performance_reports
+
+  # 响应时间优化，目标3秒内
+  ming optimize --strategy=response --target-response=3000
+
+更多信息:
+  使用 'ming help optimize' 查看详细文档
+''';
+
   /// 性能优化器
   late final PerformanceOptimizer _performanceOptimizer;
 
@@ -161,7 +208,8 @@ class OptimizeCommand extends Command<int> {
       cli_logger.Logger.info('基准性能指标:');
       cli_logger.Logger.info('  启动时间: ${baselineMetrics.startupTime}ms');
       cli_logger.Logger.info(
-          '  内存使用: ${_formatBytes(baselineMetrics.memoryUsage)}',);
+        '  内存使用: ${_formatBytes(baselineMetrics.memoryUsage)}',
+      );
       cli_logger.Logger.info('  响应时间: ${baselineMetrics.responseTime}ms');
 
       // 3. 执行优化

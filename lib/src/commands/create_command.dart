@@ -84,6 +84,47 @@ class CreateCommand extends BaseCommand {
   @override
   String get invocation => 'ming create [options] <project_name>';
 
+  @override
+  String get usage => '''
+基于模板创建新的模块或项目
+
+使用方法:
+  ming create <项目名称> [选项]
+
+参数:
+  <项目名称>             要创建的项目名称
+
+选项:
+  -t, --template=<名称>   指定模板名称 (默认: basic)
+  -o, --output=<路径>     输出目录路径
+  -f, --force             强制覆盖已存在的文件
+  -i, --[no-]interactive  启用交互式模式 (默认: on)
+      --var=<key=value>   设置模板变量 (可多次使用)
+      --author=<名称>     设置作者名称
+  -d, --description=<描述> 项目描述信息
+      --dry-run           预览模式，不实际创建文件
+  -v, --verbose           显示详细输出
+
+示例:
+  # 基础用法
+  ming create my_project
+
+  # 指定模板和输出目录
+  ming create --template=flutter_package --output=./packages my_package
+
+  # 批量设置变量
+  ming create --var=author="John Doe" --var=use_provider=true my_app
+
+  # 预览模式
+  ming create --dry-run --template=enterprise my_enterprise_app
+
+  # 非交互模式
+  ming create --no-interactive --author="Developer" my_project
+
+更多信息:
+  使用 'ming help create' 查看详细文档
+''';
+
   /// 实现基类要求的execute方法
   @override
   Future<int> execute() async {
@@ -114,6 +155,20 @@ class CreateCommand extends BaseCommand {
       // 准备变量
       Map<String, dynamic> variables;
 
+      // 干运行模式下跳过交互式变量收集
+      if (dryRun) {
+        // 使用基础变量准备，不进入交互模式
+        variables = await _prepareVariables(projectName);
+
+        // 确定输出目录
+        final targetDirectory = _determineOutputDirectory(
+          projectName: projectName,
+          outputPath: outputPath,
+        );
+
+        return await _performDryRun(templateName, variables, targetDirectory);
+      }
+
       if (interactive) {
         // Task 32.2: 使用增强的交互式变量收集
         variables = await _collectVariablesInteractively(templateName);
@@ -129,11 +184,6 @@ class CreateCommand extends BaseCommand {
       );
 
       cli_logger.Logger.info('📁 输出目录: $targetDirectory');
-
-      // 干运行模式
-      if (dryRun) {
-        return await _performDryRun(templateName, variables, targetDirectory);
-      }
 
       // Task 32.1: 使用增强的进度显示模板生成
       final result = await _generateTemplateWithProgress(
@@ -270,13 +320,13 @@ class CreateCommand extends BaseCommand {
         return 1;
       }
 
-      // 准备模板变量
+      // 准备模板变量 - 干运行模式下禁用交互
       final variables = await _prepareTemplateVariables(
         templateName: templateName,
         projectName: projectName,
         results: results,
         userConfig: userConfig,
-        interactive: interactive,
+        interactive: !dryRun && interactive, // 干运行模式下强制禁用交互
       );
 
       // 确定输出目录
@@ -285,16 +335,16 @@ class CreateCommand extends BaseCommand {
         outputPath: outputPath,
       );
 
+      // 干运行模式 - 提前返回，跳过目录冲突检查
+      if (dryRun) {
+        return await _performDryRun(templateName, variables, targetDirectory);
+      }
+
       // 检查目录冲突
       if (!force && Directory(targetDirectory).existsSync()) {
         cli_logger.Logger.error('错误: 目录 "$targetDirectory" 已存在');
         cli_logger.Logger.info('使用 --force 参数强制覆盖');
         return 1;
-      }
-
-      // 干运行模式
-      if (dryRun) {
-        return await _performDryRun(templateName, variables, targetDirectory);
       }
 
       // Task 30.3: 执行模板生成
@@ -457,7 +507,7 @@ class CreateCommand extends BaseCommand {
       });
 
       cli_logger.Logger.info('');
-      cli_logger.Logger.info('💡 使用 --no-dry-run 执行实际生成');
+      cli_logger.Logger.info('💡 移除 --dry-run 参数执行实际生成');
 
       return 0;
     } catch (e) {

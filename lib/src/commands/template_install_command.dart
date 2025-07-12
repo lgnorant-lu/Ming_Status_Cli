@@ -78,25 +78,28 @@ class TemplateInstallCommand extends Command<int> {
 
   @override
   String get usage => '''
+安装模板
+
 使用方法:
   ming template install <模板名称> [选项]
 
-📦 Phase 2.2 Week 2: 下载和依赖管理
+参数:
+  <模板名称>             要安装的模板名称
 
 安装选项:
-  --version=<版本>      指定模板版本 (默认: 最新版本)
-  --output=<目录>       输出目录 (默认: ./templates)
-  --format=<格式>       下载格式 (zip, tar.gz, 7z)
-  --registry=<注册表>   指定注册表源
+  -v, --version=<版本>   指定模板版本 (默认: 最新版本)
+  -o, --output=<目录>    输出目录 (默认: ./templates)
+  -f, --format=<格式>    下载格式 (zip, tar.gz, 7z)
+  -r, --registry=<注册表> 指定注册表源
 
 依赖管理:
-  --with-dependencies   同时安装所有依赖
-  --verify-signature    验证数字签名和完整性
+  -d, --with-dependencies 同时安装所有依赖
+      --verify-signature   验证数字签名和完整性
 
 安装控制:
-  --force              强制覆盖已存在的文件
-  --dry-run            仅显示安装计划，不执行实际安装
-  --verbose            显示详细安装过程
+      --force             强制覆盖已存在的文件
+      --dry-run           仅显示安装计划，不执行实际安装
+      --verbose           显示详细安装过程
 
 示例:
   # 基本安装
@@ -113,6 +116,9 @@ class TemplateInstallCommand extends Command<int> {
 
   # 从指定注册表安装
   ming template install enterprise_template --registry=company-internal --force
+
+更多信息:
+  使用 'ming help template install' 查看详细文档
 ''';
 
   @override
@@ -398,7 +404,10 @@ class TemplateInstallCommand extends Command<int> {
 
   /// 构建下载URL
   String _buildDownloadUrl(
-      String templateName, String? version, String format,) {
+    String templateName,
+    String? version,
+    String format,
+  ) {
     const baseUrl = 'https://templates.ming.dev';
     final versionPart = version != null ? '/v$version' : '/latest';
     return '$baseUrl/$templateName$versionPart.$format';

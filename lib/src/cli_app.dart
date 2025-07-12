@@ -19,6 +19,7 @@ import 'package:ming_status_cli/src/commands/create_command.dart';
 import 'package:ming_status_cli/src/commands/doctor_command.dart';
 import 'package:ming_status_cli/src/commands/help_command.dart';
 import 'package:ming_status_cli/src/commands/init_command.dart';
+import 'package:ming_status_cli/src/commands/optimize_command.dart';
 import 'package:ming_status_cli/src/commands/registry_command.dart';
 import 'package:ming_status_cli/src/commands/template_command.dart';
 import 'package:ming_status_cli/src/commands/validate_command.dart';
@@ -72,6 +73,38 @@ Ming Status CLI - 企业级项目管理和模板生态系统
 使用 'ming help <command>' 获取特定命令的详细帮助信息。
 ''';
 
+  /// 应用品牌信息
+  static const String appBrand = '''
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║    ███╗   ███╗██╗███╗   ██╗ ██████╗     ███████╗████████╗ █████╗ ████████╗  ║
+║    ████╗ ████║██║████╗  ██║██╔════╝     ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝  ║
+║    ██╔████╔██║██║██╔██╗ ██║██║  ███╗    ███████╗   ██║   ███████║   ██║     ║
+║    ██║╚██╔╝██║██║██║╚██╗██║██║   ██║    ╚════██║   ██║   ██╔══██║   ██║     ║
+║    ██║ ╚═╝ ██║██║██║ ╚████║╚██████╔╝    ███████║   ██║   ██║  ██║   ██║     ║
+║    ╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝     ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝     ║
+║                                                                              ║
+║                    🚀 企业级项目管理和模板生态系统                              ║
+║                                                                              ║
+║                        Created by lgnorant-lu                               ║
+║                     https://github.com/lgnorant-lu                          ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+''';
+
+  /// 简化版品牌信息
+  static const String appBrandSimple = '''
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🌟 MING STATUS CLI - 企业级项目管理和模板生态系统                              │
+│                                                                             │
+│  ⚡ 让代码组织更简单，让开发更高效                                              │
+│  🎯 专为现代化企业级开发而设计                                                  │
+│                                                                             │
+│  👨‍💻 Created by lgnorant-lu                                                  │
+│  🔗 https://github.com/lgnorant-lu/Ming_Status_Cli                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+''';
+
   /// 初始化命令运行器
   void _initializeRunner() {
     _runner = CommandRunner<int>(appName, appDescription);
@@ -108,7 +141,8 @@ Ming Status CLI - 企业级项目管理和模板生态系统
       ..addCommand(ConfigCommand())
       ..addCommand(VersionCommand())
       ..addCommand(DoctorCommand())
-      ..addCommand(ValidateCommand()); // Phase 1 Week 5: 验证系统命令
+      ..addCommand(ValidateCommand()) // Phase 1 Week 5: 验证系统命令
+      ..addCommand(OptimizeCommand()); // 性能优化命令
 
     // Phase 2.1: 高级模板系统命令
     _runner.addCommand(TemplateCommand());
@@ -182,7 +216,7 @@ Ming Status CLI - 企业级项目管理和模板生态系统
     // 处理直接的 version 命令
     if (arguments.isNotEmpty && arguments.first == 'version') {
       // 创建临时的CommandRunner来处理version命令
-      final tempRunner = CommandRunner<int>('temp', 'temp');
+      final tempRunner = CommandRunner<int>('ming', 'Ming Status CLI');
       final versionCmd = VersionCommand();
       tempRunner.addCommand(versionCmd);
       await tempRunner.run(arguments);
@@ -257,6 +291,7 @@ Ming Status CLI - 企业级项目管理和模板生态系统
         'config',
         'doctor',
         'validate',
+        'optimize',
         'version',
       ];
       if (knownCommands.contains(firstArg) &&

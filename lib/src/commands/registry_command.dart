@@ -39,18 +39,16 @@ class RegistryCommand extends Command<int> {
 
   @override
   String get usage => '''
+管理模板注册表
+
 使用方法:
   ming registry <子命令> [选项]
 
-🌐 Phase 2.2 远程模板生态系统 - 4个子命令:
-
-📝 注册表管理:
-  add     添加新的模板注册表
-  list    列出所有注册表
-
-🔄 数据同步:
-  sync    同步注册表数据
-  stats   显示注册表统计信息
+子命令:
+  add                    添加新的模板注册表
+  list                   列出所有注册表
+  sync                   同步注册表数据
+  stats                  显示注册表统计信息
 
 支持的注册表类型:
   • official   - 官方注册表
@@ -75,8 +73,10 @@ class RegistryCommand extends Command<int> {
   ming registry stats --registry=official --detailed --performance --usage
   ming registry stats --json
 
-  # 查看帮助
-  ming registry --help
+  # 查看子命令帮助
   ming registry <子命令> --help
+
+更多信息:
+  使用 'ming help registry' 查看详细文档
 ''';
 }

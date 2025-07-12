@@ -12,9 +12,13 @@ Change History:
 ---------------------------------------------------------------
 */
 
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/core/distribution/dependency_resolver.dart';
 import 'package:ming_status_cli/src/core/distribution/update_manager.dart';
+import 'package:ming_status_cli/src/core/configuration_management/configuration_manager.dart';
+import 'package:ming_status_cli/src/core/registry/template_registry.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 模板更新命令
@@ -74,6 +78,29 @@ class TemplateUpdateCommand extends Command<int> {
       ..addFlag(
         'verbose',
         help: '显示详细更新过程',
+      )
+      ..addFlag(
+        'check-config',
+        help: '检查配置兼容性',
+      )
+      ..addFlag(
+        'optimize-config',
+        help: '优化配置版本',
+      )
+      ..addFlag(
+        'test-config',
+        help: '测试配置可用性',
+      )
+      ..addOption(
+        'config-strategy',
+        help: '配置管理策略',
+        allowed: ['conservative', 'balanced', 'aggressive', 'automatic'],
+        defaultsTo: 'balanced',
+      )
+      ..addOption(
+        'max-impact',
+        help: '最大影响阈值 (0.0-1.0)',
+        defaultsTo: '0.7',
       );
   }
 
@@ -85,23 +112,37 @@ class TemplateUpdateCommand extends Command<int> {
 
   @override
   String get usage => '''
+更新模板
+
 使用方法:
-  ming template update [模板名称] [选项]
+  ming template update [选项]
 
-🔄 Phase 2.2 Week 2: 更新管理和缓存策略
+基础选项:
+  -t, --template=<名称>      指定要更新的模板
+  -v, --version=<版本>       指定目标版本 (默认: 最新版本)
+  -s, --strategy=<策略>      更新策略 (默认: manual)
 
-更新选项:
-  --template=<名称>     指定要更新的模板
-  --version=<版本>      指定目标版本 (默认: 最新版本)
-  --strategy=<策略>     更新策略 (automatic, security-only, manual, conservative, aggressive)
+更新策略:
+      automatic              自动更新策略
+      security-only          仅安全更新
+      manual                 手动更新策略
+      conservative           保守更新策略
+      aggressive             激进更新策略
 
 更新控制:
-  --check-only         仅检查可用更新，不执行更新
-  --include-prerelease 包含预发布版本
-  --create-snapshot    更新前创建快照 (默认: 启用)
-  --batch              批量更新所有模板
-  --dry-run            仅显示更新计划，不执行实际更新
-  --verbose            显示详细更新过程
+  -c, --check-only           仅检查可用更新，不执行更新
+      --include-prerelease   包含预发布版本
+      --create-snapshot      更新前创建快照 (默认: 启用)
+  -b, --batch                批量更新所有模板
+  -d, --dry-run              仅显示更新计划，不执行实际更新
+      --verbose              显示详细更新过程
+
+配置管理:
+      --check-config         检查配置兼容性
+      --optimize-config      优化配置版本
+      --test-config          测试配置可用性
+      --config-strategy      配置管理策略 (conservative|balanced|aggressive|automatic)
+      --max-impact           最大影响阈值 (0.0-1.0, 默认: 0.7)
 
 示例:
   # 检查所有可用更新
@@ -124,6 +165,22 @@ class TemplateUpdateCommand extends Command<int> {
 
   # 预览更新计划
   ming template update --template=vue_component --dry-run --verbose
+
+配置管理示例:
+  # 检查配置兼容性
+  ming template update --check-config --template=my_app
+
+  # 优化配置版本
+  ming template update --optimize-config --template=my_app --config-strategy=balanced
+
+  # 测试配置可用性
+  ming template update --test-config --template=my_app --verbose
+
+  # 保守策略优化
+  ming template update --optimize-config --config-strategy=conservative --max-impact=0.3
+
+更多信息:
+  使用 'ming help template update' 查看详细文档
 ''';
 
   @override
@@ -138,6 +195,12 @@ class TemplateUpdateCommand extends Command<int> {
       final batch = argResults!['batch'] as bool;
       final dryRun = argResults!['dry-run'] as bool;
       final verbose = argResults!['verbose'] as bool;
+      final checkConfig = argResults!['check-config'] as bool;
+      final optimizeConfig = argResults!['optimize-config'] as bool;
+      final testConfig = argResults!['test-config'] as bool;
+      final configStrategy = argResults!['config-strategy'] as String;
+      final maxImpactStr = argResults!['max-impact'] as String;
+      final maxImpact = double.tryParse(maxImpactStr) ?? 0.7;
 
       cli_logger.Logger.info('开始模板更新操作');
 
@@ -149,10 +212,36 @@ class TemplateUpdateCommand extends Command<int> {
         ),
       );
 
-      if (checkOnly) {
+      if (checkConfig) {
+        // 检查配置兼容性
+        await _checkConfigurationCompatibility(
+          updateManager,
+          templateName,
+          verbose,
+        );
+      } else if (optimizeConfig) {
+        // 优化配置
+        await _optimizeConfiguration(
+          updateManager,
+          templateName,
+          configStrategy,
+          verbose,
+        );
+      } else if (testConfig) {
+        // 测试配置
+        await _testConfiguration(
+          updateManager,
+          templateName,
+          verbose,
+        );
+      } else if (checkOnly) {
         // 仅检查更新
         await _checkForUpdates(
-            updateManager, templateName, includePrerelease, verbose,);
+          updateManager,
+          templateName,
+          includePrerelease,
+          verbose,
+        );
       } else if (batch) {
         // 批量更新
         await _performBatchUpdate(updateManager, dryRun, verbose);
@@ -168,7 +257,8 @@ class TemplateUpdateCommand extends Command<int> {
       } else {
         print('错误: 需要指定模板名称或使用 --batch 选项');
         print(
-            '使用方法: ming template update --template=<名称> 或 ming template update --batch',);
+          '使用方法: ming template update --template=<名称> 或 ming template update --batch',
+        );
         return 1;
       }
 
@@ -267,7 +357,8 @@ class TemplateUpdateCommand extends Command<int> {
       print('📋 批量更新计划 (预览模式):');
       for (final update in updates) {
         print(
-            '  • ${update.templateName}: ${update.currentVersion} → ${update.availableVersion}',);
+          '  • ${update.templateName}: ${update.currentVersion} → ${update.availableVersion}',
+        );
       }
       print('');
       print('✅ 预览完成，未执行实际更新操作');
@@ -327,10 +418,12 @@ class TemplateUpdateCommand extends Command<int> {
 
     if (verbose) {
       print(
-          '$statusIcon [${progress.percentage.toStringAsFixed(1)}%] ${progress.currentStep}',);
+        '$statusIcon [${progress.percentage.toStringAsFixed(1)}%] ${progress.currentStep}',
+      );
       if (progress.estimatedRemainingTime != null) {
         print(
-            '  剩余时间: ${_formatDuration(Duration(seconds: progress.estimatedRemainingTime!))}',);
+          '  剩余时间: ${_formatDuration(Duration(seconds: progress.estimatedRemainingTime!))}',
+        );
       }
       if (progress.error != null) {
         print('  错误: ${progress.error}');
@@ -461,5 +554,220 @@ class TemplateUpdateCommand extends Command<int> {
     final filledLength = (barLength * percentage / 100).round();
     final bar = '█' * filledLength + '░' * (barLength - filledLength);
     print('\r[$bar] ${percentage.toStringAsFixed(1)}% - $step');
+  }
+
+  /// 检查配置兼容性
+  Future<void> _checkConfigurationCompatibility(
+    UpdateManager updateManager,
+    String? templateName,
+    bool verbose,
+  ) async {
+    if (templateName == null) {
+      print('错误: 需要指定模板名称');
+      return;
+    }
+
+    try {
+      print('🔍 检查模板配置兼容性: $templateName');
+
+      // 首先验证模板是否存在
+      if (!await _templateExists(templateName)) {
+        print('❌ 模板不存在: $templateName');
+        print('💡 使用 "ming template list" 查看可用模板');
+        return;
+      }
+
+      final isCompatible = await updateManager.checkConfigurationCompatibility(
+        templateName: templateName,
+      );
+
+      if (isCompatible) {
+        print('✅ 配置兼容性检查通过');
+      } else {
+        print('❌ 发现配置兼容性问题');
+
+        final issues = await updateManager.getConfigurationIssues(
+          templateName: templateName,
+        );
+
+        if (issues.isNotEmpty) {
+          print('\n兼容性问题:');
+          for (final issue in issues) {
+            print('  • $issue');
+          }
+        }
+      }
+    } catch (e) {
+      print('❌ 配置兼容性检查失败: $e');
+    }
+  }
+
+  /// 优化配置
+  Future<void> _optimizeConfiguration(
+    UpdateManager updateManager,
+    String? templateName,
+    String strategyName,
+    bool verbose,
+  ) async {
+    if (templateName == null) {
+      print('错误: 需要指定模板名称');
+      return;
+    }
+
+    try {
+      print('⚡ 优化模板配置: $templateName (策略: $strategyName)');
+
+      // 首先验证模板是否存在
+      if (!await _templateExists(templateName)) {
+        print('❌ 模板不存在: $templateName');
+        print('💡 使用 "ming template list" 查看可用模板');
+        return;
+      }
+
+      // 解析策略
+      final strategy = _parseConfigurationStrategy(strategyName);
+
+      final result = await updateManager.optimizeTemplateConfiguration(
+        templateName: templateName,
+        strategy: strategy,
+      );
+
+      print('✅ 配置优化完成');
+      print('📊 优化结果:');
+      print('  • 候选配置: ${result.candidateConfigs.length} 个');
+      print('  • 测试结果: ${result.testResults.length} 个');
+      print('  • 成功率: ${(result.successRate * 100).toStringAsFixed(1)}%');
+      print('  • 执行时间: ${result.executionTime.inMilliseconds}ms');
+
+      if (verbose) {
+        print('\n推荐配置:');
+        print('  • ID: ${result.recommendedConfig.id}');
+        print('  • 名称: ${result.recommendedConfig.name}');
+        print(
+            '  • 优先级: ${result.recommendedConfig.priority.toStringAsFixed(2)}',);
+        print('  • 复杂度: ${result.recommendedConfig.complexity}');
+
+        final deps = result.recommendedConfig.allDependencies;
+        if (deps.isNotEmpty) {
+          print('  • 依赖 (${deps.length} 个):');
+          for (final entry in deps.entries.take(5)) {
+            print('    - ${entry.key}: v${entry.value.version}');
+          }
+          if (deps.length > 5) {
+            print('    ... 还有 ${deps.length - 5} 个依赖');
+          }
+        }
+      }
+    } catch (e) {
+      print('❌ 配置优化失败: $e');
+    }
+  }
+
+  /// 测试配置
+  Future<void> _testConfiguration(
+    UpdateManager updateManager,
+    String? templateName,
+    bool verbose,
+  ) async {
+    if (templateName == null) {
+      print('错误: 需要指定模板名称');
+      return;
+    }
+
+    try {
+      print('🧪 测试模板配置: $templateName');
+
+      // 首先验证模板是否存在
+      if (!await _templateExists(templateName)) {
+        print('❌ 模板不存在: $templateName');
+        print('💡 使用 "ming template list" 查看可用模板');
+        return;
+      }
+
+      // 获取更新建议
+      final suggestions = await updateManager.getUpdateSuggestions(
+        templateName: templateName,
+      );
+
+      if (suggestions.isEmpty) {
+        print('✅ 当前配置已是最新，无需更新');
+        return;
+      }
+
+      print('📋 发现 ${suggestions.length} 个更新建议:');
+
+      for (final suggestion in suggestions) {
+        final impact = (suggestion.impactScore * 100).toStringAsFixed(1);
+        print('  • ${suggestion.description} (影响: $impact%)');
+
+        if (verbose && suggestion.reason.isNotEmpty) {
+          print('    原因: ${suggestion.reason}');
+        }
+      }
+
+      // 计算总体影响
+      final totalImpact = suggestions.isNotEmpty
+          ? suggestions.map((s) => s.impactScore).reduce((a, b) => a + b) /
+              suggestions.length
+          : 0.0;
+
+      print('\n📊 更新分析:');
+      print('  • 总体影响: ${(totalImpact * 100).toStringAsFixed(1)}%');
+      print('  • 安全等级: ${_getUpdateSafetyLevel(totalImpact)}');
+    } catch (e) {
+      print('❌ 配置测试失败: $e');
+    }
+  }
+
+  /// 解析配置策略
+  ConfigurationStrategy _parseConfigurationStrategy(String strategyName) {
+    switch (strategyName.toLowerCase()) {
+      case 'conservative':
+        return ConfigurationStrategy.conservative;
+      case 'balanced':
+        return ConfigurationStrategy.balanced;
+      case 'aggressive':
+        return ConfigurationStrategy.aggressive;
+      case 'automatic':
+        return ConfigurationStrategy.automatic;
+      default:
+        return ConfigurationStrategy.balanced;
+    }
+  }
+
+  /// 获取更新安全等级
+  String _getUpdateSafetyLevel(double impact) {
+    if (impact < 0.3) {
+      return '🟢 安全';
+    } else if (impact < 0.6) {
+      return '🟡 中等';
+    } else {
+      return '🔴 高风险';
+    }
+  }
+
+  /// 检查模板是否存在
+  Future<bool> _templateExists(String templateName) async {
+    try {
+      // 检查模板目录是否存在
+      final templateDir = Directory('templates/$templateName');
+      if (await templateDir.exists()) {
+        return true;
+      }
+
+      // 检查当前目录下的模板
+      final currentDirTemplate = Directory('./$templateName');
+      if (await currentDirTemplate.exists()) {
+        return true;
+      }
+
+      // 检查全局模板目录
+      final globalTemplateDir =
+          Directory('${Directory.current.path}/templates/$templateName');
+      return await globalTemplateDir.exists();
+    } catch (e) {
+      // 如果无法访问文件系统，假设模板存在以避免阻塞
+      return true;
+    }
   }
 }

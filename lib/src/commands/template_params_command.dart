@@ -78,8 +78,37 @@ class TemplateParamsCommand extends Command<int> {
 
   @override
   String get usage => '''
+管理模板参数化配置
+
 使用方法:
   ming template params [选项]
+
+必需选项:
+  -t, --template=<名称>      模板名称
+
+基础选项:
+  -a, --action=<操作>        操作类型 (默认: list)
+  -p, --preset=<名称>        参数预设名称
+  -o, --output=<路径>        输出文件路径
+  -m, --mode=<模式>          收集模式 (默认: interactive)
+
+操作类型:
+      list                   列出模板参数
+      collect                收集参数值
+      validate               验证参数
+      preset                 管理参数预设
+
+收集模式:
+      interactive            交互式收集
+      batch                  批量收集
+      wizard                 向导式收集
+      automatic              自动收集
+
+功能选项:
+      --smart-collect        启用智能参数收集
+      --validate-async       启用异步验证
+      --show-recommendations 显示参数推荐
+      --save-preset          保存为参数预设
 
 示例:
   # 列出模板参数
@@ -99,6 +128,12 @@ class TemplateParamsCommand extends Command<int> {
 
   # 创建参数预设
   ming template params -t flutter_app -a preset --save-preset
+
+  # 向导式收集并保存预设
+  ming template params -t flutter_app -a collect -m wizard --save-preset --output=params.json
+
+更多信息:
+  使用 'ming help template params' 查看详细文档
 ''';
 
   @override
@@ -204,19 +239,20 @@ class TemplateParamsCommand extends Command<int> {
       final requiredIcon = required ? '🔴' : '🟡';
       final sensitivity = param['sensitivity'] as String?;
       final sensitivityIcon = sensitivity != null ? '🔒' : '';
-      
-      print('$requiredIcon $sensitivityIcon ${param['name']} (${param['type']})');
+
+      print(
+          '$requiredIcon $sensitivityIcon ${param['name']} (${param['type']})',);
       print('   ${param['description']}');
-      
+
       if (param['choices'] != null) {
         final choices = param['choices']! as List<String>;
         print('   选项: ${choices.join(', ')}');
       }
-      
+
       if (param['default'] != null) {
         print('   默认值: ${param['default']}');
       }
-      
+
       print('');
     }
 
@@ -240,11 +276,11 @@ class TemplateParamsCommand extends Command<int> {
     print('─' * 60);
     print('模板: $templateName');
     print('模式: $mode');
-    
+
     if (presetName != null) {
       print('预设: $presetName');
     }
-    
+
     print('');
 
     // 智能推荐
@@ -315,10 +351,10 @@ class TemplateParamsCommand extends Command<int> {
     print('步骤 1/3: 基础信息');
     params['app_name'] = 'MyApp';
     params['package_name'] = 'com.example.myapp';
-    
+
     print('步骤 2/3: 平台配置');
     params['platform'] = 'mobile';
-    
+
     print('步骤 3/3: 功能选项');
     params['enable_analytics'] = false;
   }
@@ -327,7 +363,7 @@ class TemplateParamsCommand extends Command<int> {
   Future<void> _batchCollection(Map<String, dynamic> params) async {
     print('📦 批量参数收集');
     print('从配置文件读取参数...');
-    
+
     params['app_name'] = 'BatchApp';
     params['package_name'] = 'com.batch.app';
     params['platform'] = 'web';
@@ -338,7 +374,7 @@ class TemplateParamsCommand extends Command<int> {
   Future<void> _automaticCollection(Map<String, dynamic> params) async {
     print('🤖 自动参数收集');
     print('基于项目环境自动推断参数...');
-    
+
     params['app_name'] = 'AutoDetectedApp';
     params['package_name'] = 'com.auto.detected';
     params['platform'] = 'mobile';
@@ -368,9 +404,12 @@ class TemplateParamsCommand extends Command<int> {
 
     for (final result in validationResults) {
       final status = result['status']!;
-      final icon = status == 'valid' ? '✅' : 
-                   status == 'warning' ? '⚠️' : '❌';
-      
+      final icon = status == 'valid'
+          ? '✅'
+          : status == 'warning'
+              ? '⚠️'
+              : '❌';
+
       print('$icon ${result['param']}: ${result['message']}');
     }
 
@@ -405,7 +444,7 @@ class TemplateParamsCommand extends Command<int> {
       print('  • enterprise_preset - 企业级应用配置');
       print('  • development_preset - 开发环境配置');
       print('');
-      
+
       if (presetName != null) {
         print('🔍 预设详情: $presetName');
         print('  app_name: "Enterprise App"');

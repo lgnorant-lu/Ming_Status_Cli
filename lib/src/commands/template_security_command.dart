@@ -93,27 +93,37 @@ class TemplateSecurityCommand extends Command<int> {
 
   @override
   String get usage => '''
+模板安全验证和管理
+
 使用方法:
   ming template security [选项]
 
-🔒 Task 2.2.2: 企业级安全验证系统
+基础选项:
+  -f, --file=<路径>          要验证的模板文件路径
+  -s, --source-url=<URL>     模板来源URL
+  -p, --policy=<策略>        安全策略 (默认: standard)
+  -o, --output=<格式>        输出格式 (默认: table)
 
-安全验证选项:
-  --file=<路径>         要验证的模板文件路径
-  --source-url=<URL>    模板来源URL
-  --policy=<策略>       安全策略 (enterprise, standard, relaxed)
+安全策略:
+      enterprise             企业级安全策略
+      standard               标准安全策略
+      relaxed                宽松安全策略
 
 验证范围:
-  --signature-only      仅验证数字签名
-  --malware-only        仅进行恶意代码检测
-  --trusted-source-only 仅验证可信源
+      --signature-only       仅验证数字签名
+      --malware-only         仅进行恶意代码检测
+      --trusted-source-only  仅验证可信源
 
-输出和报告:
-  --output=<格式>       输出格式 (table, json, detailed)
-  --generate-report     生成安全报告
-  --show-events         显示安全事件
-  --show-audit-logs     显示审计日志
-  --verbose             显示详细信息
+输出格式:
+      table                  表格格式输出
+      json                   JSON格式输出
+      detailed               详细格式输出
+
+报告和日志:
+      --generate-report      生成安全报告
+      --show-events          显示安全事件
+      --show-audit-logs      显示审计日志
+  -v, --verbose              显示详细信息
 
 示例:
   # 完整安全验证
@@ -136,6 +146,9 @@ class TemplateSecurityCommand extends Command<int> {
 
   # 查看审计日志
   ming template security --show-audit-logs
+
+更多信息:
+  使用 'ming help template security' 查看详细文档
 ''';
 
   @override
@@ -688,19 +701,7 @@ class TemplateSecurityCommand extends Command<int> {
     }
   }
 
-  /// 获取安全等级颜色
-  String _getSecurityLevelColor(SecurityLevel level) {
-    switch (level) {
-      case SecurityLevel.safe:
-        return 'green';
-      case SecurityLevel.warning:
-        return 'yellow';
-      case SecurityLevel.dangerous:
-        return 'orange';
-      case SecurityLevel.blocked:
-        return 'red';
-    }
-  }
+// 获取安全等级颜色方法已移除 - 当前未使用
 
   /// 获取步骤名称
   String _getStepName(ValidationStep step) {

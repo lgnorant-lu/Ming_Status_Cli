@@ -97,40 +97,43 @@ class TemplateNetworkCommand extends Command<int> {
 
   @override
   String get usage => '''
+网络通信和离线支持管理
+
 使用方法:
   ming template network --action=<操作> [选项]
 
-🌐 Task 2.2.5: 网络通信和离线支持
+必需选项:
+  -a, --action=<操作>        管理操作类型
 
 操作类型:
-  --action=status      网络状态检查
-  --action=config      网络配置管理
-  --action=bandwidth   带宽管理
-  --action=offline     离线支持
-  --action=retry       重试策略
-  --action=test        网络测试
-  --action=stats       统计信息
-  --action=cache       缓存管理
+      status                 网络状态检查
+      config                 网络配置管理
+      bandwidth              带宽管理
+      offline                离线支持
+      retry                  重试策略
+      test                   网络测试
+      stats                  统计信息
+      cache                  缓存管理
 
 子操作:
-  --subaction=show     显示信息
-  --subaction=set      设置配置
-  --subaction=get      获取配置
-  --subaction=clear    清理数据
-  --subaction=enable   启用功能
-  --subaction=disable  禁用功能
-  --subaction=sync     同步数据
-  --subaction=detect   检测状态
-  --subaction=optimize 优化设置
-  --subaction=monitor  监控模式
+  --subaction=show           显示信息
+  --subaction=set            设置配置
+  --subaction=get            获取配置
+  --subaction=clear          清理数据
+  --subaction=enable         启用功能
+  --subaction=disable        禁用功能
+  --subaction=sync           同步数据
+  --subaction=detect         检测状态
+  --subaction=optimize       优化设置
+  --subaction=monitor        监控模式
 
-选项:
-  --url=<URL>          测试URL
-  --limit=<限制>       带宽限制
-  --network-type=<类型> 网络类型
-  --output=<格式>      输出格式 (table, json, yaml)
-  --verbose            显示详细信息
-  --monitor            持续监控模式
+通用选项:
+  --url=<URL>                测试URL
+  --limit=<限制>             带宽限制 (例如: 1MB/s)
+  --network-type=<类型>      网络类型 (wifi, mobile, ethernet, unknown)
+  -o, --output=<格式>        输出格式 (table, json, yaml)
+  -v, --verbose              显示详细信息
+  --monitor                  持续监控模式
 
 示例:
   # 网络状态检查
@@ -159,6 +162,9 @@ class TemplateNetworkCommand extends Command<int> {
   # 缓存管理
   ming template network --action=cache --subaction=show
   ming template network --action=cache --subaction=clear
+
+更多信息:
+  使用 'ming help template network' 查看详细文档
 ''';
 
   @override

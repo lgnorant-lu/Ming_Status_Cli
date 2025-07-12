@@ -12,6 +12,8 @@ Change History:
 ---------------------------------------------------------------
 */
 
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/core/template_system/template_metadata.dart';
 import 'package:ming_status_cli/src/core/template_system/template_registry.dart';
@@ -105,27 +107,32 @@ class TemplateSearchCommand extends Command<int> {
 
   @override
   String get usage => '''
+搜索模板
+
 使用方法:
   ming template search <关键词> [选项]
 
-🔍 Phase 2.2 Week 2: 智能搜索引擎
+参数:
+  <关键词>               搜索关键词或短语
 
-多维度搜索选项:
-  --platform=<平台>     按平台过滤 (flutter, react, vue, angular)
-  --type=<类型>         按类型过滤 (ui, architecture, service, utility)
-  --author=<作者>       按作者过滤
-  --min-rating=<评分>   最低评分过滤 (0.0-5.0)
-  --updated-after=<日期> 按更新时间过滤 (YYYY-MM-DD)
+过滤选项:
+  -t, --type=<类型>      按模板类型过滤
+  -p, --platform=<平台>  按目标平台过滤
+  -f, --framework=<框架> 按技术框架过滤
+  -c, --complexity=<复杂度> 按复杂度过滤
+  -a, --author=<作者>    按作者过滤
+      --tag=<标签>       按标签过滤 (逗号分隔)
+      --min-rating=<评分> 最低评分 (0.0-5.0)
 
-高级搜索功能:
-  --exact              精确匹配模式
-  --case-sensitive     区分大小写
-  --detailed           显示详细信息
+搜索选项:
+      --exact            精确匹配模式
+      --case-sensitive   区分大小写搜索
+  -d, --detailed         显示详细信息
 
-排序和显示:
-  --sort=<字段>        排序字段 (relevance, name, rating, downloads, updated)
-  --limit=<数量>       限制结果数量 (默认: 20)
-  --output=<格式>      输出格式 (table, json, yaml, list)
+输出选项:
+  -o, --output=<格式>    输出格式 (默认: table, 允许: table, json, yaml, list)
+  -s, --sort=<字段>      排序方式 (默认: relevance, 允许: relevance, name, rating, downloads, updated)
+  -l, --limit=<数量>     限制结果数量 (默认: 20)
 
 示例:
   # 基础搜索
@@ -135,13 +142,16 @@ class TemplateSearchCommand extends Command<int> {
   ming template search "mobile app" --platform=flutter --min-rating=4.0
 
   # 最近更新的React组件
-  ming template search "component" --platform=react --updated-after=2024-01-01 --sort=updated
+  ming template search "component" --platform=react --sort=updated
 
   # 精确匹配和详细信息
   ming template search "flutter_clean_app" --exact --detailed
 
   # JSON格式输出
   ming template search "microservice" --sort=rating --output=json --limit=10
+
+更多信息:
+  使用 'ming help template search' 查看详细文档
 ''';
 
   @override
@@ -162,8 +172,8 @@ class TemplateSearchCommand extends Command<int> {
       // 创建搜索查询
       final query = _buildSearchQuery(keyword);
 
-      // 获取模板注册表
-      final registry = TemplateRegistry(registryPath: './templates');
+      // 获取模板注册表 - 使用当前工作目录
+      final registry = TemplateRegistry(registryPath: Directory.current.path);
 
       // 执行搜索
       final searchResult = await registry.searchTemplates(query);
@@ -302,7 +312,7 @@ class TemplateSearchCommand extends Command<int> {
         if (metadata.tags.isNotEmpty) {
           print('   标签: ${metadata.tags.join(', ')}');
         }
-        print('   评分: ${metadata.rating.toStringAsFixed(1) ?? 'N/A'} ⭐');
+        print('   评分: ${metadata.rating.toStringAsFixed(1)} ⭐');
         print('   下载: ${metadata.downloadCount} 次');
         print('');
       }
@@ -319,7 +329,7 @@ class TemplateSearchCommand extends Command<int> {
             ? '${metadata.name.substring(0, 21)}...'
             : metadata.name;
         final type = metadata.type.name;
-        final rating = metadata.rating.toStringAsFixed(1) ?? 'N/A';
+        final rating = metadata.rating.toStringAsFixed(1);
 
         print(
           '${rank.padRight(4)}${name.padRight(25)}${type.padRight(12)}${rating.padRight(8)}',

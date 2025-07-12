@@ -57,8 +57,17 @@ class RegistrySyncCommand extends Command<int> {
 
   @override
   String get usage => '''
+同步注册表数据
+
 使用方法:
   ming registry sync [选项]
+
+选项:
+  -r, --registry=<ID>    指定要同步的注册表ID
+  -i, --incremental      增量同步 (仅同步更新的内容)
+  -f, --force            强制完全同步
+  -p, --parallel         并行同步多个注册表
+  -v, --verbose          显示详细同步过程
 
 示例:
   # 同步所有注册表
@@ -73,8 +82,14 @@ class RegistrySyncCommand extends Command<int> {
   # 强制完全同步
   ming registry sync --force
 
-  # 并行同步
+  # 并行同步并显示详细过程
   ming registry sync --parallel --verbose
+
+  # 强制同步指定注册表
+  ming registry sync --registry=local --force --verbose
+
+更多信息:
+  使用 'ming help registry sync' 查看详细文档
 ''';
 
   @override
@@ -109,11 +124,11 @@ class RegistrySyncCommand extends Command<int> {
     bool force,
     bool verbose,
   ) async {
-    print('\n🔄 同步注册表: $registryId');
-    print('─' * 60);
-    print('同步模式: ${incremental ? '增量同步' : '完全同步'}');
-    print('强制模式: ${force ? '启用' : '禁用'}');
-    print('');
+    cli_logger.Logger.info('\n🔄 同步注册表: $registryId');
+    cli_logger.Logger.info('─' * 60);
+    cli_logger.Logger.info('同步模式: ${incremental ? '增量同步' : '完全同步'}');
+    cli_logger.Logger.info('强制模式: ${force ? '启用' : '禁用'}');
+    cli_logger.Logger.info('');
 
     await _performSync(registryId, incremental, force, verbose);
   }
@@ -125,12 +140,12 @@ class RegistrySyncCommand extends Command<int> {
     bool parallel,
     bool verbose,
   ) async {
-    print('\n🔄 同步所有注册表');
-    print('─' * 60);
-    print('同步模式: ${incremental ? '增量同步' : '完全同步'}');
-    print('并行模式: ${parallel ? '启用' : '禁用'}');
-    print('强制模式: ${force ? '启用' : '禁用'}');
-    print('');
+    cli_logger.Logger.info('\n🔄 同步所有注册表');
+    cli_logger.Logger.info('─' * 60);
+    cli_logger.Logger.info('同步模式: ${incremental ? '增量同步' : '完全同步'}');
+    cli_logger.Logger.info('并行模式: ${parallel ? '启用' : '禁用'}');
+    cli_logger.Logger.info('强制模式: ${force ? '启用' : '禁用'}');
+    cli_logger.Logger.info('');
 
     // 模拟注册表列表
     final registries = ['official', 'community', 'enterprise'];
@@ -144,7 +159,7 @@ class RegistrySyncCommand extends Command<int> {
       // 串行同步
       for (final registryId in registries) {
         await _performSync(registryId, incremental, force, verbose);
-        print('');
+        cli_logger.Logger.info('');
       }
     }
   }
@@ -156,36 +171,36 @@ class RegistrySyncCommand extends Command<int> {
     bool force,
     bool verbose,
   ) async {
-    print('📚 同步注册表: $registryId');
+    cli_logger.Logger.info('📚 同步注册表: $registryId');
 
     if (verbose) {
-      print('  🔍 检查注册表状态...');
+      cli_logger.Logger.info('  🔍 检查注册表状态...');
       await Future<void>.delayed(const Duration(milliseconds: 200));
-      print('  ✅ 注册表状态: 健康');
+      cli_logger.Logger.info('  ✅ 注册表状态: 健康');
 
-      print('  🔍 检查本地索引...');
+      cli_logger.Logger.info('  🔍 检查本地索引...');
       await Future<void>.delayed(const Duration(milliseconds: 150));
-      print('  ✅ 本地索引: 已存在');
+      cli_logger.Logger.info('  ✅ 本地索引: 已存在');
 
       if (incremental) {
-        print('  🔍 检查更新...');
+        cli_logger.Logger.info('  🔍 检查更新...');
         await Future<void>.delayed(const Duration(milliseconds: 300));
-        print('  📥 发现 15 个更新');
-        print('  📥 发现 3 个新模板');
-        print('  📥 发现 2 个删除');
+        cli_logger.Logger.info('  📥 发现 15 个更新');
+        cli_logger.Logger.info('  📥 发现 3 个新模板');
+        cli_logger.Logger.info('  📥 发现 2 个删除');
       } else {
-        print('  🔍 获取完整索引...');
+        cli_logger.Logger.info('  🔍 获取完整索引...');
         await Future<void>.delayed(const Duration(milliseconds: 500));
-        print('  📥 下载索引: 1.2MB');
+        cli_logger.Logger.info('  📥 下载索引: 1.2MB');
       }
 
-      print('  🔄 更新本地索引...');
+      cli_logger.Logger.info('  🔄 更新本地索引...');
       await Future<void>.delayed(const Duration(milliseconds: 400));
-      print('  ✅ 索引更新完成');
+      cli_logger.Logger.info('  ✅ 索引更新完成');
 
-      print('  🔍 验证数据完整性...');
+      cli_logger.Logger.info('  🔍 验证数据完整性...');
       await Future<void>.delayed(const Duration(milliseconds: 200));
-      print('  ✅ 数据验证通过');
+      cli_logger.Logger.info('  ✅ 数据验证通过');
     } else {
       // 简化输出
       await Future<void>.delayed(const Duration(milliseconds: 800));
@@ -197,19 +212,19 @@ class RegistrySyncCommand extends Command<int> {
 
   /// 显示同步结果
   void _displaySyncResult(String registryId, bool incremental) {
-    print('  ✅ 同步完成: $registryId');
+    cli_logger.Logger.info('  ✅ 同步完成: $registryId');
 
     if (incremental) {
-      print('    • 更新模板: 15个');
-      print('    • 新增模板: 3个');
-      print('    • 删除模板: 2个');
-      print('    • 数据传输: 245KB');
+      cli_logger.Logger.info('    • 更新模板: 15个');
+      cli_logger.Logger.info('    • 新增模板: 3个');
+      cli_logger.Logger.info('    • 删除模板: 2个');
+      cli_logger.Logger.info('    • 数据传输: 245KB');
     } else {
-      print('    • 总模板数: 1,247个');
-      print('    • 索引大小: 1.2MB');
-      print('    • 数据传输: 1.2MB');
+      cli_logger.Logger.info('    • 总模板数: 1,247个');
+      cli_logger.Logger.info('    • 索引大小: 1.2MB');
+      cli_logger.Logger.info('    • 数据传输: 1.2MB');
     }
 
-    print('    • 同步时间: ${DateTime.now().toLocal()}');
+    cli_logger.Logger.info('    • 同步时间: ${DateTime.now().toLocal()}');
   }
 }

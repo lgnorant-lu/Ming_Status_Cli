@@ -50,6 +50,70 @@ class ValidateCommand extends BaseCommand {
   @override
   List<String> get aliases => ['v', 'val', 'check'];
 
+  @override
+  String get usage => '''
+验证模块的结构、质量、依赖关系和平台规范
+
+使用方法:
+  ming validate [目录路径] [选项]
+
+参数:
+  [目录路径]             要验证的目录路径 (默认: 当前目录)
+
+基础选项:
+  -l, --level=<级别>     验证级别 (默认: standard, 允许: basic, standard, strict, enterprise)
+  -o, --output=<格式>    输出格式 (默认: console, 允许: console, json, junit, compact)
+      --validator=<类型> 启用的验证器类型 (允许: structure, quality, dependency, platform)
+  -s, --strict           严格模式，警告视为错误
+  -f, --fix              自动修复可修复的问题
+
+高级选项:
+  -w, --watch            监控模式，文件变化时自动验证
+      --[no-]cache       启用验证缓存 (默认: on)
+      --[no-]parallel    并行执行验证器 (默认: on)
+      --timeout=<秒数>   验证超时时间 (默认: 300)
+      --stats            显示详细统计信息
+      --health-check     执行验证器健康检查
+
+输出选项:
+      --output-file=<路径>     输出文件路径
+      --continue-on-error      遇到错误时继续执行
+      --exclude=<模式>         排除的文件或目录模式
+
+CI/CD选项:
+      --ci-mode                启用CI/CD模式
+      --junit-output=<路径>    JUnit XML输出文件路径
+      --report-format=<格式>   生成报告格式 (允许: html, json, junit, markdown, csv)
+      --report-output=<目录>   报告输出目录 (默认: reports)
+      --generate-ci-config     生成CI/CD配置文件
+      --ci-platform=<平台>     CI/CD平台类型 (允许: github, gitlab, jenkins, azure)
+
+示例:
+  # 基础验证
+  ming validate
+
+  # 验证指定目录
+  ming validate ./my_project
+
+  # 严格模式验证并自动修复
+  ming validate --strict --fix
+
+  # 监控模式
+  ming validate --watch
+
+  # 生成详细报告
+  ming validate --report-format=html,json --stats
+
+  # CI/CD模式
+  ming validate --ci-mode --junit-output=test-results.xml
+
+  # 生成GitHub Actions配置
+  ming validate --generate-ci-config --ci-platform=github
+
+更多信息:
+  使用 'ming help validate' 查看详细文档
+''';
+
   /// 获取验证服务（延迟初始化）
   ValidatorService get validatorService {
     if (_validatorService == null) {
@@ -207,9 +271,13 @@ class ValidateCommand extends BaseCommand {
     );
   }
 
-  /// 注册默认验证器
+  /// 注册默认验证器(原空)
   void _registerDefaultValidators() {
-    // 验证器已在构造函数中注册，这里不需要重复注册
+    validatorService
+      ..registerValidator(StructureValidator())
+      ..registerValidator(QualityValidator())
+      ..registerValidator(DependencyValidator())
+      ..registerValidator(PlatformComplianceValidator());
   }
 
   @override
@@ -250,7 +318,12 @@ class ValidateCommand extends BaseCommand {
   String _getTargetPath() {
     final rest = argResults!.rest;
     if (rest.isNotEmpty) {
-      return rest.first;
+      final targetPath = rest.first;
+      // 如果是相对路径，转换为绝对路径
+      if (path.isRelative(targetPath)) {
+        return path.join(workingDirectory, targetPath);
+      }
+      return targetPath;
     }
     return workingDirectory;
   }

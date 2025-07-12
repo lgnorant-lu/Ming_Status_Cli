@@ -42,6 +42,27 @@ class VersionCommand extends Command<int> {
   String get invocation => 'ming version [--detailed]';
 
   @override
+  String get usage => '''
+显示版本信息和系统环境详情
+
+使用方法:
+  ming version [选项]
+
+选项:
+  -d, --detailed             显示详细的系统和环境信息
+
+示例:
+  # 显示基本版本信息
+  ming version
+
+  # 显示详细版本和系统信息
+  ming version --detailed
+
+更多信息:
+  使用 'ming help version' 查看详细文档
+''';
+
+  @override
   Future<int> run() async {
     // 轻量级执行，不依赖BaseCommand的重度服务
     final detailed = argResults?['detailed'] == true;
@@ -141,10 +162,44 @@ class VersionCommand extends Command<int> {
 
   /// 获取构建信息
   String _getBuildInfo() {
-    // 简化的构建信息
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-'
-        '${now.day.toString().padLeft(2, '0')}';
+    // 尝试从编译时常量获取构建时间
+    const buildTime = String.fromEnvironment('BUILD_TIME');
+    if (buildTime.isNotEmpty) {
+      return buildTime;
+    }
+
+    // 尝试从Git获取最后提交时间
+    try {
+      final result = Process.runSync('git', ['log', '-1', '--format=%ci']);
+      if (result.exitCode == 0) {
+        final gitDate = result.stdout.toString().trim();
+        if (gitDate.isNotEmpty) {
+          final dateTime = DateTime.tryParse(gitDate);
+          if (dateTime != null) {
+            return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-'
+                '${dateTime.day.toString().padLeft(2, '0')}';
+          }
+        }
+      }
+    } catch (e) {
+      // Git命令失败，继续使用fallback
+    }
+
+    // Fallback: 使用pubspec.yaml的修改时间
+    try {
+      final pubspecFile = File('pubspec.yaml');
+      if (pubspecFile.existsSync()) {
+        final stat = pubspecFile.statSync();
+        final modified = stat.modified;
+        return '${modified.year}-${modified.month.toString().padLeft(2, '0')}-'
+            '${modified.day.toString().padLeft(2, '0')}';
+      }
+    } catch (e) {
+      // 文件操作失败
+    }
+
+    // 最后的fallback: 显示"开发版本"
+    return '开发版本';
   }
 
   /// 获取系统架构信息

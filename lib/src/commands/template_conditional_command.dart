@@ -88,8 +88,29 @@ class TemplateConditionalCommand extends Command<int> {
 
   @override
   String get usage => '''
+执行智能条件模板生成
+
 使用方法:
   ming template conditional [选项]
+
+必需选项:
+  -t, --template=<路径>      模板文件路径
+
+输出选项:
+  -o, --output=<路径>        输出文件路径
+  -d, --dry-run              仅显示渲染结果，不写入文件
+
+条件选项:
+  -p, --platform=<平台>      目标平台 (mobile, web, desktop, server)
+  -f, --framework=<框架>     技术框架 (flutter, react, vue, angular, nodejs)
+  -e, --environment=<环境>   运行环境 (development, testing, staging, production)
+      --features=<特性>      启用的功能特性，用逗号分隔
+  -v, --variables=<变量>     自定义变量，格式: key1=value1,key2=value2
+
+自动检测选项:
+      --detect-platform      自动检测当前平台
+      --detect-features      自动检测项目特性
+      --show-context         显示渲染上下文信息
 
 示例:
   # 基础条件渲染
@@ -106,6 +127,12 @@ class TemplateConditionalCommand extends Command<int> {
 
   # 预览模式
   ming template conditional -t app.template --dry-run --show-context
+
+  # 完整条件渲染
+  ming template conditional -t app.template -o output.dart --platform=mobile --framework=flutter --environment=production
+
+更多信息:
+  使用 'ming help template conditional' 查看详细文档
 ''';
 
   @override

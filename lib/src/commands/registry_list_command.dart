@@ -69,8 +69,21 @@ class RegistryListCommand extends Command<int> {
 
   @override
   String get usage => '''
+列出所有模板注册表
+
 使用方法:
   ming registry list [选项]
+
+过滤选项:
+  -t, --type=<类型>      按类型过滤 (允许: official, community, enterprise, private)
+  -s, --status=<状态>    按状态过滤 (允许: healthy, warning, error, offline)
+      --enabled-only     仅显示启用的注册表
+
+显示选项:
+  -d, --detailed         显示详细信息
+      --health           显示健康状态
+  -p, --performance      显示性能信息
+      --json             以JSON格式输出
 
 示例:
   # 列出所有注册表
@@ -90,6 +103,12 @@ class RegistryListCommand extends Command<int> {
 
   # JSON格式输出
   ming registry list --json
+
+  # 按状态过滤并显示详细信息
+  ming registry list --status=healthy --detailed
+
+更多信息:
+  使用 'ming help registry list' 查看详细文档
 ''';
 
   @override
@@ -134,7 +153,12 @@ class RegistryListCommand extends Command<int> {
         _outputJson(registries, healthData);
       } else {
         _outputTable(
-            registries, healthData, detailed, showHealth, showPerformance,);
+          registries,
+          healthData,
+          detailed,
+          showHealth,
+          showPerformance,
+        );
       }
 
       cli_logger.Logger.success('注册表列表获取完成');
@@ -230,8 +254,13 @@ class RegistryListCommand extends Command<int> {
     print('─' * 80);
 
     for (final config in registries) {
-      _displayRegistry(config, healthData?[config.id], detailed, showHealth,
-          showPerformance,);
+      _displayRegistry(
+        config,
+        healthData?[config.id],
+        detailed,
+        showHealth,
+        showPerformance,
+      );
       print('');
     }
 

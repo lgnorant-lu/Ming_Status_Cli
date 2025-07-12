@@ -12,8 +12,10 @@ Change History:
 ---------------------------------------------------------------
 */
 
+import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:ming_status_cli/src/core/template_creator/config/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/configuration_wizard.dart';
 import 'package:ming_status_cli/src/core/template_creator/template_scaffold.dart';
 import 'package:ming_status_cli/src/core/template_creator/template_validator.dart';
@@ -71,6 +73,19 @@ class TemplateCreateCommand extends Command<int> {
         allowed: TemplateFramework.values.map((f) => f.name),
         defaultsTo: TemplateFramework.agnostic.name,
       )
+      ..addOption(
+        'complexity',
+        abbr: 'c',
+        help: '模板复杂度',
+        allowed: TemplateComplexity.values.map((c) => c.name),
+        defaultsTo: TemplateComplexity.simple.name,
+        allowedHelp: {
+          'simple': '简单模板',
+          'medium': '中等复杂度模板',
+          'complex': '复杂模板',
+          'enterprise': '企业级模板',
+        },
+      )
       ..addFlag(
         'wizard',
         abbr: 'w',
@@ -112,8 +127,34 @@ class TemplateCreateCommand extends Command<int> {
 
   @override
   String get usage => '''
+创建自定义模板
+
 使用方法:
   ming template create [选项]
+
+基础选项:
+  -n, --name=<名称>          模板名称
+  -t, --type=<类型>          模板类型
+  -a, --author=<作者>        作者名称
+  -d, --description=<描述>   模板描述
+  -o, --output=<目录>        输出目录 (默认: .)
+
+平台和框架:
+  -p, --platform=<平台>      目标平台 (默认: crossPlatform)
+  -f, --framework=<框架>     技术框架 (默认: agnostic)
+
+内容选项:
+      --no-tests             不包含测试文件
+      --no-docs              不包含文档
+      --no-examples          不包含示例
+      --no-git               不初始化Git仓库
+
+验证选项:
+  -v, --[no-]validate        生成后验证模板 (默认: on)
+      --strict               启用严格验证模式
+
+交互选项:
+  -w, --wizard               使用交互式向导
 
 示例:
   # 使用交互式向导
@@ -127,36 +168,55 @@ class TemplateCreateCommand extends Command<int> {
 
   # 创建微服务模板
   ming template create --name api_service --type micro --framework dart --no-examples
+
+  # 创建模板并跳过验证
+  ming template create -n simple -t basic -a "Dev" -d "简单模板" --no-validate
+
+更多信息:
+  使用 'ming help template create' 查看详细文档
 ''';
 
   @override
   Future<int> run() async {
     try {
+      // 显示友好的开始信息
+      print('\n🚀 Ming Status CLI - 模板创建工具');
+      print('═' * 50);
       cli_logger.Logger.info('开始创建模板');
 
       ScaffoldConfig? config;
 
       // 检查是否使用向导模式
       if (argResults!['wizard'] as bool) {
+        print('\n🧙‍♂️ 启动向导模式...');
         config = await _runWizard();
       } else {
+        print('\n📋 解析命令行参数...');
         config = await _parseArguments();
       }
 
       if (config == null) {
+        print('\n❌ 模板创建已取消');
         cli_logger.Logger.warning('模板创建已取消');
         return 1;
       }
 
+      // 显示配置摘要
+      _printConfigSummary(config);
+
       // 生成模板脚手架
+      print('\n⚙️ 正在生成模板脚手架...');
       final scaffold = TemplateScaffold();
       final result = await scaffold.generateScaffold(config);
 
       if (!result.success) {
+        print('\n💥 模板创建失败');
         cli_logger.Logger.error('模板创建失败');
         for (final error in result.errors) {
+          print('  ❌ $error');
           cli_logger.Logger.error('  - $error');
         }
+        _printTroubleshootingTips();
         return 1;
       }
 
@@ -165,15 +225,56 @@ class TemplateCreateCommand extends Command<int> {
 
       // 验证模板
       if (argResults!['validate'] as bool) {
+        print('\n🔍 正在验证生成的模板...');
         await _validateTemplate(result.templatePath);
       }
 
+      print('\n🎉 模板创建完成！');
       cli_logger.Logger.success('模板创建完成: ${result.templatePath}');
       return 0;
     } catch (e) {
+      print('\n💥 模板创建过程中发生错误');
+      print('错误详情: $e');
+      _printTroubleshootingTips();
       cli_logger.Logger.error('模板创建失败', error: e);
       return 1;
     }
+  }
+
+  /// 显示配置摘要
+  void _printConfigSummary(ScaffoldConfig config) {
+    print('\n📋 模板配置摘要');
+    print('─' * 40);
+    print('📝 名称: ${config.templateName}');
+    print('🏷️  类型: ${config.templateType.name}');
+    print('🏗️  框架: ${config.framework.name}');
+    print('📱 平台: ${config.platform.name}');
+    print('⚡ 复杂度: ${config.complexity.name}');
+    print('👤 作者: ${config.author}');
+    print('📄 描述: ${config.description}');
+    print('📂 输出路径: ${config.outputPath}');
+
+    final features = <String>[];
+    if (config.includeTests) features.add('测试');
+    if (config.includeDocumentation) features.add('文档');
+    if (config.includeExamples) features.add('示例');
+    if (config.enableGitInit) features.add('Git');
+
+    if (features.isNotEmpty) {
+      print('✨ 功能: ${features.join(', ')}');
+    }
+  }
+
+  /// 显示故障排除提示
+  void _printTroubleshootingTips() {
+    print('\n🔧 故障排除提示:');
+    print('─' * 30);
+    print('1. 检查模板名称是否符合规范 (字母开头，只含字母数字下划线)');
+    print('2. 确保输出目录有写入权限');
+    print('3. 检查磁盘空间是否充足');
+    print('4. 尝试使用 --wizard 模式重新创建');
+    print('5. 查看详细日志: ming template create --help');
+    print('\n💡 需要帮助？运行: ming help template create');
   }
 
   /// 运行配置向导
@@ -195,6 +296,13 @@ class TemplateCreateCommand extends Command<int> {
       return null;
     }
 
+    // 验证模板名称格式
+    if (!_isValidTemplateName(name)) {
+      cli_logger.Logger.error('模板名称格式无效: $name');
+      cli_logger.Logger.info('模板名称只能包含字母、数字、下划线和连字符，且必须以字母开头');
+      return null;
+    }
+
     if (typeStr == null) {
       cli_logger.Logger.error('模板类型是必需的，请使用 --type 参数或 --wizard 模式');
       return null;
@@ -207,6 +315,14 @@ class TemplateCreateCommand extends Command<int> {
 
     if (description == null || description.isEmpty) {
       cli_logger.Logger.error('模板描述是必需的，请使用 --description 参数或 --wizard 模式');
+      return null;
+    }
+
+    // 验证输出路径
+    final outputPath = argResults!['output'] as String;
+    if (!_isValidOutputPath(outputPath)) {
+      cli_logger.Logger.error('输出路径无效或无权限访问: $outputPath');
+      cli_logger.Logger.info('请确保输出路径存在且有写入权限');
       return null;
     }
 
@@ -226,6 +342,11 @@ class TemplateCreateCommand extends Command<int> {
       orElse: () => TemplateFramework.agnostic,
     );
 
+    final complexity = TemplateComplexity.values.firstWhere(
+      (c) => c.name == argResults!['complexity'],
+      orElse: () => TemplateComplexity.simple,
+    );
+
     return ScaffoldConfig(
       templateName: name,
       templateType: templateType,
@@ -234,6 +355,7 @@ class TemplateCreateCommand extends Command<int> {
       outputPath: argResults!['output'] as String,
       platform: platform,
       framework: framework,
+      complexity: complexity,
       includeTests: !(argResults!['no-tests'] as bool),
       includeDocumentation: !(argResults!['no-docs'] as bool),
       includeExamples: !(argResults!['no-examples'] as bool),
@@ -360,5 +482,28 @@ class TemplateCreateCommand extends Command<int> {
     print('  错误: ${errors.length}');
     print('  警告: ${warnings.length}');
     print('  信息: ${infos.length}');
+  }
+
+  /// 验证模板名称格式
+  bool _isValidTemplateName(String name) {
+    // 模板名称只能包含字母、数字、下划线和连字符，且必须以字母开头
+    final regex = RegExp(r'^[a-zA-Z][a-zA-Z0-9_-]*$');
+    return regex.hasMatch(name) && name.length <= 50;
+  }
+
+  /// 验证输出路径
+  bool _isValidOutputPath(String outputPath) {
+    try {
+      final dir = Directory(outputPath);
+      // 检查路径是否存在或可以创建
+      if (dir.existsSync()) {
+        return true;
+      }
+      // 尝试创建父目录来验证权限
+      final parent = dir.parent;
+      return parent.existsSync();
+    } catch (e) {
+      return false;
+    }
   }
 }

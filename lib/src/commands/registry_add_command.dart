@@ -86,12 +86,28 @@ class RegistryAddCommand extends Command<int> {
 
   @override
   String get usage => '''
+添加新的模板注册表
+
 使用方法:
   ming registry add <名称> <URL> [选项]
 
 参数:
-  名称    注册表名称
-  URL     注册表URL地址
+  <名称>                 注册表名称
+  <URL>                  注册表URL地址
+
+基础选项:
+  -t, --type=<类型>      注册表类型 (默认: community, 允许: official, community, enterprise, private)
+  -p, --priority=<数字>  注册表优先级 (默认: 100, 数字越小优先级越高)
+      --timeout=<秒数>   连接超时时间 (默认: 30)
+      --retry-count=<次数> 重试次数 (默认: 3)
+      --[no-]enabled     是否启用注册表 (默认: on)
+      --[no-]verify      验证注册表连接 (默认: on)
+  -d, --dry-run          仅显示操作计划，不执行实际添加
+
+认证选项:
+      --auth-type=<类型>  认证类型 (默认: none, 允许: none, token, oauth2, apikey, certificate)
+      --auth-token=<令牌> 认证令牌
+      --auth-header=<头名称> API Key认证头名称 (默认: X-API-Key)
 
 示例:
   # 添加官方注册表
@@ -105,6 +121,12 @@ class RegistryAddCommand extends Command<int> {
 
   # 预览添加操作
   ming registry add test-registry https://test.example.com --dry-run
+
+  # 添加私有注册表，禁用验证
+  ming registry add private-repo https://git.company.com/templates --type=private --no-verify
+
+更多信息:
+  使用 'ming help registry add' 查看详细文档
 ''';
 
   @override
@@ -260,7 +282,10 @@ class RegistryAddCommand extends Command<int> {
 
   /// 构建认证配置
   Map<String, String>? _buildAuthConfig(
-      String authType, String? authToken, String authHeader,) {
+    String authType,
+    String? authToken,
+    String authHeader,
+  ) {
     if (authType == 'none') return null;
 
     final auth = <String, String>{};

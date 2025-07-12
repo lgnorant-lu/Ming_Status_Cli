@@ -59,6 +59,53 @@ class InitCommand extends BaseCommand {
   String get invocation => 'ming init [workspace_name]';
 
   @override
+  String get usage => '''
+初始化Ming Status模块工作空间
+
+使用方法:
+  ming init [工作空间名称] [选项]
+
+参数:
+  [工作空间名称]         要创建的工作空间名称 (可选)
+
+选项:
+  -n, --name=<名称>      工作空间名称
+  -d, --description=<描述> 工作空间描述
+  -a, --author=<作者>    默认作者名称 (默认: lgnorant-lu)
+  -f, --force            强制初始化，覆盖现有配置
+
+初始化内容:
+  • 创建工作空间配置文件 (ming_workspace.yaml)
+  • 建立标准目录结构 (src/, tests/, docs/)
+  • 生成示例文件和文档 (README.md)
+  • 配置默认设置和模板
+
+示例:
+  # 基础初始化
+  ming init
+
+  # 指定工作空间名称
+  ming init my_project
+
+  # 完整配置初始化
+  ming init --name="我的项目" --author="开发者" --description="项目描述"
+
+  # 强制重新初始化
+  ming init --force
+
+  # 非交互模式初始化
+  ming init my_project --author="Developer" --description="My workspace"
+
+注意事项:
+  • 确保当前目录有写权限
+  • 工作空间名称应符合包命名规范 (小写字母、数字、下划线)
+  • 使用 --force 会覆盖现有配置
+
+更多信息:
+  使用 'ming help init' 查看详细文档
+''';
+
+  @override
   Future<int> execute() async {
     // 检查是否已经初始化
     if (configManager.isWorkspaceInitialized() &&

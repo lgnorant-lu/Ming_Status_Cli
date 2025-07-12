@@ -104,8 +104,23 @@ class TemplateGenerateCommand extends Command<int> {
 
   @override
   String get usage => '''
+生成企业级模板
+
 使用方法:
   ming template generate [选项]
+
+基础选项:
+  -n, --name=<名称>          模板名称
+  -m, --mode=<模式>          生成模式 (scratch, project, template, collaborative)
+  -s, --source=<路径>        源路径
+  -o, --output=<路径>        输出路径
+
+生成选项:
+      --interactive          启用交互模式
+      --auto-parameterize    自动参数化
+      --analysis=<类型>      分析类型
+      --quality-check        启用质量检查
+      --best-practices       应用最佳实践
 
 示例:
   # 从零开始创建模板
@@ -125,6 +140,9 @@ class TemplateGenerateCommand extends Command<int> {
 
   # 质量检查模式
   ming template generate -n quality_template -m project -s ./project --quality-check --best-practices
+
+更多信息:
+  使用 'ming help template generate' 查看详细文档
 ''';
 
   @override
@@ -327,8 +345,12 @@ class TemplateGenerateCommand extends Command<int> {
   }
 
   /// 分析项目
-  Future<void> _analyzeProject(String sourcePath, String analysisType,
-      List<String> fileTypes, bool verbose,) async {
+  Future<void> _analyzeProject(
+    String sourcePath,
+    String analysisType,
+    List<String> fileTypes,
+    bool verbose,
+  ) async {
     print('\n🔍 项目分析');
     print('─' * 40);
     print('源路径: $sourcePath');
@@ -403,7 +425,8 @@ class TemplateGenerateCommand extends Command<int> {
               : '🔴';
 
       print(
-          '$confidenceIcon ${suggestion['type']}: ${suggestion['original']} → ${suggestion['parameter']} ($confidence%)',);
+        '$confidenceIcon ${suggestion['type']}: ${suggestion['original']} → ${suggestion['parameter']} ($confidence%)',
+      );
 
       if (verbose) {
         print('   位置: lib/main.dart:15');
@@ -416,7 +439,10 @@ class TemplateGenerateCommand extends Command<int> {
 
   /// 执行质量检查
   Future<void> _performQualityChecks(
-      bool bestPractices, bool qualityCheck, bool verbose,) async {
+    bool bestPractices,
+    bool qualityCheck,
+    bool verbose,
+  ) async {
     print('\n🔍 质量检查');
     print('─' * 40);
 
@@ -447,7 +473,11 @@ class TemplateGenerateCommand extends Command<int> {
 
   /// 生成模板
   Future<void> _generateTemplate(
-      String templateName, String outputDir, bool dryRun, bool verbose,) async {
+    String templateName,
+    String outputDir,
+    bool dryRun,
+    bool verbose,
+  ) async {
     print('\n🏗️ 模板生成');
     print('─' * 40);
 

@@ -104,20 +104,23 @@ class TemplateEnterpriseCommand extends Command<int> {
 
   @override
   String get usage => '''
+企业级模板管理
+
 使用方法:
   ming template enterprise --action=<操作> [选项]
 
-🏢 Task 2.2.4: 企业级模板管理
+必需选项:
+  -a, --action=<操作>        管理操作类型
 
 操作类型:
-  --action=registry     私有注册表管理
-  --action=access       访问控制管理
-  --action=lifecycle    生命周期管理
-  --action=compliance   合规检查
-  --action=tenant       租户管理
-  --action=user         用户管理
-  --action=role         角色管理
-  --action=audit        审计管理
+      registry              私有注册表管理
+      access                访问控制管理
+      lifecycle             生命周期管理
+      compliance            合规检查
+      tenant                租户管理
+      user                  用户管理
+      role                  角色管理
+      audit                 审计管理
 
 子操作:
   --subaction=create    创建资源

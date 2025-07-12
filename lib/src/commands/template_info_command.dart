@@ -13,8 +13,11 @@ Change History:
 ---------------------------------------------------------------
 */
 
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:args/command_runner.dart';
-import 'package:ming_status_cli/src/core/template_system/template_metadata.dart';
+// import 'package:ming_status_cli/src/core/template_system/template_metadata.dart';  // 未使用，注释掉
 import 'package:ming_status_cli/src/core/template_system/template_registry.dart'
     as registry;
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
@@ -77,8 +80,30 @@ class TemplateInfoCommand extends Command<int> {
 
   @override
   String get usage => '''
+显示模板详细信息
+
 使用方法:
   ming template info <模板名称> [选项]
+
+参数:
+  <模板名称>               要查看的模板名称
+
+基础选项:
+  -v, --version=<版本>     指定模板版本
+  -o, --output=<格式>      输出格式 (默认: default)
+  -d, --detailed           显示详细信息
+
+输出格式:
+      default              默认格式输出
+      json                 JSON格式输出
+      yaml                 YAML格式输出
+
+信息选项:
+      --dependencies       显示依赖关系
+  -m, --metadata           显示完整元数据
+  -p, --performance        显示性能指标
+  -s, --security           显示安全信息
+  -c, --compatibility      显示兼容性信息
 
 示例:
   # 基础信息
@@ -101,6 +126,9 @@ class TemplateInfoCommand extends Command<int> {
 
   # 性能和兼容性信息
   ming template info flutter_clean_app --performance --compatibility
+
+更多信息:
+  使用 'ming help template info' 查看详细文档
 ''';
 
   @override
@@ -118,13 +146,15 @@ class TemplateInfoCommand extends Command<int> {
 
       cli_logger.Logger.info('正在获取模板信息: $templateName');
 
-      // 获取模板注册表
+      // 获取模板注册表 - 使用当前工作目录（与其他命令保持一致）
       final templateRegistry =
-          registry.TemplateRegistry(registryPath: './templates');
+          registry.TemplateRegistry(registryPath: Directory.current.path);
 
       // 获取模板信息
-      final templateInfo = await templateRegistry.getTemplateInfo(templateName,
-          version: version,);
+      final templateInfo = await templateRegistry.getTemplateInfo(
+        templateName,
+        version: version,
+      );
 
       if (templateInfo == null) {
         cli_logger.Logger.error('未找到模板: $templateName');
@@ -181,10 +211,10 @@ class TemplateInfoCommand extends Command<int> {
       print('子类型: ${metadata.subType!.name}');
     }
     print('平台: ${metadata.platform.name}');
-      print('框架: ${metadata.framework.name}');
-      print('复杂度: ${metadata.complexity.name}');
-      print('成熟度: ${metadata.maturity.name}');
-  
+    print('框架: ${metadata.framework.name}');
+    print('复杂度: ${metadata.complexity.name}');
+    print('成熟度: ${metadata.maturity.name}');
+
     // 评分和统计
     print('\n📊 统计信息');
     print('─' * 30);
@@ -263,9 +293,9 @@ class TemplateInfoCommand extends Command<int> {
       print('\n🔗 依赖关系');
       print('─' * 30);
       for (final dep in templateInfo.dependencies) {
-        final typeIcon = dep.type == DependencyType.required
+        final typeIcon = dep.type == registry.DependencyType.required
             ? '🔴'
-            : dep.type == DependencyType.optional
+            : dep.type == registry.DependencyType.optional
                 ? '🟡'
                 : '🔵';
         print('$typeIcon ${dep.name} (${dep.version})');
@@ -328,14 +358,71 @@ class TemplateInfoCommand extends Command<int> {
 
   /// 显示JSON格式信息
   Future<void> _displayJsonInfo(registry.TemplateInfo templateInfo) async {
-    // TODO: 实现JSON输出
-    print('JSON输出功能开发中...');
+    final jsonData = {
+      'id': templateInfo.metadata.id,
+      'name': templateInfo.metadata.name,
+      'version': templateInfo.metadata.version,
+      'author': templateInfo.metadata.author,
+      'description': templateInfo.metadata.description,
+      'type': templateInfo.metadata.type.name,
+      'platform': templateInfo.metadata.platform.name,
+      'framework': templateInfo.metadata.framework.name,
+      'complexity': templateInfo.metadata.complexity.name,
+      'maturity': templateInfo.metadata.maturity.name,
+      'tags': templateInfo.metadata.tags,
+      'keywords': templateInfo.metadata.keywords,
+      'category': templateInfo.metadata.category,
+      'createdAt': templateInfo.metadata.createdAt.toIso8601String(),
+      'updatedAt': templateInfo.metadata.updatedAt.toIso8601String(),
+      'dependencies': templateInfo.dependencies
+          .map((dep) => {
+                'name': dep.name,
+                'version': dep.version,
+                'type': dep.type.name,
+                'description': dep.description,
+              },)
+          .toList(),
+    };
+
+    print(jsonEncode(jsonData));
   }
 
   /// 显示YAML格式信息
   Future<void> _displayYamlInfo(registry.TemplateInfo templateInfo) async {
-    // TODO: 实现YAML输出
-    print('YAML输出功能开发中...');
+    final buffer = StringBuffer();
+    final metadata = templateInfo.metadata;
+
+    buffer.writeln('id: ${metadata.id}');
+    buffer.writeln('name: ${metadata.name}');
+    buffer.writeln('version: ${metadata.version}');
+    buffer.writeln('author: ${metadata.author}');
+    buffer.writeln('description: ${metadata.description}');
+    buffer.writeln('type: ${metadata.type.name}');
+    buffer.writeln('platform: ${metadata.platform.name}');
+    buffer.writeln('framework: ${metadata.framework.name}');
+    buffer.writeln('complexity: ${metadata.complexity.name}');
+    buffer.writeln('maturity: ${metadata.maturity.name}');
+    buffer.writeln('tags: [${metadata.tags.join(', ')}]');
+    buffer.writeln('keywords: [${metadata.keywords.join(', ')}]');
+    buffer.writeln('category: ${metadata.category}');
+    buffer.writeln('createdAt: ${metadata.createdAt.toIso8601String()}');
+    buffer.writeln('updatedAt: ${metadata.updatedAt.toIso8601String()}');
+
+    if (templateInfo.dependencies.isNotEmpty) {
+      buffer.writeln('dependencies:');
+      for (final dep in templateInfo.dependencies) {
+        buffer.writeln('  - name: ${dep.name}');
+        buffer.writeln('    version: ${dep.version}');
+        buffer.writeln('    type: ${dep.type.name}');
+        if (dep.description != null) {
+          buffer.writeln('    description: ${dep.description}');
+        }
+      }
+    } else {
+      buffer.writeln('dependencies: []');
+    }
+
+    print(buffer);
   }
 
   /// 显示相似模板建议

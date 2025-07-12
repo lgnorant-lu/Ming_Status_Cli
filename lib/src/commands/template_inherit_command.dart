@@ -79,8 +79,23 @@ class TemplateInheritCommand extends Command<int> {
 
   @override
   String get usage => '''
+执行模板继承和组合操作
+
 使用方法:
   ming template inherit [选项]
+
+必需选项:
+  -t, --template=<名称>      基础模板名称
+
+继承选项:
+  -e, --extends=<模板>       要继承的模板，用逗号分隔
+  -s, --strategy=<策略>      继承策略 (默认: merge)
+  -o, --output=<目录>        输出目录 (默认: .)
+
+验证选项:
+      --validate             验证继承链
+      --show-dependencies    显示依赖关系
+      --dry-run              预览继承结果，不执行实际操作
 
 示例:
   # 基础继承
@@ -94,6 +109,9 @@ class TemplateInheritCommand extends Command<int> {
 
   # 自定义继承策略
   ming template inherit -t my_app -e base_app -s override -o ./output
+
+更多信息:
+  使用 'ming help template inherit' 查看详细文档
 ''';
 
   @override
@@ -156,14 +174,20 @@ class TemplateInheritCommand extends Command<int> {
       if (validate) {
         cli_logger.Logger.info('验证继承链完整性...');
         await _validateInheritanceChain(
-            validator, templateName, parentTemplates,);
+          validator,
+          templateName,
+          parentTemplates,
+        );
       }
 
       // 显示依赖关系
       if (showDependencies) {
         cli_logger.Logger.info('分析依赖关系...');
         await _showDependencies(
-            dependencyResolver, templateName, parentTemplates,);
+          dependencyResolver,
+          templateName,
+          parentTemplates,
+        );
       }
 
       // 执行继承操作
@@ -192,7 +216,9 @@ class TemplateInheritCommand extends Command<int> {
 
   /// 获取模板
   Future<dynamic> _getTemplate(
-      TemplateRegistry registry, String templateName,) async {
+    TemplateRegistry registry,
+    String templateName,
+  ) async {
     try {
       final searchQuery = TemplateSearchQuery(keyword: templateName, limit: 1);
       final searchResult = await registry.searchTemplates(searchQuery);
@@ -208,7 +234,10 @@ class TemplateInheritCommand extends Command<int> {
 
   /// 显示继承计划
   void _displayInheritancePlan(
-      String baseTemplate, List<String> parents, String strategy,) {
+    String baseTemplate,
+    List<String> parents,
+    String strategy,
+  ) {
     print('\n🔗 模板继承计划');
     print('─' * 50);
     print('基础模板: $baseTemplate');

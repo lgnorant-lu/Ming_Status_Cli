@@ -119,23 +119,56 @@ class ConfigCommand extends BaseCommand {
   String get description => '管理Ming Status CLI配置';
 
   @override
-  String get usageFooter => '''
+  String get usage => '''
+管理Ming Status CLI配置
+
+使用方法:
+  ming config [选项]
+
+基础选项:
+  -l, --list             列出所有配置项
+  -g, --global           操作全局用户配置
+      --local            操作本地工作空间配置
+      --get=<键>         获取指定配置项的值
+      --set=<键=值>      设置配置项的值
+      --unset            删除指定配置项
+      --reset            重置配置为默认值
+      --edit             在编辑器中打开配置文件
+
+模板选项:
+      --template=<类型>  应用配置模板 (允许: basic, enterprise)
+
 示例:
-  ming config --list                    # 列出所有配置
-  ming config --global --list           # 列出全局用户配置
-  ming config --get user.name           # 获取用户名
-  ming config --set user.name="张三"     # 设置用户名
-  ming config --global --set user.email="zhang@example.com"  # 设置邮箱
-  ming config --reset                   # 重置配置
-  ming config --template enterprise     # 应用企业级配置模板
-  
+  # 列出所有配置
+  ming config --list
+
+  # 列出全局用户配置
+  ming config --global --list
+
+  # 获取用户名
+  ming config --get=user.name
+
+  # 设置用户信息
+  ming config --global --set=user.name="张三"
+  ming config --global --set=user.email="zhang@example.com"
+
+  # 应用企业级配置模板
+  ming config --template=enterprise
+
+  # 重置配置
+  ming config --global --reset
+
 配置键路径:
   user.name, user.email, user.company
   preferences.defaultTemplate, preferences.coloredOutput
   preferences.autoUpdateCheck, preferences.verboseLogging
   preferences.preferredIde
   defaults.author, defaults.license, defaults.dartVersion
-  defaults.description''';
+  defaults.description
+
+更多信息:
+  使用 'ming help config' 查看详细文档
+''';
 
   late final UserConfigManager _userConfigManager;
   late final ConfigManager _configManager;
