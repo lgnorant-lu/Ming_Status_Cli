@@ -1,0 +1,17 @@
+id: incompatible_test
+name: incompatible_test
+version: 1.0.0
+author: Ming Status CLI
+description: 测试模板 - 包含明显不兼容的依赖版本配置，用于验证配置管理系统
+type: basic
+platform: crossPlatform
+framework: flutter
+complexity: simple
+maturity: development
+tags: []
+keywords: []
+dependencies: []
+category: test
+createdAt: "2025-07-12T18:50:00.000000Z"
+updatedAt: "2025-07-12T18:50:00.000000Z"
+parameters: []

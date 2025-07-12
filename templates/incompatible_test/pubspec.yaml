@@ -1,0 +1,75 @@
+name: incompatible_test
+description: 测试模板 - 包含明显不兼容的依赖版本配置
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'  # 过时的SDK版本要求
+  flutter: ">=2.0.0"      # 过时的Flutter版本要求
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # 故意使用过时和冲突的版本
+  http: ^0.13.0           # 过时版本，当前最新是1.x
+  dio: ^4.0.0             # 与http可能冲突的网络库
+  json_annotation: ^4.0.0 # 过时版本
+  json_serializable: ^6.0.0 # 版本不匹配json_annotation
+  
+  # 互相冲突的状态管理库
+  provider: ^6.0.0
+  bloc: ^8.0.0
+  riverpod: ^2.0.0
+  
+  # 过时的UI库版本
+  cupertino_icons: ^1.0.0  # 过时版本
+  material_design_icons_flutter: ^5.0.0 # 过时版本
+  
+  # 冲突的路由库
+  go_router: ^6.0.0        # 过时版本
+  auto_route: ^7.0.0       # 与go_router冲突
+  
+  # 数据库冲突
+  sqflite: ^2.0.0
+  hive: ^2.0.0
+  isar: ^3.0.0
+  
+  # 测试相关冲突
+  mockito: ^5.0.0          # 过时版本
+  mocktail: ^0.3.0         # 与mockito冲突
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  
+  # 过时的开发工具
+  build_runner: ^2.0.0     # 过时版本
+  freezed: ^2.0.0          # 过时版本，与json_serializable不兼容
+  
+  # 冲突的代码生成工具
+  retrofit: ^3.0.0
+  chopper: ^6.0.0          # 与retrofit冲突
+  
+  # 过时的分析工具
+  flutter_lints: ^2.0.0    # 过时版本
+  very_good_analysis: ^4.0.0 # 与flutter_lints冲突
+
+flutter:
+  uses-material-design: true
+  
+  # 过时的配置格式
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: fonts/Roboto-Regular.ttf
+          weight: 400
+        - asset: fonts/Roboto-Bold.ttf
+          weight: 700
+
+# 过时的配置节
+flutter_intl:
+  enabled: true
+  class_name: S
+  main_locale: en
+  arb_dir: lib/l10n
+  output_dir: lib/generated
