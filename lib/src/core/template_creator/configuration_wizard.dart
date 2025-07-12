@@ -14,7 +14,7 @@ Change History:
 
 import 'dart:io';
 
-import 'package:ming_status_cli/src/core/template_creator/template_scaffold.dart';
+import 'package:ming_status_cli/src/core/template_creator/config/index.dart';
 import 'package:ming_status_cli/src/core/template_system/template_types.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
@@ -562,10 +562,10 @@ class ConfigurationWizard {
   void _printConfigurationSummary() {
     print('\n📊 配置摘要');
     print('─' * 30);
-    print('模板名称: ${_context.getAnswer('templateName')}');
-    print('作者: ${_context.getAnswer('author')}');
-    print('描述: ${_context.getAnswer('description')}');
-    print('版本: ${_context.getAnswer('version')}');
+    print('模板名称: ${_context.getAnswer<String>('templateName')}');
+    print('作者: ${_context.getAnswer<String>('author')}');
+    print('描述: ${_context.getAnswer<String>('description')}');
+    print('版本: ${_context.getAnswer<String>('version')}');
     print(
       '类型: ${_context.getAnswer<TemplateType>('templateType')?.displayName}',
     );
@@ -577,13 +577,17 @@ class ConfigurationWizard {
     print('框架: ${_context.getAnswer<TemplateFramework>('framework')?.name}');
     print('复杂度: ${_context.getAnswer<TemplateComplexity>('complexity')?.name}');
     print(
-        '包含测试: ${_context.getAnswer<bool>('includeTests') == true ? '是' : '否'}',);
+      '包含测试: ${_context.getAnswer<bool>('includeTests') == true ? '是' : '否'}',
+    );
     print(
-        '包含文档: ${_context.getAnswer<bool>('includeDocumentation') == true ? '是' : '否'}',);
+      '包含文档: ${_context.getAnswer<bool>('includeDocumentation') == true ? '是' : '否'}',
+    );
     print(
-        '包含示例: ${_context.getAnswer<bool>('includeExamples') == true ? '是' : '否'}',);
+      '包含示例: ${_context.getAnswer<bool>('includeExamples') == true ? '是' : '否'}',
+    );
     print(
-        'Git初始化: ${_context.getAnswer<bool>('enableGitInit') == true ? '是' : '否'}',);
+      'Git初始化: ${_context.getAnswer<bool>('enableGitInit') == true ? '是' : '否'}',
+    );
     final tags = _context.getAnswer<List<String>>('tags');
     if (tags != null && tags.isNotEmpty) {
       print('标签: ${tags.join(', ')}');

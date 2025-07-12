@@ -3,12 +3,13 @@
 File name:          template_validator.dart
 Author:             lgnorant-lu
 Date created:       2025/07/10
-Last modified:      2025/07/10
+Last modified:      2025/07/12
 Dart Version:       3.2+
 Description:        企业级模板验证工具 (Enterprise Template Validator)
 ---------------------------------------------------------------
 Change History:
     2025/07/10: Initial creation - Phase 2.1 模板验证和质量检查;
+    2025/07/12: Refactor and improve - 优化依赖验证逻辑;
 ---------------------------------------------------------------
 */
 
@@ -16,6 +17,7 @@ import 'dart:io';
 
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:path/path.dart' as path;
+import 'package:yaml/yaml.dart';
 
 /// 验证规则类型
 ///
@@ -545,26 +547,26 @@ class TemplateValidator {
     if (await pubspecFile.exists()) {
       try {
         final content = await pubspecFile.readAsString();
+        final yaml = loadYaml(content);
 
-        // 检查依赖版本约束
-        final dependencies = RegExp(r'(\w+):\s*([^\n]+)').allMatches(content);
-        for (final dep in dependencies) {
-          final name = dep.group(1);
-          final version = dep.group(2)?.trim();
+        // 只检查真正的依赖部分
+        if (yaml is Map) {
+          final yamlMap = Map<String, dynamic>.from(yaml);
 
-          if (version != null &&
-              !version.startsWith('^') &&
-              !version.startsWith('>=')) {
-            issues.add(
-              ValidationIssue(
-                ruleType: ValidationRuleType.dependency,
-                severity: ValidationSeverity.info,
-                message: '依赖版本约束建议使用范围: $name: $version',
-                filePath: pubspecFile.path,
-                suggestion:
-                    '使用 ^$version 或 >=$version <${_getNextMajorVersion(version)}',
-              ),
-            );
+          // 检查dependencies部分
+          if (yamlMap.containsKey('dependencies')) {
+            final deps =
+                Map<String, dynamic>.from(yamlMap['dependencies'] as Map);
+            _validateDependencyVersions(
+                issues, deps, 'dependencies', pubspecFile.path,);
+          }
+
+          // 检查dev_dependencies部分
+          if (yamlMap.containsKey('dev_dependencies')) {
+            final devDeps =
+                Map<String, dynamic>.from(yamlMap['dev_dependencies'] as Map);
+            _validateDependencyVersions(
+                issues, devDeps, 'dev_dependencies', pubspecFile.path,);
           }
         }
       } catch (e) {
@@ -754,6 +756,47 @@ class TemplateValidator {
           issues.where((i) => i.severity == ValidationSeverity.info).length,
       'ruleTypes': issues.map((i) => i.ruleType.name).toSet().toList(),
     };
+  }
+
+  /// 验证依赖版本约束
+  void _validateDependencyVersions(
+    List<ValidationIssue> issues,
+    Map<String, dynamic> dependencies,
+    String section,
+    String filePath,
+  ) {
+    for (final entry in dependencies.entries) {
+      final name = entry.key;
+      final value = entry.value;
+
+      // 跳过Flutter SDK依赖和特殊配置
+      if (name == 'flutter' && value is Map) {
+        continue;
+      }
+
+      // 只检查字符串版本约束
+      if (value is String) {
+        final version = value.trim();
+
+        // 检查版本约束格式
+        if (!version.startsWith('^') &&
+            !version.startsWith('>=') &&
+            !version.contains('any') &&
+            !version.contains('git:') &&
+            !version.contains('path:')) {
+          issues.add(
+            ValidationIssue(
+              ruleType: ValidationRuleType.dependency,
+              severity: ValidationSeverity.info,
+              message: '依赖 $name 建议使用版本范围约束: $version',
+              filePath: filePath,
+              suggestion:
+                  '使用 ^$version 或 >=$version <${_getNextMajorVersion(version)}',
+            ),
+          );
+        }
+      }
+    }
   }
 
   /// 获取下一个主版本号
