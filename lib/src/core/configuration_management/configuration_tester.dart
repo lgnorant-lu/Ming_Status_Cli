@@ -13,7 +13,6 @@ Change History:
 */
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:ming_status_cli/src/core/configuration_management/compatibility_matrix.dart';

@@ -16,16 +16,15 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:ming_status_cli/src/core/configuration_management/configuration_manager.dart';
+import 'package:ming_status_cli/src/core/configuration_management/incremental_updater.dart';
+import 'package:ming_status_cli/src/core/configuration_management/models/configuration_set.dart';
+import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
+import 'package:ming_status_cli/src/core/distribution/dependency_resolver.dart';
+import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart' as semver;
 import 'package:yaml/yaml.dart';
-
-import 'package:ming_status_cli/src/core/configuration_management/configuration_manager.dart';
-import 'package:ming_status_cli/src/core/configuration_management/models/configuration_set.dart';
-import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
-import 'package:ming_status_cli/src/core/configuration_management/incremental_updater.dart';
-import 'package:ming_status_cli/src/core/distribution/dependency_resolver.dart';
-import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 更新类型枚举
 enum UpdateType {
@@ -823,7 +822,7 @@ class UpdateManager {
     try {
       // 创建当前配置（从模板读取实际依赖）
       final currentConfig = await _createConfigurationFromTemplate(
-          templateName, currentDependencies);
+          templateName, currentDependencies,);
 
       // 提取模板中的包名列表
       final packageNames = currentConfig.allDependencies.keys.toList();

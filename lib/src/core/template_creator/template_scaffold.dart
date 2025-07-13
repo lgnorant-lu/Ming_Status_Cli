@@ -21,6 +21,8 @@ import 'dart:io';
 
 import 'package:ming_status_cli/src/core/template_creator/config/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/generators/assets/index.dart';
+import 'package:ming_status_cli/src/core/template_creator/generators/code/index.dart'
+    as code_gen;
 import 'package:ming_status_cli/src/core/template_creator/generators/config/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/generators/docs/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/generators/flutter/index.dart';
@@ -68,7 +70,12 @@ class TemplateScaffold {
       generatedFiles.addAll(templateFiles);
       cli_logger.Logger.info('📄 模板文件生成完成 (${templateFiles.length}个文件)');
 
-      // 4. 生成Flutter特定文件
+      // 4. 生成实际代码文件
+      final codeFiles = await _generateCodeFiles(config);
+      generatedFiles.addAll(codeFiles);
+      cli_logger.Logger.info('💻 代码文件生成完成 (${codeFiles.length}个文件)');
+
+      // 5. 生成Flutter特定文件
       if (config.framework == TemplateFramework.flutter) {
         final flutterFiles = await _generateFlutterFiles(config);
         generatedFiles.addAll(flutterFiles);
@@ -403,10 +410,16 @@ class TemplateScaffold {
     final assetTypes = [
       AssetType.images,
       AssetType.icons,
-      AssetType.fonts,
-      AssetType.colors,
       AssetType.animations,
     ];
+
+    // 根据复杂度添加额外的资源类型
+    if (config.complexity != TemplateComplexity.simple) {
+      assetTypes.addAll([
+        AssetType.fonts,
+        AssetType.colors,
+      ]);
+    }
 
     for (final assetType in assetTypes) {
       final assetGenerator = AssetGenerator(assetType: assetType);
@@ -713,7 +726,12 @@ class TemplateScaffold {
     final assetsPath = path.join(templatePath, 'assets');
     await Directory(path.join(assetsPath, 'images')).create(recursive: true);
     await Directory(path.join(assetsPath, 'icons')).create(recursive: true);
-    await Directory(path.join(assetsPath, 'fonts')).create(recursive: true);
+
+    // 根据复杂度创建额外的资源目录
+    if (config.complexity != TemplateComplexity.simple) {
+      await Directory(path.join(assetsPath, 'fonts')).create(recursive: true);
+      await Directory(path.join(assetsPath, 'colors')).create(recursive: true);
+    }
 
     // 生成示例图片占位符
     const placeholderImage = '''
@@ -858,5 +876,135 @@ class ${_toPascalCase(config.templateName)}Service {
   Future<List<String>> _getGeneratedIndexFiles(ScaffoldConfig config) async {
     final indexGenerator = IndexFileGenerator();
     return indexGenerator.generateIndexFiles(config);
+  }
+
+  /// 生成实际代码文件
+  Future<List<String>> _generateCodeFiles(ScaffoldConfig config) async {
+    final files = <String>[];
+    final templatePath = path.join(config.outputPath, config.templateName);
+
+    // 生成Provider文件
+    const providerGenerator = code_gen.ProviderGenerator();
+    final providerFile =
+        await providerGenerator.generateFile(templatePath, config);
+    files.add(providerFile);
+
+    // 生成Service文件
+    const serviceGenerator = code_gen.ServiceGenerator();
+    final serviceFile =
+        await serviceGenerator.generateFile(templatePath, config);
+    files.add(serviceFile);
+
+    // 生成Model文件
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 生成Repository文件
+    if (config.complexity != TemplateComplexity.simple) {
+      const repositoryGenerator = code_gen.RepositoryGenerator();
+      final repositoryFile =
+          await repositoryGenerator.generateFile(templatePath, config);
+      files.add(repositoryFile);
+    }
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 生成测试文件
+    if (config.includeTests) {
+      final testFiles = await _generateEnhancedTestFiles(templatePath, config);
+      files.addAll(testFiles);
+    }
+
+    // 生成Flutter UI组件（仅Flutter项目）
+    if (config.framework == TemplateFramework.flutter) {
+      final uiFiles = await _generateUiComponents(templatePath, config);
+      files.addAll(uiFiles);
+    }
+
+    return files;
+  }
+
+  /// 生成增强的测试文件
+  Future<List<String>> _generateEnhancedTestFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // 为每个主要组件生成单元测试
+    final testTargets = ['Provider', 'Service', 'Model'];
+
+    if (config.complexity != TemplateComplexity.simple) {
+      testTargets.add('Repository');
+    }
+
+    testTargets.addAll(['Utils', 'Constants']);
+
+    for (final target in testTargets) {
+      final testGenerator = code_gen.EnhancedTestGenerator(
+        testType: code_gen.TestType.unit,
+        targetClassName: target,
+      );
+      final testFile = await testGenerator.generateFile(templatePath, config);
+      files.add(testFile);
+    }
+
+    // 生成集成测试
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationTestGenerator = code_gen.EnhancedTestGenerator(
+        testType: code_gen.TestType.integration,
+        targetClassName: 'Integration',
+      );
+      final integrationFile =
+          await integrationTestGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
+    }
+
+    return files;
+  }
+
+  /// 生成UI组件文件
+  Future<List<String>> _generateUiComponents(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // 生成页面组件
+    const pageGenerator = code_gen.WidgetGenerator(
+      widgetType: code_gen.WidgetType.page,
+    );
+    final pageFile = await pageGenerator.generateFile(templatePath, config);
+    files.add(pageFile);
+
+    // 生成可复用组件
+    const componentGenerator = code_gen.WidgetGenerator(
+      widgetType: code_gen.WidgetType.component,
+    );
+    final componentFile =
+        await componentGenerator.generateFile(templatePath, config);
+    files.add(componentFile);
+
+    // 生成对话框组件
+    if (config.complexity != TemplateComplexity.simple) {
+      const dialogGenerator = code_gen.WidgetGenerator(
+        widgetType: code_gen.WidgetType.dialog,
+      );
+      final dialogFile =
+          await dialogGenerator.generateFile(templatePath, config);
+      files.add(dialogFile);
+    }
+
+    return files;
   }
 }

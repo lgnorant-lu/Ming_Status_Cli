@@ -4,28 +4,28 @@
     "successful_optimizations": 1,
     "current_metrics": {
       "startup_time_ms": 0,
-      "memory_usage_bytes": 537509888,
+      "memory_usage_bytes": 564953088,
       "response_time_ms": 15,
       "throughput_ops_per_sec": 62.5,
       "cache_hit_rate": 0.8,
       "error_rate": 0.01,
-      "timestamp": "2025-07-12T03:38:09.203776"
+      "timestamp": "2025-07-13T12:00:26.926590"
     },
     "baseline_metrics": {
       "startup_time_ms": 0,
-      "memory_usage_bytes": 688263168,
-      "response_time_ms": 16,
-      "throughput_ops_per_sec": 58.8235294117647,
+      "memory_usage_bytes": 717664256,
+      "response_time_ms": 21,
+      "throughput_ops_per_sec": 45.45454545454545,
       "cache_hit_rate": 0.8,
       "error_rate": 0.01,
-      "timestamp": "2025-07-12T03:38:07.045770"
+      "timestamp": "2025-07-13T12:00:24.757800"
     }
   },
   "improvements": {
     "startup_time": 0.0,
-    "memory_usage": 21.903435634667,
-    "response_time": 6.25,
-    "throughput": 6.250000000000005,
+    "memory_usage": 21.27891513660672,
+    "response_time": 28.57142857142857,
+    "throughput": 37.50000000000001,
     "cache_hit_rate": 0.0,
     "error_rate": 0.0
   },
@@ -35,9 +35,9 @@
       "success": true,
       "improvements": {
         "startup_time": 0.0,
-        "memory_usage": 0.5810826167657865,
-        "response_time": 31.818181818181817,
-        "throughput": 43.74999999999999,
+        "memory_usage": 18.97550373024731,
+        "response_time": 37.5,
+        "throughput": 56.25,
         "cache_hit_rate": 0.0,
         "error_rate": 0.0
       },

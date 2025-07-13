@@ -13,6 +13,7 @@ Change History:
 */
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:ming_status_cli/src/core/registry/template_registry.dart';
 
@@ -207,22 +208,24 @@ class RegistryDataService {
     // 返回基于真实数据的使用统计
     switch (registryId) {
       case 'local':
-        return const RegistryUsageStats(
-          todaySearches: 0, // 本地注册表无搜索统计
-          todayDownloads: 0, // 本地注册表无下载统计
-          popularTemplate: 'basic', // 最常用的基础模板
-          popularTemplateDownloads: 0,
+        return RegistryUsageStats(
+          todaySearches: _getLocalSearchCount(),
+          todayDownloads: _getLocalDownloadCount(),
+          popularTemplate: _getMostUsedTemplate(registryId),
+          popularTemplateDownloads:
+              _getTemplateDownloadCount(_getMostUsedTemplate(registryId)),
           activeUsers: 1, // 当前用户
-          peakHours: '09:00-18:00', // 工作时间
+          peakHours: _calculatePeakHours(),
         );
       case 'builtin':
-        return const RegistryUsageStats(
-          todaySearches: 0, // 内置注册表无搜索统计
-          todayDownloads: 0, // 内置注册表无下载统计
-          popularTemplate: 'basic', // 最常用的基础模板
-          popularTemplateDownloads: 0,
+        return RegistryUsageStats(
+          todaySearches: _getBuiltinSearchCount(),
+          todayDownloads: _getBuiltinDownloadCount(),
+          popularTemplate: _getMostUsedTemplate(registryId),
+          popularTemplateDownloads:
+              _getTemplateDownloadCount(_getMostUsedTemplate(registryId)),
           activeUsers: 1, // 当前用户
-          peakHours: '09:00-18:00', // 工作时间
+          peakHours: _calculatePeakHours(),
         );
       default:
         return const RegistryUsageStats(
@@ -435,5 +438,149 @@ class RegistryDataService {
     // 内置模板的固定数量
     // 这些是CLI工具内置的基础模板
     return 3; // basic, enterprise, minimal
+  }
+
+  /// 获取本地搜索次数
+  int _getLocalSearchCount() {
+    // 从使用统计文件读取今日搜索次数
+    try {
+      final statsFile = File('./.ming_cache/local_stats.json');
+      if (!statsFile.existsSync()) return 0;
+
+      final content = statsFile.readAsStringSync();
+      final stats = jsonDecode(content) as Map<String, dynamic>;
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      return (stats['searches']?[today] as int?) ?? 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /// 获取本地下载次数
+  int _getLocalDownloadCount() {
+    try {
+      final statsFile = File('./.ming_cache/local_stats.json');
+      if (!statsFile.existsSync()) return 0;
+
+      final content = statsFile.readAsStringSync();
+      final stats = jsonDecode(content) as Map<String, dynamic>;
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      return (stats['downloads']?[today] as int?) ?? 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /// 获取内置搜索次数
+  int _getBuiltinSearchCount() {
+    try {
+      final statsFile = File('./.ming_cache/builtin_stats.json');
+      if (!statsFile.existsSync()) return 0;
+
+      final content = statsFile.readAsStringSync();
+      final stats = jsonDecode(content) as Map<String, dynamic>;
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      return (stats['searches']?[today] as int?) ?? 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /// 获取内置下载次数
+  int _getBuiltinDownloadCount() {
+    try {
+      final statsFile = File('./.ming_cache/builtin_stats.json');
+      if (!statsFile.existsSync()) return 0;
+
+      final content = statsFile.readAsStringSync();
+      final stats = jsonDecode(content) as Map<String, dynamic>;
+      final today = DateTime.now().toIso8601String().substring(0, 10);
+
+      return (stats['downloads']?[today] as int?) ?? 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /// 获取最常用的模板
+  String _getMostUsedTemplate(String registryId) {
+    try {
+      final statsFile = File('./.ming_cache/${registryId}_stats.json');
+      if (!statsFile.existsSync()) return 'basic';
+
+      final content = statsFile.readAsStringSync();
+      final stats = jsonDecode(content) as Map<String, dynamic>;
+      final templates = stats['template_usage'] as Map<String, dynamic>?;
+
+      if (templates == null || templates.isEmpty) return 'basic';
+
+      // 找到使用次数最多的模板
+      String mostUsed = 'basic';
+      int maxUsage = 0;
+
+      templates.forEach((template, usage) {
+        if (usage is int && usage > maxUsage) {
+          maxUsage = usage;
+          mostUsed = template;
+        }
+      });
+
+      return mostUsed;
+    } catch (e) {
+      return 'basic';
+    }
+  }
+
+  /// 获取模板下载次数
+  int _getTemplateDownloadCount(String templateName) {
+    try {
+      final statsFile = File('./.ming_cache/template_stats.json');
+      if (!statsFile.existsSync()) return 0;
+
+      final content = statsFile.readAsStringSync();
+      final stats = jsonDecode(content) as Map<String, dynamic>;
+      final templates = stats['downloads'] as Map<String, dynamic>?;
+
+      return (templates?[templateName] as int?) ?? 0;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  /// 计算峰值使用时间
+  String _calculatePeakHours() {
+    try {
+      final statsFile = File('./.ming_cache/usage_hours.json');
+      if (!statsFile.existsSync()) return '09:00-18:00';
+
+      final content = statsFile.readAsStringSync();
+      final stats = jsonDecode(content) as Map<String, dynamic>;
+      final hourlyUsage = stats['hourly_usage'] as Map<String, dynamic>?;
+
+      if (hourlyUsage == null || hourlyUsage.isEmpty) return '09:00-18:00';
+
+      // 找到使用量最高的时间段
+      int maxUsage = 0;
+      String peakHour = '09';
+
+      hourlyUsage.forEach((hour, usage) {
+        if (usage is int && usage > maxUsage) {
+          maxUsage = usage;
+          peakHour = hour;
+        }
+      });
+
+      // 返回峰值时间段（前后各1小时）
+      final peakInt = int.tryParse(peakHour) ?? 9;
+      final startHour = (peakInt - 1).clamp(0, 23);
+      final endHour = (peakInt + 1).clamp(0, 23);
+
+      return '${startHour.toString().padLeft(2, '0')}:00-${endHour.toString().padLeft(2, '0')}:00';
+    } catch (e) {
+      return '09:00-18:00';
+    }
   }
 }

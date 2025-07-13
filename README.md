@@ -2,7 +2,7 @@
 
 🚀 **现代化的企业级模块化脚手架工具** - 专为提升开发效率和项目质量而设计
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/pet-app/ming_status_cli/releases)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/lgnorant-lu/ming_status_cli/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#支持平台)
 
@@ -52,7 +52,7 @@ chmod +x /usr/local/bin/ming
 #### 方式2: 从源码构建
 ```bash
 # 克隆仓库
-git clone https://github.com/pet-app/ming_status_cli.git
+git clone https://github.com/lgnorant-lu/ming_status_cli.git
 cd ming_status_cli
 
 # 安装依赖
@@ -302,8 +302,8 @@ v1.0.0已为Phase 2预留了完整的扩展接口：
 
 ### 获取帮助
 - 📖 **文档**: [docs/](docs/)
-- 🐛 **问题报告**: [GitHub Issues](https://github.com/pet-app/ming_status_cli/issues)
-- 💬 **讨论**: [GitHub Discussions](https://github.com/pet-app/ming_status_cli/discussions)
+- 🐛 **问题报告**: [GitHub Issues](https://github.com/lgnorant-lu/ming_status_cli/issues)
+- 💬 **讨论**: [GitHub Discussions](https://github.com/lgnorant-lu/ming_status_cli/discussions)
 - 📧 **邮件**: support@pet-app.com
 
 ### 社区

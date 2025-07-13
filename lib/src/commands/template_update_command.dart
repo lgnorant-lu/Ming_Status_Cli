@@ -15,10 +15,9 @@ Change History:
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:ming_status_cli/src/core/configuration_management/configuration_manager.dart';
 import 'package:ming_status_cli/src/core/distribution/dependency_resolver.dart';
 import 'package:ming_status_cli/src/core/distribution/update_manager.dart';
-import 'package:ming_status_cli/src/core/configuration_management/configuration_manager.dart';
-import 'package:ming_status_cli/src/core/registry/template_registry.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 模板更新命令

@@ -12,8 +12,8 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
 import 'package:ming_status_cli/src/core/configuration_management/models/configuration_set.dart';
+import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
 
 /// 测试策略枚举
 enum TestStrategy {
@@ -136,7 +136,7 @@ class ConservativeUpdateStrategy implements UpdateStrategy {
 
   /// 创建基础配置
   ConfigurationSet _createBaseConfiguration(
-      Map<String, VersionInfo> versions, String suffix) {
+      Map<String, VersionInfo> versions, String suffix,) {
     return ConfigurationSet(
       id: 'conservative_$suffix${DateTime.now().millisecondsSinceEpoch}',
       name: 'Conservative $suffix Configuration',
@@ -157,7 +157,7 @@ class ConservativeUpdateStrategy implements UpdateStrategy {
 
   /// 生成分层配置
   List<ConfigurationSet> _generateLayeredConfigurations(
-      Map<String, VersionInfo> versions) {
+      Map<String, VersionInfo> versions,) {
     final configurations = <ConfigurationSet>[];
 
     // 按重要性分层
@@ -376,7 +376,7 @@ class BalancedUpdateStrategy implements UpdateStrategy {
 
   /// 生成稳定性导向配置
   List<ConfigurationSet> _generateStabilityFocusedConfigs(
-      Map<String, VersionInfo> versions) {
+      Map<String, VersionInfo> versions,) {
     final stableVersions = versions.entries
         .where((entry) => entry.value.calculateStabilityScore() > 0.7)
         .toList();
@@ -397,7 +397,7 @@ class BalancedUpdateStrategy implements UpdateStrategy {
 
   /// 生成特性导向配置
   List<ConfigurationSet> _generateFeatureFocusedConfigs(
-      Map<String, VersionInfo> versions) {
+      Map<String, VersionInfo> versions,) {
     final freshVersions = versions.entries
         .where((entry) => entry.value.calculateFreshness() > 0.6)
         .toList();
@@ -418,7 +418,7 @@ class BalancedUpdateStrategy implements UpdateStrategy {
 
   /// 生成混合配置
   List<ConfigurationSet> _generateMixedConfigs(
-      Map<String, VersionInfo> versions) {
+      Map<String, VersionInfo> versions,) {
     final configs = <ConfigurationSet>[];
 
     // 选择平衡的版本组合
@@ -472,8 +472,9 @@ class BalancedUpdateStrategy implements UpdateStrategy {
 
     // 过少或过多的依赖得分较低
     if (complexity < 5) return complexity / 5.0;
-    if (complexity > 30)
+    if (complexity > 30) {
       return 1.0 - ((complexity - 30) / 20.0).clamp(0.0, 1.0);
+    }
 
     // 其他情况线性计算
     return 0.8;
@@ -537,7 +538,7 @@ class AggressiveUpdateStrategy implements UpdateStrategy {
 
   /// 生成最新版本配置
   List<ConfigurationSet> _generateLatestConfigs(
-      Map<String, VersionInfo> versions) {
+      Map<String, VersionInfo> versions,) {
     final config = ConfigurationSet(
       id: 'aggressive_latest_${DateTime.now().millisecondsSinceEpoch}',
       name: 'Aggressive Latest Configuration',
@@ -552,7 +553,7 @@ class AggressiveUpdateStrategy implements UpdateStrategy {
 
   /// 生成Beta版本配置
   List<ConfigurationSet> _generateBetaConfigs(
-      Map<String, VersionInfo> versions) {
+      Map<String, VersionInfo> versions,) {
     final betaVersions =
         versions.entries.where((entry) => entry.value.isPrerelease).toList();
 
@@ -572,7 +573,7 @@ class AggressiveUpdateStrategy implements UpdateStrategy {
 
   /// 生成实验性配置
   List<ConfigurationSet> _generateExperimentalConfigs(
-      Map<String, VersionInfo> versions) {
+      Map<String, VersionInfo> versions,) {
     final experimentalVersions = versions.entries
         .where((entry) => entry.value.calculateFreshness() > 0.8)
         .toList();

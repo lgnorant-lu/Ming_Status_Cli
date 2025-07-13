@@ -20,9 +20,12 @@ TODO:
 import 'dart:io';
 import 'package:ming_status_cli/src/core/template_creator/config/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/generators/assets/index.dart';
+import 'package:ming_status_cli/src/core/template_creator/generators/code/index.dart'
+    as code_gen;
 import 'package:ming_status_cli/src/core/template_creator/generators/config/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/generators/docs/index.dart';
-import 'package:ming_status_cli/src/core/template_creator/generators/flutter/index.dart';
+import 'package:ming_status_cli/src/core/template_creator/generators/flutter/index.dart'
+    as flutter_gen;
 import 'package:ming_status_cli/src/core/template_creator/generators/l10n/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/generators/templates/index.dart';
 import 'package:ming_status_cli/src/core/template_creator/generators/tests/index.dart';
@@ -64,7 +67,12 @@ class TemplateOrchestrator {
       generatedFiles.addAll(templateFiles);
       cli_logger.Logger.info('📄 模板文件生成完成 (${templateFiles.length}个文件)');
 
-      // 4. 生成框架特定文件
+      // 4. 生成实际代码文件
+      final codeFiles = await _generateCodeFiles(templatePath, config);
+      generatedFiles.addAll(codeFiles);
+      cli_logger.Logger.info('💻 代码文件生成完成 (${codeFiles.length}个文件)');
+
+      // 5. 生成框架特定文件
       if (config.framework == TemplateFramework.flutter) {
         final flutterFiles = await _generateFlutterFiles(templatePath, config);
         generatedFiles.addAll(flutterFiles);
@@ -234,6 +242,33 @@ class TemplateOrchestrator {
     return files;
   }
 
+  /// 生成实际代码文件
+  Future<List<String>> _generateCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // 生成Provider文件
+    const providerGenerator = code_gen.ProviderGenerator();
+    final providerFile =
+        await providerGenerator.generateFile(templatePath, config);
+    files.add(providerFile);
+
+    // 生成Service文件
+    const serviceGenerator = code_gen.ServiceGenerator();
+    final serviceFile =
+        await serviceGenerator.generateFile(templatePath, config);
+    files.add(serviceFile);
+
+    // 生成Model文件
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    return files;
+  }
+
   /// 生成Flutter特定文件
   Future<List<String>> _generateFlutterFiles(
     String templatePath,
@@ -242,12 +277,12 @@ class TemplateOrchestrator {
     final files = <String>[];
 
     // 生成主题文件
-    const themeGenerator = ThemeGenerator();
+    const themeGenerator = flutter_gen.ThemeGenerator();
     await themeGenerator.generateFile(templatePath, config);
     files.add('templates/app_theme.dart.template');
 
     // 生成路由文件
-    const routerGenerator = RouterGenerator();
+    const routerGenerator = flutter_gen.RouterGenerator();
     await routerGenerator.generateFile(templatePath, config);
     files.add('templates/app_router.dart.template');
 
@@ -255,7 +290,7 @@ class TemplateOrchestrator {
     if (config.complexity == TemplateComplexity.medium ||
         config.complexity == TemplateComplexity.complex ||
         config.complexity == TemplateComplexity.enterprise) {
-      const providerGenerator = ProviderGenerator();
+      const providerGenerator = flutter_gen.ProviderGenerator();
       await providerGenerator.generateFile(templatePath, config);
       files.add('templates/app_providers.dart.template');
     }
@@ -301,9 +336,15 @@ class TemplateOrchestrator {
     final assetTypes = [
       AssetType.images,
       AssetType.icons,
-      AssetType.fonts,
-      AssetType.colors,
     ];
+
+    // 根据复杂度添加额外的资源类型
+    if (config.complexity != TemplateComplexity.simple) {
+      assetTypes.addAll([
+        AssetType.fonts,
+        AssetType.colors,
+      ]);
+    }
 
     if (config.complexity == TemplateComplexity.complex ||
         config.complexity == TemplateComplexity.enterprise) {
@@ -502,9 +543,11 @@ class TemplateOrchestrator {
 
     // 时间戳（ISO 8601格式）
     buffer.writeln(
-        'createdAt: "${metadata.createdAt.toUtc().toIso8601String()}"',);
+      'createdAt: "${metadata.createdAt.toUtc().toIso8601String()}"',
+    );
     buffer.writeln(
-        'updatedAt: "${metadata.updatedAt.toUtc().toIso8601String()}"',);
+      'updatedAt: "${metadata.updatedAt.toUtc().toIso8601String()}"',
+    );
 
     // 参数（如果有的话）
     buffer.writeln('parameters: []');

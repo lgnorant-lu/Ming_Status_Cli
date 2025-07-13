@@ -313,9 +313,12 @@ class OptimizeCommand extends Command<int> {
       'total_improvements': improvements.length,
       'significant_improvements': significantImprovements.length,
       'best_improvement': significantImprovements.isNotEmpty
-          ? significantImprovements.reduce(
-              (a, b) => a.value > b.value ? a : b,
-            )
+          ? () {
+              final best = significantImprovements.reduce(
+                (a, b) => a.value > b.value ? a : b,
+              );
+              return {'metric': best.key, 'improvement': best.value};
+            }()
           : null,
       'applied_optimizations_count': result.appliedOptimizations.length,
       'recommendations_count': result.recommendations.length,

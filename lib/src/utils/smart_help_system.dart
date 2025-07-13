@@ -3,13 +3,14 @@
 File name:          smart_help_system.dart
 Author:             lgnorant-lu
 Date created:       2025-07-08
-Last modified:      2025-07-08
+Last modified:      2025-07-13
 Dart Version:       3.2+
 Description:        Task 50.1 - 智能帮助系统
                     提供上下文相关的帮助和建议
 ---------------------------------------------------------------
 Change History:
     2025-07-08: Initial creation - 智能帮助系统;
+    2025-07-13: Add user skill level detection - 添加用户技能水平检测;
 ---------------------------------------------------------------
 */
 
@@ -68,19 +69,88 @@ class SmartHelpItem {
 
 /// 智能帮助系统
 class SmartHelpSystem {
-  static UserSkillLevel _userSkillLevel = UserSkillLevel.intermediate;
+  static UserSkillLevel? _userSkillLevel;
   static final Map<String, int> _commandUsageCount = {};
   static final List<String> _recentErrors = [];
   static final Map<String, List<SmartHelpItem>> _helpDatabase = {};
+  static DateTime? _lastSkillAssessment;
 
   /// 初始化帮助系统
   static void initialize() {
     _buildHelpDatabase();
   }
 
+  /// 获取用户技能级别（自动检测）
+  static UserSkillLevel getUserSkillLevel() {
+    if (_userSkillLevel == null || _shouldReassessSkill()) {
+      _userSkillLevel = _detectUserSkillLevel();
+      _lastSkillAssessment = DateTime.now();
+    }
+    return _userSkillLevel!;
+  }
+
   /// 设置用户技能级别
   static void setUserSkillLevel(UserSkillLevel level) {
     _userSkillLevel = level;
+    _lastSkillAssessment = DateTime.now();
+  }
+
+  /// 是否需要重新评估技能
+  static bool _shouldReassessSkill() {
+    if (_lastSkillAssessment == null) return true;
+
+    // 每周重新评估一次
+    final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+    return _lastSkillAssessment!.isBefore(weekAgo);
+  }
+
+  /// 检测用户技能级别
+  static UserSkillLevel _detectUserSkillLevel() {
+    int score = 0;
+
+    // 基于命令使用频率评分
+    final totalCommands =
+        _commandUsageCount.values.fold(0, (sum, count) => sum + count);
+    if (totalCommands > 50)
+      score += 30;
+    else if (totalCommands > 20)
+      score += 20;
+    else if (totalCommands > 5) score += 10;
+
+    // 基于命令多样性评分
+    final uniqueCommands = _commandUsageCount.keys.length;
+    if (uniqueCommands > 8)
+      score += 25;
+    else if (uniqueCommands > 5)
+      score += 15;
+    else if (uniqueCommands > 3) score += 10;
+
+    // 基于高级命令使用评分
+    final advancedCommands = ['optimize', 'validate', 'registry', 'security'];
+    final usedAdvancedCommands = advancedCommands
+        .where((cmd) =>
+            _commandUsageCount.containsKey(cmd) && _commandUsageCount[cmd]! > 0)
+        .length;
+    score += usedAdvancedCommands * 10;
+
+    // 基于错误频率评分（错误少说明技能高）
+    if (_recentErrors.length < 2)
+      score += 15;
+    else if (_recentErrors.length < 5)
+      score += 10;
+    else if (_recentErrors.length > 10) score -= 10;
+
+    // 基于配置命令使用评分
+    if (_commandUsageCount.containsKey('config') &&
+        _commandUsageCount['config']! > 3) {
+      score += 15;
+    }
+
+    // 根据分数确定技能级别
+    if (score >= 70) return UserSkillLevel.expert;
+    if (score >= 50) return UserSkillLevel.advanced;
+    if (score >= 25) return UserSkillLevel.intermediate;
+    return UserSkillLevel.beginner;
   }
 
   /// 记录命令使用
@@ -130,7 +200,7 @@ class SmartHelpSystem {
     Logger.info('👋 欢迎使用 Ming Status CLI！');
     Logger.newLine();
 
-    if (_userSkillLevel == UserSkillLevel.beginner) {
+    if (getUserSkillLevel() == UserSkillLevel.beginner) {
       Logger.info('🌟 新手指南:');
       Logger.listItem('运行 "ming init" 创建你的第一个工作空间');
       Logger.listItem('使用 "ming help <command>" 查看具体命令帮助');
@@ -290,6 +360,8 @@ class SmartHelpSystem {
       'ming version  # 查看版本',
       'ming help <command>  # 获取命令帮助',
       'ming config --list  # 查看配置',
+      'ming config --wizard  # 配置向导',
+      'ming config --quick-setup  # 快速设置',
     ];
 
     for (final action in actions) {
@@ -311,8 +383,18 @@ class SmartHelpSystem {
 
   /// 建议相似命令
   static void _suggestSimilarCommands(String command) {
-    final allCommands = ['init', 'create', 'config', 'validate', 'doctor', 'help', 'version'];
-    final similar = allCommands.where((cmd) => _calculateSimilarity(command, cmd) > 0.5).toList();
+    final allCommands = [
+      'init',
+      'create',
+      'config',
+      'validate',
+      'doctor',
+      'help',
+      'version',
+    ];
+    final similar = allCommands
+        .where((cmd) => _calculateSimilarity(command, cmd) > 0.5)
+        .toList();
 
     if (similar.isNotEmpty) {
       Logger.newLine();
@@ -434,7 +516,8 @@ class SmartHelpSystem {
       suggestions.add('尝试创建更多项目来熟悉工作流');
     }
 
-    if (_commandUsageCount['doctor'] == null || _commandUsageCount['doctor']! < 2) {
+    if (_commandUsageCount['doctor'] == null ||
+        _commandUsageCount['doctor']! < 2) {
       suggestions.add('定期运行 "ming doctor" 检查环境状态');
     }
 
@@ -444,7 +527,7 @@ class SmartHelpSystem {
     }
 
     // 基于技能级别
-    if (_userSkillLevel == UserSkillLevel.beginner) {
+    if (getUserSkillLevel() == UserSkillLevel.beginner) {
       suggestions.add('完成新手教程掌握基础操作');
     }
 
@@ -454,11 +537,12 @@ class SmartHelpSystem {
   /// 检查帮助项是否与用户相关
   static bool _isRelevantForUser(SmartHelpItem item) {
     // 根据用户技能级别过滤
-    switch (_userSkillLevel) {
+    final skillLevel = getUserSkillLevel();
+    switch (skillLevel) {
       case UserSkillLevel.beginner:
         return item.skillLevel == UserSkillLevel.beginner ||
-               item.type == HelpContentType.quickStart ||
-               item.type == HelpContentType.tutorial;
+            item.type == HelpContentType.quickStart ||
+            item.type == HelpContentType.tutorial;
       case UserSkillLevel.intermediate:
         return item.skillLevel != UserSkillLevel.expert;
       case UserSkillLevel.advanced:
@@ -502,6 +586,37 @@ class SmartHelpSystem {
         skillLevel: UserSkillLevel.beginner,
         examples: ['ming create my-module --template basic'],
         relatedCommands: ['validate', 'init'],
+      ),
+    ];
+
+    _helpDatabase['config'] = [
+      const SmartHelpItem(
+        title: '配置管理',
+        content: '管理 Ming Status CLI 的全局和工作空间配置',
+        type: HelpContentType.tutorial,
+        skillLevel: UserSkillLevel.beginner,
+        examples: [
+          'ming config --list',
+          'ming config --wizard',
+          'ming config --quick-setup',
+        ],
+        relatedCommands: ['init', 'doctor'],
+      ),
+      const SmartHelpItem(
+        title: '交互式配置向导',
+        content: '使用向导模式轻松设置所有配置项',
+        type: HelpContentType.quickStart,
+        skillLevel: UserSkillLevel.beginner,
+        examples: ['ming config --wizard'],
+        relatedCommands: ['init'],
+      ),
+      const SmartHelpItem(
+        title: '快速设置',
+        content: '快速设置最常用的配置项，如用户名和邮箱',
+        type: HelpContentType.quickStart,
+        skillLevel: UserSkillLevel.beginner,
+        examples: ['ming config --quick-setup'],
+        relatedCommands: ['init'],
       ),
     ];
   }

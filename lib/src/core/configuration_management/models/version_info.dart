@@ -49,9 +49,9 @@ class VersionInfo {
       repositoryUrl: json['repositoryUrl'] as String?,
       license: json['license'] as String?,
       dependencies: _parseVersionConstraints(
-          json['dependencies'] as Map<String, dynamic>?),
+          json['dependencies'] as Map<String, dynamic>?,),
       devDependencies: _parseVersionConstraints(
-          json['devDependencies'] as Map<String, dynamic>?),
+          json['devDependencies'] as Map<String, dynamic>?,),
     );
   }
 

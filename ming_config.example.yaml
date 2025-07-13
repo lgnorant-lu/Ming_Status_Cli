@@ -1,0 +1,72 @@
+# Ming Status CLI 配置文件示例
+# 复制此文件为 ming_config.yaml 或 .ming_config.yaml 来自定义配置
+
+# 应用基本信息
+app:
+  name: Ming Status CLI
+  author: your-username  # 修改为你的用户名
+  license: MIT
+  repository: https://github.com/your-username/ming_status_cli  # 修改为你的仓库
+
+# 默认值配置
+defaults:
+  template_type: basic
+  framework: agnostic
+  platform: crossPlatform
+  complexity: simple
+  description: A new project created with Ming Status CLI  # 修改为你的默认描述
+
+# 路径配置
+paths:
+  templates_dir: ./templates
+  workspace_dir: ./workspace
+  cache_dir: ./.ming_cache
+
+# 超时配置 (秒)
+timeouts:
+  validation: 300
+  optimization: 600
+  network: 30
+  command: 120
+
+# 验证配置
+validation:
+  levels: [basic, standard, strict, enterprise]
+  output_formats: [console, json, junit, compact]
+  cache_duration: 1800  # 30分钟
+
+# 优化配置
+optimization:
+  strategies: [memory, startup, bundle_size, network, storage, rendering]
+  default_memory_limit: 524288000  # 500MB
+  default_response_time: 3000  # 3000ms
+
+# 注册表配置
+registry:
+  types: [official, community, enterprise, private]
+  auth_types: [none, token, oauth2, apikey, certificate]
+  default_priority: 100
+  default_timeout: 30
+  default_retries: 3
+  builtin_registries:
+    - name: Local Templates
+      url: file://./templates
+      type: official
+      priority: 1
+    - name: Built-in Templates
+      url: internal://builtin
+      type: official
+      priority: 2
+
+# Doctor 检查配置
+doctor:
+  check_items: [dart_version, flutter_version, git_status, dependencies, environment, permissions]
+  environments: [development, production]
+  template_types: [basic, enterprise]
+
+# URL 配置
+urls:
+  github_api: https://api.github.com
+  update_check: https://api.github.com/repos/your-username/ming_status_cli/releases/latest  # 修改为你的仓库
+  documentation: https://github.com/your-username/ming_status_cli/wiki  # 修改为你的文档
+  issues: https://github.com/your-username/ming_status_cli/issues  # 修改为你的问题页面

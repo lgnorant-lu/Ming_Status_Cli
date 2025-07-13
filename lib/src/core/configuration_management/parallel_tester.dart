@@ -32,7 +32,7 @@ class TestTask {
     return TestTask(
       id: json['id'] as String,
       configuration: ConfigurationSet.fromJson(
-          json['configuration'] as Map<String, dynamic>),
+          json['configuration'] as Map<String, dynamic>,),
       options: Map<String, dynamic>.from(json['options'] as Map? ?? {}),
     );
   }

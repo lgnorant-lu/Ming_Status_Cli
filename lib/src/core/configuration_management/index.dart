@@ -12,17 +12,16 @@ Change History:
 ---------------------------------------------------------------
 */
 
-// 核心组件
-export 'version_resolver.dart';
-export 'update_strategy.dart';
 export 'compatibility_matrix.dart';
 export 'configuration_tester.dart';
-export 'smart_prefilter.dart';
-export 'parallel_tester.dart';
 export 'incremental_updater.dart';
 export 'ml_models.dart';
-
-// 数据模型
-export 'models/version_info.dart';
 export 'models/configuration_set.dart';
 export 'models/test_result.dart';
+// 数据模型
+export 'models/version_info.dart';
+export 'parallel_tester.dart';
+export 'smart_prefilter.dart';
+export 'update_strategy.dart';
+// 核心组件
+export 'version_resolver.dart';

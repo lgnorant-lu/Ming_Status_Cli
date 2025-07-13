@@ -74,7 +74,9 @@ class MemoryUsage {
       'free_bytes': freeBytes,
       'usage_percentage': usagePercentage,
       'timestamp': timestamp.toIso8601String(),
-      'breakdown': breakdown.map((type, bytes) => MapEntry(type.name, bytes)),
+      'breakdown': Map<String, int>.fromEntries(
+        breakdown.entries.map((e) => MapEntry(e.key.name, e.value)),
+      ),
     };
   }
 }
@@ -342,8 +344,10 @@ class MemoryOptimizer {
       },
       'current_usage': currentUsage?.toMap(),
       'usage_trend': _usageHistory.map((usage) => usage.toMap()).toList(),
-      'memory_pools': _memoryPools.map(
-        (type, pool) => MapEntry(type.toString(), pool.getStats()),
+      'memory_pools': Map<String, dynamic>.fromEntries(
+        _memoryPools.entries.map(
+          (e) => MapEntry(e.key.toString(), e.value.getStats()),
+        ),
       ),
       'cache_stats': {
         'total_entries': _cacheMap.length,

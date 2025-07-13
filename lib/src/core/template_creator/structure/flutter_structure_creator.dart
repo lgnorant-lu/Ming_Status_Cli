@@ -63,24 +63,16 @@ class FlutterStructureCreator extends DirectoryCreator {
       'lib/src',
       'lib/src/models',
       'lib/src/services',
-      'lib/src/widgets',
-      'lib/src/screens',
       'lib/src/utils',
       'lib/src/constants',
       'lib/src/providers',
-      'lib/src/repositories',
       'lib/src/core',
-      'lib/src/core/router',
-      'lib/src/core/theme',
-      'lib/src/core/providers',
       'lib/generated', // flutter_gen生成的文件
 
       // 资源目录
       'assets',
       'assets/images',
       'assets/icons',
-      'assets/fonts',
-      'assets/colors',
 
       // 国际化目录
       'l10n',
@@ -224,28 +216,44 @@ class FlutterStructureCreator extends DirectoryCreator {
 
     switch (complexity) {
       case TemplateComplexity.simple:
-        // 简单项目不需要额外目录
+        // 简单项目只需要基础目录
         break;
 
       case TemplateComplexity.medium:
         directories.addAll([
           'lib/src/config',
           'lib/src/extensions',
+          'lib/src/repositories',
+          'lib/src/dialogs',
+          'lib/src/core/router',
+          'lib/src/core/theme',
+          'lib/src/core/providers',
+          'assets/fonts',
+          'assets/colors',
         ]);
 
       case TemplateComplexity.complex:
         directories.addAll([
           'lib/src/config',
           'lib/src/extensions',
+          'lib/src/repositories',
+          'lib/src/dialogs',
           'lib/src/middleware',
           'lib/src/interceptors',
           'lib/src/validators',
+          'lib/src/core/router',
+          'lib/src/core/theme',
+          'lib/src/core/providers',
+          'assets/fonts',
+          'assets/colors',
         ]);
 
       case TemplateComplexity.enterprise:
         directories.addAll([
           'lib/src/config',
           'lib/src/extensions',
+          'lib/src/repositories',
+          'lib/src/dialogs',
           'lib/src/middleware',
           'lib/src/interceptors',
           'lib/src/validators',
@@ -254,6 +262,11 @@ class FlutterStructureCreator extends DirectoryCreator {
           'lib/src/analytics',
           'lib/src/localization',
           'lib/src/accessibility',
+          'lib/src/core/router',
+          'lib/src/core/theme',
+          'lib/src/core/providers',
+          'assets/fonts',
+          'assets/colors',
         ]);
     }
 

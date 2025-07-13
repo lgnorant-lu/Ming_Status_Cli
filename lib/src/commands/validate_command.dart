@@ -63,7 +63,7 @@ class ValidateCommand extends BaseCommand {
 基础选项:
   -l, --level=<级别>     验证级别 (默认: standard, 允许: basic, standard, strict, enterprise)
   -o, --output=<格式>    输出格式 (默认: console, 允许: console, json, junit, compact)
-      --validator=<类型> 启用的验证器类型 (允许: structure, quality, dependency, platform)
+      --validator=<类型> 启用的验证器类型 (允许: structure, quality, dependency, compliance)
   -s, --strict           严格模式，警告视为错误
   -f, --fix              自动修复可修复的问题
 
@@ -144,7 +144,7 @@ CI/CD选项:
       ..addMultiOption(
         'validator',
         help: '启用的验证器类型',
-        allowed: ['structure', 'quality', 'dependency', 'platform'],
+        allowed: ['structure', 'quality', 'dependency', 'compliance'],
         defaultsTo: [],
       )
       ..addFlag(
@@ -226,13 +226,6 @@ CI/CD选项:
         help: 'CI/CD平台类型',
         allowed: ['github', 'gitlab', 'jenkins', 'azure'],
       );
-
-    // 初始化验证服务，注册实际验证器
-    _validatorService = ValidatorService()
-      ..registerValidator(StructureValidator())
-      ..registerValidator(QualityValidator())
-      ..registerValidator(DependencyValidator())
-      ..registerValidator(PlatformComplianceValidator());
   }
 
   /// 创建验证配置
@@ -271,13 +264,16 @@ CI/CD选项:
     );
   }
 
-  /// 注册默认验证器(原空)
+  /// 注册默认验证器
   void _registerDefaultValidators() {
-    validatorService
-      ..registerValidator(StructureValidator())
-      ..registerValidator(QualityValidator())
-      ..registerValidator(DependencyValidator())
-      ..registerValidator(PlatformComplianceValidator());
+    // 检查是否已经注册过验证器，避免重复注册
+    if (_validatorService!.registeredValidators.isEmpty) {
+      _validatorService!
+        ..registerValidator(StructureValidator())
+        ..registerValidator(QualityValidator())
+        ..registerValidator(DependencyValidator())
+        ..registerValidator(PlatformComplianceValidator());
+    }
   }
 
   @override

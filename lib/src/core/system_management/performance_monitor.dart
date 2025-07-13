@@ -113,7 +113,9 @@ class PerformanceAnalysis {
   Map<String, dynamic> toJson() => {
         'analysisTime': analysisTime.toIso8601String(),
         'overallScore': overallScore,
-        'typeScores': typeScores.map((k, v) => MapEntry(k.name, v)),
+        'typeScores': Map<String, double>.fromEntries(
+          typeScores.entries.map((e) => MapEntry(e.key.name, e.value)),
+        ),
         'bottlenecks': bottlenecks,
         'recommendations': recommendations,
         'metrics': metrics.map((m) => m.toJson()).toList(),
@@ -356,7 +358,9 @@ class PerformanceMonitor {
 
   /// 计算类型评分
   double _calculateTypeScore(
-      PerformanceMetricType type, List<PerformanceMetric> metrics,) {
+    PerformanceMetricType type,
+    List<PerformanceMetric> metrics,
+  ) {
     if (metrics.isEmpty) return 100;
 
     switch (type) {
@@ -415,7 +419,9 @@ class PerformanceMonitor {
 
   /// 获取瓶颈描述
   String _getBottleneckDescription(
-      PerformanceMetricType type, List<PerformanceMetric> metrics,) {
+    PerformanceMetricType type,
+    List<PerformanceMetric> metrics,
+  ) {
     switch (type) {
       case PerformanceMetricType.memory:
         final maxMemory =
@@ -432,7 +438,9 @@ class PerformanceMonitor {
 
   /// 获取优化建议
   List<String> _getRecommendations(
-      PerformanceMetricType type, List<PerformanceMetric> metrics,) {
+    PerformanceMetricType type,
+    List<PerformanceMetric> metrics,
+  ) {
     switch (type) {
       case PerformanceMetricType.memory:
         return [
@@ -481,7 +489,9 @@ class PerformanceMonitor {
           : 0,
       'total_metrics': _metrics.length,
       'overall_score': analysis.overallScore,
-      'type_scores': analysis.typeScores.map((k, v) => MapEntry(k.name, v)),
+      'type_scores': Map<String, double>.fromEntries(
+        analysis.typeScores.entries.map((e) => MapEntry(e.key.name, e.value)),
+      ),
       'bottlenecks_count': analysis.bottlenecks.length,
       'recommendations_count': analysis.recommendations.length,
       'baseline_memory':

@@ -17,8 +17,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
-import 'package:path/path.dart' as path;
-import 'package:yaml/yaml.dart';
+import 'package:ming_status_cli/src/version.dart';
 
 /// 版本信息命令
 /// 显示Ming Status CLI的版本和系统信息（轻量级实现）
@@ -78,8 +77,9 @@ class VersionCommand extends Command<int> {
 
   /// 显示简单版本信息
   Future<void> _showSimpleVersion() async {
-    final version = await _getVersionFromPubspec();
-    Logger.info('Ming Status CLI $version');
+    final version = VersionManager.instance.getVersion();
+    final name = VersionManager.instance.getName();
+    Logger.info('$name $version');
   }
 
   /// 显示详细版本信息
@@ -89,8 +89,15 @@ class VersionCommand extends Command<int> {
 
     // 版本信息
     Logger.subtitle('🏷️  版本信息');
-    final version = await _getVersionFromPubspec();
+    final version = VersionManager.instance.getVersion();
+    final name = VersionManager.instance.getName();
+    final description = VersionManager.instance.getDescription();
+    final repository = VersionManager.instance.getRepository();
+
+    Logger.keyValue('应用名称', name);
     Logger.keyValue('版本', version);
+    Logger.keyValue('描述', description);
+    Logger.keyValue('仓库', repository);
     Logger.keyValue('构建时间', _getBuildInfo());
     Logger.newLine();
 
@@ -120,44 +127,8 @@ class VersionCommand extends Command<int> {
     Logger.keyValue('内存使用', _getMemoryUsage());
     Logger.newLine();
 
-    Logger.info('如需更多信息，请访问: https://github.com/lgnorant-lu/Ming_Status_Cli');
-  }
-
-  /// 从pubspec.yaml获取版本信息（缓存结果）
-  static String? _cachedVersion;
-  Future<String> _getVersionFromPubspec() async {
-    if (_cachedVersion != null) return _cachedVersion!;
-
-    try {
-      // 查找pubspec.yaml文件
-      String? pubspecPath;
-      var currentDir = Directory.current;
-
-      // 向上搜索pubspec.yaml
-      for (var i = 0; i < 5; i++) {
-        final candidate = File(path.join(currentDir.path, 'pubspec.yaml'));
-        if (candidate.existsSync()) {
-          pubspecPath = candidate.path;
-          break;
-        }
-
-        final parent = currentDir.parent;
-        if (parent.path == currentDir.path) break; // 已到根目录
-        currentDir = parent;
-      }
-
-      if (pubspecPath != null) {
-        final content = await File(pubspecPath).readAsString();
-        final yaml = loadYaml(content) as Map;
-        _cachedVersion = yaml['version']?.toString() ?? '开发版本';
-      } else {
-        _cachedVersion = '开发版本';
-      }
-    } catch (e) {
-      _cachedVersion = '开发版本';
-    }
-
-    return _cachedVersion!;
+    final repoUrl = VersionManager.instance.getRepository();
+    Logger.info('如需更多信息，请访问: $repoUrl');
   }
 
   /// 获取构建信息
@@ -229,10 +200,14 @@ class VersionCommand extends Command<int> {
   /// 获取内存使用信息（简化版）
   String _getMemoryUsage() {
     try {
+      final currentPid = pid;
+
       if (Platform.isWindows) {
-        // Windows系统
-        final result =
-            Process.runSync('tasklist', ['/FI', 'PID eq $pid', '/FO', 'CSV']);
+        // Windows系统 - 使用 tasklist 命令
+        final result = Process.runSync(
+          'tasklist',
+          ['/FI', 'PID eq $currentPid', '/FO', 'CSV'],
+        );
         if (result.exitCode == 0) {
           final lines = result.stdout.toString().split('\n');
           if (lines.length > 1) {
@@ -242,15 +217,52 @@ class VersionCommand extends Command<int> {
             }
           }
         }
+
+        // 备用方案：使用 wmic 命令
+        final wmicResult = Process.runSync('wmic', [
+          'process',
+          'where',
+          'ProcessId=$currentPid',
+          'get',
+          'WorkingSetSize',
+          '/value',
+        ]);
+        if (wmicResult.exitCode == 0) {
+          final output = wmicResult.stdout.toString();
+          final match = RegExp(r'WorkingSetSize=(\d+)').firstMatch(output);
+          if (match != null) {
+            final bytes = int.tryParse(match.group(1)!);
+            if (bytes != null) {
+              return '${(bytes / 1024 / 1024).toStringAsFixed(1)} MB';
+            }
+          }
+        }
       } else if (Platform.isLinux || Platform.isMacOS) {
-        // Unix系统
+        // Unix系统 - 使用 ps 命令
         final result =
-            Process.runSync('ps', ['-o', 'rss=', '-p', pid.toString()]);
+            Process.runSync('ps', ['-o', 'rss=', '-p', currentPid.toString()]);
         if (result.exitCode == 0) {
           final kb = int.tryParse(result.stdout.toString().trim());
           if (kb != null) {
             return '${(kb / 1024).toStringAsFixed(1)} MB';
           }
+        }
+
+        // 备用方案：读取 /proc/self/status
+        try {
+          final statusFile = File('/proc/self/status');
+          if (statusFile.existsSync()) {
+            final content = statusFile.readAsStringSync();
+            final match = RegExp(r'VmRSS:\s*(\d+)\s*kB').firstMatch(content);
+            if (match != null) {
+              final kb = int.tryParse(match.group(1)!);
+              if (kb != null) {
+                return '${(kb / 1024).toStringAsFixed(1)} MB';
+              }
+            }
+          }
+        } catch (e) {
+          // 忽略文件读取错误
         }
       }
     } catch (e) {

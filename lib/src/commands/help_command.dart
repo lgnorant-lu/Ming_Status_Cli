@@ -15,6 +15,7 @@ Change History:
 
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
+import 'package:ming_status_cli/src/utils/smart_help_system.dart';
 
 /// 增强的帮助命令
 /// 提供更友好和详细的帮助信息显示（轻量级实现）
@@ -33,6 +34,13 @@ class HelpCommand {
     if (command == null) {
       Logger.error('未找到命令: $commandName');
       Logger.newLine();
+
+      // 显示智能帮助建议
+      SmartHelpSystem.showSmartHelp(
+        context: HelpContext.command,
+        command: commandName,
+      );
+
       Logger.info('可用命令:');
       for (final name in _runner.commands.keys) {
         Logger.listItem(name);
@@ -41,6 +49,15 @@ class HelpCommand {
     }
 
     _showCommandDetailedHelp(command, verbose);
+
+    // 显示相关的智能帮助
+    if (verbose) {
+      SmartHelpSystem.showSmartHelp(
+        context: HelpContext.command,
+        command: commandName,
+      );
+    }
+
     return 0;
   }
 
@@ -50,7 +67,7 @@ class HelpCommand {
     if (command.usage.isNotEmpty && command.usage.contains('使用方法:')) {
       Logger.title('📖 ${command.name} 命令帮助');
       Logger.newLine();
-      print(command.usage);
+      Logger.info(command.usage);
       return;
     }
 

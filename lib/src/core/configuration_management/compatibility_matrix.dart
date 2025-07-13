@@ -12,11 +12,10 @@ Change History:
 ---------------------------------------------------------------
 */
 
-import 'package:pub_semver/pub_semver.dart';
-
 import 'package:ming_status_cli/src/core/configuration_management/models/configuration_set.dart';
 import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
 import 'package:ming_status_cli/src/core/configuration_management/update_strategy.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 /// 兼容性规则模型
 class CompatibilityRule {

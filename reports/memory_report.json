@@ -4,7 +4,7 @@
     "current_usage_percentage": 0.0,
     "max_usage_bytes": 524288000,
     "gc_threshold": 0.8,
-    "monitoring_enabled": true
+    "monitoring_enabled": false
   },
   "current_usage": null,
   "usage_trend": [],

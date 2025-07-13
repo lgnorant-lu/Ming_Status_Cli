@@ -1,7 +1,7 @@
 name: ming_status_cli
 description: Ming Status CLI - 模块化脚手架工具for Pet App平台
 version: 1.0.0
-repository: https://github.com/pet-app/ming_status_cli
+repository: https://github.com/lgnorant-lu/ming_status_cli
 
 environment:
   sdk: ^3.2.0

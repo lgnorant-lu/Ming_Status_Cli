@@ -81,8 +81,7 @@ class ConfigurationResult {
     required this.recommendedConfig,
     required this.candidateConfigs,
     required this.testResults,
-    this.incrementalResult,
-    required this.executionTime,
+    required this.executionTime, this.incrementalResult,
     this.metrics = const {},
   });
 
@@ -354,7 +353,7 @@ class ConfigurationManager {
             'Optimized configuration based on ${strategy.name} strategy',
         essentialDependencies: Map.fromEntries(
           optimizedDependencies.entries.where(
-              (e) => currentConfig.essentialDependencies.containsKey(e.key)),
+              (e) => currentConfig.essentialDependencies.containsKey(e.key),),
         ),
         devDependencies: Map.fromEntries(
           optimizedDependencies.entries
@@ -372,7 +371,7 @@ class ConfigurationManager {
         versions: versions,
         strategy: testStrategy,
         maxCombinations: _options.maxCombinations,
-      ));
+      ),);
     }
 
     return candidates;

@@ -15,6 +15,7 @@ Change History:
 import 'dart:io';
 
 import 'package:ming_status_cli/src/commands/base_command.dart';
+import 'package:ming_status_cli/src/core/config/app_config.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
 import 'package:ming_status_cli/src/utils/progress_manager.dart';
 import 'package:ming_status_cli/src/utils/string_utils.dart';
@@ -40,7 +41,6 @@ class InitCommand extends BaseCommand {
         'author',
         abbr: 'a',
         help: '默认作者名称',
-        defaultsTo: 'lgnorant-lu',
       )
       ..addFlag(
         'force',
@@ -339,11 +339,14 @@ class InitCommand extends BaseCommand {
       return argResults!['description'] as String;
     }
 
+    final defaultDescription = await AppConfig.instance
+        .getString('defaults.description', defaultValue: 'Ming Status模块工作空间');
+
     return getUserInput(
           '请输入工作空间描述',
-          defaultValue: 'Ming Status模块工作空间',
+          defaultValue: defaultDescription,
         ) ??
-        'Ming Status模块工作空间';
+        defaultDescription;
   }
 
   /// 获取作者名称
@@ -352,11 +355,14 @@ class InitCommand extends BaseCommand {
       return argResults!['author'] as String;
     }
 
+    final defaultAuthor = await AppConfig.instance
+        .getString('app.author', defaultValue: 'lgnorant-lu');
+
     return getUserInput(
           '请输入默认作者名称',
-          defaultValue: 'lgnorant-lu',
+          defaultValue: defaultAuthor,
         ) ??
-        'lgnorant-lu';
+        defaultAuthor;
   }
 
   /// 验证工作空间名称格式

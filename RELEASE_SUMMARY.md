@@ -172,11 +172,11 @@ ming validate
 - **文档编写**: 技术写作团队
 
 ### 🔗 相关资源
-- **源代码**: [GitHub Repository](https://github.com/pet-app/ming_status_cli)
+- **源代码**: [GitHub Repository](https://github.com/lgnorant-lu/ming_status_cli)
 - **用户指南**: [docs/user_manual.md](docs/user_manual.md)
 - **开发文档**: [docs/developer_guide.md](docs/developer_guide.md)
 - **API文档**: [docs/api_documentation.md](docs/api_documentation.md)
-- **问题反馈**: [GitHub Issues](https://github.com/pet-app/ming_status_cli/issues)
+- **问题反馈**: [GitHub Issues](https://github.com/lgnorant-lu/ming_status_cli/issues)
 
 ## 🎊 发布里程碑
 

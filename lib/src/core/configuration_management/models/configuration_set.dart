@@ -11,7 +11,6 @@ Change History:
     2025/07/13: Initial creation - 企业级模板配置管理系统;
 ---------------------------------------------------------------
 */
-import 'package:pub_semver/pub_semver.dart';
 import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
 
 /// 测试层级枚举
@@ -35,12 +34,11 @@ class ConfigurationSet {
   const ConfigurationSet({
     required this.id,
     required this.name,
-    this.description,
+    required this.createdAt, this.description,
     this.coreDependencies = const {},
     this.essentialDependencies = const {},
     this.optionalDependencies = const {},
     this.devDependencies = const {},
-    required this.createdAt,
     this.priority = 0.5,
     this.isTested = false,
     this.testPassed,

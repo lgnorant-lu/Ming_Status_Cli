@@ -21,6 +21,7 @@ import 'package:ming_status_cli/src/core/template_engine/template_engine.dart';
 import 'package:ming_status_cli/src/core/validation_system/module_validator.dart';
 import 'package:ming_status_cli/src/models/workspace_config.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
+import 'package:ming_status_cli/src/utils/smart_help_system.dart';
 
 /// 基础命令类
 /// 为所有CLI命令提供通用功能和依赖注入
@@ -213,6 +214,9 @@ abstract class BaseCommand extends Command<int> {
   @override
   Future<int> run() async {
     try {
+      // 记录命令使用
+      SmartHelpSystem.recordCommandUsage(name);
+
       // 前置处理
       await preExecute();
 
@@ -224,6 +228,8 @@ abstract class BaseCommand extends Command<int> {
 
       return result;
     } catch (e) {
+      // 记录错误
+      SmartHelpSystem.recordError(e.toString());
       Logger.error('命令执行失败: $e');
       await postExecute();
       return 1;

@@ -49,7 +49,9 @@ class IndexFileGenerator {
 
   /// 生成基础模板的 index.dart 文件
   Future<List<String>> _generateBasicIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     final files = <String>[];
 
     // 生成核心 index.dart 文件
@@ -75,27 +77,38 @@ class IndexFileGenerator {
 
   /// 生成核心 index.dart 文件（所有模板都需要）
   Future<List<String>> _generateCoreIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     final files = <String>[];
 
     // 生成 src/core/index.dart
     final coreIndexContent = _generateCoreIndexContent(config);
     await _writeFile(
-        path.join(libPath, 'src', 'core'), 'index.dart', coreIndexContent,);
+      path.join(libPath, 'src', 'core'),
+      'index.dart',
+      coreIndexContent,
+    );
     files.add('lib/src/core/index.dart');
 
     // 生成 src/utils/index.dart
     final utilsIndexContent = _generateUtilsIndexContent(config);
     await _writeFile(
-        path.join(libPath, 'src', 'utils'), 'index.dart', utilsIndexContent,);
+      path.join(libPath, 'src', 'utils'),
+      'index.dart',
+      utilsIndexContent,
+    );
     files.add('lib/src/utils/index.dart');
 
     // 生成平台特定的 index.dart
     if (config.platform == TemplatePlatform.mobile ||
         config.platform == TemplatePlatform.crossPlatform) {
       final mobileIndexContent = _generateMobileIndexContent(config);
-      await _writeFile(path.join(libPath, 'src', 'mobile'), 'index.dart',
-          mobileIndexContent,);
+      await _writeFile(
+        path.join(libPath, 'src', 'mobile'),
+        'index.dart',
+        mobileIndexContent,
+      );
       files.add('lib/src/mobile/index.dart');
     }
 
@@ -104,13 +117,18 @@ class IndexFileGenerator {
 
   /// 生成中等复杂度的 index.dart 文件
   Future<List<String>> _generateMediumComplexityIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     final files = <String>[];
 
     // 生成 src/services/index.dart
     final servicesIndexContent = _generateServicesIndexContent(config);
-    await _writeFile(path.join(libPath, 'src', 'services'), 'index.dart',
-        servicesIndexContent,);
+    await _writeFile(
+      path.join(libPath, 'src', 'services'),
+      'index.dart',
+      servicesIndexContent,
+    );
     files.add('lib/src/services/index.dart');
 
     return files;
@@ -118,7 +136,9 @@ class IndexFileGenerator {
 
   /// 生成企业级的 index.dart 文件
   Future<List<String>> _generateEnterpriseIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     final files = <String>[];
 
     // 包含中等复杂度的文件
@@ -134,7 +154,10 @@ class IndexFileGenerator {
 
     for (final entry in enterpriseIndexFiles.entries) {
       await _writeFile(
-          path.join(libPath, 'src', entry.key), 'index.dart', entry.value,);
+        path.join(libPath, 'src', entry.key),
+        'index.dart',
+        entry.value,
+      );
       files.add('lib/src/${entry.key}/index.dart');
     }
 
@@ -143,7 +166,9 @@ class IndexFileGenerator {
 
   /// 生成其他模板类型的 index.dart 文件
   Future<List<String>> _generateUIIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     final files = await _generateBasicIndexFiles(libPath, config);
 
     // UI 特定的 index.dart 文件
@@ -156,22 +181,30 @@ class IndexFileGenerator {
 
     for (final entry in uiIndexFiles.entries) {
       await _writeFile(
-          path.join(libPath, 'src', entry.key), 'index.dart', entry.value,);
+        path.join(libPath, 'src', entry.key),
+        'index.dart',
+        entry.value,
+      );
       files.add('lib/src/${entry.key}/index.dart');
     }
 
     // Flutter 特定的 widgets index.dart
     final flutterWidgetsIndexContent =
         _generateFlutterWidgetsIndexContent(config);
-    await _writeFile(path.join(libPath, 'src', 'widgets', 'flutter'),
-        'index.dart', flutterWidgetsIndexContent,);
+    await _writeFile(
+      path.join(libPath, 'src', 'widgets', 'flutter'),
+      'index.dart',
+      flutterWidgetsIndexContent,
+    );
     files.add('lib/src/widgets/flutter/index.dart');
 
     return files;
   }
 
   Future<List<String>> _generateServiceIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     final files = await _generateBasicIndexFiles(libPath, config);
 
     // Service 特定的 index.dart 文件
@@ -184,7 +217,10 @@ class IndexFileGenerator {
 
     for (final entry in serviceIndexFiles.entries) {
       await _writeFile(
-          path.join(libPath, 'src', entry.key), 'index.dart', entry.value,);
+        path.join(libPath, 'src', entry.key),
+        'index.dart',
+        entry.value,
+      );
       files.add('lib/src/${entry.key}/index.dart');
     }
 
@@ -192,20 +228,27 @@ class IndexFileGenerator {
   }
 
   Future<List<String>> _generateDataIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     final files = await _generateBasicIndexFiles(libPath, config);
 
     // Data 特定的 index.dart 文件
     final modelsIndexContent = _generateModelsIndexContent(config);
     await _writeFile(
-        path.join(libPath, 'src', 'models'), 'index.dart', modelsIndexContent,);
+      path.join(libPath, 'src', 'models'),
+      'index.dart',
+      modelsIndexContent,
+    );
     files.add('lib/src/models/index.dart');
 
     return files;
   }
 
   Future<List<String>> _generateFullIndexFiles(
-      String libPath, ScaffoldConfig config,) async {
+    String libPath,
+    ScaffoldConfig config,
+  ) async {
     // Full 模板包含所有类型的 index.dart 文件
     final files = <String>[];
 
@@ -225,7 +268,10 @@ class IndexFileGenerator {
 
     for (final entry in fullIndexFiles.entries) {
       await _writeFile(
-          path.join(libPath, 'src', entry.key), 'index.dart', entry.value,);
+        path.join(libPath, 'src', entry.key),
+        'index.dart',
+        entry.value,
+      );
       files.add('lib/src/${entry.key}/index.dart');
     }
 
@@ -248,11 +294,9 @@ Description:        核心功能模块导出文件
 */
 
 // 核心功能导出
-// export 'providers/index.dart';
-// export 'router/index.dart';
-// export 'theme/index.dart';
-
-// 暂时为空，等待具体功能实现
+export 'providers/index.dart';
+export 'router/index.dart';
+export 'theme/index.dart';
 ''';
   }
 
@@ -270,11 +314,7 @@ Description:        工具函数模块导出文件
 */
 
 // 工具函数导出
-// export 'helpers.dart';
-// export 'extensions.dart';
-// export 'validators.dart';
-
-// 暂时为空，等待具体功能实现
+export '${config.templateName}_utils.dart';
 ''';
   }
 
@@ -313,11 +353,7 @@ Description:        服务模块导出文件
 */
 
 // 服务模块导出
-// export 'api_service.dart';
-// export 'auth_service.dart';
-// export 'data_service.dart';
-
-// 暂时为空，等待具体功能实现
+export '${config.templateName}_service.dart';
 ''';
   }
 
@@ -581,7 +617,10 @@ Description:        状态提供者模块导出文件
 
   /// 写入文件的辅助方法
   Future<void> _writeFile(
-      String dirPath, String fileName, String content,) async {
+    String dirPath,
+    String fileName,
+    String content,
+  ) async {
     final dir = Directory(dirPath);
     if (!dir.existsSync()) {
       await dir.create(recursive: true);

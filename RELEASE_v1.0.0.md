@@ -143,7 +143,7 @@ ming template list
 ### 快速安装
 ```bash
 # 下载发布包
-wget https://github.com/pet-app/ming_status_cli/releases/download/v1.0.0/ming_status_cli_v1.0.0.exe
+wget https://github.com/lgnorant-lu/ming_status_cli/releases/download/v1.0.0/ming_status_cli_v1.0.0.exe
 
 # 添加到PATH (Windows)
 move ming_status_cli_v1.0.0.exe C:\tools\ming.exe
@@ -202,8 +202,8 @@ v1.0.0已为Phase 2预留了完整的扩展接口：
 
 ### 获取帮助
 - 📖 **文档**: [docs/](docs/)
-- 🐛 **问题报告**: [GitHub Issues](https://github.com/pet-app/ming_status_cli/issues)
-- 💬 **讨论**: [GitHub Discussions](https://github.com/pet-app/ming_status_cli/discussions)
+- 🐛 **问题报告**: [GitHub Issues](https://github.com/lgnorant-lu/ming_status_cli/issues)
+- 💬 **讨论**: [GitHub Discussions](https://github.com/lgnorant-lu/ming_status_cli/discussions)
 - 📧 **邮件**: support@pet-app.com
 
 ### 贡献代码

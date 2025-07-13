@@ -403,7 +403,13 @@ class PubspecGenerator extends ConfigGeneratorBase {
     buffer.writeln('  assets:');
     buffer.writeln('    - assets/images/');
     buffer.writeln('    - assets/icons/');
-    buffer.writeln('    - assets/colors/');
+
+    // 根据复杂度添加额外的资源路径
+    if (config.complexity != TemplateComplexity.simple) {
+      buffer.writeln('    - assets/colors/');
+      buffer.writeln('    - assets/fonts/');
+    }
+
     buffer.writeln('    # l10n 文件由 flutter gen-l10n 自动处理，不需要在这里声明');
     buffer.writeln();
 

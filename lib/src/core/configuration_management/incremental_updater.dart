@@ -15,9 +15,6 @@ Change History:
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:crypto/crypto.dart';
-import 'package:pub_semver/pub_semver.dart';
-
 import 'package:ming_status_cli/src/core/configuration_management/models/configuration_set.dart';
 import 'package:ming_status_cli/src/core/configuration_management/models/test_result.dart';
 import 'package:ming_status_cli/src/core/configuration_management/models/version_info.dart';
@@ -42,9 +39,8 @@ class DependencyChange {
   const DependencyChange({
     required this.packageName,
     required this.changeType,
-    this.oldVersion,
+    required this.layer, this.oldVersion,
     this.newVersion,
-    required this.layer,
     this.reason = '',
   });
 
@@ -132,8 +128,7 @@ class IncrementalUpdateResult {
     required this.originalConfig,
     required this.updatedConfig,
     required this.changes,
-    this.testResult,
-    required this.timestamp,
+    required this.timestamp, this.testResult,
     this.confidenceScore = 0.5,
     this.metadata = const {},
   });

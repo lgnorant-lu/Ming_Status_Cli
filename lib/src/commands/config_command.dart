@@ -3,16 +3,18 @@
 File name:          config_command.dart
 Author:             lgnorant-lu
 Date created:       2025/06/29
-Last modified:      2025/06/29
+Last modified:      2025/07/13
 Dart Version:       3.2+
 Description:        配置管理命令 (Configuration management command)
 ---------------------------------------------------------------
 Change History:
     2025/06/29: Initial creation - 配置管理命令实现;
+    2025/07/13: Feature enhancement - 添加配置模板和交互式向导功能;
 ---------------------------------------------------------------
 */
 
 import 'package:ming_status_cli/src/commands/base_command.dart';
+import 'package:ming_status_cli/src/core/config/app_config.dart';
 import 'package:ming_status_cli/src/core/config_management/config_manager.dart';
 import 'package:ming_status_cli/src/core/config_management/user_config_manager.dart';
 import 'package:ming_status_cli/src/utils/logger.dart';
@@ -109,6 +111,18 @@ class ConfigCommand extends BaseCommand {
         help: '应用配置模板',
         valueHelp: 'basic|enterprise',
         allowed: ['basic', 'enterprise'],
+      )
+      // 交互式向导选项
+      ..addFlag(
+        'wizard',
+        abbr: 'w',
+        help: '启动交互式配置向导',
+        negatable: false,
+      )
+      ..addFlag(
+        'quick-setup',
+        help: '快速设置常用配置项',
+        negatable: false,
       );
   }
 
@@ -138,6 +152,10 @@ class ConfigCommand extends BaseCommand {
 模板选项:
       --template=<类型>  应用配置模板 (允许: basic, enterprise)
 
+交互式选项:
+  -w, --wizard           启动交互式配置向导
+      --quick-setup      快速设置常用配置项
+
 示例:
   # 列出所有配置
   ming config --list
@@ -155,8 +173,19 @@ class ConfigCommand extends BaseCommand {
   # 应用企业级配置模板
   ming config --template=enterprise
 
+  # 启动交互式配置向导
+  ming config --wizard
+
+  # 快速设置用户信息
+  ming config --quick-setup
+
   # 重置配置
   ming config --global --reset
+
+注意:
+  • 配置向导会根据您的使用习惯提供智能建议
+  • 快速设置适合首次使用或快速配置场景
+  • 使用 --verbose 选项可获得更详细的配置说明
 
 配置键路径:
   user.name, user.email, user.company
@@ -178,6 +207,16 @@ class ConfigCommand extends BaseCommand {
     try {
       _userConfigManager = UserConfigManager();
       _configManager = ConfigManager();
+
+      // 处理交互式向导
+      if (argResults?['wizard'] == true) {
+        return await _handleWizardCommand();
+      }
+
+      // 处理快速设置
+      if (argResults?['quick-setup'] == true) {
+        return await _handleQuickSetupCommand();
+      }
 
       // 处理配置模板应用
       if (argResults?['template'] != null) {
@@ -460,5 +499,153 @@ class ConfigCommand extends BaseCommand {
     }
 
     return value?.toString();
+  }
+
+  /// 处理交互式配置向导
+  Future<int> _handleWizardCommand() async {
+    try {
+      Logger.title('🧙‍♂️ 配置向导');
+      Logger.info('欢迎使用 Ming Status CLI 配置向导！');
+      Logger.info('我将帮助您设置常用的配置项。');
+      Logger.newLine();
+
+      // 获取当前配置
+      final config = await _userConfigManager.loadUserConfig();
+
+      // 用户信息配置
+      Logger.subtitle('👤 用户信息');
+      final defaultAuthor =
+          await AppConfig.instance.getString('app.author', defaultValue: '');
+      final userName = getUserInput(
+        '请输入您的姓名',
+        defaultValue: config?.user.name ?? defaultAuthor,
+      );
+
+      final userEmail = getUserInput(
+        '请输入您的邮箱',
+        defaultValue: config?.user.email ?? '',
+      );
+
+      final userCompany = getUserInput(
+        '请输入您的公司/组织 (可选)',
+        defaultValue: config?.user.company ?? '',
+      );
+
+      // 默认值配置
+      Logger.newLine();
+      Logger.subtitle('⚙️ 默认设置');
+
+      final defaultLicense = getUserInput(
+        '默认许可证类型',
+        defaultValue: config?.defaults.license ?? 'MIT',
+      );
+
+      final defaultDartVersion = getUserInput(
+        '默认 Dart 版本',
+        defaultValue: config?.defaults.dartVersion ?? '^3.2.0',
+      );
+
+      // 偏好设置
+      Logger.newLine();
+      Logger.subtitle('🎨 偏好设置');
+
+      final coloredOutput = confirmAction(
+        '启用彩色输出？',
+        defaultValue: config?.preferences.coloredOutput ?? true,
+      );
+
+      final autoUpdateCheck = confirmAction(
+        '启用自动更新检查？',
+        defaultValue: config?.preferences.autoUpdateCheck ?? true,
+      );
+
+      // 应用配置
+      Logger.newLine();
+      Logger.info('正在保存配置...');
+
+      final success = await _userConfigManager.initializeUserConfig(
+        userName: userName,
+        userEmail: userEmail,
+        company: userCompany,
+      );
+
+      if (success) {
+        // 更新其他配置项
+        if (defaultLicense != null) {
+          await _userConfigManager.setConfigValue(
+            'defaults.license',
+            defaultLicense,
+          );
+        }
+        if (defaultDartVersion != null) {
+          await _userConfigManager.setConfigValue(
+            'defaults.dartVersion',
+            defaultDartVersion,
+          );
+        }
+        await _userConfigManager.setConfigValue(
+          'preferences.coloredOutput',
+          coloredOutput.toString(),
+        );
+        await _userConfigManager.setConfigValue(
+          'preferences.autoUpdateCheck',
+          autoUpdateCheck.toString(),
+        );
+
+        Logger.success('✅ 配置向导完成！');
+        Logger.info('您可以随时使用 "ming config --list" 查看配置');
+        Logger.info('使用 "ming config --set key=value" 修改配置');
+        return 0;
+      } else {
+        Logger.error('配置保存失败');
+        return 1;
+      }
+    } catch (e) {
+      Logger.error('配置向导执行失败: $e');
+      return 1;
+    }
+  }
+
+  /// 处理快速设置
+  Future<int> _handleQuickSetupCommand() async {
+    try {
+      Logger.title('⚡ 快速设置');
+      Logger.info('快速设置最常用的配置项');
+      Logger.newLine();
+
+      // 获取当前配置
+      final config = await _userConfigManager.loadUserConfig();
+
+      // 快速设置用户名
+      final userName = getUserInput(
+        '用户名',
+        defaultValue: config?.user.name ??
+            await AppConfig.instance.getString('app.author', defaultValue: ''),
+        required: true,
+      );
+
+      // 快速设置邮箱
+      final userEmail = getUserInput(
+        '邮箱',
+        defaultValue: config?.user.email ?? '',
+      );
+
+      // 应用设置
+      if (userName != null) {
+        await _userConfigManager.setConfigValue('user.name', userName);
+        await _userConfigManager.setConfigValue('defaults.author', userName);
+      }
+
+      if (userEmail != null && userEmail.isNotEmpty) {
+        await _userConfigManager.setConfigValue('user.email', userEmail);
+      }
+
+      Logger.success('✅ 快速设置完成！');
+      Logger.info('使用 "ming config --wizard" 进行完整配置');
+      return 0;
+    } catch (e) {
+      Logger.error('快速设置失败: $e');
+      return 1;
+    }
   }
 }

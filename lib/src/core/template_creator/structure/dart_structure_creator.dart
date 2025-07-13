@@ -145,8 +145,16 @@ class DartStructureCreator extends DirectoryCreator {
           'lib/src/configuration',
         ]);
 
-      case TemplateType.basic:
       case TemplateType.micro:
+        directories.addAll([
+          'lib/src/handlers',
+          'lib/src/middleware',
+          'lib/src/routes',
+          'lib/src/controllers',
+          'lib/src/dto',
+        ]);
+
+      case TemplateType.basic:
       case TemplateType.ui:
         // 使用基础目录结构
         break;
@@ -330,6 +338,13 @@ class DartStructureCreator extends DirectoryCreator {
           'bin/migrate.dart',
         ]);
 
+      case TemplateType.micro:
+        suggestions.addAll([
+          'bin/microservice.dart',
+          'bin/gateway.dart',
+          'bin/health_check.dart',
+        ]);
+
       case TemplateType.system:
         suggestions.addAll([
           'bin/monitor.dart',
@@ -350,7 +365,10 @@ class DartStructureCreator extends DirectoryCreator {
           'bin/backup.dart',
         ]);
 
-      default:
+      case TemplateType.basic:
+      case TemplateType.ui:
+      case TemplateType.data:
+      case TemplateType.full:
         suggestions.addAll([
           'bin/main.dart',
           'bin/${config.templateName}.dart',

@@ -253,8 +253,10 @@ class StartupOptimizer {
       'latest_result': {
         'success': latest.success,
         'total_time_ms': latest.totalTime.inMilliseconds,
-        'phase_breakdown': latest.phaseResults.map(
-          (phase, duration) => MapEntry(phase.name, duration.inMilliseconds),
+        'phase_breakdown': Map<String, int>.fromEntries(
+          latest.phaseResults.entries.map(
+            (e) => MapEntry(e.key.name, e.value.inMilliseconds),
+          ),
         ),
         'optimizations_applied': latest.optimizations,
         'errors': latest.errors,

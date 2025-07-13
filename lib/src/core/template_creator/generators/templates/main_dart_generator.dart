@@ -39,11 +39,13 @@ class MainDartGenerator extends TemplateGeneratorBase {
     final buffer = StringBuffer();
 
     // 添加文件头部注释
-    buffer.writeln(generateFileHeader(
-      'main.dart',
-      config,
-      '${config.templateName}应用程序主入口文件',
-    ),);
+    buffer.writeln(
+      generateFileHeader(
+        'main.dart',
+        config,
+        '${config.templateName}应用程序主入口文件',
+      ),
+    );
 
     // 根据框架类型生成不同的内容
     if (config.framework == TemplateFramework.flutter) {
@@ -69,7 +71,8 @@ class MainDartGenerator extends TemplateGeneratorBase {
         config.complexity == TemplateComplexity.enterprise) {
       buffer
         ..writeln("import 'package:firebase_core/firebase_core.dart';")
-        ..writeln("import 'package:flutter_localizations/flutter_localizations.dart';");
+        ..writeln(
+            "import 'package:flutter_localizations/flutter_localizations.dart';");
     }
 
     buffer
@@ -114,7 +117,7 @@ class MainDartGenerator extends TemplateGeneratorBase {
       ..writeln('  // 启动应用程序')
       ..writeln('  runApp(')
       ..writeln('    const ProviderScope(')
-      ..writeln('      child: {className}App(),')
+      ..writeln('      child: ${_getClassName(config)}App(),')
       ..writeln('    ),')
       ..writeln('  );')
       ..writeln('}');
@@ -127,7 +130,8 @@ class MainDartGenerator extends TemplateGeneratorBase {
   }
 
   /// 生成简单初始化逻辑
-  void _generateSimpleInitialization(StringBuffer buffer, ScaffoldConfig config) {
+  void _generateSimpleInitialization(
+      StringBuffer buffer, ScaffoldConfig config) {
     buffer
       ..writeln('  // 设置系统UI样式')
       ..writeln('  SystemChrome.setSystemUIOverlayStyle(')
@@ -139,7 +143,8 @@ class MainDartGenerator extends TemplateGeneratorBase {
   }
 
   /// 生成中等复杂度初始化逻辑
-  void _generateMediumInitialization(StringBuffer buffer, ScaffoldConfig config) {
+  void _generateMediumInitialization(
+      StringBuffer buffer, ScaffoldConfig config) {
     buffer
       ..writeln('  // 设置系统UI样式')
       ..writeln('  await SystemChrome.setPreferredOrientations([')
@@ -161,7 +166,8 @@ class MainDartGenerator extends TemplateGeneratorBase {
   }
 
   /// 生成复杂初始化逻辑
-  void _generateComplexInitialization(StringBuffer buffer, ScaffoldConfig config) {
+  void _generateComplexInitialization(
+      StringBuffer buffer, ScaffoldConfig config) {
     buffer
       ..writeln('  // 设置错误处理')
       ..writeln('  FlutterError.onError = ErrorHandler.handleFlutterError;')
@@ -186,11 +192,13 @@ class MainDartGenerator extends TemplateGeneratorBase {
   }
 
   /// 生成企业级初始化逻辑
-  void _generateEnterpriseInitialization(StringBuffer buffer, ScaffoldConfig config) {
+  void _generateEnterpriseInitialization(
+      StringBuffer buffer, ScaffoldConfig config) {
     buffer
       ..writeln('  // 设置全局错误处理')
       ..writeln('  FlutterError.onError = ErrorHandler.handleFlutterError;')
-      ..writeln('  PlatformDispatcher.instance.onError = ErrorHandler.handlePlatformError;')
+      ..writeln(
+          '  PlatformDispatcher.instance.onError = ErrorHandler.handlePlatformError;')
       ..writeln()
       ..writeln('  // 运行在错误保护区域中')
       ..writeln('  await runZonedGuarded<Future<void>>(')
@@ -230,7 +238,8 @@ class MainDartGenerator extends TemplateGeneratorBase {
       ..writeln(r"  debugPrint('堆栈跟踪: $stackTrace');")
       ..writeln()
       ..writeln('  // 发送错误报告到崩溃分析服务')
-      ..writeln('  // FirebaseCrashlytics.instance.recordError(error, stackTrace);')
+      ..writeln(
+          '  // FirebaseCrashlytics.instance.recordError(error, stackTrace);')
       ..writeln('}');
   }
 
@@ -271,7 +280,7 @@ class MainDartGenerator extends TemplateGeneratorBase {
   @override
   Map<String, String> getTemplateVariables(ScaffoldConfig config) {
     final baseVariables = super.getTemplateVariables(config);
-    
+
     // 添加特定于main.dart的变量
     baseVariables.addAll({
       'appTitle': config.description,
@@ -279,5 +288,13 @@ class MainDartGenerator extends TemplateGeneratorBase {
     });
 
     return baseVariables;
+  }
+
+  /// 获取类名
+  String _getClassName(ScaffoldConfig config) {
+    final parts = config.templateName.split('_');
+    final capitalizedParts = parts.map((part) =>
+        part.isNotEmpty ? part[0].toUpperCase() + part.substring(1) : part);
+    return capitalizedParts.join();
   }
 }
