@@ -209,21 +209,81 @@ Ming Status CLI - 企业级项目管理和模板生态系统
   Future<int?> _handleQuickCommands(List<String> arguments) async {
     // 处理 --version 全局参数
     if (_shouldShowVersion(arguments)) {
-      await VersionCommand().run();
+      _showQuickVersion();
       return 0;
     }
 
     // 处理直接的 version 命令
     if (arguments.isNotEmpty && arguments.first == 'version') {
-      // 创建临时的CommandRunner来处理version命令
-      final tempRunner = CommandRunner<int>('ming', 'Ming Status CLI');
-      final versionCmd = VersionCommand();
-      tempRunner.addCommand(versionCmd);
-      await tempRunner.run(arguments);
+      _showQuickVersion();
+      return 0;
+    }
+
+    // 处理简单帮助请求
+    if (arguments.isEmpty ||
+        (arguments.length == 1 &&
+            (arguments.contains('--help') || arguments.contains('-h')))) {
+      _showQuickHelp();
+      return 0;
+    }
+
+    // 处理help命令
+    if (arguments.isNotEmpty &&
+        arguments.first == 'help' &&
+        arguments.length == 1) {
+      _showQuickHelp();
       return 0;
     }
 
     return null; // 需要完整处理
+  }
+
+  /// 显示快速版本信息（无需加载VersionCommand）
+  void _showQuickVersion() {
+    Logger.info('ming_status_cli 1.0.0');
+  }
+
+  /// 显示快速帮助信息（无需加载HelpFormatter）
+  void _showQuickHelp() {
+    print('''
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  🌟 MING STATUS CLI - 企业级项目管理和模板生态系统                              │
+│                                                                             │
+│  ⚡ 让代码组织更简单，让开发更高效                                              │
+│  🎯 专为现代化企业级开发而设计                                                  │
+│                                                                             │
+│  👨‍💻 Created by lgnorant-lu                                                  │
+│  🔗 https://github.com/lgnorant-lu/Ming_Status_Cli                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+📋 🚀 快速开始
+  ming doctor                    # 检查开发环境
+  ming init my-project           # 创建新项目
+  ming template list             # 浏览模板
+
+📋 📖 基本用法
+  ming <command> [arguments]     # 基本格式
+  ming help <command>            # 查看命令帮助
+
+📋 🏗️  核心命令
+  init     - 🚀 初始化工作空间
+  create   - 📦 创建模块或项目
+  config   - ⚙️  配置管理
+  doctor   - 🔍 环境检查
+  validate - ✅ 验证项目
+  optimize - ⚡ 性能优化
+  version  - ℹ️  版本信息
+
+📋 📚 高级功能
+  template - 🎨 模板管理系统
+  registry - 🗄️  注册表管理
+
+📋 💡 获取详细帮助
+  ming help <command>            # 命令详细帮助
+  ming <command> --help          # 子命令帮助
+
+✨ 感谢使用 Ming Status CLI！
+''');
   }
 
   /// 预处理命令行参数
