@@ -46,6 +46,11 @@ class TemplateSecurityCommand extends Command<int> {
         help: '安全策略',
         allowed: ['enterprise', 'standard', 'relaxed'],
         defaultsTo: 'standard',
+        allowedHelp: {
+          'enterprise': '企业级安全策略',
+          'standard': '标准安全策略',
+          'relaxed': '宽松安全策略',
+        },
       )
       ..addOption(
         'output',
@@ -53,6 +58,11 @@ class TemplateSecurityCommand extends Command<int> {
         help: '输出格式',
         allowed: ['table', 'json', 'detailed'],
         defaultsTo: 'table',
+        allowedHelp: {
+          'table': '表格格式输出',
+          'json': 'JSON格式输出',
+          'detailed': '详细格式输出',
+        },
       )
       ..addFlag(
         'signature-only',

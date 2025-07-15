@@ -41,6 +41,11 @@ class TemplateInstallCommand extends Command<int> {
         help: '下载格式',
         allowed: ['zip', 'tar.gz', '7z'],
         defaultsTo: 'zip',
+        allowedHelp: {
+          'zip': 'ZIP压缩格式',
+          'tar.gz': 'TAR.GZ压缩格式',
+          '7z': '7-Zip压缩格式',
+        },
       )
       ..addOption(
         'registry',
@@ -89,8 +94,13 @@ class TemplateInstallCommand extends Command<int> {
 安装选项:
   -v, --version=<版本>   指定模板版本 (默认: 最新版本)
   -o, --output=<目录>    输出目录 (默认: ./templates)
-  -f, --format=<格式>    下载格式 (zip, tar.gz, 7z)
+  -f, --format=<格式>    下载格式 (可选值见下方)
   -r, --registry=<注册表> 指定注册表源
+
+下载格式 (-f, --format):
+  zip                    ZIP压缩格式 (默认)
+  tar.gz                 TAR.GZ压缩格式
+  7z                     7-Zip压缩格式
 
 依赖管理:
   -d, --with-dependencies 同时安装所有依赖

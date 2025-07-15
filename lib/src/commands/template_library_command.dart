@@ -36,6 +36,15 @@ class TemplateLibraryCommand extends Command<int> {
           'install',
         ],
         defaultsTo: 'list',
+        allowedHelp: {
+          'list': '列出所有模板库',
+          'add': '添加新的模板库',
+          'remove': '移除模板库',
+          'update': '更新模板',
+          'sync': '同步模板库',
+          'publish': '发布模板到库',
+          'install': '安装模板',
+        },
       )
       ..addOption(
         'repository',

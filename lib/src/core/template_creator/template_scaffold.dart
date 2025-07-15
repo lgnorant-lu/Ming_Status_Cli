@@ -795,41 +795,11 @@ void main() {
     ScaffoldConfig config,
     List<String> generatedFiles,
   ) async {
-    final srcPath = path.join(templatePath, 'lib', 'src');
+    // 注意：不再在这里生成服务文件，因为ServiceGenerator已经会生成到正确的位置
+    // 避免重复生成服务文件
 
-    // 生成示例服务文件
-    final serviceContent = '''
-/// ${config.templateName}示例服务
-///
-/// 这是一个示例服务类，展示了基本的服务结构
-class ${_toPascalCase(config.templateName)}Service {
-  /// 私有构造函数
-  ${_toPascalCase(config.templateName)}Service._();
-
-  /// 单例实例
-  static final instance = ${_toPascalCase(config.templateName)}Service._();
-
-  /// 初始化服务
-  Future<void> initialize() async {
-    // TODO: 实现服务初始化逻辑
-  }
-
-  /// 获取示例数据
-  Future<Map<String, dynamic>> getExampleData() async {
-    // TODO: 实现数据获取逻辑
-    return {
-      'message': 'Hello from ${config.templateName}!',
-      'timestamp': DateTime.now().toIso8601String(),
-    };
-  }
-}
-''';
-    await _writeFile(
-      srcPath,
-      '${config.templateName}_service.dart',
-      serviceContent,
-    );
-    generatedFiles.add('lib/src/${config.templateName}_service.dart');
+    // 如果需要生成其他特殊的源代码文件，可以在这里添加
+    // 但要确保不与现有的生成器重复
   }
 
   /// 转换为PascalCase
@@ -883,29 +853,83 @@ class ${_toPascalCase(config.templateName)}Service {
     final files = <String>[];
     final templatePath = path.join(config.outputPath, config.templateName);
 
-    // 生成Provider文件
-    const providerGenerator = code_gen.ProviderGenerator();
-    final providerFile =
-        await providerGenerator.generateFile(templatePath, config);
-    files.add(providerFile);
+    // 根据模板类型生成不同的代码文件
+    switch (config.templateType) {
+      case TemplateType.ui:
+        // UI模板只生成UI相关文件
+        files.addAll(await _generateUICodeFiles(templatePath, config));
+      case TemplateType.service:
+        // Service模板生成服务相关文件
+        files.addAll(await _generateServiceCodeFiles(templatePath, config));
+      case TemplateType.data:
+        // Data模板生成数据相关文件
+        files.addAll(await _generateDataCodeFiles(templatePath, config));
+      case TemplateType.full:
+        // Full模板生成所有文件
+        files.addAll(await _generateFullCodeFiles(templatePath, config));
+      case TemplateType.basic:
+        // Basic模板只生成最基础的文件
+        files.addAll(await _generateBasicCodeFiles(templatePath, config));
+      case TemplateType.system:
+        // System模板生成系统相关文件
+        files.addAll(await _generateSystemCodeFiles(templatePath, config));
+      case TemplateType.micro:
+        files.addAll(await _generateMicroCodeFiles(templatePath, config));
+      case TemplateType.plugin:
+        files.addAll(await _generatePluginCodeFiles(templatePath, config));
+      case TemplateType.infrastructure:
+        files.addAll(
+            await _generateInfrastructureCodeFiles(templatePath, config));
+    }
 
-    // 生成Service文件
-    const serviceGenerator = code_gen.ServiceGenerator();
-    final serviceFile =
-        await serviceGenerator.generateFile(templatePath, config);
-    files.add(serviceFile);
+    // 生成测试文件
+    if (config.includeTests) {
+      final testFiles = await _generateEnhancedTestFiles(templatePath, config);
+      files.addAll(testFiles);
+    }
 
-    // 生成Model文件
+    // 生成Flutter UI组件（仅Flutter项目且需要UI组件的模板类型）
+    if (config.framework == TemplateFramework.flutter &&
+        _shouldGenerateUIComponents(config.templateType)) {
+      final uiFiles = await _generateUiComponents(templatePath, config);
+      files.addAll(uiFiles);
+    }
+
+    return files;
+  }
+
+  /// 生成Micro模板的代码文件
+  Future<List<String>> _generateMicroCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // Micro模板主要生成微服务相关文件
     const modelGenerator = code_gen.ModelGenerator();
     final modelFile = await modelGenerator.generateFile(templatePath, config);
     files.add(modelFile);
 
-    // 生成Repository文件
+    // 根据复杂度生成Provider文件（Medium及以上）
     if (config.complexity != TemplateComplexity.simple) {
-      const repositoryGenerator = code_gen.RepositoryGenerator();
-      final repositoryFile =
-          await repositoryGenerator.generateFile(templatePath, config);
-      files.add(repositoryFile);
+      const providerGenerator = code_gen.ProviderGenerator();
+      final providerFile =
+          await providerGenerator.generateFile(templatePath, config);
+      files.add(providerFile);
+
+      // 生成Service文件（Medium及以上）
+      const serviceGenerator = code_gen.ServiceGenerator();
+      final serviceFile =
+          await serviceGenerator.generateFile(templatePath, config);
+      files.add(serviceFile);
+
+      // 生成Repository文件（Complex及以上）
+      if (config.complexity != TemplateComplexity.medium) {
+        const repositoryGenerator = code_gen.RepositoryGenerator();
+        final repositoryFile =
+            await repositoryGenerator.generateFile(templatePath, config);
+        files.add(repositoryFile);
+      }
     }
 
     // 生成Utils文件
@@ -919,16 +943,178 @@ class ${_toPascalCase(config.templateName)}Service {
         await constantsGenerator.generateFile(templatePath, config);
     files.add(constantsFile);
 
-    // 生成测试文件
-    if (config.includeTests) {
-      final testFiles = await _generateEnhancedTestFiles(templatePath, config);
-      files.addAll(testFiles);
+    // 生成跨平台支持文件（所有复杂度都需要）
+    const crossPlatformGenerator = code_gen.CrossPlatformGenerator();
+    final crossPlatformFile =
+        await crossPlatformGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformFile);
+
+    // 生成平台常量文件
+    const platformConstantsGenerator = code_gen.PlatformConstantsGenerator();
+    final platformConstantsFile =
+        await platformConstantsGenerator.generateFile(templatePath, config);
+    files.add(platformConstantsFile);
+
+    // 生成跨平台模块索引文件
+    const crossPlatformIndexGenerator = code_gen.CrossPlatformIndexGenerator();
+    final crossPlatformIndexFile =
+        await crossPlatformIndexGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformIndexFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
     }
 
-    // 生成Flutter UI组件（仅Flutter项目）
-    if (config.framework == TemplateFramework.flutter) {
-      final uiFiles = await _generateUiComponents(templatePath, config);
-      files.addAll(uiFiles);
+    return files;
+  }
+
+  /// 生成Plugin模板的代码文件
+  Future<List<String>> _generatePluginCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // Plugin模板主要生成插件相关文件
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 根据复杂度生成Provider文件（Medium及以上）
+    if (config.complexity != TemplateComplexity.simple) {
+      const providerGenerator = code_gen.ProviderGenerator();
+      final providerFile =
+          await providerGenerator.generateFile(templatePath, config);
+      files.add(providerFile);
+
+      // 生成Service文件（Medium及以上）
+      const serviceGenerator = code_gen.ServiceGenerator();
+      final serviceFile =
+          await serviceGenerator.generateFile(templatePath, config);
+      files.add(serviceFile);
+
+      // 生成Repository文件（Complex及以上）
+      if (config.complexity != TemplateComplexity.medium) {
+        const repositoryGenerator = code_gen.RepositoryGenerator();
+        final repositoryFile =
+            await repositoryGenerator.generateFile(templatePath, config);
+        files.add(repositoryFile);
+      }
+    }
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 生成跨平台支持文件（所有复杂度都需要）
+    const crossPlatformGenerator = code_gen.CrossPlatformGenerator();
+    final crossPlatformFile =
+        await crossPlatformGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformFile);
+
+    // 生成平台常量文件
+    const platformConstantsGenerator = code_gen.PlatformConstantsGenerator();
+    final platformConstantsFile =
+        await platformConstantsGenerator.generateFile(templatePath, config);
+    files.add(platformConstantsFile);
+
+    // 生成跨平台模块索引文件
+    const crossPlatformIndexGenerator = code_gen.CrossPlatformIndexGenerator();
+    final crossPlatformIndexFile =
+        await crossPlatformIndexGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformIndexFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
+    }
+
+    return files;
+  }
+
+  /// 生成Infrastructure模板的代码文件
+  Future<List<String>> _generateInfrastructureCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // Infrastructure模板主要生成基础设施相关文件
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 根据复杂度生成Provider文件（Medium及以上）
+    if (config.complexity != TemplateComplexity.simple) {
+      const providerGenerator = code_gen.ProviderGenerator();
+      final providerFile =
+          await providerGenerator.generateFile(templatePath, config);
+      files.add(providerFile);
+
+      // 生成Service文件（Medium及以上）
+      const serviceGenerator = code_gen.ServiceGenerator();
+      final serviceFile =
+          await serviceGenerator.generateFile(templatePath, config);
+      files.add(serviceFile);
+
+      // 生成Repository文件（Complex及以上）
+      if (config.complexity != TemplateComplexity.medium) {
+        const repositoryGenerator = code_gen.RepositoryGenerator();
+        final repositoryFile =
+            await repositoryGenerator.generateFile(templatePath, config);
+        files.add(repositoryFile);
+      }
+    }
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 生成跨平台支持文件（所有复杂度都需要）
+    const crossPlatformGenerator = code_gen.CrossPlatformGenerator();
+    final crossPlatformFile =
+        await crossPlatformGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformFile);
+
+    // 生成平台常量文件
+    const platformConstantsGenerator = code_gen.PlatformConstantsGenerator();
+    final platformConstantsFile =
+        await platformConstantsGenerator.generateFile(templatePath, config);
+    files.add(platformConstantsFile);
+
+    // 生成跨平台模块索引文件
+    const crossPlatformIndexGenerator = code_gen.CrossPlatformIndexGenerator();
+    final crossPlatformIndexFile =
+        await crossPlatformIndexGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformIndexFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
     }
 
     return files;
@@ -941,13 +1127,80 @@ class ${_toPascalCase(config.templateName)}Service {
   ) async {
     final files = <String>[];
 
-    // 为每个主要组件生成单元测试
-    final testTargets = ['Provider', 'Service', 'Model'];
+    // 根据模板类型和复杂度决定生成哪些测试
+    final testTargets = <String>[]..add('Model'); // 所有模板都有Model
 
-    if (config.complexity != TemplateComplexity.simple) {
-      testTargets.add('Repository');
+    // 根据模板类型添加特定的测试目标
+    switch (config.templateType) {
+      case TemplateType.ui:
+        // UI模板：只有复杂度不是simple时才有Provider
+        if (config.complexity != TemplateComplexity.simple) {
+          testTargets.add('Provider');
+        }
+      // UI模板不生成Service测试
+      case TemplateType.service:
+        // Service模板：总是有Provider和Service
+        testTargets.addAll(['Provider', 'Service']);
+      case TemplateType.data:
+        // Data模板：根据复杂度生成测试
+        if (config.complexity != TemplateComplexity.simple) {
+          testTargets.add('Provider');
+          // Complex和Enterprise复杂度才有Service
+          if (config.complexity != TemplateComplexity.medium) {
+            testTargets.add('Service');
+          }
+        }
+      case TemplateType.full:
+        // Full模板：总是有Provider和Service
+        testTargets.addAll(['Provider', 'Service']);
+      case TemplateType.basic:
+        // Basic模板：只生成基础测试，不生成Provider和Service测试
+        break;
+      case TemplateType.micro:
+        // Micro模板：根据复杂度生成测试
+        if (config.complexity != TemplateComplexity.simple) {
+          testTargets.add('Provider');
+          testTargets.add('Service');
+          // Complex和Enterprise复杂度才有Repository（在下面统一处理）
+        }
+      case TemplateType.plugin:
+        // Plugin模板：根据复杂度生成测试
+        if (config.complexity != TemplateComplexity.simple) {
+          testTargets.add('Provider');
+          testTargets.add('Service');
+          // Complex和Enterprise复杂度才有Repository（在下面统一处理）
+        }
+      case TemplateType.infrastructure:
+        // Infrastructure模板：根据复杂度生成测试
+        if (config.complexity != TemplateComplexity.simple) {
+          testTargets.add('Provider');
+          testTargets.add('Service');
+          // Complex和Enterprise复杂度才有Repository（在下面统一处理）
+        }
+      case TemplateType.system:
+        // System模板类型：根据复杂度决定
+        if (config.complexity != TemplateComplexity.simple) {
+          testTargets.addAll(['Provider', 'Service']);
+        }
     }
 
+    // 根据复杂度和模板类型添加Repository
+    if (config.complexity != TemplateComplexity.simple &&
+        config.templateType != TemplateType.basic) {
+      // Micro、Plugin、Infrastructure和Full模板只在Complex和Enterprise复杂度时有Repository
+      if (config.templateType == TemplateType.micro ||
+          config.templateType == TemplateType.plugin ||
+          config.templateType == TemplateType.infrastructure ||
+          config.templateType == TemplateType.full) {
+        if (config.complexity != TemplateComplexity.medium) {
+          testTargets.add('Repository');
+        }
+      } else {
+        testTargets.add('Repository');
+      }
+    }
+
+    // 所有模板都有Utils和Constants
     testTargets.addAll(['Utils', 'Constants']);
 
     for (final target in testTargets) {
@@ -971,6 +1224,12 @@ class ${_toPascalCase(config.templateName)}Service {
     }
 
     return files;
+  }
+
+  /// 检查是否应该生成UI组件
+  bool _shouldGenerateUIComponents(TemplateType templateType) {
+    // 只有UI模板和Full模板才生成UI组件
+    return templateType == TemplateType.ui || templateType == TemplateType.full;
   }
 
   /// 生成UI组件文件
@@ -1003,6 +1262,320 @@ class ${_toPascalCase(config.templateName)}Service {
       final dialogFile =
           await dialogGenerator.generateFile(templatePath, config);
       files.add(dialogFile);
+    }
+
+    return files;
+  }
+
+  /// 生成UI模板的代码文件
+  Future<List<String>> _generateUICodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // UI模板只生成UI相关的文件
+    // 生成Model文件（UI组件可能需要数据模型）
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 根据复杂度决定是否生成Provider
+    if (config.complexity != TemplateComplexity.simple) {
+      const providerGenerator = code_gen.ProviderGenerator();
+      final providerFile =
+          await providerGenerator.generateFile(templatePath, config);
+      files.add(providerFile);
+
+      // 生成Repository文件
+      const repositoryGenerator = code_gen.RepositoryGenerator();
+      final repositoryFile =
+          await repositoryGenerator.generateFile(templatePath, config);
+      files.add(repositoryFile);
+    }
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
+    }
+
+    return files;
+  }
+
+  /// 生成Service模板的代码文件
+  Future<List<String>> _generateServiceCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // Service模板生成服务相关文件
+    const serviceGenerator = code_gen.ServiceGenerator();
+    final serviceFile =
+        await serviceGenerator.generateFile(templatePath, config);
+    files.add(serviceFile);
+
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    const providerGenerator = code_gen.ProviderGenerator();
+    final providerFile =
+        await providerGenerator.generateFile(templatePath, config);
+    files.add(providerFile);
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 根据复杂度生成Repository文件
+    if (config.complexity != TemplateComplexity.simple) {
+      const repositoryGenerator = code_gen.RepositoryGenerator();
+      final repositoryFile =
+          await repositoryGenerator.generateFile(templatePath, config);
+      files.add(repositoryFile);
+    }
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
+    }
+
+    return files;
+  }
+
+  /// 生成Data模板的代码文件
+  Future<List<String>> _generateDataCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // Data模板主要生成数据相关文件
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 根据复杂度生成Provider文件（Medium及以上）
+    if (config.complexity != TemplateComplexity.simple) {
+      const providerGenerator = code_gen.ProviderGenerator();
+      final providerFile =
+          await providerGenerator.generateFile(templatePath, config);
+      files.add(providerFile);
+
+      // 生成Repository文件
+      const repositoryGenerator = code_gen.RepositoryGenerator();
+      final repositoryFile =
+          await repositoryGenerator.generateFile(templatePath, config);
+      files.add(repositoryFile);
+
+      // 生成Service文件（Complex及以上）
+      if (config.complexity != TemplateComplexity.medium) {
+        const serviceGenerator = code_gen.ServiceGenerator();
+        final serviceFile =
+            await serviceGenerator.generateFile(templatePath, config);
+        files.add(serviceFile);
+      }
+    }
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
+    }
+
+    return files;
+  }
+
+  /// 生成Full模板的代码文件
+  Future<List<String>> _generateFullCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // Full模板生成所有类型的文件
+    const providerGenerator = code_gen.ProviderGenerator();
+    final providerFile =
+        await providerGenerator.generateFile(templatePath, config);
+    files.add(providerFile);
+
+    const serviceGenerator = code_gen.ServiceGenerator();
+    final serviceFile =
+        await serviceGenerator.generateFile(templatePath, config);
+    files.add(serviceFile);
+
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 根据复杂度生成Repository文件（Complex及以上）
+    if (config.complexity != TemplateComplexity.simple &&
+        config.complexity != TemplateComplexity.medium) {
+      const repositoryGenerator = code_gen.RepositoryGenerator();
+      final repositoryFile =
+          await repositoryGenerator.generateFile(templatePath, config);
+      files.add(repositoryFile);
+    }
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
+    }
+
+    return files;
+  }
+
+  /// 生成System模板的代码文件
+  Future<List<String>> _generateSystemCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // System模板生成系统相关文件
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 根据复杂度生成额外文件
+    if (config.complexity != TemplateComplexity.simple) {
+      const providerGenerator = code_gen.ProviderGenerator();
+      final providerFile =
+          await providerGenerator.generateFile(templatePath, config);
+      files.add(providerFile);
+
+      const repositoryGenerator = code_gen.RepositoryGenerator();
+      final repositoryFile =
+          await repositoryGenerator.generateFile(templatePath, config);
+      files.add(repositoryFile);
+
+      const serviceGenerator = code_gen.ServiceGenerator();
+      final serviceFile =
+          await serviceGenerator.generateFile(templatePath, config);
+      files.add(serviceFile);
+    }
+
+    // 生成跨平台支持文件
+    const crossPlatformGenerator = code_gen.CrossPlatformGenerator();
+    final crossPlatformFile =
+        await crossPlatformGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformFile);
+
+    // 生成平台常量文件
+    const platformConstantsGenerator = code_gen.PlatformConstantsGenerator();
+    final platformConstantsFile =
+        await platformConstantsGenerator.generateFile(templatePath, config);
+    files.add(platformConstantsFile);
+
+    // 生成跨平台模块索引文件
+    const crossPlatformIndexGenerator = code_gen.CrossPlatformIndexGenerator();
+    final crossPlatformIndexFile =
+        await crossPlatformIndexGenerator.generateFile(templatePath, config);
+    files.add(crossPlatformIndexFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
+    }
+
+    return files;
+  }
+
+  /// 生成基础模板的代码文件
+  Future<List<String>> _generateBasicCodeFiles(
+    String templatePath,
+    ScaffoldConfig config,
+  ) async {
+    final files = <String>[];
+
+    // 基础模板只生成最基本的文件
+    const modelGenerator = code_gen.ModelGenerator();
+    final modelFile = await modelGenerator.generateFile(templatePath, config);
+    files.add(modelFile);
+
+    // 生成Utils文件
+    const utilsGenerator = code_gen.UtilsGenerator();
+    final utilsFile = await utilsGenerator.generateFile(templatePath, config);
+    files.add(utilsFile);
+
+    // 生成Constants文件
+    const constantsGenerator = code_gen.ConstantsGenerator();
+    final constantsFile =
+        await constantsGenerator.generateFile(templatePath, config);
+    files.add(constantsFile);
+
+    // 生成Integration文件（仅enterprise复杂度）
+    if (config.complexity == TemplateComplexity.enterprise) {
+      const integrationGenerator = code_gen.IntegrationGenerator();
+      final integrationFile =
+          await integrationGenerator.generateFile(templatePath, config);
+      files.add(integrationFile);
     }
 
     return files;

@@ -20,11 +20,11 @@ import 'package:ming_status_cli/src/core/template_system/template_types.dart';
 ///
 /// 生成Flutter UI组件文件
 class WidgetGenerator extends BaseCodeGenerator {
-  
   /// 创建Widget生成器实例
   const WidgetGenerator({
     required this.widgetType,
   });
+
   /// Widget类型
   final WidgetType widgetType;
 
@@ -60,17 +60,19 @@ class WidgetGenerator extends BaseCodeGenerator {
   @override
   String generateContent(ScaffoldConfig config) {
     final buffer = StringBuffer();
-    
+
     // 添加文件头部注释
-    buffer.write(generateFileHeader(
-      getFileName(config),
-      config,
-      '${config.templateName} ${widgetType.displayName}组件',
-    ),);
+    buffer.write(
+      generateFileHeader(
+        getFileName(config),
+        config,
+        '${config.templateName} ${widgetType.displayName}组件',
+      ),
+    );
 
     final imports = _getImports(config);
     buffer.write(generateImports(imports));
-    
+
     switch (widgetType) {
       case WidgetType.page:
         _generatePageWidget(buffer, config);
@@ -90,65 +92,69 @@ class WidgetGenerator extends BaseCodeGenerator {
     final imports = <String>[
       'package:flutter/material.dart',
     ];
-    
-    if (config.complexity != TemplateComplexity.simple) {
+
+    if (config.complexity != TemplateComplexity.simple &&
+        (widgetType == WidgetType.screen || widgetType == WidgetType.page)) {
       imports.addAll([
         'package:provider/provider.dart',
         '../providers/${config.templateName}_provider.dart',
       ]);
     }
-    
-    if (config.complexity == TemplateComplexity.enterprise) {
-      imports.addAll([
-        'package:flutter_bloc/flutter_bloc.dart',
-        '../constants/${config.templateName}_constants.dart',
-        '../utils/${config.templateName}_utils.dart',
-      ]);
+
+    // Enterprise复杂度时添加BLoC导入（仅Page组件需要）
+    if (config.complexity == TemplateComplexity.enterprise &&
+        widgetType == WidgetType.page) {
+      imports.add('package:flutter_bloc/flutter_bloc.dart');
     }
-    
+
     return imports;
   }
 
   /// 生成页面Widget
   void _generatePageWidget(StringBuffer buffer, ScaffoldConfig config) {
     final className = formatClassName(config.templateName, 'Page');
-    
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}页面组件',
-      examples: [
-        'Navigator.push(',
-        '  context,',
-        '  MaterialPageRoute(builder: (context) => $className()),',
-        ')',
-      ],
-    ),);
+
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}页面组件',
+        examples: [
+          'Navigator.push(',
+          '  context,',
+          '  MaterialPageRoute(builder: (context) => $className()),',
+          ')',
+        ],
+      ),
+    );
 
     buffer.writeln('class $className extends StatefulWidget {');
     buffer.writeln('  /// 创建$className实例');
     buffer.writeln('  const $className({super.key});');
     buffer.writeln();
-    
+
     buffer.writeln('  @override');
-    buffer.writeln('  State<$className> createState() => _${className}State();');
+    buffer
+        .writeln('  State<$className> createState() => _${className}State();');
     buffer.writeln('}');
     buffer.writeln();
-    
+
     // State类
     buffer.writeln('class _${className}State extends State<$className> {');
-    
+
     if (config.complexity != TemplateComplexity.simple) {
-      buffer.writeln('  late ${formatClassName(config.templateName, 'Provider')} _provider;');
+      buffer.writeln(
+          '  late ${formatClassName(config.templateName, 'Provider')} _provider;');
       buffer.writeln();
-      
+
       buffer.writeln('  @override');
       buffer.writeln('  void initState() {');
       buffer.writeln('    super.initState();');
-      buffer.writeln('    _provider = context.read<${formatClassName(config.templateName, 'Provider')}>();');
+      buffer.writeln(
+          '    _provider = context.read<${formatClassName(config.templateName, 'Provider')}>();');
       buffer.writeln('    _initializeData();');
       buffer.writeln('  }');
       buffer.writeln();
-      
+
       buffer.writeln('  Future<void> _initializeData() async {');
       buffer.writeln('    await _provider.initialize();');
       buffer.writeln('    if (mounted) {');
@@ -157,12 +163,13 @@ class WidgetGenerator extends BaseCodeGenerator {
       buffer.writeln('  }');
       buffer.writeln();
     }
-    
+
     buffer.writeln('  @override');
     buffer.writeln('  Widget build(BuildContext context) {');
-    
+
     if (config.complexity != TemplateComplexity.simple) {
-      buffer.writeln('    return Consumer<${formatClassName(config.templateName, 'Provider')}>(');
+      buffer.writeln(
+          '    return Consumer<${formatClassName(config.templateName, 'Provider')}>(');
       buffer.writeln('      builder: (context, provider, child) {');
       buffer.writeln('        return Scaffold(');
       _generateScaffoldContent(buffer, config, '        ');
@@ -174,29 +181,31 @@ class WidgetGenerator extends BaseCodeGenerator {
       _generateScaffoldContent(buffer, config, '      ');
       buffer.writeln('    );');
     }
-    
+
     buffer.writeln('  }');
-    
+
     // 生成辅助方法
     _generateHelperMethods(buffer, config);
-    
+
     buffer.writeln('}');
   }
 
   /// 生成屏幕Widget
   void _generateScreenWidget(StringBuffer buffer, ScaffoldConfig config) {
     final className = formatClassName(config.templateName, 'Screen');
-    
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}屏幕组件',
-    ),);
+
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}屏幕组件',
+      ),
+    );
 
     buffer.writeln('class $className extends StatelessWidget {');
     buffer.writeln('  /// 创建$className实例');
     buffer.writeln('  const $className({super.key});');
     buffer.writeln();
-    
+
     buffer.writeln('  @override');
     buffer.writeln('  Widget build(BuildContext context) {');
     buffer.writeln('    return Container(');
@@ -205,8 +214,10 @@ class WidgetGenerator extends BaseCodeGenerator {
     buffer.writeln('        crossAxisAlignment: CrossAxisAlignment.start,');
     buffer.writeln('        children: [');
     buffer.writeln('          Text(');
-    buffer.writeln("            '${formatClassName(config.templateName, '')} Screen',");
-    buffer.writeln('            style: Theme.of(context).textTheme.headlineMedium,');
+    buffer.writeln(
+        "            '${formatClassName(config.templateName, '')} Screen',");
+    buffer.writeln(
+        '            style: Theme.of(context).textTheme.headlineMedium,');
     buffer.writeln('          ),');
     buffer.writeln('          const SizedBox(height: 16),');
     buffer.writeln('          Expanded(');
@@ -217,10 +228,11 @@ class WidgetGenerator extends BaseCodeGenerator {
     buffer.writeln('    );');
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     buffer.writeln('  Widget _buildContent(BuildContext context) {');
     buffer.writeln('    return const Center(');
-    buffer.writeln("      child: Text('${config.templateName} content goes here'),");
+    buffer.writeln(
+        "      child: Text('${config.templateName} content goes here'),");
     buffer.writeln('    );');
     buffer.writeln('  }');
     buffer.writeln('}');
@@ -229,11 +241,13 @@ class WidgetGenerator extends BaseCodeGenerator {
   /// 生成组件Widget
   void _generateComponentWidget(StringBuffer buffer, ScaffoldConfig config) {
     final className = formatClassName(config.templateName, 'Component');
-    
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}可复用组件',
-    ),);
+
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}可复用组件',
+      ),
+    );
 
     buffer.writeln('class $className extends StatelessWidget {');
     buffer.writeln('  /// 数据');
@@ -249,7 +263,7 @@ class WidgetGenerator extends BaseCodeGenerator {
     buffer.writeln('    this.onTap,');
     buffer.writeln('  });');
     buffer.writeln();
-    
+
     buffer.writeln('  @override');
     buffer.writeln('  Widget build(BuildContext context) {');
     buffer.writeln('    return Card(');
@@ -268,7 +282,7 @@ class WidgetGenerator extends BaseCodeGenerator {
     buffer.writeln('    );');
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     buffer.writeln('  Widget _buildContent(BuildContext context) {');
     buffer.writeln('    if (data == null) {');
     buffer.writeln("      return const Text('No data available');");
@@ -280,13 +294,15 @@ class WidgetGenerator extends BaseCodeGenerator {
     buffer.writeln("        if (data!['title'] != null)");
     buffer.writeln('          Text(');
     buffer.writeln("            data!['title'] as String,");
-    buffer.writeln('            style: Theme.of(context).textTheme.titleMedium,');
+    buffer
+        .writeln('            style: Theme.of(context).textTheme.titleMedium,');
     buffer.writeln('          ),');
     buffer.writeln("        if (data!['subtitle'] != null) ...[");
     buffer.writeln('          const SizedBox(height: 4),');
     buffer.writeln('          Text(');
     buffer.writeln("            data!['subtitle'] as String,");
-    buffer.writeln('            style: Theme.of(context).textTheme.bodyMedium,');
+    buffer
+        .writeln('            style: Theme.of(context).textTheme.bodyMedium,');
     buffer.writeln('          ),');
     buffer.writeln('        ],');
     buffer.writeln("        if (data!['description'] != null) ...[");
@@ -305,17 +321,19 @@ class WidgetGenerator extends BaseCodeGenerator {
   /// 生成对话框Widget
   void _generateDialogWidget(StringBuffer buffer, ScaffoldConfig config) {
     final className = formatClassName(config.templateName, 'Dialog');
-    
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}对话框组件',
-      examples: [
-        'showDialog(',
-        '  context: context,',
-        '  builder: (context) => $className(),',
-        ')',
-      ],
-    ),);
+
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}对话框组件',
+        examples: [
+          'showDialog(',
+          '  context: context,',
+          '  builder: (context) => $className(),',
+          ')',
+        ],
+      ),
+    );
 
     buffer.writeln('class $className extends StatefulWidget {');
     buffer.writeln('  /// 标题');
@@ -339,11 +357,12 @@ class WidgetGenerator extends BaseCodeGenerator {
     buffer.writeln('    this.onCancel,');
     buffer.writeln('  });');
     buffer.writeln();
-    
+
     buffer.writeln('  @override');
-    buffer.writeln('  State<$className> createState() => _${className}State();');
+    buffer
+        .writeln('  State<$className> createState() => _${className}State();');
     buffer.writeln();
-    
+
     buffer.writeln('  /// 显示对话框');
     buffer.writeln('  static Future<bool?> show(');
     buffer.writeln('    BuildContext context, {');
@@ -364,14 +383,16 @@ class WidgetGenerator extends BaseCodeGenerator {
     buffer.writeln('  }');
     buffer.writeln('}');
     buffer.writeln();
-    
+
     // State类
     buffer.writeln('class _${className}State extends State<$className> {');
     buffer.writeln('  @override');
     buffer.writeln('  Widget build(BuildContext context) {');
     buffer.writeln('    return AlertDialog(');
-    buffer.writeln('      title: widget.title != null ? Text(widget.title!) : null,');
-    buffer.writeln('      content: widget.content != null ? Text(widget.content!) : null,');
+    buffer.writeln(
+        '      title: widget.title != null ? Text(widget.title!) : null,');
+    buffer.writeln(
+        '      content: widget.content != null ? Text(widget.content!) : null,');
     buffer.writeln('      actions: [');
     buffer.writeln('        TextButton(');
     buffer.writeln('          onPressed: () {');
@@ -394,14 +415,17 @@ class WidgetGenerator extends BaseCodeGenerator {
   }
 
   /// 生成Scaffold内容
-  void _generateScaffoldContent(StringBuffer buffer, ScaffoldConfig config, String indent) {
+  void _generateScaffoldContent(
+      StringBuffer buffer, ScaffoldConfig config, String indent) {
     buffer.writeln('${indent}appBar: AppBar(');
-    buffer.writeln("$indent  title: Text('${formatClassName(config.templateName, '')}'),");
+    buffer.writeln(
+        "$indent  title: const Text('${formatClassName(config.templateName, '')}'),");
     buffer.writeln('$indent),');
-    
+
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln('${indent}body: provider.isLoading');
-      buffer.writeln('$indent    ? const Center(child: CircularProgressIndicator())');
+      buffer.writeln(
+          '$indent    ? const Center(child: CircularProgressIndicator())');
       buffer.writeln('$indent    : provider.error != null');
       buffer.writeln('$indent        ? _buildErrorWidget(provider.error!)');
       buffer.writeln('$indent        : _buildContent(),');
@@ -418,9 +442,15 @@ class WidgetGenerator extends BaseCodeGenerator {
   void _generateHelperMethods(StringBuffer buffer, ScaffoldConfig config) {
     buffer.writeln();
     buffer.writeln('  Widget _buildContent() {');
-    
+
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln('    final data = _provider.data;');
+
+      // Enterprise复杂度时的额外逻辑
+      if (config.complexity == TemplateComplexity.enterprise) {
+        buffer.writeln('    // Enterprise级别的数据处理');
+        buffer.writeln('    const maxItems = 10; // 最大显示项目数');
+      }
       buffer.writeln('    ');
       buffer.writeln('    if (data.isEmpty) {');
       buffer.writeln('      return const Center(');
@@ -429,12 +459,21 @@ class WidgetGenerator extends BaseCodeGenerator {
       buffer.writeln('    }');
       buffer.writeln('    ');
       buffer.writeln('    return ListView.builder(');
-      buffer.writeln('      itemCount: data.length,');
-      buffer.writeln('      itemBuilder: (context, index) {');
-      buffer.writeln('        final item = data[index];');
+      if (config.complexity == TemplateComplexity.enterprise) {
+        buffer.writeln('      itemCount: data.length.clamp(0, maxItems),');
+        buffer.writeln('      itemBuilder: (context, index) {');
+        buffer.writeln('        final item = data[index];');
+        buffer.writeln('        // Enterprise级别的项目处理');
+      } else {
+        buffer.writeln('      itemCount: data.length,');
+        buffer.writeln('      itemBuilder: (context, index) {');
+        buffer.writeln('        final item = data[index];');
+      }
       buffer.writeln('        return ListTile(');
-      buffer.writeln("          title: Text(item['name'] ?? 'Unknown'),");
-      buffer.writeln("          subtitle: Text(item['description'] ?? ''),");
+      buffer.writeln(
+          "          title: Text(item['name']?.toString() ?? 'Unknown'),");
+      buffer.writeln(
+          "          subtitle: Text(item['description']?.toString() ?? ''),");
       buffer.writeln('          onTap: () => _provider.selectItem(item),');
       buffer.writeln('        );');
       buffer.writeln('      },');
@@ -451,9 +490,9 @@ class WidgetGenerator extends BaseCodeGenerator {
       buffer.writeln('      ),');
       buffer.writeln('    );');
     }
-    
+
     buffer.writeln('  }');
-    
+
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln();
       buffer.writeln('  Widget _buildErrorWidget(String error) {');
@@ -461,7 +500,8 @@ class WidgetGenerator extends BaseCodeGenerator {
       buffer.writeln('      child: Column(');
       buffer.writeln('        mainAxisAlignment: MainAxisAlignment.center,');
       buffer.writeln('        children: [');
-      buffer.writeln('          const Icon(Icons.error, size: 64, color: Colors.red),');
+      buffer.writeln(
+          '          const Icon(Icons.error, size: 64, color: Colors.red),');
       buffer.writeln('          const SizedBox(height: 16),');
       buffer.writeln('          Text(error),');
       buffer.writeln('          const SizedBox(height: 16),');

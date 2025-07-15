@@ -49,6 +49,13 @@ class TemplateUpdateCommand extends Command<int> {
           'aggressive',
         ],
         defaultsTo: 'manual',
+        allowedHelp: {
+          'automatic': '自动更新策略',
+          'security-only': '仅安全更新',
+          'manual': '手动更新策略',
+          'conservative': '保守更新策略',
+          'aggressive': '激进更新策略',
+        },
       )
       ..addFlag(
         'check-only',
@@ -95,6 +102,12 @@ class TemplateUpdateCommand extends Command<int> {
         help: '配置管理策略',
         allowed: ['conservative', 'balanced', 'aggressive', 'automatic'],
         defaultsTo: 'balanced',
+        allowedHelp: {
+          'conservative': '保守策略',
+          'balanced': '平衡策略',
+          'aggressive': '激进策略',
+          'automatic': '自动策略',
+        },
       )
       ..addOption(
         'max-impact',
@@ -643,7 +656,8 @@ class TemplateUpdateCommand extends Command<int> {
         print('  • ID: ${result.recommendedConfig.id}');
         print('  • 名称: ${result.recommendedConfig.name}');
         print(
-            '  • 优先级: ${result.recommendedConfig.priority.toStringAsFixed(2)}',);
+          '  • 优先级: ${result.recommendedConfig.priority.toStringAsFixed(2)}',
+        );
         print('  • 复杂度: ${result.recommendedConfig.complexity}');
 
         final deps = result.recommendedConfig.allDependencies;

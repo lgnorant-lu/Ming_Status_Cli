@@ -188,6 +188,8 @@ class TemplateConstants {
     // Flutter核心 - 使用稳定版本
     'flutter_riverpod': '^2.6.1',
     'riverpod_annotation': '^2.6.1',
+    'provider': '^6.1.2', // 添加provider支持
+    'flutter_bloc': '^8.1.6', // 添加flutter_bloc支持
     'go_router': '^14.8.1', // 避免v16的潜在问题
     'freezed_annotation': '^2.4.4',
     'json_annotation': '^4.8.1',

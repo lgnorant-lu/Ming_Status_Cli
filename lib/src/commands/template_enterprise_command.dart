@@ -43,6 +43,16 @@ class TemplateEnterpriseCommand extends Command<int> {
           'audit',
         ],
         mandatory: true,
+        allowedHelp: {
+          'registry': '私有注册表管理',
+          'access': '访问控制管理',
+          'lifecycle': '生命周期管理',
+          'compliance': '合规检查',
+          'tenant': '租户管理',
+          'user': '用户管理',
+          'role': '角色管理',
+          'audit': '审计管理',
+        },
       )
       ..addOption(
         'subaction',
@@ -61,6 +71,20 @@ class TemplateEnterpriseCommand extends Command<int> {
           'reject',
           'stats',
         ],
+        allowedHelp: {
+          'create': '创建资源',
+          'delete': '删除资源',
+          'list': '列出资源',
+          'show': '显示资源详情',
+          'update': '更新资源',
+          'assign': '分配权限/角色',
+          'revoke': '撤销权限/角色',
+          'check': '执行检查',
+          'report': '生成报告',
+          'approve': '审批操作',
+          'reject': '拒绝操作',
+          'stats': '显示统计信息',
+        },
       )
       ..addOption(
         'id',
@@ -84,6 +108,11 @@ class TemplateEnterpriseCommand extends Command<int> {
         help: '输出格式',
         allowed: ['table', 'json', 'yaml'],
         defaultsTo: 'table',
+        allowedHelp: {
+          'table': '表格格式',
+          'json': 'JSON格式',
+          'yaml': 'YAML格式',
+        },
       )
       ..addFlag(
         'verbose',

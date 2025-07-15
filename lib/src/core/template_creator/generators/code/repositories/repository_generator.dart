@@ -36,53 +36,57 @@ class RepositoryGenerator extends BaseCodeGenerator {
   @override
   String generateContent(ScaffoldConfig config) {
     final buffer = StringBuffer();
-    
+
     // 添加文件头部注释
-    buffer.write(generateFileHeader(
-      getFileName(config),
-      config,
-      '${config.templateName}数据仓库Repository',
-    ),);
+    buffer.write(
+      generateFileHeader(
+        getFileName(config),
+        config,
+        '${config.templateName}数据仓库Repository',
+      ),
+    );
 
     final className = _getClassName(config);
     final imports = _getImports(config);
-    
+
     buffer.write(generateImports(imports));
-    
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}数据访问层Repository',
-      examples: [
-        'final repository = $className();',
-        'await repository.initialize();',
-        'final data = await repository.findAll();',
-        'final item = await repository.findById(1);',
-      ],
-      seeAlso: ['Service', 'Model'],
-    ),);
+
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}数据访问层Repository',
+        examples: [
+          'final repository = $className();',
+          'await repository.initialize();',
+          'final data = await repository.findAll();',
+          'final item = await repository.findById(1);',
+        ],
+        seeAlso: ['Service', 'Model'],
+      ),
+    );
 
     buffer.writeln('class $className {');
-    
+
     // 生成字段
     _generateFields(buffer, config);
-    
+
     // 生成构造函数
     _generateConstructor(buffer, config, className);
-    
+
     // 生成初始化方法
     _generateInitializeMethod(buffer, config);
-    
+
     // 生成CRUD方法
     _generateCrudMethods(buffer, config);
-    
+
     // 生成查询方法
     _generateQueryMethods(buffer, config);
-    
+
     // 生成工具方法
     _generateUtilityMethods(buffer, config);
-    
+
     buffer.writeln('}');
-    
+
     // 生成异常类
     _generateExceptionClasses(buffer, config);
 
@@ -92,8 +96,11 @@ class RepositoryGenerator extends BaseCodeGenerator {
   /// 获取类名
   String _getClassName(ScaffoldConfig config) {
     final name = config.templateName;
-    final capitalizedName = name[0].toUpperCase() + name.substring(1);
-    return '${capitalizedName}Repository';
+    // 将snake_case转换为PascalCase
+    final parts = name.split('_');
+    final capitalizedParts =
+        parts.map((part) => part[0].toUpperCase() + part.substring(1)).toList();
+    return '${capitalizedParts.join('')}Repository';
   }
 
   /// 获取导入
@@ -101,24 +108,22 @@ class RepositoryGenerator extends BaseCodeGenerator {
     final imports = <String>[
       'dart:async',
     ];
-    
+
     if (config.complexity != TemplateComplexity.simple) {
       imports.addAll([
-        'dart:convert',
-        'dart:io',
-        '../models/${config.templateName}_model.dart',
+        // Model import removed as it's not used in generated repository
       ]);
     }
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       imports.addAll([
         'package:sqflite/sqflite.dart',
         'package:path/path.dart',
-        '../utils/database_helper.dart',
-        '../utils/logger.dart',
+        // '../utils/database_helper.dart',
+        // '../utils/logger.dart',
       ]);
     }
-    
+
     return imports;
   }
 
@@ -127,27 +132,31 @@ class RepositoryGenerator extends BaseCodeGenerator {
     buffer.writeln('  /// 是否已初始化');
     buffer.writeln('  bool _isInitialized = false;');
     buffer.writeln();
-    
+
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln('  /// 内存缓存');
       buffer.writeln('  final Map<int, Map<String, dynamic>> _cache = {};');
       buffer.writeln();
-      
+
       buffer.writeln('  /// 缓存过期时间（毫秒）');
       buffer.writeln('  static const int _cacheExpirationMs = 300000; // 5分钟');
       buffer.writeln();
+      buffer.writeln('  /// 缓存时间戳');
+      buffer.writeln('  final Map<int, int> _cacheTimestamps = {};');
+      buffer.writeln();
     }
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('  /// 数据库实例');
       buffer.writeln('  Database? _database;');
       buffer.writeln();
-      
+
       buffer.writeln('  /// 表名');
-      buffer.writeln("  static const String _tableName = '${config.templateName}s';");
+      buffer.writeln(
+          "  static const String _tableName = '${config.templateName}s';");
       buffer.writeln();
     }
-    
+
     // Getter方法
     buffer.writeln('  /// 获取初始化状态');
     buffer.writeln('  bool get isInitialized => _isInitialized;');
@@ -155,7 +164,8 @@ class RepositoryGenerator extends BaseCodeGenerator {
   }
 
   /// 生成构造函数
-  void _generateConstructor(StringBuffer buffer, ScaffoldConfig config, String className) {
+  void _generateConstructor(
+      StringBuffer buffer, ScaffoldConfig config, String className) {
     buffer.writeln('  /// 创建$className实例');
     buffer.writeln('  $className();');
     buffer.writeln();
@@ -167,11 +177,12 @@ class RepositoryGenerator extends BaseCodeGenerator {
     buffer.writeln('  Future<void> initialize() async {');
     buffer.writeln('    if (_isInitialized) return;');
     buffer.writeln();
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('    // 初始化数据库');
       buffer.writeln('    final databasesPath = await getDatabasesPath();');
-      buffer.writeln("    final path = join(databasesPath, '${config.templateName}.db');");
+      buffer.writeln(
+          "    final path = join(databasesPath, '${config.templateName}.db');");
       buffer.writeln();
       buffer.writeln('    _database = await openDatabase(');
       buffer.writeln('      path,');
@@ -181,14 +192,15 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln('    );');
       buffer.writeln();
     }
-    
+
     buffer.writeln('    _isInitialized = true;');
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('  /// 创建数据库表');
-      buffer.writeln('  Future<void> _createTables(Database db, int version) async {');
+      buffer.writeln(
+          '  Future<void> _createTables(Database db, int version) async {');
       buffer.writeln("    await db.execute('''");
       buffer.writeln(r'      CREATE TABLE $_tableName (');
       buffer.writeln('        id INTEGER PRIMARY KEY AUTOINCREMENT,');
@@ -202,9 +214,10 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln("    ''');");
       buffer.writeln('  }');
       buffer.writeln();
-      
+
       buffer.writeln('  /// 升级数据库表');
-      buffer.writeln('  Future<void> _upgradeTables(Database db, int oldVersion, int newVersion) async {');
+      buffer.writeln(
+          '  Future<void> _upgradeTables(Database db, int oldVersion, int newVersion) async {');
       buffer.writeln('    // TODO: 实现数据库升级逻辑');
       buffer.writeln('  }');
       buffer.writeln();
@@ -215,10 +228,11 @@ class RepositoryGenerator extends BaseCodeGenerator {
   void _generateCrudMethods(StringBuffer buffer, ScaffoldConfig config) {
     // Create方法
     buffer.writeln('  /// 创建新记录');
-    buffer.writeln('  Future<Map<String, dynamic>> create(Map<String, dynamic> data) async {');
+    buffer.writeln(
+        '  Future<Map<String, dynamic>> create(Map<String, dynamic> data) async {');
     buffer.writeln('    _ensureInitialized();');
     buffer.writeln();
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('    final now = DateTime.now().toIso8601String();');
       buffer.writeln('    final insertData = {');
@@ -227,11 +241,14 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln("      'updated_at': now,");
       buffer.writeln('    };');
       buffer.writeln();
-      buffer.writeln('    final id = await _database!.insert(_tableName, insertData);');
+      buffer.writeln(
+          '    final id = await _database!.insert(_tableName, insertData);');
       buffer.writeln("    final result = {'id': id, ...insertData};");
       buffer.writeln();
       buffer.writeln('    // 更新缓存');
       buffer.writeln('    _cache[id] = result;');
+      buffer.writeln(
+          '    _cacheTimestamps[id] = DateTime.now().millisecondsSinceEpoch;');
       buffer.writeln();
       buffer.writeln('    return result;');
     } else {
@@ -250,24 +267,33 @@ class RepositoryGenerator extends BaseCodeGenerator {
       }
       buffer.writeln('    return result;');
     }
-    
+
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     // Read方法
     buffer.writeln('  /// 根据ID查找记录');
     buffer.writeln('  Future<Map<String, dynamic>?> findById(int id) async {');
     buffer.writeln('    _ensureInitialized();');
     buffer.writeln();
-    
+
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln('    // 检查缓存');
       buffer.writeln('    if (_cache.containsKey(id)) {');
-      buffer.writeln('      return _cache[id];');
+      buffer.writeln('      final timestamp = _cacheTimestamps[id] ?? 0;');
+      buffer
+          .writeln('      final now = DateTime.now().millisecondsSinceEpoch;');
+      buffer.writeln('      if (now - timestamp < _cacheExpirationMs) {');
+      buffer.writeln('        return _cache[id];');
+      buffer.writeln('      } else {');
+      buffer.writeln('        // 缓存过期，清除');
+      buffer.writeln('        _cache.remove(id);');
+      buffer.writeln('        _cacheTimestamps.remove(id);');
+      buffer.writeln('      }');
       buffer.writeln('    }');
       buffer.writeln();
     }
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('    final results = await _database!.query(');
       buffer.writeln('      _tableName,');
@@ -285,23 +311,25 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln('    return null;');
     } else {
       buffer.writeln('    // 模拟查找操作');
-      buffer.writeln('    await Future.delayed(const Duration(milliseconds: 100));');
+      buffer.writeln(
+          '    await Future<void>.delayed(const Duration(milliseconds: 100));');
       buffer.writeln('    return {');
       buffer.writeln("      'id': id,");
       buffer.writeln(r"      'name': '示例记录$id',");
       buffer.writeln("      'created_at': DateTime.now().toIso8601String(),");
       buffer.writeln('    };');
     }
-    
+
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     // Update方法
     buffer.writeln('  /// 更新记录');
-    buffer.writeln('  Future<Map<String, dynamic>?> update(int id, Map<String, dynamic> data) async {');
+    buffer.writeln(
+        '  Future<Map<String, dynamic>?> update(int id, Map<String, dynamic> data) async {');
     buffer.writeln('    _ensureInitialized();');
     buffer.writeln();
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('    final updateData = {');
       buffer.writeln('      ...data,');
@@ -340,16 +368,16 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln('    }');
       buffer.writeln('    return null;');
     }
-    
+
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     // Delete方法
     buffer.writeln('  /// 删除记录');
     buffer.writeln('  Future<bool> delete(int id) async {');
     buffer.writeln('    _ensureInitialized();');
     buffer.writeln();
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('    final count = await _database!.delete(');
       buffer.writeln('      _tableName,');
@@ -369,11 +397,12 @@ class RepositoryGenerator extends BaseCodeGenerator {
         buffer.writeln('    final removed = _cache.remove(id);');
         buffer.writeln('    return removed != null;');
       } else {
-        buffer.writeln('    await Future.delayed(const Duration(milliseconds: 50));');
+        buffer.writeln(
+            '    await Future<void>.delayed(const Duration(milliseconds: 50));');
         buffer.writeln('    return true; // 模拟成功删除');
       }
     }
-    
+
     buffer.writeln('  }');
     buffer.writeln();
   }
@@ -389,7 +418,7 @@ class RepositoryGenerator extends BaseCodeGenerator {
     buffer.writeln('  }) async {');
     buffer.writeln('    _ensureInitialized();');
     buffer.writeln();
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('    final results = await _database!.query(');
       buffer.writeln('      _tableName,');
@@ -407,23 +436,24 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln('    return results;');
     } else {
       buffer.writeln('    // 模拟查询操作');
-      buffer.writeln('    await Future.delayed(const Duration(milliseconds: 200));');
+      buffer.writeln(
+          '    await Future<void>.delayed(const Duration(milliseconds: 200));');
       buffer.writeln('    return List.generate(limit ?? 10, (index) => {');
       buffer.writeln("      'id': index + 1,");
       buffer.writeln(r"      'name': '示例记录${index + 1}',");
       buffer.writeln("      'created_at': DateTime.now().toIso8601String(),");
       buffer.writeln('    });');
     }
-    
+
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     // Count方法
     buffer.writeln('  /// 获取记录总数');
     buffer.writeln('  Future<int> count() async {');
     buffer.writeln('    _ensureInitialized();');
     buffer.writeln();
-    
+
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('    final result = await _database!.rawQuery(');
       buffer.writeln(r"      'SELECT COUNT(*) as count FROM $_tableName',");
@@ -431,10 +461,11 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln("    return result.first['count'] as int;");
     } else {
       buffer.writeln('    // 模拟计数操作');
-      buffer.writeln('    await Future.delayed(const Duration(milliseconds: 50));');
+      buffer.writeln(
+          '    await Future<void>.delayed(const Duration(milliseconds: 50));');
       buffer.writeln('    return 42; // 模拟总数');
     }
-    
+
     buffer.writeln('  }');
     buffer.writeln();
   }
@@ -444,11 +475,12 @@ class RepositoryGenerator extends BaseCodeGenerator {
     buffer.writeln('  /// 确保Repository已初始化');
     buffer.writeln('  void _ensureInitialized() {');
     buffer.writeln('    if (!_isInitialized) {');
-    buffer.writeln("      throw StateError('Repository not initialized. Call initialize() first.');");
+    buffer.writeln(
+        "      throw StateError('Repository not initialized. Call initialize() first.');");
     buffer.writeln('    }');
     buffer.writeln('  }');
     buffer.writeln();
-    
+
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln('  /// 清除缓存');
       buffer.writeln('  void clearCache() {');
@@ -456,7 +488,7 @@ class RepositoryGenerator extends BaseCodeGenerator {
       buffer.writeln('  }');
       buffer.writeln();
     }
-    
+
     buffer.writeln('  /// 清理资源');
     buffer.writeln('  Future<void> dispose() async {');
     if (config.complexity == TemplateComplexity.enterprise) {
@@ -474,7 +506,7 @@ class RepositoryGenerator extends BaseCodeGenerator {
   /// 生成异常类
   void _generateExceptionClasses(StringBuffer buffer, ScaffoldConfig config) {
     final exceptionClassName = '${_getClassName(config)}Exception';
-    
+
     buffer.writeln();
     buffer.writeln('/// ${config.templateName}仓库异常');
     buffer.writeln('class $exceptionClassName implements Exception {');

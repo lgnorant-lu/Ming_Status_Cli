@@ -1,17 +1,5 @@
-id: test_template_templates
 name: test_template
 version: 1.0.0
 description: test_template模板
 author: Ming Status CLI
-type: basic
-platform: crossPlatform
-framework: agnostic
-complexity: simple
-maturity: development
-tags: []
-keywords: []
-dependencies: []
-category: basic
-createdAt: "2025-07-11T10:00:00.000Z"
-updatedAt: "2025-07-11T10:00:00.000Z"
 parameters: []

@@ -57,6 +57,11 @@ class TemplateBenchmarkCommand extends Command<int> {
         help: '输出格式',
         allowed: ['table', 'json', 'csv'],
         defaultsTo: 'table',
+        allowedHelp: {
+          'table': '表格格式',
+          'json': 'JSON格式',
+          'csv': 'CSV格式',
+        },
       )
       ..addFlag(
         'detailed',
@@ -1015,7 +1020,8 @@ class HomeScreen extends StatelessWidget {
 
       if (openBraces != 0) {
         throw FormatException(
-            'Template syntax error at line ${i + 1}: unmatched braces',);
+          'Template syntax error at line ${i + 1}: unmatched braces',
+        );
       }
 
       // 检查变量名格式
@@ -1028,7 +1034,8 @@ class HomeScreen extends StatelessWidget {
           // 验证变量名格式（只允许字母、数字、下划线）
           if (!RegExp(r'^[a-zA-Z_][a-zA-Z0-9_]*$').hasMatch(variable)) {
             throw FormatException(
-                'Invalid variable name at line ${i + 1}: $variable',);
+              'Invalid variable name at line ${i + 1}: $variable',
+            );
           }
         }
       }
@@ -1053,7 +1060,8 @@ class HomeScreen extends StatelessWidget {
     if (templateContent.contains('framework: flutter')) {
       if (!pubspecContent.contains('flutter:')) {
         throw StateError(
-            'Template declares Flutter framework but pubspec missing Flutter dependency',);
+          'Template declares Flutter framework but pubspec missing Flutter dependency',
+        );
       }
 
       // 检查Flutter版本约束
@@ -1065,7 +1073,8 @@ class HomeScreen extends StatelessWidget {
         // 验证版本约束格式
         if (versionConstraint != null && !versionConstraint.contains('>=')) {
           throw FormatException(
-              'Invalid Flutter version constraint: $versionConstraint',);
+            'Invalid Flutter version constraint: $versionConstraint',
+          );
         }
       }
     }
@@ -1102,7 +1111,8 @@ class HomeScreen extends StatelessWidget {
     // 验证版本格式
     if (!RegExp(r'^\d+\.\d+\.\d+').hasMatch(version)) {
       throw FormatException(
-          'Invalid version format for $packageName: $version',);
+        'Invalid version format for $packageName: $version',
+      );
     }
 
     // 检查已知的不兼容版本

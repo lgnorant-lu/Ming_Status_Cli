@@ -38,11 +38,13 @@ class ProviderGenerator extends BaseCodeGenerator {
     final buffer = StringBuffer();
 
     // 添加文件头部注释
-    buffer.write(generateFileHeader(
-      getFileName(config),
-      config,
-      '${config.templateName}状态管理Provider',
-    ),);
+    buffer.write(
+      generateFileHeader(
+        getFileName(config),
+        config,
+        '${config.templateName}状态管理Provider',
+      ),
+    );
 
     // 根据框架类型生成不同的Provider
     if (config.framework == TemplateFramework.flutter) {
@@ -61,16 +63,18 @@ class ProviderGenerator extends BaseCodeGenerator {
 
     buffer.write(generateImports(imports));
 
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}应用状态管理Provider',
-      examples: [
-        'final provider = $className();',
-        'provider.initialize();',
-        'provider.updateState(newData);',
-      ],
-      seeAlso: ['ChangeNotifier', 'Provider'],
-    ),);
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}应用状态管理Provider',
+        examples: [
+          'final provider = $className();',
+          'provider.initialize();',
+          'provider.updateState(newData);',
+        ],
+        seeAlso: ['ChangeNotifier', 'Provider'],
+      ),
+    );
 
     buffer.writeln('class $className extends ChangeNotifier {');
 
@@ -85,6 +89,9 @@ class ProviderGenerator extends BaseCodeGenerator {
 
     // 生成状态更新方法
     _generateUpdateMethods(buffer, config);
+
+    // 生成数据方法
+    _generateDataMethods(buffer, config);
 
     // 生成清理方法
     _generateDisposeMethod(buffer, config);
@@ -104,15 +111,17 @@ class ProviderGenerator extends BaseCodeGenerator {
 
     buffer.write(generateImports(imports));
 
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}状态管理Provider',
-      examples: [
-        'final provider = $className();',
-        'provider.initialize();',
-        'await provider.loadData();',
-      ],
-    ),);
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}状态管理Provider',
+        examples: [
+          'final provider = $className();',
+          'provider.initialize();',
+          'await provider.loadData();',
+        ],
+      ),
+    );
 
     buffer.writeln('class $className {');
 
@@ -152,8 +161,8 @@ class ProviderGenerator extends BaseCodeGenerator {
     if (config.complexity == TemplateComplexity.enterprise) {
       imports.addAll([
         'package:provider/provider.dart',
-        '../services/${config.templateName}_service.dart',
-        '../models/${config.templateName}_model.dart',
+        // '../services/${config.templateName}_service.dart',
+        // '../models/${config.templateName}_model.dart',
       ]);
     }
 
@@ -217,19 +226,24 @@ class ProviderGenerator extends BaseCodeGenerator {
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln('  /// 获取数据列表');
       buffer.writeln(
-          '  List<Map<String, dynamic>> get data => List.unmodifiable(_data);',);
+        '  List<Map<String, dynamic>> get data => List.unmodifiable(_data);',
+      );
       buffer.writeln();
 
       buffer.writeln('  /// 获取当前选中项');
       buffer.writeln(
-          '  Map<String, dynamic>? get selectedItem => _selectedItem;',);
+        '  Map<String, dynamic>? get selectedItem => _selectedItem;',
+      );
       buffer.writeln();
     }
   }
 
   /// 生成构造函数
   void _generateConstructor(
-      StringBuffer buffer, ScaffoldConfig config, String className,) {
+    StringBuffer buffer,
+    ScaffoldConfig config,
+    String className,
+  ) {
     buffer.writeln('  /// 创建$className实例');
     buffer.writeln('  $className();');
     buffer.writeln();
@@ -269,6 +283,8 @@ class ProviderGenerator extends BaseCodeGenerator {
     buffer.writeln('    if (_isLoading != loading) {');
     buffer.writeln('      _isLoading = loading;');
     if (config.framework == TemplateFramework.flutter) {
+      buffer.writeln(
+          '      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member');
       buffer.writeln('      notifyListeners();');
     }
     buffer.writeln('    }');
@@ -279,6 +295,8 @@ class ProviderGenerator extends BaseCodeGenerator {
     buffer.writeln('  void _setError(String error) {');
     buffer.writeln('    _error = error;');
     if (config.framework == TemplateFramework.flutter) {
+      buffer.writeln(
+          '    // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member');
       buffer.writeln('    notifyListeners();');
     }
     buffer.writeln('  }');
@@ -289,6 +307,8 @@ class ProviderGenerator extends BaseCodeGenerator {
     buffer.writeln('    if (_error != null) {');
     buffer.writeln('      _error = null;');
     if (config.framework == TemplateFramework.flutter) {
+      buffer.writeln(
+          '      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member');
       buffer.writeln('      notifyListeners();');
     }
     buffer.writeln('    }');
@@ -307,13 +327,16 @@ class ProviderGenerator extends BaseCodeGenerator {
     buffer.writeln('      _clearError();');
     buffer.writeln();
     buffer.writeln('      // TODO: 实现数据加载逻辑');
-    buffer.writeln('      await Future.delayed(const Duration(seconds: 1));');
+    buffer.writeln(
+        '      await Future<void>.delayed(const Duration(seconds: 1));');
     buffer.writeln('      _data = [');
     buffer.writeln("        {'id': 1, 'name': '示例数据1'},");
     buffer.writeln("        {'id': 2, 'name': '示例数据2'},");
     buffer.writeln('      ];');
     buffer.writeln();
     if (config.framework == TemplateFramework.flutter) {
+      buffer.writeln(
+          '      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member');
       buffer.writeln('      notifyListeners();');
     }
     buffer.writeln('    } catch (e) {');
@@ -329,6 +352,8 @@ class ProviderGenerator extends BaseCodeGenerator {
     buffer.writeln('    if (_selectedItem != item) {');
     buffer.writeln('      _selectedItem = item;');
     if (config.framework == TemplateFramework.flutter) {
+      buffer.writeln(
+          '      // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member');
       buffer.writeln('      notifyListeners();');
     }
     buffer.writeln('    }');
@@ -353,7 +378,8 @@ class ProviderGenerator extends BaseCodeGenerator {
     buffer.writeln();
     buffer.writeln('/// Provider扩展方法');
     buffer.writeln(
-        'extension ${_getClassName(config)}Extensions on ${_getClassName(config)} {',);
+      'extension ${_getClassName(config)}Extensions on ${_getClassName(config)} {',
+    );
     buffer.writeln('  /// 重置状态');
     buffer.writeln('  void reset() {');
     buffer.writeln('    _isInitialized = false;');
@@ -363,6 +389,8 @@ class ProviderGenerator extends BaseCodeGenerator {
       buffer.writeln('    _data.clear();');
       buffer.writeln('    _selectedItem = null;');
     }
+    buffer.writeln(
+        '    // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member');
     buffer.writeln('    notifyListeners();');
     buffer.writeln('  }');
     buffer.writeln('}');

@@ -84,10 +84,8 @@ class DartStructureCreator extends DirectoryCreator {
       case TemplateType.service:
         directories.addAll([
           'lib/src/api',
-          'lib/src/data',
-          'lib/src/domain',
-          'lib/src/infrastructure',
           'lib/src/repositories',
+          'lib/src/services',
         ]);
 
       case TemplateType.data:
@@ -175,8 +173,7 @@ class DartStructureCreator extends DirectoryCreator {
       case TemplateComplexity.medium:
         directories.addAll([
           'lib/src/config',
-          'lib/src/extensions',
-          'lib/src/helpers',
+          'lib/src/utils',
         ]);
 
       case TemplateComplexity.complex:

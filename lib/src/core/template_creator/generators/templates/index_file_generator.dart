@@ -91,6 +91,28 @@ class IndexFileGenerator {
     );
     files.add('lib/src/core/index.dart');
 
+    // 生成core子目录的index文件 - 只为需要的模板类型生成
+    final coreSubdirectories = <String, String>{};
+
+    // 只有UI和Full模板才需要providers、router、theme
+    if (config.templateType == TemplateType.ui ||
+        config.templateType == TemplateType.full) {
+      coreSubdirectories.addAll({
+        'providers': _generateProvidersIndexContent(config),
+        'router': _generateRouterIndexContent(config),
+        'theme': _generateThemeIndexContent(config),
+      });
+    }
+
+    for (final entry in coreSubdirectories.entries) {
+      await _writeFile(
+        path.join(libPath, 'src', 'core', entry.key),
+        'index.dart',
+        entry.value,
+      );
+      files.add('lib/src/core/${entry.key}/index.dart');
+    }
+
     // 生成 src/utils/index.dart
     final utilsIndexContent = _generateUtilsIndexContent(config);
     await _writeFile(
@@ -100,17 +122,20 @@ class IndexFileGenerator {
     );
     files.add('lib/src/utils/index.dart');
 
-    // 生成平台特定的 index.dart
-    if (config.platform == TemplatePlatform.mobile ||
-        config.platform == TemplatePlatform.crossPlatform) {
-      final mobileIndexContent = _generateMobileIndexContent(config);
-      await _writeFile(
-        path.join(libPath, 'src', 'mobile'),
-        'index.dart',
-        mobileIndexContent,
-      );
-      files.add('lib/src/mobile/index.dart');
-    }
+    // 所有模板都专注于模块化开发，不需要平台特定目录
+    // 平台特定功能应该由基础的flutter create提供
+    // Full模板也应该是模块化的，专注于三层架构的完整组合
+    // if (config.templateType == TemplateType.full &&
+    //     (config.platform == TemplatePlatform.mobile ||
+    //         config.platform == TemplatePlatform.crossPlatform)) {
+    //   final mobileIndexContent = _generateMobileIndexContent(config);
+    //   await _writeFile(
+    //     path.join(libPath, 'src', 'mobile'),
+    //     'index.dart',
+    //     mobileIndexContent,
+    //   );
+    //   files.add('lib/src/mobile/index.dart');
+    // }
 
     return files;
   }
@@ -122,14 +147,18 @@ class IndexFileGenerator {
   ) async {
     final files = <String>[];
 
-    // 生成 src/services/index.dart
-    final servicesIndexContent = _generateServicesIndexContent(config);
-    await _writeFile(
-      path.join(libPath, 'src', 'services'),
-      'index.dart',
-      servicesIndexContent,
-    );
-    files.add('lib/src/services/index.dart');
+    // 只有service、full模板才生成 src/services/index.dart
+    // Data模板专注于数据持久层，不需要业务服务层
+    if (config.templateType == TemplateType.service ||
+        config.templateType == TemplateType.full) {
+      final servicesIndexContent = _generateServicesIndexContent(config);
+      await _writeFile(
+        path.join(libPath, 'src', 'services'),
+        'index.dart',
+        servicesIndexContent,
+      );
+      files.add('lib/src/services/index.dart');
+    }
 
     return files;
   }
@@ -207,15 +236,35 @@ class IndexFileGenerator {
   ) async {
     final files = await _generateBasicIndexFiles(libPath, config);
 
-    // Service 特定的 index.dart 文件
+    // Service 特定的 index.dart 文件（只生成实际需要的目录）
     final serviceIndexFiles = {
       'api': _generateAPIIndexContent(config),
       'repositories': _generateRepositoriesIndexContent(config),
       'providers': _generateProvidersIndexContent(config),
       'models': _generateModelsIndexContent(config),
+      'core': _generateCoreIndexContent(config),
+      'utils': _generateUtilsIndexContent(config),
+      'services': _generateServicesIndexContent(config),
+    };
+
+    // 生成core子目录的index文件
+    final coreSubdirIndexFiles = {
+      'core/providers': _generateCoreProvidersIndexContent(config),
+      'core/router': _generateCoreRouterIndexContent(config),
+      'core/theme': _generateCoreThemeIndexContent(config),
     };
 
     for (final entry in serviceIndexFiles.entries) {
+      await _writeFile(
+        path.join(libPath, 'src', entry.key),
+        'index.dart',
+        entry.value,
+      );
+      files.add('lib/src/${entry.key}/index.dart');
+    }
+
+    // 生成core子目录的index文件
+    for (final entry in coreSubdirIndexFiles.entries) {
       await _writeFile(
         path.join(libPath, 'src', entry.key),
         'index.dart',
@@ -234,13 +283,22 @@ class IndexFileGenerator {
     final files = await _generateBasicIndexFiles(libPath, config);
 
     // Data 特定的 index.dart 文件
-    final modelsIndexContent = _generateModelsIndexContent(config);
-    await _writeFile(
-      path.join(libPath, 'src', 'models'),
-      'index.dart',
-      modelsIndexContent,
-    );
-    files.add('lib/src/models/index.dart');
+    final dataIndexFiles = {
+      'models': _generateModelsIndexContent(config),
+      'entities': _generateEntitiesIndexContent(config),
+      'datasources': _generateDatasourcesIndexContent(config),
+      'mappers': _generateMappersIndexContent(config),
+      'cache': _generateCacheIndexContent(config),
+    };
+
+    for (final entry in dataIndexFiles.entries) {
+      await _writeFile(
+        path.join(libPath, 'src', entry.key),
+        'index.dart',
+        entry.value,
+      );
+      files.add('lib/src/${entry.key}/index.dart');
+    }
 
     return files;
   }
@@ -281,7 +339,9 @@ class IndexFileGenerator {
   // ========== 内容生成方法 ==========
 
   String _generateCoreIndexContent(ScaffoldConfig config) {
-    return '''
+    final buffer = StringBuffer();
+
+    buffer.writeln('''
 /*
 ---------------------------------------------------------------
 File name:          index.dart
@@ -293,11 +353,19 @@ Description:        核心功能模块导出文件
 ---------------------------------------------------------------
 */
 
-// 核心功能导出
-export 'providers/index.dart';
-export 'router/index.dart';
-export 'theme/index.dart';
-''';
+// 核心功能导出''');
+
+    // 只有UI和Full模板才导出providers、router、theme
+    if (config.templateType == TemplateType.ui ||
+        config.templateType == TemplateType.full) {
+      buffer.writeln("export 'providers/index.dart';");
+      buffer.writeln("export 'router/index.dart';");
+      buffer.writeln("export 'theme/index.dart';");
+    } else {
+      buffer.writeln('// Basic模板只包含基础核心功能');
+    }
+
+    return buffer.toString();
   }
 
   String _generateUtilsIndexContent(ScaffoldConfig config) {
@@ -610,6 +678,234 @@ Description:        状态提供者模块导出文件
 // export 'user_provider.dart';
 // export 'app_provider.dart';
 // export 'theme_provider.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成跨平台模块index内容
+  String _generateCrossPlatformIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        跨平台模块导出文件
+---------------------------------------------------------------
+*/
+
+// 跨平台功能导出
+// export 'platform_detector.dart';
+// export 'platform_services.dart';
+// export 'platform_widgets.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成core/providers目录index内容
+  String _generateCoreProvidersIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        核心状态提供者导出文件
+---------------------------------------------------------------
+*/
+
+// 核心状态提供者导出
+// export 'app_provider.dart';
+// export 'theme_provider.dart';
+// export 'auth_provider.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成core/router目录index内容
+  String _generateCoreRouterIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        核心路由导出文件
+---------------------------------------------------------------
+*/
+
+// 核心路由导出
+// export 'app_router.dart';
+// export 'route_config.dart';
+// export 'route_guards.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成core/theme目录index内容
+  String _generateCoreThemeIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        核心主题导出文件
+---------------------------------------------------------------
+*/
+
+// 核心主题导出
+// export 'app_theme.dart';
+// export 'color_scheme.dart';
+// export 'text_theme.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  String _generateRouterIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author ?? 'Unknown'}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        路由配置模块导出文件
+---------------------------------------------------------------
+*/
+
+// 路由配置导出
+// export 'app_router.dart';
+// export 'route_names.dart';
+// export 'route_guards.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  String _generateThemeIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author ?? 'Unknown'}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        主题配置模块导出文件
+---------------------------------------------------------------
+*/
+
+// 主题配置导出
+// export 'app_theme.dart';
+// export 'color_scheme.dart';
+// export 'text_theme.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成entities目录index内容
+  String _generateEntitiesIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author ?? 'Unknown'}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        实体模型导出文件
+---------------------------------------------------------------
+*/
+
+// 实体模型导出
+// export 'user_entity.dart';
+// export 'product_entity.dart';
+// export 'base_entity.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成datasources目录index内容
+  String _generateDatasourcesIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author ?? 'Unknown'}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        数据源导出文件
+---------------------------------------------------------------
+*/
+
+// 数据源导出
+// export 'local_datasource.dart';
+// export 'remote_datasource.dart';
+// export 'database_datasource.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成mappers目录index内容
+  String _generateMappersIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author ?? 'Unknown'}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        数据映射器导出文件
+---------------------------------------------------------------
+*/
+
+// 数据映射器导出
+// export 'user_mapper.dart';
+// export 'product_mapper.dart';
+// export 'base_mapper.dart';
+
+// 暂时为空，等待具体功能实现
+''';
+  }
+
+  /// 生成cache目录index内容
+  String _generateCacheIndexContent(ScaffoldConfig config) {
+    return '''
+/*
+---------------------------------------------------------------
+File name:          index.dart
+Author:             ${config.author ?? 'Unknown'}
+Date created:       ${DateTime.now().toString().split(' ')[0]}
+Last modified:      ${DateTime.now().toString().split(' ')[0]}
+Dart Version:       3.2+
+Description:        缓存管理导出文件
+---------------------------------------------------------------
+*/
+
+// 缓存管理导出
+// export 'cache_manager.dart';
+// export 'memory_cache.dart';
+// export 'disk_cache.dart';
 
 // 暂时为空，等待具体功能实现
 ''';

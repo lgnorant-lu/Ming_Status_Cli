@@ -32,24 +32,51 @@ class TemplateSearchCommand extends Command<int> {
         abbr: 't',
         help: '按模板类型过滤',
         allowed: TemplateType.values.map((t) => t.name),
+        allowedHelp: {
+          for (final type in TemplateType.values) type.name: type.displayName,
+        },
       )
       ..addOption(
         'platform',
         abbr: 'p',
         help: '按目标平台过滤',
         allowed: TemplatePlatform.values.map((p) => p.name),
+        allowedHelp: {
+          'web': 'Web平台',
+          'mobile': '移动平台 (iOS/Android)',
+          'desktop': '桌面平台 (Windows/macOS/Linux)',
+          'server': '服务器端',
+          'cloud': '云原生',
+          'crossPlatform': '跨平台',
+        },
       )
       ..addOption(
         'framework',
         abbr: 'f',
         help: '按技术框架过滤',
         allowed: TemplateFramework.values.map((f) => f.name),
+        allowedHelp: {
+          'flutter': 'Flutter框架',
+          'dart': 'Dart原生',
+          'react': 'React框架',
+          'vue': 'Vue.js框架',
+          'angular': 'Angular框架',
+          'nodejs': 'Node.js',
+          'springBoot': 'Spring Boot',
+          'agnostic': '框架无关',
+        },
       )
       ..addOption(
         'complexity',
         abbr: 'c',
         help: '按复杂度过滤',
         allowed: TemplateComplexity.values.map((c) => c.name),
+        allowedHelp: {
+          'simple': '简单模板',
+          'medium': '中等复杂度模板',
+          'complex': '复杂模板',
+          'enterprise': '企业级模板',
+        },
       )
       ..addOption(
         'author',
@@ -70,6 +97,12 @@ class TemplateSearchCommand extends Command<int> {
         help: '输出格式',
         allowed: ['table', 'json', 'yaml', 'list'],
         defaultsTo: 'table',
+        allowedHelp: {
+          'table': '表格格式',
+          'json': 'JSON格式',
+          'yaml': 'YAML格式',
+          'list': '列表格式',
+        },
       )
       ..addOption(
         'sort',
@@ -77,6 +110,13 @@ class TemplateSearchCommand extends Command<int> {
         help: '排序方式',
         allowed: ['relevance', 'name', 'rating', 'downloads', 'updated'],
         defaultsTo: 'relevance',
+        allowedHelp: {
+          'relevance': '按相关性排序',
+          'name': '按名称排序',
+          'rating': '按评分排序',
+          'downloads': '按下载量排序',
+          'updated': '按更新时间排序',
+        },
       )
       ..addOption(
         'limit',
@@ -116,22 +156,66 @@ class TemplateSearchCommand extends Command<int> {
   <关键词>               搜索关键词或短语
 
 过滤选项:
-  -t, --type=<类型>      按模板类型过滤
-  -p, --platform=<平台>  按目标平台过滤
-  -f, --framework=<框架> 按技术框架过滤
-  -c, --complexity=<复杂度> 按复杂度过滤
+  -t, --type=<类型>      按模板类型过滤 (可选值见下方)
+  -p, --platform=<平台>  按目标平台过滤 (可选值见下方)
+  -f, --framework=<框架> 按技术框架过滤 (可选值见下方)
+  -c, --complexity=<复杂度> 按复杂度过滤 (可选值见下方)
   -a, --author=<作者>    按作者过滤
       --tag=<标签>       按标签过滤 (逗号分隔)
       --min-rating=<评分> 最低评分 (0.0-5.0)
+
+模板类型 (-t, --type):
+  ui                     UI组件
+  service                业务服务
+  data                   数据层
+  full                   完整应用
+  system                 系统配置
+  basic                  基础模板
+  micro                  微服务
+  plugin                 插件系统
+  infrastructure         基础设施
+
+目标平台 (-p, --platform):
+  web                    Web平台
+  mobile                 移动平台 (iOS/Android)
+  desktop                桌面平台 (Windows/macOS/Linux)
+  server                 服务器端
+  cloud                  云原生
+  crossPlatform          跨平台
+
+技术框架 (-f, --framework):
+  flutter                Flutter框架
+  dart                   Dart原生
+  react                  React框架
+  vue                    Vue.js框架
+  angular                Angular框架
+  nodejs                 Node.js
+  springBoot             Spring Boot
+  agnostic               框架无关
+
+复杂度级别 (-c, --complexity):
+  simple                 简单模板
+  medium                 中等复杂度模板
+  complex                复杂模板
+  enterprise             企业级模板
+
+输出格式 (-o, --output):
+  table                  表格格式 (默认)
+  json                   JSON格式
+  yaml                   YAML格式
+  list                   列表格式
+
+排序方式 (-s, --sort):
+  relevance              按相关性排序 (默认)
+  name                   按名称排序
+  rating                 按评分排序
+  downloads              按下载量排序
+  updated                按更新时间排序
 
 搜索选项:
       --exact            精确匹配模式
       --case-sensitive   区分大小写搜索
   -d, --detailed         显示详细信息
-
-输出选项:
-  -o, --output=<格式>    输出格式 (默认: table, 允许: table, json, yaml, list)
-  -s, --sort=<字段>      排序方式 (默认: relevance, 允许: relevance, name, rating, downloads, updated)
   -l, --limit=<数量>     限制结果数量 (默认: 20)
 
 示例:

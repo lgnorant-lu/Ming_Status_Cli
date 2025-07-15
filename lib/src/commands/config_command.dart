@@ -111,6 +111,10 @@ class ConfigCommand extends BaseCommand {
         help: '应用配置模板',
         valueHelp: 'basic|enterprise',
         allowed: ['basic', 'enterprise'],
+        allowedHelp: {
+          'basic': '基础配置模板',
+          'enterprise': '企业级配置模板',
+        },
       )
       // 交互式向导选项
       ..addFlag(
@@ -149,8 +153,9 @@ class ConfigCommand extends BaseCommand {
       --reset            重置配置为默认值
       --edit             在编辑器中打开配置文件
 
-模板选项:
-      --template=<类型>  应用配置模板 (允许: basic, enterprise)
+配置模板 (--template):
+  basic                  基础配置模板 - 适合个人开发者
+  enterprise             企业级配置模板 - 适合团队和企业
 
 交互式选项:
   -w, --wizard           启动交互式配置向导

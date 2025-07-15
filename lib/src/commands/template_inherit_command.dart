@@ -50,6 +50,12 @@ class TemplateInheritCommand extends Command<int> {
         help: '继承策略',
         allowed: ['override', 'merge', 'append', 'prepend'],
         defaultsTo: 'merge',
+        allowedHelp: {
+          'override': '覆盖策略 - 子模板覆盖父模板',
+          'merge': '合并策略 - 智能合并内容',
+          'append': '追加策略 - 在父模板后追加',
+          'prepend': '前置策略 - 在父模板前插入',
+        },
       )
       ..addFlag(
         'validate',
@@ -89,8 +95,14 @@ class TemplateInheritCommand extends Command<int> {
 
 继承选项:
   -e, --extends=<模板>       要继承的模板，用逗号分隔
-  -s, --strategy=<策略>      继承策略 (默认: merge)
+  -s, --strategy=<策略>      继承策略 (可选值见下方)
   -o, --output=<目录>        输出目录 (默认: .)
+
+继承策略 (-s, --strategy):
+  override                   覆盖策略 - 子模板覆盖父模板
+  merge                      合并策略 - 智能合并内容 (默认)
+  append                     追加策略 - 在父模板后追加
+  prepend                    前置策略 - 在父模板前插入
 
 验证选项:
       --validate             验证继承链

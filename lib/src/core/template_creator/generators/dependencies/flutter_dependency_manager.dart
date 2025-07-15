@@ -119,6 +119,7 @@ class FlutterDependencyManager extends DependencyManagerBase {
           TemplateConstants.defaultDependencyVersions['flutter_riverpod']!,
       'riverpod_annotation':
           TemplateConstants.defaultDependencyVersions['riverpod_annotation']!,
+      'provider': '^6.1.2', // 添加provider支持
       'go_router': TemplateConstants.defaultDependencyVersions['go_router']!,
       'shared_preferences':
           TemplateConstants.defaultDependencyVersions['shared_preferences']!,
@@ -126,7 +127,28 @@ class FlutterDependencyManager extends DependencyManagerBase {
           TemplateConstants.defaultDependencyVersions['freezed_annotation']!,
       'json_annotation':
           TemplateConstants.defaultDependencyVersions['json_annotation']!,
+      'dio': TemplateConstants.defaultDependencyVersions['dio']!, // 添加dio支持
+      'equatable': TemplateConstants
+          .defaultDependencyVersions['equatable']!, // 添加equatable支持
     });
+
+    // 为service类型添加必要的依赖（V1验证发现的缺失依赖）
+    if (config.templateType == TemplateType.service) {
+      dependencies.addAll({
+        'flutter_bloc': '^8.1.3',
+        'provider': '^6.1.1',
+        'sqflite': '^2.3.0',
+        'crypto': '^3.0.3',
+        'path': '^1.8.3',
+        'dio': '^5.4.0',
+        'retrofit': '^4.0.3',
+        'hive': '^2.2.3',
+        'hive_flutter': '^1.1.0',
+        'uuid': '^4.2.1',
+        'logger': '^2.0.2+1',
+        'equatable': '^2.0.5', // 数据模型相等性比较
+      });
+    }
   }
 
   /// 添加复杂依赖 (使用优化后的版本)
@@ -139,6 +161,7 @@ class FlutterDependencyManager extends DependencyManagerBase {
           TemplateConstants.defaultDependencyVersions['flutter_riverpod']!,
       'riverpod_annotation':
           TemplateConstants.defaultDependencyVersions['riverpod_annotation']!,
+      'provider': TemplateConstants.defaultDependencyVersions['provider']!,
       'go_router': TemplateConstants.defaultDependencyVersions['go_router']!,
       'shared_preferences':
           TemplateConstants.defaultDependencyVersions['shared_preferences']!,
@@ -146,6 +169,7 @@ class FlutterDependencyManager extends DependencyManagerBase {
           TemplateConstants.defaultDependencyVersions['freezed_annotation']!,
       'json_annotation':
           TemplateConstants.defaultDependencyVersions['json_annotation']!,
+      'equatable': TemplateConstants.defaultDependencyVersions['equatable']!,
       'dio': TemplateConstants.defaultDependencyVersions['dio']!,
       'cached_network_image':
           TemplateConstants.defaultDependencyVersions['cached_network_image']!,
@@ -196,6 +220,7 @@ class FlutterDependencyManager extends DependencyManagerBase {
           TemplateConstants.defaultDependencyVersions['flutter_riverpod']!,
       'riverpod_annotation':
           TemplateConstants.defaultDependencyVersions['riverpod_annotation']!,
+      'provider': TemplateConstants.defaultDependencyVersions['provider']!,
       // 路由管理
       'go_router': TemplateConstants.defaultDependencyVersions['go_router']!,
       // 数据序列化
@@ -203,6 +228,8 @@ class FlutterDependencyManager extends DependencyManagerBase {
           TemplateConstants.defaultDependencyVersions['freezed_annotation']!,
       'json_annotation':
           TemplateConstants.defaultDependencyVersions['json_annotation']!,
+      // 数据库支持
+      'sqflite': '^2.4.2',
       // 基础工具
       'intl': '^0.19.0',
       'equatable': '^2.0.5',
@@ -218,21 +245,33 @@ class FlutterDependencyManager extends DependencyManagerBase {
     _addBasicEnterpriseDependencies(dependencies, config);
 
     dependencies.addAll({
+      // 状态管理 (Enterprise级别需要多种状态管理方案)
+      'flutter_bloc':
+          TemplateConstants.defaultDependencyVersions['flutter_bloc'] ??
+              '^8.1.6',
+      'provider': TemplateConstants.defaultDependencyVersions['provider']!,
+
       // 网络请求 (基础企业级依赖已包含状态管理、路由、序列化)
       'dio': TemplateConstants.defaultDependencyVersions['dio']!,
       'retrofit': TemplateConstants.defaultDependencyVersions['retrofit']!,
+
       // 本地存储
       'shared_preferences':
           TemplateConstants.defaultDependencyVersions['shared_preferences']!,
       'hive': TemplateConstants.defaultDependencyVersions['hive']!,
       'hive_flutter':
           TemplateConstants.defaultDependencyVersions['hive_flutter']!,
+      'sqflite': '^2.4.2',
+      'path': '^1.9.1',
+
       // UI组件
       'flutter_svg': '^2.0.9',
       'cached_network_image': '^3.3.0',
       'shimmer': '^3.0.0',
+
       // 工具库
       'uuid': '^4.2.1',
+
       // Firebase (可选)
       'firebase_core': '^2.24.2',
       'firebase_auth': '^4.15.3',
@@ -249,11 +288,36 @@ class FlutterDependencyManager extends DependencyManagerBase {
     _addBasicEnterpriseDependencies(dependencies, config);
 
     dependencies.addAll({
+      // 状态管理 (UI Enterprise级别需要多种状态管理方案)
+      'flutter_bloc':
+          TemplateConstants.defaultDependencyVersions['flutter_bloc'] ??
+              '^8.1.6',
+      'provider': TemplateConstants.defaultDependencyVersions['provider']!,
+
+      // 网络请求
+      'dio': TemplateConstants.defaultDependencyVersions['dio']!,
+      'retrofit': TemplateConstants.defaultDependencyVersions['retrofit']!,
+
+      // 本地存储
+      'shared_preferences':
+          TemplateConstants.defaultDependencyVersions['shared_preferences']!,
+      'hive': TemplateConstants.defaultDependencyVersions['hive']!,
+      'hive_flutter':
+          TemplateConstants.defaultDependencyVersions['hive_flutter']!,
+      'sqflite': '^2.4.2',
+      'path': '^1.9.1',
+
       // UI相关依赖
       'flutter_svg': '^2.0.9',
       'cached_network_image': '^3.3.0',
       'shimmer': '^3.0.0',
       'google_fonts': '^6.1.0',
+
+      // 工具库
+      'uuid': TemplateConstants.defaultDependencyVersions['uuid']!,
+      'url_launcher': '^6.2.2',
+      'share_plus': '^7.2.1',
+      'path_provider': '^2.1.1',
     });
   }
 
@@ -270,6 +334,22 @@ class FlutterDependencyManager extends DependencyManagerBase {
       'retrofit': '^4.0.3',
       'json_annotation': '^4.8.1',
       'freezed_annotation': '^2.4.1',
+
+      // V1验证发现的缺失依赖
+      'flutter_bloc': '^8.1.3',
+      'provider': '^6.1.1',
+      'sqflite': '^2.3.0',
+      'crypto': '^3.0.3',
+      'path': '^1.8.3',
+
+      // 本地存储和数据库
+      'shared_preferences': '^2.2.2',
+      'hive': '^2.2.3',
+      'hive_flutter': '^1.1.0',
+
+      // 工具库
+      'uuid': '^4.2.1',
+      'logger': '^2.0.2+1',
     });
   }
 
@@ -303,6 +383,17 @@ class FlutterDependencyManager extends DependencyManagerBase {
       'json_serializable': '^6.7.1',
       'riverpod_generator': '^2.3.9',
     });
+
+    // 为service类型添加必要的开发依赖
+    if (config.templateType == TemplateType.service) {
+      dependencies.addAll({
+        'hive_generator': '^2.0.1',
+        'retrofit_generator': '^7.0.8',
+        'bloc_test': '^9.1.5',
+        'mockito': '^5.4.4',
+        'very_good_analysis': '^5.1.0',
+      });
+    }
   }
 
   /// 添加复杂开发依赖
@@ -326,18 +417,29 @@ class FlutterDependencyManager extends DependencyManagerBase {
     ScaffoldConfig config,
   ) {
     dependencies.addAll({
+      // 代码生成工具
       'build_runner': '^2.4.7',
       'freezed': '^2.4.6',
       'json_serializable': '^6.7.1',
       'riverpod_generator': '^2.3.9',
-      'mockito': '^5.4.4',
       'flutter_gen_runner': '^5.4.0',
+
+      // 测试工具
+      'mockito': '^5.4.4',
       'integration_test': 'sdk: flutter',
       'flutter_driver': 'sdk: flutter',
       'test': '^1.24.9',
       'coverage': '^1.7.1',
+
+      // 代码质量工具
       'dart_code_metrics': '^5.7.6',
       'import_sorter': '^4.6.0',
+      'very_good_analysis': '^5.1.0',
+
+      // V1验证发现需要的额外工具
+      'hive_generator': '^2.0.1',
+      'retrofit_generator': '^7.0.8',
+      'bloc_test': '^9.1.5',
     });
   }
 
@@ -537,7 +639,7 @@ class FlutterDependencyManager extends DependencyManagerBase {
   ) {
     dependencies.addAll({
       'device_info_plus': '^9.1.1',
-      'package_info_plus': '^5.0.1',
+      'package_info_plus': '^8.3.0', // 修复与cached_network_image的版本冲突
       'connectivity_plus': '^5.0.2',
       'battery_plus': '^5.0.2',
     });

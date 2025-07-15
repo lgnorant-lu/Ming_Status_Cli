@@ -13,6 +13,10 @@ Description:        代码生成器模块总导出文件
 export 'base/index.dart';
 // 常量定义生成器
 export 'constants/index.dart';
+// 跨平台支持生成器
+export 'cross_platform/index.dart';
+// 集成测试生成器
+export 'integration/index.dart';
 // 模型层生成器
 export 'models/index.dart';
 // 数据仓库生成器

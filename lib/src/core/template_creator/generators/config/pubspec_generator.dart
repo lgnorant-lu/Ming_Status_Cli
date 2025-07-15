@@ -200,8 +200,13 @@ class PubspecGenerator extends ConfigGeneratorBase {
       final version = entry.value;
 
       // 状态管理
-      if (['flutter_riverpod', 'riverpod_annotation', 'provider', 'bloc']
-          .contains(packageName)) {
+      if ([
+        'flutter_riverpod',
+        'riverpod_annotation',
+        'provider',
+        'bloc',
+        'flutter_bloc'
+      ].contains(packageName)) {
         categorized['state_management']![packageName] = version;
       }
       // 路由管理
@@ -209,8 +214,12 @@ class PubspecGenerator extends ConfigGeneratorBase {
         categorized['routing']![packageName] = version;
       }
       // 数据序列化
-      else if (['freezed_annotation', 'json_annotation', 'built_value']
-          .contains(packageName)) {
+      else if ([
+        'freezed_annotation',
+        'json_annotation',
+        'built_value',
+        'equatable'
+      ].contains(packageName)) {
         categorized['serialization']![packageName] = version;
       }
       // 网络请求
@@ -224,6 +233,7 @@ class PubspecGenerator extends ConfigGeneratorBase {
         'hive_flutter',
         'sqflite',
         'drift',
+        'path',
       ].contains(packageName)) {
         categorized['storage']![packageName] = version;
       }
@@ -242,7 +252,7 @@ class PubspecGenerator extends ConfigGeneratorBase {
           packageName.startsWith('cloud_firestore')) {
         categorized['firebase']![packageName] = version;
       }
-      // 工具库
+      // 工具库 (包括crypto、uuid、logger等)
       else {
         categorized['utils']![packageName] = version;
       }

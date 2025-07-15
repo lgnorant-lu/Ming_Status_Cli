@@ -49,7 +49,7 @@ class {{module_name.pascalCase()}}Provider extends ChangeNotifier {
     setLoading(true);
     try {
       // Simulate network call or heavy computation
-      await Future.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 2));
       increment();
     } finally {
       setLoading(false);

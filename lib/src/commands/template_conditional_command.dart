@@ -40,17 +40,39 @@ class TemplateConditionalCommand extends Command<int> {
       ..addOption(
         'platform',
         abbr: 'p',
-        help: '目标平台 (mobile, web, desktop, server)',
+        help: '目标平台',
+        allowed: ['mobile', 'web', 'desktop', 'server'],
+        allowedHelp: {
+          'mobile': '移动平台 (iOS/Android)',
+          'web': 'Web平台',
+          'desktop': '桌面平台',
+          'server': '服务器端',
+        },
       )
       ..addOption(
         'framework',
         abbr: 'f',
-        help: '技术框架 (flutter, react, vue, angular, nodejs)',
+        help: '技术框架',
+        allowed: ['flutter', 'react', 'vue', 'angular', 'nodejs'],
+        allowedHelp: {
+          'flutter': 'Flutter框架',
+          'react': 'React框架',
+          'vue': 'Vue.js框架',
+          'angular': 'Angular框架',
+          'nodejs': 'Node.js',
+        },
       )
       ..addOption(
         'environment',
         abbr: 'e',
-        help: '运行环境 (development, testing, staging, production)',
+        help: '运行环境',
+        allowed: ['development', 'testing', 'staging', 'production'],
+        allowedHelp: {
+          'development': '开发环境',
+          'testing': '测试环境',
+          'staging': '预发布环境',
+          'production': '生产环境',
+        },
       )
       ..addOption(
         'features',
@@ -101,11 +123,30 @@ class TemplateConditionalCommand extends Command<int> {
   -d, --dry-run              仅显示渲染结果，不写入文件
 
 条件选项:
-  -p, --platform=<平台>      目标平台 (mobile, web, desktop, server)
-  -f, --framework=<框架>     技术框架 (flutter, react, vue, angular, nodejs)
-  -e, --environment=<环境>   运行环境 (development, testing, staging, production)
+  -p, --platform=<平台>      目标平台 (可选值见下方)
+  -f, --framework=<框架>     技术框架 (可选值见下方)
+  -e, --environment=<环境>   运行环境 (可选值见下方)
       --features=<特性>      启用的功能特性，用逗号分隔
   -v, --variables=<变量>     自定义变量，格式: key1=value1,key2=value2
+
+目标平台 (-p, --platform):
+  mobile                     移动平台 (iOS/Android)
+  web                        Web平台
+  desktop                    桌面平台
+  server                     服务器端
+
+技术框架 (-f, --framework):
+  flutter                    Flutter框架
+  react                      React框架
+  vue                        Vue.js框架
+  angular                    Angular框架
+  nodejs                     Node.js
+
+运行环境 (-e, --environment):
+  development                开发环境
+  testing                    测试环境
+  staging                    预发布环境
+  production                 生产环境
 
 自动检测选项:
       --detect-platform      自动检测当前平台

@@ -199,12 +199,12 @@ class MainExportGenerator extends TemplateGeneratorBase {
     buffer.writeln('// 数据模型导出');
     buffer.writeln("export 'src/models/index.dart';");
     buffer.writeln("export 'src/entities/index.dart';");
-    buffer.writeln("export 'src/dto/index.dart';");
     buffer.writeln();
 
     buffer.writeln('// 数据访问导出');
-    buffer.writeln("export 'src/repositories/index.dart';");
     buffer.writeln("export 'src/datasources/index.dart';");
+    buffer.writeln("export 'src/mappers/index.dart';");
+    buffer.writeln("export 'src/cache/index.dart';");
     buffer.writeln();
   }
 
@@ -212,10 +212,11 @@ class MainExportGenerator extends TemplateGeneratorBase {
   void _generateFullExports(StringBuffer buffer, ScaffoldConfig config) {
     buffer.writeln('// 完整模块导出');
     buffer.writeln("export 'src/widgets/index.dart';");
-    buffer.writeln("export 'src/services/index.dart';");
     buffer.writeln("export 'src/models/index.dart';");
     buffer.writeln("export 'src/providers/index.dart';");
     buffer.writeln("export 'src/repositories/index.dart';");
+    buffer.writeln("export 'src/utils/index.dart';");
+    buffer.writeln("export 'src/core/index.dart';");
     buffer.writeln();
 
     if (config.framework == TemplateFramework.flutter) {
@@ -255,6 +256,16 @@ class MainExportGenerator extends TemplateGeneratorBase {
   /// 生成条件导出
   void _generateConditionalExports(StringBuffer buffer, ScaffoldConfig config) {
     buffer.writeln('// 条件导出（根据平台和环境）');
+
+    // service、ui、basic、data、full类型不需要平台特定导出
+    if (config.templateType == TemplateType.service ||
+        config.templateType == TemplateType.ui ||
+        config.templateType == TemplateType.basic ||
+        config.templateType == TemplateType.data ||
+        config.templateType == TemplateType.full) {
+      buffer.writeln('// ${config.templateType.name}类型模板不需要平台特定导出');
+      return;
+    }
 
     // 平台特定导出
     switch (config.platform) {

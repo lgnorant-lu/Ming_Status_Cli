@@ -38,27 +38,31 @@ class ServiceGenerator extends BaseCodeGenerator {
     final buffer = StringBuffer();
 
     // 添加文件头部注释
-    buffer.write(generateFileHeader(
-      getFileName(config),
-      config,
-      '${config.templateName}业务逻辑服务类',
-    ),);
+    buffer.write(
+      generateFileHeader(
+        getFileName(config),
+        config,
+        '${config.templateName}业务逻辑服务类',
+      ),
+    );
 
     final className = _getClassName(config);
     final imports = _getImports(config);
 
     buffer.write(generateImports(imports));
 
-    buffer.write(generateClassDocumentation(
-      className,
-      '${config.templateName}业务逻辑服务',
-      examples: [
-        'final service = $className();',
-        'await service.initialize();',
-        'final data = await service.fetchData();',
-      ],
-      seeAlso: ['Repository', 'Provider'],
-    ),);
+    buffer.write(
+      generateClassDocumentation(
+        className,
+        '${config.templateName}业务逻辑服务',
+        examples: [
+          'final service = $className();',
+          'await service.initialize();',
+          'final data = await service.fetchData();',
+        ],
+        seeAlso: ['Repository', 'Provider'],
+      ),
+    );
 
     buffer.writeln('class $className {');
 
@@ -94,28 +98,28 @@ class ServiceGenerator extends BaseCodeGenerator {
   List<String> _getImports(ScaffoldConfig config) {
     final imports = <String>[
       'dart:async',
-      'dart:convert',
     ];
 
+    // 只在实际使用时添加imports
     if (config.complexity != TemplateComplexity.simple) {
-      imports.addAll([
-        'dart:io',
-      ]);
-
       // 根据框架选择HTTP客户端
       if (config.framework == TemplateFramework.flutter) {
         imports.add('package:dio/dio.dart');
       } else {
-        imports.add('package:http/http.dart');
+        imports.addAll([
+          'dart:convert',
+          'dart:io',
+          'package:http/http.dart',
+        ]);
       }
     }
 
     if (config.complexity == TemplateComplexity.enterprise) {
       imports.addAll([
-        '../models/${config.templateName}_model.dart',
+        // '../models/${config.templateName}_model.dart',
         '../repositories/${config.templateName}_repository.dart',
-        '../utils/logger.dart',
-        '../utils/validators.dart',
+        // '../utils/logger.dart',
+        // '../utils/validators.dart',
       ]);
     }
 
@@ -139,14 +143,16 @@ class ServiceGenerator extends BaseCodeGenerator {
 
       buffer.writeln('  /// 基础URL');
       buffer.writeln(
-          "  static const String _baseUrl = 'https://api.example.com';",);
+        "  static const String _baseUrl = 'https://api.example.com';",
+      );
       buffer.writeln();
     }
 
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('  /// 数据仓库');
       buffer.writeln(
-          '  late final ${_getRepositoryClassName(config)} _repository;',);
+        '  late final ${_getRepositoryClassName(config)} _repository;',
+      );
       buffer.writeln();
 
       buffer.writeln('  /// 缓存过期时间（分钟）');
@@ -166,14 +172,18 @@ class ServiceGenerator extends BaseCodeGenerator {
 
   /// 生成构造函数
   void _generateConstructor(
-      StringBuffer buffer, ScaffoldConfig config, String className,) {
+    StringBuffer buffer,
+    ScaffoldConfig config,
+    String className,
+  ) {
     buffer.writeln('  /// 创建$className实例');
     if (config.complexity == TemplateComplexity.enterprise) {
       buffer.writeln('  $className({');
       buffer.writeln('    ${_getRepositoryClassName(config)}? repository,');
       buffer.writeln('  }) {');
       buffer.writeln(
-          '    _repository = repository ?? ${_getRepositoryClassName(config)}();',);
+        '    _repository = repository ?? ${_getRepositoryClassName(config)}();',
+      );
       buffer.writeln('  }');
     } else {
       buffer.writeln('  $className();');
@@ -204,7 +214,8 @@ class ServiceGenerator extends BaseCodeGenerator {
         buffer.writeln('    // 初始化HTTP客户端');
         buffer.writeln('    _httpClient = HttpClient();');
         buffer.writeln(
-            '    _httpClient.connectionTimeout = const Duration(seconds: 30);',);
+          '    _httpClient.connectionTimeout = const Duration(seconds: 30);',
+        );
       }
       buffer.writeln();
     }
@@ -240,7 +251,8 @@ class ServiceGenerator extends BaseCodeGenerator {
       buffer.writeln('      final entry = _cache[cacheKey]!;');
       buffer.writeln('      if (!entry.isExpired) {');
       buffer.writeln(
-          '        return List<Map<String, dynamic>>.from(entry.data);',);
+        '        return List<Map<String, dynamic>>.from(entry.data as List);',
+      );
       buffer.writeln('      }');
       buffer.writeln('    }');
       buffer.writeln();
@@ -249,36 +261,46 @@ class ServiceGenerator extends BaseCodeGenerator {
     buffer.writeln('    try {');
     if (config.complexity == TemplateComplexity.simple) {
       buffer.writeln('      // 模拟数据获取');
-      buffer.writeln('      await Future.delayed(const Duration(seconds: 1));');
+      buffer.writeln(
+          '      await Future<void>.delayed(const Duration(seconds: 1));');
       buffer.writeln('      return [');
-      buffer
-          .writeln("        {'id': 1, 'name': '示例数据1', 'page': page},");
-      buffer
-          .writeln("        {'id': 2, 'name': '示例数据2', 'page': page},");
+      buffer.writeln("        {'id': 1, 'name': '示例数据1', 'page': page},");
+      buffer.writeln("        {'id': 2, 'name': '示例数据2', 'page': page},");
       buffer.writeln('      ];');
     } else {
       if (config.framework == TemplateFramework.flutter) {
         buffer.writeln(
-            "      final response = await _dio.get('/data', queryParameters: {",);
+          "      final Response<Map<String, dynamic>> response = await _dio.get('/data', queryParameters: {",
+        );
         buffer.writeln("        'page': page,");
         buffer.writeln("        'limit': limit,");
         buffer.writeln('      });');
         buffer.writeln();
         buffer.writeln('      if (response.statusCode == 200) {');
         buffer.writeln(
-            "        final data = List<Map<String, dynamic>>.from(response.data['data'] ?? []);",);
+          "        final dynamic rawData = response.data?['data'] ?? <dynamic>[];",
+        );
+        buffer.writeln(
+          "        final List<dynamic> listData = rawData is List ? rawData : <dynamic>[];",
+        );
+        buffer.writeln(
+          "        final data = listData.map((item) => Map<String, dynamic>.from(item as Map)).toList();",
+        );
       } else {
         buffer.writeln(
-            r"      final uri = Uri.parse('$_baseUrl/data?page=$page&limit=$limit');",);
+          r"      final uri = Uri.parse('$_baseUrl/data?page=$page&limit=$limit');",
+        );
         buffer.writeln('      final request = await _httpClient.getUrl(uri);');
         buffer.writeln('      final response = await request.close();');
         buffer.writeln();
         buffer.writeln('      if (response.statusCode == 200) {');
         buffer.writeln(
-            '        final responseBody = await response.transform(utf8.decoder).join();',);
+          '        final responseBody = await response.transform(utf8.decoder).join();',
+        );
         buffer.writeln('        final jsonData = jsonDecode(responseBody);');
         buffer.writeln(
-            "        final data = List<Map<String, dynamic>>.from(jsonData['data'] ?? []);",);
+          "        final data = List<Map<String, dynamic>>.from(jsonData['data'] ?? []);",
+        );
       }
 
       if (config.complexity == TemplateComplexity.enterprise) {
@@ -292,7 +314,8 @@ class ServiceGenerator extends BaseCodeGenerator {
       buffer.writeln('      } else {');
       buffer.writeln('        throw ${_getClassName(config)}Exception(');
       buffer.writeln(
-          r"          'Failed to fetch data: HTTP ${response.statusCode}',",);
+        r"          'Failed to fetch data: HTTP ${response.statusCode}',",
+      );
       buffer.writeln('        );');
       buffer.writeln('      }');
     }
@@ -314,34 +337,38 @@ class ServiceGenerator extends BaseCodeGenerator {
     if (config.complexity == TemplateComplexity.simple) {
       buffer.writeln('      // 模拟数据获取');
       buffer.writeln(
-          '      await Future.delayed(const Duration(milliseconds: 500));',);
+        '      await Future<void>.delayed(const Duration(milliseconds: 500));',
+      );
       buffer.writeln(r"      return {'id': id, 'name': '示例数据$id'};");
     } else {
       if (config.framework == TemplateFramework.flutter) {
-        buffer
-            .writeln(r"      final response = await _dio.get('/data/$id');");
+        buffer.writeln(
+            r"      final Response<Map<String, dynamic>> response = await _dio.get('/data/$id');");
         buffer.writeln('      ');
         buffer.writeln('      if (response.statusCode == 200) {');
         buffer.writeln(
-            '        return Map<String, dynamic>.from(response.data);',);
+          '        return Map<String, dynamic>.from(response.data as Map);',
+        );
       } else {
-        buffer
-            .writeln(r"      final uri = Uri.parse('$_baseUrl/data/$id');");
+        buffer.writeln(r"      final uri = Uri.parse('$_baseUrl/data/$id');");
         buffer.writeln('      final request = await _httpClient.getUrl(uri);');
         buffer.writeln('      final response = await request.close();');
         buffer.writeln('      ');
         buffer.writeln('      if (response.statusCode == 200) {');
         buffer.writeln(
-            '        final responseBody = await response.transform(utf8.decoder).join();',);
+          '        final responseBody = await response.transform(utf8.decoder).join();',
+        );
         buffer.writeln(
-            '        return Map<String, dynamic>.from(jsonDecode(responseBody));',);
+          '        return Map<String, dynamic>.from(jsonDecode(responseBody));',
+        );
       }
       buffer.writeln('      } else if (response.statusCode == 404) {');
       buffer.writeln('        return null;');
       buffer.writeln('      } else {');
       buffer.writeln('        throw ${_getClassName(config)}Exception(');
       buffer.writeln(
-          r"          'Failed to fetch item: HTTP ${response.statusCode}',",);
+        r"          'Failed to fetch item: HTTP ${response.statusCode}',",
+      );
       buffer.writeln('        );');
       buffer.writeln('      }');
     }
@@ -357,17 +384,20 @@ class ServiceGenerator extends BaseCodeGenerator {
     if (config.complexity != TemplateComplexity.simple) {
       buffer.writeln('  /// 创建新数据项');
       buffer.writeln(
-          '  Future<Map<String, dynamic>> createData(Map<String, dynamic> data) async {',);
+        '  Future<Map<String, dynamic>> createData(Map<String, dynamic> data) async {',
+      );
       buffer.writeln('    _ensureInitialized();');
       buffer.writeln();
       buffer.writeln('    try {');
       if (config.framework == TemplateFramework.flutter) {
         buffer.writeln(
-            "      final response = await _dio.post('/data', data: data);",);
+          "      final Response<Map<String, dynamic>> response = await _dio.post('/data', data: data);",
+        );
         buffer.writeln('      ');
         buffer.writeln('      if (response.statusCode == 201) {');
         buffer.writeln(
-            '        final createdData = Map<String, dynamic>.from(response.data);',);
+          '        final Map<String, dynamic> createdData = Map<String, dynamic>.from(response.data as Map);',
+        );
       } else {
         buffer.writeln(r"      final uri = Uri.parse('$_baseUrl/data');");
         buffer.writeln('      final request = await _httpClient.postUrl(uri);');
@@ -377,9 +407,11 @@ class ServiceGenerator extends BaseCodeGenerator {
         buffer.writeln('      ');
         buffer.writeln('      if (response.statusCode == 201) {');
         buffer.writeln(
-            '        final responseBody = await response.transform(utf8.decoder).join();',);
+          '        final responseBody = await response.transform(utf8.decoder).join();',
+        );
         buffer.writeln(
-            '        final createdData = Map<String, dynamic>.from(jsonDecode(responseBody));',);
+          '        final createdData = Map<String, dynamic>.from(jsonDecode(responseBody));',
+        );
       }
 
       if (config.complexity == TemplateComplexity.enterprise) {
@@ -393,7 +425,8 @@ class ServiceGenerator extends BaseCodeGenerator {
       buffer.writeln('      } else {');
       buffer.writeln('        throw ${_getClassName(config)}Exception(');
       buffer.writeln(
-          r"          'Failed to create data: HTTP ${response.statusCode}',",);
+        r"          'Failed to create data: HTTP ${response.statusCode}',",
+      );
       buffer.writeln('        );');
       buffer.writeln('      }');
       buffer.writeln('    } catch (e) {');
@@ -412,7 +445,8 @@ class ServiceGenerator extends BaseCodeGenerator {
     buffer.writeln('  void _ensureInitialized() {');
     buffer.writeln('    if (!_isInitialized) {');
     buffer.writeln(
-        "      throw StateError('Service not initialized. Call initialize() first.');",);
+      "      throw StateError('Service not initialized. Call initialize() first.');",
+    );
     buffer.writeln('    }');
     buffer.writeln('  }');
     buffer.writeln();
@@ -421,7 +455,8 @@ class ServiceGenerator extends BaseCodeGenerator {
       buffer.writeln('  /// 清除数据缓存');
       buffer.writeln('  void _clearDataCache() {');
       buffer.writeln(
-          "    _cache.removeWhere((key, value) => key.startsWith('data_'));",);
+        "    _cache.removeWhere((key, value) => key.startsWith('data_'));",
+      );
       buffer.writeln('  }');
       buffer.writeln();
 
@@ -462,8 +497,7 @@ class ServiceGenerator extends BaseCodeGenerator {
     buffer.writeln('  const $exceptionClassName(this.message);');
     buffer.writeln();
     buffer.writeln('  @override');
-    buffer
-        .writeln("  String toString() => '$exceptionClassName: \$message';");
+    buffer.writeln("  String toString() => '$exceptionClassName: \$message';");
     buffer.writeln('}');
 
     if (config.complexity == TemplateComplexity.enterprise) {
@@ -483,7 +517,8 @@ class ServiceGenerator extends BaseCodeGenerator {
       buffer.writeln('  bool get isExpired {');
       buffer.writeln('    final expirationTime = createdAt.add(');
       buffer.writeln(
-          '      const Duration(minutes: ${_getClassName(config)}._cacheExpirationMinutes),',);
+        '      const Duration(minutes: ${_getClassName(config)}._cacheExpirationMinutes),',
+      );
       buffer.writeln('    );');
       buffer.writeln('    return DateTime.now().isAfter(expirationTime);');
       buffer.writeln('  }');
@@ -494,7 +529,10 @@ class ServiceGenerator extends BaseCodeGenerator {
   /// 获取仓库类名
   String _getRepositoryClassName(ScaffoldConfig config) {
     final name = config.templateName;
-    final capitalizedName = name[0].toUpperCase() + name.substring(1);
-    return '${capitalizedName}Repository';
+    // 将snake_case转换为PascalCase
+    final parts = name.split('_');
+    final capitalizedParts =
+        parts.map((part) => part[0].toUpperCase() + part.substring(1)).toList();
+    return '${capitalizedParts.join('')}Repository';
   }
 }

@@ -16,14 +16,36 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:ming_status_cli/src/core/template_system/template_metadata.dart';
 import 'package:ming_status_cli/src/core/template_system/template_registry.dart';
+import 'package:ming_status_cli/src/core/template_system/template_types.dart';
 import 'package:ming_status_cli/src/utils/logger.dart' as cli_logger;
 
 /// 模板列表命令
 class TemplateListCommand extends Command<int> {
   TemplateListCommand() {
     argParser
-      ..addOption('type', abbr: 't', help: '按模板类型过滤')
-      ..addOption('platform', abbr: 'p', help: '按目标平台过滤')
+      ..addOption(
+        'type',
+        abbr: 't',
+        help: '按模板类型过滤',
+        allowed: TemplateType.values.map((t) => t.name),
+        allowedHelp: {
+          for (final type in TemplateType.values) type.name: type.displayName,
+        },
+      )
+      ..addOption(
+        'platform',
+        abbr: 'p',
+        help: '按目标平台过滤',
+        allowed: TemplatePlatform.values.map((p) => p.name),
+        allowedHelp: {
+          'web': 'Web平台',
+          'mobile': '移动平台 (iOS/Android)',
+          'desktop': '桌面平台 (Windows/macOS/Linux)',
+          'server': '服务器端',
+          'cloud': '云原生',
+          'crossPlatform': '跨平台',
+        },
+      )
       ..addFlag('detailed', abbr: 'd', help: '显示详细信息');
   }
 
@@ -41,8 +63,27 @@ class TemplateListCommand extends Command<int> {
   ming template list [选项]
 
 过滤选项:
-  -t, --type=<类型>          按模板类型过滤
-  -p, --platform=<平台>      按目标平台过滤
+  -t, --type=<类型>          按模板类型过滤 (可选值见下方)
+  -p, --platform=<平台>      按目标平台过滤 (可选值见下方)
+
+模板类型 (-t, --type):
+  ui                         UI组件
+  service                    业务服务
+  data                       数据层
+  full                       完整应用
+  system                     系统配置
+  basic                      基础模板
+  micro                      微服务
+  plugin                     插件系统
+  infrastructure             基础设施
+
+目标平台 (-p, --platform):
+  web                        Web平台
+  mobile                     移动平台 (iOS/Android)
+  desktop                    桌面平台 (Windows/macOS/Linux)
+  server                     服务器端
+  cloud                      云原生
+  crossPlatform              跨平台
 
 显示选项:
   -d, --detailed             显示详细信息
@@ -55,13 +96,13 @@ class TemplateListCommand extends Command<int> {
   ming template list --type=ui
 
   # 按平台过滤
-  ming template list --platform=flutter
+  ming template list --platform=mobile
 
   # 显示详细信息
   ming template list --detailed
 
   # 组合过滤
-  ming template list --type=ui --platform=flutter --detailed
+  ming template list --type=ui --platform=mobile --detailed
 
 更多信息:
   使用 'ming help template list' 查看详细文档

@@ -28,20 +28,25 @@ class FlutterStructureCreator extends DirectoryCreator {
     final directories = <String>[];
 
     // 添加基础Flutter目录
-    directories.addAll(_getBaseDirectories());
+    directories.addAll(_getBaseDirectories(config));
 
-    // 根据平台添加特定目录
-    directories.addAll(_getPlatformDirectories(config.platform));
+    // 所有模板都专注于模块化开发，不需要平台目录
+    // 平台目录应该由基础的flutter create提供
+    // Full模板也应该是模块化的，专注于三层架构的完整组合
+    // if (config.templateType == TemplateType.full) {
+    //   directories.addAll(_getPlatformDirectories(config.platform));
+    // }
 
     // 根据模板类型添加特定目录
     directories.addAll(_getTemplateTypeDirectories(config.templateType));
 
     // 根据复杂度添加目录
-    directories.addAll(_getComplexityDirectories(config.complexity));
+    directories.addAll(
+        _getComplexityDirectories(config.complexity, config.templateType));
 
     // 添加可选功能目录
     if (config.includeTests) {
-      directories.addAll(_getTestDirectories());
+      directories.addAll(_getTestDirectories(config));
     }
 
     if (config.includeDocumentation) {
@@ -56,16 +61,14 @@ class FlutterStructureCreator extends DirectoryCreator {
   }
 
   /// 获取基础目录结构
-  List<String> _getBaseDirectories() {
-    return [
+  List<String> _getBaseDirectories(ScaffoldConfig config) {
+    final directories = [
       // 核心源码目录
       'lib',
       'lib/src',
       'lib/src/models',
-      'lib/src/services',
       'lib/src/utils',
       'lib/src/constants',
-      'lib/src/providers',
       'lib/src/core',
       'lib/generated', // flutter_gen生成的文件
 
@@ -81,6 +84,45 @@ class FlutterStructureCreator extends DirectoryCreator {
       'templates',
       'config',
     ];
+
+    // 根据模板类型添加特定基础目录
+    switch (config.templateType) {
+      case TemplateType.ui:
+        // UI模板添加UI相关基础目录
+        directories.addAll([
+          'lib/src/components',
+          'lib/src/pages',
+          'lib/src/providers', // UI模板需要状态管理
+        ]);
+      case TemplateType.service:
+        // Service模板添加服务相关基础目录
+        directories.addAll([
+          'lib/src/services',
+          'lib/src/providers', // Service模板需要状态管理
+        ]);
+      case TemplateType.data:
+        // Data模板添加数据相关基础目录 - 不包含services和providers
+        // Data模板专注于数据持久层，不需要业务服务层和状态管理层
+        break;
+      case TemplateType.full:
+        // Full模板包含所有基础目录
+        directories.addAll([
+          'lib/src/components',
+          'lib/src/pages',
+          'lib/src/services',
+          'lib/src/providers',
+        ]);
+      case TemplateType.system:
+      case TemplateType.basic:
+      case TemplateType.micro:
+      case TemplateType.plugin:
+      case TemplateType.infrastructure:
+        // 其他模板类型根据需要添加特定目录
+        // 目前保持基础目录即可
+        break;
+    }
+
+    return directories;
   }
 
   /// 获取平台特定目录
@@ -148,17 +190,16 @@ class FlutterStructureCreator extends DirectoryCreator {
       case TemplateType.ui:
         directories.addAll([
           'lib/src/components',
-          'lib/src/layouts',
-          'lib/src/animations',
+          'lib/src/widgets',
+          'lib/src/themes',
           'lib/src/styles',
         ]);
 
       case TemplateType.service:
         directories.addAll([
           'lib/src/api',
-          'lib/src/data',
-          'lib/src/domain',
-          'lib/src/infrastructure',
+          'lib/src/repositories',
+          'lib/src/services',
         ]);
 
       case TemplateType.data:
@@ -200,18 +241,54 @@ class FlutterStructureCreator extends DirectoryCreator {
         ]);
 
       case TemplateType.basic:
-      case TemplateType.micro:
-      case TemplateType.plugin:
+        // Basic模板：最小化基础结构，适合快速原型
+        directories.addAll([
+          'lib/src/core',
+        ]);
+
       case TemplateType.infrastructure:
-        // 使用基础目录结构
-        break;
+        // Infrastructure模板：专注于基础设施和系统级功能
+        directories.addAll([
+          'lib/src/infrastructure',
+          'lib/src/config',
+          'lib/src/logging',
+          'lib/src/monitoring',
+          'lib/src/security',
+          'lib/src/networking',
+          'lib/src/storage',
+        ]);
+
+      case TemplateType.micro:
+        // Micro模板：微服务架构组件，轻量级服务
+        directories.addAll([
+          'lib/src/handlers',
+          'lib/src/middleware',
+          'lib/src/routes',
+          'lib/src/dto',
+          'lib/src/adapters',
+          'lib/src/ports',
+        ]);
+
+      case TemplateType.plugin:
+        // Plugin模板：可扩展插件系统
+        directories.addAll([
+          'lib/src/plugins',
+          'lib/src/extensions',
+          'lib/src/hooks',
+          'lib/src/interfaces',
+          'lib/src/registry',
+          'lib/src/loaders',
+        ]);
     }
 
     return directories;
   }
 
   /// 获取复杂度特定目录
-  List<String> _getComplexityDirectories(TemplateComplexity complexity) {
+  List<String> _getComplexityDirectories(
+    TemplateComplexity complexity,
+    TemplateType templateType,
+  ) {
     final directories = <String>[];
 
     switch (complexity) {
@@ -222,76 +299,121 @@ class FlutterStructureCreator extends DirectoryCreator {
       case TemplateComplexity.medium:
         directories.addAll([
           'lib/src/config',
-          'lib/src/extensions',
-          'lib/src/repositories',
-          'lib/src/dialogs',
-          'lib/src/core/router',
-          'lib/src/core/theme',
-          'lib/src/core/providers',
+          'lib/src/utils',
           'assets/fonts',
           'assets/colors',
         ]);
+
+        // 只有UI和Full模板才需要路由、主题和状态管理
+        if (templateType == TemplateType.ui ||
+            templateType == TemplateType.full) {
+          directories.addAll([
+            'lib/src/core/router',
+            'lib/src/core/theme',
+            'lib/src/core/providers',
+          ]);
+        }
 
       case TemplateComplexity.complex:
         directories.addAll([
           'lib/src/config',
           'lib/src/extensions',
-          'lib/src/repositories',
-          'lib/src/dialogs',
-          'lib/src/middleware',
-          'lib/src/interceptors',
           'lib/src/validators',
-          'lib/src/core/router',
-          'lib/src/core/theme',
-          'lib/src/core/providers',
           'assets/fonts',
           'assets/colors',
         ]);
+
+        // 只有UI和Full模板才需要对话框、路由、主题和状态管理
+        if (templateType == TemplateType.ui ||
+            templateType == TemplateType.full) {
+          directories.addAll([
+            'lib/src/dialogs',
+            'lib/src/core/router',
+            'lib/src/core/theme',
+            'lib/src/core/providers',
+          ]);
+        }
+
+        // 只有service、data、full模板才添加这些目录
+        if (templateType == TemplateType.service ||
+            templateType == TemplateType.data ||
+            templateType == TemplateType.full) {
+          directories.addAll([
+            'lib/src/repositories',
+            'lib/src/middleware',
+            'lib/src/interceptors',
+          ]);
+        }
 
       case TemplateComplexity.enterprise:
         directories.addAll([
           'lib/src/config',
           'lib/src/extensions',
-          'lib/src/repositories',
-          'lib/src/dialogs',
-          'lib/src/middleware',
-          'lib/src/interceptors',
           'lib/src/validators',
           'lib/src/security',
           'lib/src/monitoring',
           'lib/src/analytics',
           'lib/src/localization',
-          'lib/src/accessibility',
-          'lib/src/core/router',
-          'lib/src/core/theme',
-          'lib/src/core/providers',
           'assets/fonts',
           'assets/colors',
         ]);
+
+        // 只有UI和Full模板才需要对话框、无障碍、路由、主题和状态管理
+        if (templateType == TemplateType.ui ||
+            templateType == TemplateType.full) {
+          directories.addAll([
+            'lib/src/dialogs',
+            'lib/src/accessibility',
+            'lib/src/core/router',
+            'lib/src/core/theme',
+            'lib/src/core/providers',
+          ]);
+        }
+
+        // 只有service、data、full模板才添加这些目录
+        if (templateType == TemplateType.service ||
+            templateType == TemplateType.data ||
+            templateType == TemplateType.full) {
+          directories.addAll([
+            'lib/src/repositories',
+            'lib/src/middleware',
+            'lib/src/interceptors',
+          ]);
+        }
     }
 
     return directories;
   }
 
   /// 获取测试目录
-  List<String> _getTestDirectories() {
-    return [
-      'test',
-      'test/unit',
-      'test/unit/models',
-      'test/unit/services',
-      'test/unit/repositories',
-      'test/unit/providers',
-      'test/widget',
-      'test/widget/screens',
-      'test/widget/widgets',
-      'test/widget/components',
-      'test/integration',
-      'test/mocks',
-      'test/fixtures',
-      'test/helpers',
-      'integration_test',
-    ];
+  List<String> _getTestDirectories(ScaffoldConfig config) {
+    final directories = ['test'];
+
+    // 根据模板类型和复杂度决定测试目录结构
+    if (config.templateType == TemplateType.service) {
+      // service类型只需要基础测试目录
+      directories.addAll([
+        'test/unit',
+        'test/mocks',
+      ]);
+    } else {
+      // 其他类型需要更完整的测试结构
+      directories.addAll([
+        'test/unit',
+        'test/unit/models',
+        'test/unit/services',
+        'test/unit/repositories',
+        'test/unit/providers',
+        'test/widget',
+        'test/integration',
+        'test/mocks',
+        'test/fixtures',
+        'test/helpers',
+        'integration_test',
+      ]);
+    }
+
+    return directories;
   }
 
   /// 获取文档目录

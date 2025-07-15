@@ -110,17 +110,34 @@ class TemplateGenerateCommand extends Command<int> {
   ming template generate [选项]
 
 基础选项:
-  -n, --name=<名称>          模板名称
-  -m, --mode=<模式>          生成模式 (scratch, project, template, collaborative)
+  -n, --name=<名称>          模板名称 (必需)
+  -m, --mode=<模式>          生成模式 (可选值见下方)
   -s, --source=<路径>        源路径
   -o, --output=<路径>        输出路径
+
+生成模式 (-m, --mode):
+  scratch                    从零开始创建模板
+  project                    从现有项目生成模板
+  template                   基于现有模板扩展
+  collaborative              协作创建模式
+
+分析类型 (--analysis):
+  structural                 结构分析
+  syntactic                  语法分析
+  dependency                 依赖分析
+  semantic                   语义分析
+  pattern                    模式分析
+  all                        全面分析 (默认)
 
 生成选项:
       --interactive          启用交互模式
       --auto-parameterize    自动参数化
-      --analysis=<类型>      分析类型
+      --analysis=<类型>      分析类型 (可选值见上方)
       --quality-check        启用质量检查
       --best-practices       应用最佳实践
+      --file-types=<类型>    支持的文件类型，用逗号分隔 (默认: dart,yaml,json)
+      --dry-run              仅显示分析结果，不创建模板
+      --verbose              显示详细信息
 
 示例:
   # 从零开始创建模板
@@ -140,6 +157,9 @@ class TemplateGenerateCommand extends Command<int> {
 
   # 质量检查模式
   ming template generate -n quality_template -m project -s ./project --quality-check --best-practices
+
+  # 干运行模式
+  ming template generate -n test_template -m project -s ./project --dry-run --verbose
 
 更多信息:
   使用 'ming help template generate' 查看详细文档

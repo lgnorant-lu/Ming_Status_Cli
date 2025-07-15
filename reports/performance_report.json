@@ -4,59 +4,47 @@
     "successful_optimizations": 1,
     "current_metrics": {
       "startup_time_ms": 0,
-      "memory_usage_bytes": 564953088,
-      "response_time_ms": 15,
-      "throughput_ops_per_sec": 62.5,
+      "memory_usage_bytes": 556118016,
+      "response_time_ms": 16,
+      "throughput_ops_per_sec": 58.8235294117647,
       "cache_hit_rate": 0.8,
       "error_rate": 0.01,
-      "timestamp": "2025-07-13T12:00:26.926590"
+      "timestamp": "2025-07-14T09:02:14.810180"
     },
     "baseline_metrics": {
       "startup_time_ms": 0,
-      "memory_usage_bytes": 717664256,
-      "response_time_ms": 21,
-      "throughput_ops_per_sec": 45.45454545454545,
+      "memory_usage_bytes": 729206784,
+      "response_time_ms": 20,
+      "throughput_ops_per_sec": 47.61904761904762,
       "cache_hit_rate": 0.8,
       "error_rate": 0.01,
-      "timestamp": "2025-07-13T12:00:24.757800"
+      "timestamp": "2025-07-14T09:02:12.646516"
     }
   },
   "improvements": {
     "startup_time": 0.0,
-    "memory_usage": 21.27891513660672,
-    "response_time": 28.57142857142857,
-    "throughput": 37.50000000000001,
+    "memory_usage": 23.736582242218965,
+    "response_time": 20.0,
+    "throughput": 23.529411764705873,
     "cache_hit_rate": 0.0,
     "error_rate": 0.0
   },
   "history": [
     {
-      "strategy": "comprehensive",
+      "strategy": "memory",
       "success": true,
       "improvements": {
         "startup_time": 0.0,
-        "memory_usage": 18.97550373024731,
-        "response_time": 37.5,
-        "throughput": 56.25,
+        "memory_usage": -0.016206380894150232,
+        "response_time": 33.33333333333333,
+        "throughput": 47.05882352941176,
         "cache_hit_rate": 0.0,
         "error_rate": 0.0
       },
       "applied_optimizations": [
-        "延迟初始化非关键组件",
-        "并行初始化组件",
-        "减少启动时文件I/O操作",
         "强制垃圾回收",
         "清理过期缓存",
-        "优化内存数据结构",
-        "启用响应缓存",
-        "优化关键路径算法",
-        "减少同步I/O操作",
-        "优化线程池配置",
-        "增加异步操作使用",
-        "减少锁竞争",
-        "优化缓存策略",
-        "预热关键缓存数据",
-        "清理无效缓存条目"
+        "优化内存数据结构"
       ]
     }
   ],

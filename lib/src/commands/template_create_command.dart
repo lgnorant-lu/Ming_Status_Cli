@@ -65,6 +65,14 @@ class TemplateCreateCommand extends Command<int> {
         help: '目标平台',
         allowed: TemplatePlatform.values.map((p) => p.name),
         defaultsTo: TemplatePlatform.crossPlatform.name,
+        allowedHelp: {
+          'web': 'Web平台',
+          'mobile': '移动平台 (iOS/Android)',
+          'desktop': '桌面平台 (Windows/macOS/Linux)',
+          'server': '服务器端',
+          'cloud': '云原生',
+          'crossPlatform': '跨平台',
+        },
       )
       ..addOption(
         'framework',
@@ -72,6 +80,16 @@ class TemplateCreateCommand extends Command<int> {
         help: '技术框架',
         allowed: TemplateFramework.values.map((f) => f.name),
         defaultsTo: TemplateFramework.agnostic.name,
+        allowedHelp: {
+          'flutter': 'Flutter框架',
+          'dart': 'Dart原生',
+          'react': 'React框架',
+          'vue': 'Vue.js框架',
+          'angular': 'Angular框架',
+          'nodejs': 'Node.js',
+          'springBoot': 'Spring Boot',
+          'agnostic': '框架无关',
+        },
       )
       ..addOption(
         'complexity',
@@ -133,15 +151,46 @@ class TemplateCreateCommand extends Command<int> {
   ming template create [选项]
 
 基础选项:
-  -n, --name=<名称>          模板名称
-  -t, --type=<类型>          模板类型
+  -n, --name=<名称>          模板名称 (必需)
+  -t, --type=<类型>          模板类型 (可选值见下方)
   -a, --author=<作者>        作者名称
   -d, --description=<描述>   模板描述
   -o, --output=<目录>        输出目录 (默认: .)
 
-平台和框架:
-  -p, --platform=<平台>      目标平台 (默认: crossPlatform)
-  -f, --framework=<框架>     技术框架 (默认: agnostic)
+模板类型 (-t, --type):
+  ui                         UI组件 - 用户界面组件、页面和交互元素
+  service                    业务服务 - 业务逻辑、API服务和第三方集成
+  data                       数据层 - 数据模型、仓库模式和持久化层
+  full                       完整应用 - 完整的应用程序、包和库
+  system                     系统配置 - 系统配置、基础设施和部署脚本
+  basic                      基础模板 - 基础模板和起始项目
+  micro                      微服务 - 微服务架构组件和分布式系统
+  plugin                     插件系统 - 可扩展插件、中间件和工具
+  infrastructure             基础设施 - 容器化、监控、安全和运维工具
+
+复杂度级别 (-c, --complexity):
+  simple                     简单模板 (默认)
+  medium                     中等复杂度模板
+  complex                    复杂模板
+  enterprise                 企业级模板
+
+目标平台 (-p, --platform):
+  web                        Web平台
+  mobile                     移动平台 (iOS/Android)
+  desktop                    桌面平台 (Windows/macOS/Linux)
+  server                     服务器端
+  cloud                      云原生
+  crossPlatform              跨平台 (默认)
+
+技术框架 (-f, --framework):
+  flutter                    Flutter框架
+  dart                       Dart原生
+  react                      React框架
+  vue                        Vue.js框架
+  angular                    Angular框架
+  nodejs                     Node.js
+  springBoot                 Spring Boot
+  agnostic                   框架无关 (默认)
 
 内容选项:
       --no-tests             不包含测试文件
@@ -163,14 +212,17 @@ class TemplateCreateCommand extends Command<int> {
   # 快速创建UI组件模板
   ming template create --name my_widget --type ui --author "John Doe"
 
-  # 创建完整应用模板
-  ming template create -n my_app -t full -a "Team" -d "Flutter应用模板" -p mobile
+  # 创建完整Flutter应用模板
+  ming template create -n my_app -t full -a "Team" -d "Flutter应用模板" -p mobile -f flutter
 
-  # 创建微服务模板
-  ming template create --name api_service --type micro --framework dart --no-examples
+  # 创建企业级微服务模板
+  ming template create --name api_service --type micro --complexity enterprise --framework dart --no-examples
 
-  # 创建模板并跳过验证
+  # 创建基础模板并跳过验证
   ming template create -n simple -t basic -a "Dev" -d "简单模板" --no-validate
+
+  # 创建云原生基础设施模板
+  ming template create -n k8s_deploy -t infrastructure -c complex -p cloud -f agnostic
 
 更多信息:
   使用 'ming help template create' 查看详细文档

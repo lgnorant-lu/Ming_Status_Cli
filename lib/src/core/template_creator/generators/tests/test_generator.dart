@@ -53,11 +53,13 @@ class TestGenerator extends TemplateGeneratorBase {
     final buffer = StringBuffer();
 
     // 添加文件头部注释
-    buffer.writeln(generateFileHeader(
-      getOutputFileName(config).replaceAll('.template', ''),
-      config,
-      '${config.templateName}${testType.displayName}测试',
-    ),);
+    buffer.writeln(
+      generateFileHeader(
+        getOutputFileName(config).replaceAll('.template', ''),
+        config,
+        '${config.templateName}${testType.displayName}测试',
+      ),
+    );
 
     // 根据测试类型生成不同的内容
     switch (testType) {
@@ -90,10 +92,12 @@ class TestGenerator extends TemplateGeneratorBase {
 
     buffer
       ..writeln()
-      ..writeln("import 'package:${config.templateName}/${config.templateName}.dart';");
+      ..writeln(
+          "import 'package:${config.templateName}/${config.templateName}.dart';");
 
     if (targetFile != null) {
-      final importPath = targetFile!.replaceAll('lib/', '').replaceAll('.dart', '.dart');
+      final importPath =
+          targetFile!.replaceAll('lib/', '').replaceAll('.dart', '.dart');
       buffer.writeln("import 'package:${config.templateName}/$importPath';");
     }
 
@@ -106,7 +110,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('  // ExampleRepository,')
       ..writeln('])')
       ..writeln()
-      ..writeln("import '${getOutputFileName(config).replaceAll('.dart.template', '.mocks.dart')}';")
+      ..writeln(
+          "import '${getOutputFileName(config).replaceAll('.dart.template', '.mocks.dart')}';")
       ..writeln()
       ..writeln('void main() {')
       ..writeln("  group('${_getTestGroupName(config)}', () {")
@@ -122,7 +127,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('      // 清理资源')
       ..writeln('    });')
       ..writeln()
-      ..writeln("    test('should return expected result when method is called', () {")
+      ..writeln(
+          "    test('should return expected result when method is called', () {")
       ..writeln('      // Arrange')
       ..writeln("      const expectedResult = 'expected';")
       ..writeln('      when(mockService.getData()).thenReturn(expectedResult);')
@@ -135,9 +141,11 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('      verify(mockService.getData()).called(1);')
       ..writeln('    });')
       ..writeln()
-      ..writeln("    test('should throw exception when invalid input is provided', () {")
+      ..writeln(
+          "    test('should throw exception when invalid input is provided', () {")
       ..writeln('      // Arrange')
-      ..writeln("      when(mockService.getData()).thenThrow(Exception('Invalid input'));")
+      ..writeln(
+          "      when(mockService.getData()).thenThrow(Exception('Invalid input'));")
       ..writeln()
       ..writeln('      // Act & Assert')
       ..writeln('      expect(')
@@ -193,7 +201,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln("import 'package:${config.templateName}/src/app.dart';");
 
     if (targetFile != null) {
-      final importPath = targetFile!.replaceAll('lib/', '').replaceAll('.dart', '.dart');
+      final importPath =
+          targetFile!.replaceAll('lib/', '').replaceAll('.dart', '.dart');
       buffer.writeln("import 'package:${config.templateName}/$importPath';");
     }
 
@@ -205,11 +214,13 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('  // ExampleService,')
       ..writeln('])')
       ..writeln()
-      ..writeln("import '${getOutputFileName(config).replaceAll('.dart.template', '.mocks.dart')}';")
+      ..writeln(
+          "import '${getOutputFileName(config).replaceAll('.dart.template', '.mocks.dart')}';")
       ..writeln()
       ..writeln('void main() {')
       ..writeln("  group('${_getTestGroupName(config)} Widget Tests', () {")
-      ..writeln("    testWidgets('should display expected UI elements', (tester) async {")
+      ..writeln(
+          "    testWidgets('should display expected UI elements', (tester) async {")
       ..writeln('      // Arrange')
       ..writeln('      await tester.pumpWidget(')
       ..writeln('        const ProviderScope(')
@@ -227,7 +238,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('      expect(find.byType(ElevatedButton), findsOneWidget);')
       ..writeln('    });')
       ..writeln()
-      ..writeln("    testWidgets('should respond to user interactions', (tester) async {")
+      ..writeln(
+          "    testWidgets('should respond to user interactions', (tester) async {")
       ..writeln('      // Arrange')
       ..writeln('      await tester.pumpWidget(')
       ..writeln('        const ProviderScope(')
@@ -245,11 +257,13 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln("      expect(find.text('Button Pressed'), findsOneWidget);")
       ..writeln('    });')
       ..writeln()
-      ..writeln("    testWidgets('should handle loading states correctly', (tester) async {")
+      ..writeln(
+          "    testWidgets('should handle loading states correctly', (tester) async {")
       ..writeln('      // TODO: 实现加载状态测试')
       ..writeln('    });')
       ..writeln()
-      ..writeln("    testWidgets('should handle error states correctly', (tester) async {")
+      ..writeln(
+          "    testWidgets('should handle error states correctly', (tester) async {")
       ..writeln('      // TODO: 实现错误状态测试')
       ..writeln('    });')
       ..writeln('  });')
@@ -302,7 +316,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('void main() {')
       ..writeln('  IntegrationTestWidgetsFlutterBinding.ensureInitialized();')
       ..writeln()
-      ..writeln("  group('${_getTestGroupName(config)} Integration Tests', () {")
+      ..writeln(
+          "  group('${_getTestGroupName(config)} Integration Tests', () {")
       ..writeln("    testWidgets('complete user flow test', (tester) async {")
       ..writeln('      // 启动应用')
       ..writeln('      app.main();')
@@ -386,7 +401,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('      );')
       ..writeln('    });')
       ..writeln()
-      ..writeln("    testWidgets('settings screen golden test', (tester) async {")
+      ..writeln(
+          "    testWidgets('settings screen golden test', (tester) async {")
       ..writeln('      await tester.pumpWidget(')
       ..writeln('        const ProviderScope(')
       ..writeln('          child: MaterialApp(')
@@ -466,11 +482,14 @@ class TestGenerator extends TemplateGeneratorBase {
 
     buffer
       ..writeln()
-      ..writeln("import 'package:${config.templateName}/${config.templateName}.dart';")
+      ..writeln(
+          "import 'package:${config.templateName}/${config.templateName}.dart';")
       ..writeln()
       ..writeln('void main() {')
-      ..writeln("  group('${_getTestGroupName(config)} Performance Tests', () {")
-      ..writeln("    test('should complete operation within time limit', () async {")
+      ..writeln(
+          "  group('${_getTestGroupName(config)} Performance Tests', () {")
+      ..writeln(
+          "    test('should complete operation within time limit', () async {")
       ..writeln('      // Arrange')
       ..writeln('      const timeLimit = Duration(milliseconds: 100);')
       ..writeln('      final stopwatch = Stopwatch()..start();')
@@ -483,9 +502,11 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('      expect(stopwatch.elapsed, lessThan(timeLimit));')
       ..writeln('    });')
       ..writeln()
-      ..writeln("    test('should handle large data sets efficiently', () async {")
+      ..writeln(
+          "    test('should handle large data sets efficiently', () async {")
       ..writeln('      // Arrange')
-      ..writeln('      final largeDataSet = List.generate(10000, (index) => index);')
+      ..writeln(
+          '      final largeDataSet = List.generate(10000, (index) => index);')
       ..writeln('      final stopwatch = Stopwatch()..start();')
       ..writeln()
       ..writeln('      // Act')
@@ -494,7 +515,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln()
       ..writeln('      // Assert')
       ..writeln('      expect(result, isNotNull);')
-      ..writeln('      expect(stopwatch.elapsed, lessThan(const Duration(seconds: 1)));')
+      ..writeln(
+          '      expect(stopwatch.elapsed, lessThan(const Duration(seconds: 1)));')
       ..writeln('    });')
       ..writeln()
       ..writeln("    test('memory usage should remain stable', () async {")
@@ -507,7 +529,8 @@ class TestGenerator extends TemplateGeneratorBase {
       ..writeln('// 示例性能测试函数')
       ..writeln('Future<void> performExpensiveOperation() async {')
       ..writeln('  // 模拟耗时操作')
-      ..writeln('  await Future.delayed(const Duration(milliseconds: 50));')
+      ..writeln(
+          '  await Future<void>.delayed(const Duration(milliseconds: 50));')
       ..writeln('}')
       ..writeln()
       ..writeln('List<int> processLargeDataSet(List<int> data) {')
@@ -530,12 +553,16 @@ class TestGenerator extends TemplateGeneratorBase {
 enum TestType {
   /// 单元测试
   unit('unit', '单元'),
+
   /// Widget测试
   widget('widget', 'Widget'),
+
   /// 集成测试
   integration('integration', '集成'),
+
   /// Golden测试
   golden('golden', 'Golden'),
+
   /// 性能测试
   performance('performance', '性能');
 

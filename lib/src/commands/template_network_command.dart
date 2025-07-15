@@ -41,6 +41,16 @@ class TemplateNetworkCommand extends Command<int> {
           'cache',
         ],
         mandatory: true,
+        allowedHelp: {
+          'status': '网络状态检查',
+          'config': '网络配置管理',
+          'bandwidth': '带宽管理',
+          'offline': '离线支持',
+          'retry': '重试策略',
+          'test': '网络测试',
+          'stats': '统计信息',
+          'cache': '缓存管理',
+        },
       )
       ..addOption(
         'subaction',
@@ -57,6 +67,18 @@ class TemplateNetworkCommand extends Command<int> {
           'optimize',
           'monitor',
         ],
+        allowedHelp: {
+          'show': '显示信息',
+          'set': '设置配置',
+          'get': '获取配置',
+          'clear': '清理数据',
+          'enable': '启用功能',
+          'disable': '禁用功能',
+          'sync': '同步数据',
+          'detect': '检测状态',
+          'optimize': '优化设置',
+          'monitor': '监控模式',
+        },
       )
       ..addOption(
         'url',
@@ -70,6 +92,12 @@ class TemplateNetworkCommand extends Command<int> {
         'network-type',
         help: '网络类型',
         allowed: ['wifi', 'mobile', 'ethernet', 'unknown'],
+        allowedHelp: {
+          'wifi': 'WiFi网络',
+          'mobile': '移动网络',
+          'ethernet': '以太网',
+          'unknown': '未知网络类型',
+        },
       )
       ..addOption(
         'output',
@@ -77,6 +105,11 @@ class TemplateNetworkCommand extends Command<int> {
         help: '输出格式',
         allowed: ['table', 'json', 'yaml'],
         defaultsTo: 'table',
+        allowedHelp: {
+          'table': '表格格式',
+          'json': 'JSON格式',
+          'yaml': 'YAML格式',
+        },
       )
       ..addFlag(
         'verbose',

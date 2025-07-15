@@ -1,1 +1,1 @@
-{"method":"GET","url":"https://example.com/file.txt","timestamp":"2025-07-11T11:19:43.350262","success":true,"data":{"message":"Mock response from HTTP client","requestBody":null}}
+{"method":"GET","url":"https://example.com/file.txt","timestamp":"2025-07-14T08:48:55.779252","success":true,"data":{"message":"Mock response from HTTP client","requestBody":null}}
