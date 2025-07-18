@@ -180,27 +180,18 @@ class DartStructureCreator extends DirectoryCreator {
         directories.addAll([
           'lib/src/config',
           'lib/src/extensions',
-          'lib/src/helpers',
           'lib/src/middleware',
-          'lib/src/interceptors',
           'lib/src/validators',
-          'lib/src/converters',
         ]);
 
       case TemplateComplexity.enterprise:
         directories.addAll([
           'lib/src/config',
           'lib/src/extensions',
-          'lib/src/helpers',
           'lib/src/middleware',
-          'lib/src/interceptors',
           'lib/src/validators',
-          'lib/src/converters',
           'lib/src/security',
           'lib/src/monitoring',
-          'lib/src/analytics',
-          'lib/src/audit',
-          'lib/src/compliance',
         ]);
     }
 
@@ -212,15 +203,7 @@ class DartStructureCreator extends DirectoryCreator {
     return [
       'test',
       'test/unit',
-      'test/unit/models',
-      'test/unit/services',
-      'test/unit/repositories',
-      'test/unit/utils',
-      'test/integration',
       'test/mocks',
-      'test/fixtures',
-      'test/helpers',
-      'test/performance',
     ];
   }
 

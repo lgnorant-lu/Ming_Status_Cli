@@ -33,11 +33,15 @@ class ScaffoldConfig {
     this.maturity = TemplateMaturity.development,
     this.tags = const [],
     this.dependencies = const [],
-    this.includeTests = true,
-    this.includeDocumentation = true,
-    this.includeExamples = true,
+    bool? includeTests,
+    bool? includeDocumentation,
+    bool? includeExamples,
     this.enableGitInit = true,
-  });
+  })  : includeTests = includeTests ?? complexity != TemplateComplexity.simple,
+        includeDocumentation =
+            includeDocumentation ?? complexity != TemplateComplexity.simple,
+        includeExamples =
+            includeExamples ?? complexity != TemplateComplexity.simple;
 
   /// 从Map创建配置
   factory ScaffoldConfig.fromMap(Map<String, dynamic> map) {
@@ -75,9 +79,9 @@ class ScaffoldConfig {
       ),
       tags: List<String>.from(map['tags'] as List? ?? []),
       dependencies: List<String>.from(map['dependencies'] as List? ?? []),
-      includeTests: map['includeTests'] as bool? ?? true,
-      includeDocumentation: map['includeDocumentation'] as bool? ?? true,
-      includeExamples: map['includeExamples'] as bool? ?? true,
+      includeTests: map['includeTests'] as bool?,
+      includeDocumentation: map['includeDocumentation'] as bool?,
+      includeExamples: map['includeExamples'] as bool?,
       enableGitInit: map['enableGitInit'] as bool? ?? true,
     );
   }
