@@ -123,13 +123,17 @@ class TemplateVariable {
       values = List<dynamic>.from(map['values'] as List);
     }
 
+    // 如果有默认值，自动设置为可选（符合Mason标准）
+    final hasDefault = map.containsKey('default');
+    final isOptional = map['optional'] == true || hasDefault;
+
     return TemplateVariable(
       name: name,
       type: type,
       description: map['description']?.toString(),
       defaultValue: map['default'],
       prompt: map['prompt']?.toString(),
-      optional: map['optional'] == true,
+      optional: isOptional,
       validation: validation,
       values: values,
     );

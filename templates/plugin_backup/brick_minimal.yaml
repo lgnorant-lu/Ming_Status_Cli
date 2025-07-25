@@ -1,0 +1,29 @@
+name: plugin
+description: Pet App V3插件模板
+version: 1.0.0
+
+vars:
+  plugin_name:
+    type: string
+    description: 插件名称
+
+  plugin_type:
+    type: enum
+    description: 插件类型
+    values: [tool, game, theme, service, widget, ui, system]
+    default: tool
+
+  description:
+    type: string
+    description: 插件描述
+    default: "A Pet App plugin created with Ming CLI"
+
+  author:
+    type: string
+    description: 插件作者
+    default: "Pet App Developer"
+
+  version:
+    type: string
+    description: 初始版本号
+    default: "1.0.0"

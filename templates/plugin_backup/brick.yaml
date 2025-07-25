@@ -1,0 +1,124 @@
+name: plugin
+description: Pet App V3插件模板
+version: 1.0.0
+
+vars:
+  plugin_name:
+    type: string
+    description: 插件名称
+
+  plugin_type:
+    type: enum
+    description: 插件类型
+    values: [tool, game, theme, service, widget, ui, system]
+    default: tool
+
+  description:
+    type: string
+    description: 插件描述
+    default: "A Pet App plugin created with Ming CLI"
+
+  author:
+    type: string
+    description: 插件作者
+    default: "Pet App Developer"
+
+  version:
+    type: string
+    description: 初始版本号
+    default: "1.0.0"
+
+  author_email:
+    type: string
+    description: 作者邮箱
+    default: ""
+
+  dart_version:
+    type: string
+    description: Dart版本
+    default: "^3.2.0"
+
+  license:
+    type: string
+    description: 许可证
+    default: "MIT"
+
+  include_ui_components:
+    type: boolean
+    description: 包含UI组件
+    default: true
+
+  include_services:
+    type: boolean
+    description: 包含服务
+    default: false
+
+  need_file_system:
+    type: boolean
+    description: 需要文件系统权限
+    default: false
+
+  need_network:
+    type: boolean
+    description: 需要网络权限
+    default: false
+
+  need_camera:
+    type: boolean
+    description: 需要摄像头权限
+    default: false
+
+  need_microphone:
+    type: boolean
+    description: 需要麦克风权限
+    default: false
+
+  need_location:
+    type: boolean
+    description: 需要位置权限
+    default: false
+
+  need_notifications:
+    type: boolean
+    description: 需要通知权限
+    default: false
+
+  support_android:
+    type: boolean
+    description: 支持Android
+    default: true
+
+  support_ios:
+    type: boolean
+    description: 支持iOS
+    default: true
+
+  support_web:
+    type: boolean
+    description: 支持Web
+    default: true
+
+  support_desktop:
+    type: boolean
+    description: 支持桌面
+    default: true
+
+  flutter_version:
+    type: string
+    description: Flutter版本
+    default: ">=3.0.0"
+
+  include_tests:
+    type: boolean
+    description: 包含测试
+    default: true
+
+  use_analysis:
+    type: boolean
+    description: 使用代码分析
+    default: true
+
+  include_assets:
+    type: boolean
+    description: 包含资源
+    default: false

@@ -1,0 +1,41 @@
+name: {{plugin_name}}_example
+description: {{plugin_name.titleCase()}}插件示例应用
+version: {{version}}
+publish_to: 'none'
+
+environment:
+  sdk: {{dart_version}}
+  flutter: {{flutter_version}}
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # 插件依赖
+  {{plugin_name}}:
+    path: ../
+  
+  # UI依赖
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+flutter:
+  uses-material-design: true{{#include_assets}}
+  
+  assets:
+    - assets/
+    - assets/images/{{/include_assets}}
+
+# 示例应用元数据
+metadata:
+  created_with: "Ming Status CLI"
+  template_version: "1.0.0"
+  generated_at: "{{generated_date}}"
+  plugin_name: "{{plugin_name}}"
+  plugin_type: "{{plugin_type}}"
+  author: "{{author}}"{{#author_email}}
+  author_email: "{{author_email}}"{{/author_email}}

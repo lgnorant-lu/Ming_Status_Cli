@@ -1,0 +1,20 @@
+{{#include_services}}
+# 服务层目录
+# 
+# 此目录用于存放插件的业务逻辑服务
+# 
+# 建议的文件结构：
+# - api_service.dart      # API调用服务
+# - data_service.dart     # 数据处理服务
+# - storage_service.dart  # 存储服务
+# - config_service.dart   # 配置管理服务
+# 
+# 示例服务类：
+# class ApiService {
+#   Future<Map<String, dynamic>> fetchData() async { ... }
+# }
+# 
+# class DataService {
+#   Future<void> processData(dynamic data) async { ... }
+# }
+{{/include_services}}

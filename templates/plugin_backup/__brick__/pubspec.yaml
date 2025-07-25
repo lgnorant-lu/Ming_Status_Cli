@@ -1,0 +1,219 @@
+name: {{plugin_name}}
+description: {{description}}
+version: {{version}}
+homepage: https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}
+repository: https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}.git
+issue_tracker: https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}/issues
+documentation: https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}/blob/main/README.md
+
+# 发布配置
+publish_to: 'none' # 暂不发布到pub.dev，使用本地注册表
+
+# 环境约束
+environment:
+  sdk: {{dart_version}}
+  flutter: {{flutter_version}}
+
+# 依赖包
+dependencies:
+  # Flutter核心
+  flutter:
+    sdk: flutter
+  
+  # Pet App插件系统
+  plugin_system:
+    path: ../../packages/plugin_system
+  
+  # 核心依赖
+  meta: ^1.9.1{{#include_ui_components}}
+  
+  # UI相关依赖
+  cupertino_icons: ^1.0.6{{/include_ui_components}}{{#need_network}}
+  
+  # 网络相关依赖
+  http: ^1.1.0
+  dio: ^5.3.2{{/need_network}}{{#need_file_system}}
+  
+  # 文件系统相关依赖
+  path: ^1.8.3
+  path_provider: ^2.1.1{{/need_file_system}}{{#include_services}}
+  
+  # 服务相关依赖
+  get_it: ^7.6.4
+  injectable: ^2.3.2{{/include_services}}
+
+# 开发依赖
+dev_dependencies:
+  # Flutter测试
+  flutter_test:
+    sdk: flutter{{#include_tests}}
+  
+  # 测试相关
+  mockito: ^5.4.2
+  build_runner: ^2.4.7{{/include_tests}}{{#use_analysis}}
+  
+  # 代码质量
+  flutter_lints: ^3.0.1
+  very_good_analysis: ^5.1.0{{/use_analysis}}{{#include_services}}
+  
+  # 代码生成
+  injectable_generator: ^2.4.1{{/include_services}}
+
+# Flutter配置
+flutter:{{#include_ui_components}}
+  # 插件UI组件
+  uses-material-design: true{{/include_ui_components}}{{#include_assets}}
+  
+  # 资源文件
+  assets:
+    - assets/
+    - assets/images/
+    - assets/icons/{{/include_assets}}{{#include_ui_components}}
+  
+  # 字体配置
+  fonts:
+    - family: {{plugin_name.pascalCase()}}Icons
+      fonts:
+        - asset: assets/fonts/{{plugin_name}}_icons.ttf{{/include_ui_components}}
+
+# 插件配置 (如果是Flutter插件)
+# flutter:
+#   plugin:
+#     platforms:{{#support_android}}
+#       android:
+#         package: com.petapp.{{plugin_name}}
+#         pluginClass: {{plugin_name.pascalCase()}}Plugin{{/support_android}}{{#support_ios}}
+#       ios:
+#         pluginClass: {{plugin_name.pascalCase()}}Plugin{{/support_ios}}{{#support_web}}
+#       web:
+#         pluginClass: {{plugin_name.pascalCase()}}PluginWeb
+#         fileName: {{plugin_name}}_web.dart{{/support_web}}{{#support_desktop}}
+#       windows:
+#         pluginClass: {{plugin_name.pascalCase()}}PluginWindows
+#       macos:
+#         pluginClass: {{plugin_name.pascalCase()}}PluginMacOS
+#       linux:
+#         pluginClass: {{plugin_name.pascalCase()}}PluginLinux{{/support_desktop}}
+
+# 代码生成配置{{#include_services}}
+build_runner:
+  # 生成器配置
+  generators:
+    injectable_generator:
+      # 输出目录
+      output: lib/src/di/
+      # 生成选项
+      options:
+        auto_register: true{{/include_services}}
+
+# 分析配置引用
+analyzer:
+  include: analysis_options.yaml
+
+# 依赖覆盖 (如果需要)
+dependency_overrides:
+  # 本地开发时可能需要覆盖某些依赖
+  # plugin_system:
+  #   path: ../../packages/plugin_system
+
+# 执行器配置
+executables:
+  # 如果插件提供命令行工具
+  # {{plugin_name}}: {{plugin_name}}
+
+# 平台配置{{#support_android}}
+# Android特定配置
+android:
+  # 最小SDK版本
+  min_sdk_version: 21
+  # 目标SDK版本
+  target_sdk_version: 34
+  # 编译SDK版本
+  compile_sdk_version: 34{{/support_android}}{{#support_ios}}
+
+# iOS特定配置
+ios:
+  # 最小部署目标
+  deployment_target: '12.0'{{/support_ios}}{{#support_web}}
+
+# Web特定配置
+web:
+  # 编译器选项
+  compiler: dart2js{{/support_web}}{{#support_desktop}}
+
+# 桌面特定配置
+desktop:
+  # Windows配置
+  windows:
+    # 最小Windows版本
+    min_version: "10.0.17763.0"
+  
+  # macOS配置
+  macos:
+    # 最小macOS版本
+    deployment_target: '10.14'
+  
+  # Linux配置
+  linux:
+    # 最小内核版本
+    min_kernel_version: "4.15"{{/support_desktop}}
+
+# 文档配置
+documentation:
+  # API文档
+  api_docs: true
+  # 示例文档
+  examples: true
+  # 教程文档
+  tutorials: false
+
+# 测试配置{{#include_tests}}
+test:
+  # 测试平台
+  platforms:{{#support_android}}
+    - android{{/support_android}}{{#support_ios}}
+    - ios{{/support_ios}}{{#support_web}}
+    - chrome{{/support_web}}{{#support_desktop}}
+    - vm{{/support_desktop}}
+  
+  # 测试覆盖率
+  coverage:
+    # 最小覆盖率
+    min_coverage: 80
+    # 排除文件
+    exclude:
+      - "lib/generated/**"
+      - "lib/**/*.g.dart"
+      - "lib/**/*.freezed.dart"{{/include_tests}}
+
+# 性能配置
+performance:
+  # 构建优化
+  build_optimization: true
+  # 代码分割
+  code_splitting: true
+  # 树摇优化
+  tree_shaking: true
+
+# 安全配置
+security:
+  # 代码混淆
+  obfuscation: false
+  # 符号表
+  symbols: debug
+
+# 元数据
+metadata:
+  # 创建工具
+  created_with: "Ming Status CLI"
+  # 模板版本
+  template_version: "1.0.0"
+  # 生成时间
+  generated_at: "{{generated_date}}"
+  # 插件类型
+  plugin_type: "{{plugin_type}}"
+  # 作者信息
+  author: "{{author}}"{{#author_email}}
+  author_email: "{{author_email}}"{{/author_email}}
+  # 许可证
+  license: "{{license}}"

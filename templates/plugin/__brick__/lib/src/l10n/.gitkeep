@@ -1,0 +1,23 @@
+{{#include_l10n}}
+# 国际化目录
+# 
+# 此目录用于存放插件的多语言支持文件
+# 
+# 建议的文件结构：
+# - app_localizations.dart     # 本地化主类
+# - app_localizations_en.dart  # 英文翻译
+# - app_localizations_zh.dart  # 中文翻译
+# - generated/                 # 生成的本地化文件
+# 
+# 配置文件：
+# - l10n.yaml                  # 本地化配置
+# 
+# 示例本地化类：
+# class AppLocalizations {
+#   static const LocalizationsDelegate<AppLocalizations> delegate = ...;
+#   
+#   String get appTitle => '{{plugin_display_name}}';
+#   String get startButton => 'Start';
+#   String get stopButton => 'Stop';
+# }
+{{/include_l10n}}

@@ -1,0 +1,23 @@
+{{#include_utils}}
+# 工具类目录
+# 
+# 此目录用于存放插件的工具函数和辅助类
+# 
+# 建议的文件结构：
+# - constants.dart        # 常量定义
+# - helpers.dart          # 辅助函数
+# - validators.dart       # 验证工具
+# - formatters.dart       # 格式化工具
+# - extensions.dart       # 扩展方法
+# 
+# 示例工具类：
+# class Constants {
+#   static const String appName = '{{plugin_display_name}}';
+#   static const Duration timeout = Duration(seconds: 30);
+# }
+# 
+# class Helpers {
+#   static String formatDate(DateTime date) { ... }
+#   static bool isValidEmail(String email) { ... }
+# }
+{{/include_utils}}

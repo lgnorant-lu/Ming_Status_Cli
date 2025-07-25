@@ -1233,8 +1233,14 @@ class TemplateEngine implements BaseTemplateEngine {
         return errors; // 测试模板跳过严格验证
       }
 
-      // 检查必需的变量
-      final requiredVars = ['module_id', 'module_name'];
+      // 检查必需的变量（根据模板类型）
+      List<String> requiredVars;
+      if (templateName == 'plugin') {
+        requiredVars = ['plugin_name'];
+      } else {
+        requiredVars = ['module_id', 'module_name'];
+      }
+
       for (final varName in requiredVars) {
         if (!variables.containsKey(varName) ||
             StringUtils.isBlank(variables[varName]?.toString())) {
@@ -1270,6 +1276,23 @@ class TemplateEngine implements BaseTemplateEngine {
     final processed = Map<String, dynamic>.from(variables);
 
     try {
+      // 首先移除所有null值，Mason不支持null值
+      processed.removeWhere((key, value) => value == null);
+
+      // 确保所有字符串值都不为空
+      for (final entry in processed.entries.toList()) {
+        if (entry.value is String && (entry.value as String).isEmpty) {
+          // 为空字符串提供默认值或移除
+          if (entry.key.contains('email')) {
+            processed[entry.key] = 'developer@example.com';
+          } else if (entry.key.contains('url') ||
+              entry.key.contains('homepage')) {
+            processed[entry.key] = 'https://example.com';
+          } else {
+            processed[entry.key] = 'default_value';
+          }
+        }
+      }
       // 自动生成相关变量
       if (processed.containsKey('module_id')) {
         final moduleId = processed['module_id'].toString();

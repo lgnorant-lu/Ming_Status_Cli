@@ -1,0 +1,25 @@
+# 单元测试目录
+# 
+# 此目录用于存放插件的单元测试文件
+# 
+# 建议的文件结构：
+# - services/              # 服务层测试
+#   - api_service_test.dart
+#   - data_service_test.dart
+# - models/                # 模型测试
+#   - plugin_config_test.dart
+#   - plugin_data_test.dart
+# - utils/                 # 工具类测试
+#   - helpers_test.dart
+#   - validators_test.dart
+# 
+# 示例测试文件：
+# void main() {
+#   group('ApiService', () {
+#     test('should fetch data successfully', () async {
+#       final service = ApiService();
+#       final result = await service.fetchData();
+#       expect(result, isNotNull);
+#     });
+#   });
+# }

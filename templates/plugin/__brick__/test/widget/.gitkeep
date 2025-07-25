@@ -1,0 +1,25 @@
+{{#include_ui_components}}
+# Widget测试目录
+# 
+# 此目录用于存放插件的Widget测试文件
+# 
+# 建议的文件结构：
+# - widgets/               # Widget组件测试
+#   - plugin_widget_test.dart
+#   - config_widget_test.dart
+# - pages/                 # 页面测试
+#   - main_page_test.dart
+#   - settings_page_test.dart
+# 
+# 示例Widget测试：
+# void main() {
+#   testWidgets('PluginWidget should display correctly', (tester) async {
+#     await tester.pumpWidget(
+#       MaterialApp(home: PluginWidget()),
+#     );
+#     
+#     expect(find.text('Plugin Title'), findsOneWidget);
+#     expect(find.byType(ElevatedButton), findsWidgets);
+#   });
+# }
+{{/include_ui_components}}

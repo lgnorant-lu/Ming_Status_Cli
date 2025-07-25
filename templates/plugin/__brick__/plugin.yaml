@@ -1,0 +1,85 @@
+# Pet App V3 插件清单文件
+# 此文件定义了插件的基本信息和配置
+
+# 基本信息
+id: "{{plugin_name}}"
+name: "{{plugin_display_name}}"
+version: "{{version}}"
+description: "{{description}}"
+author: "{{author}}"
+email: "{{author_email}}"
+category: "{{plugin_type}}"
+
+# 平台支持
+platforms:
+  - android
+  - ios
+  - web
+  - windows
+  - macos
+  - linux
+
+
+# 权限声明
+permissions:
+
+
+# 依赖声明
+dependencies:
+  # Pet App核心依赖
+  pet_app_core: "^3.0.0"
+  plugin_system: "^1.0.0"
+  
+  # Flutter核心依赖
+  flutter:
+    sdk: flutter
+  
+  # UI相关依赖
+  flutter_bloc: ^8.1.0
+  provider: ^6.0.0
+  
+
+
+# 开发依赖
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  very_good_analysis: ^5.0.0
+
+
+# 插件配置
+configuration:
+  # 主入口文件
+  main: lib/plugin_main.dart
+  
+  # 插件类名
+  plugin_class: {{plugin_name.pascalCase()}}Plugin
+
+  # UI组件配置
+  ui:
+    main_widget: {{plugin_name.pascalCase()}}Widget
+    theme_support: true
+    
+  # 资源配置
+
+
+# 许可证信息
+license: {{license}}
+
+# 仓库信息
+repository:
+  type: git
+  {{#repository_url}}url: "{{repository_url}}"{{/repository_url}}{{^repository_url}}url: "https://github.com/{{author}}/{{plugin_name}}.git"{{/repository_url}}
+
+# 标签
+tags:
+  - pet-app
+  - plugin
+  - {{plugin_type}}
+
+# 最低要求
+requirements:
+  pet_app_version: ">=3.0.0"
+  dart_version: "{{dart_version}}"
+  flutter_version: ">=3.0.0"

@@ -261,6 +261,51 @@ class CreateCommand extends BaseCommand {
         help: '项目描述信息',
         valueHelp: 'description',
       )
+      // 插件类型参数 (仅用于plugin模板)
+      ..addOption(
+        'plugin_type',
+        help: '插件类型 (tool, game, theme, service, widget, ui, system)',
+        valueHelp: 'type',
+        defaultsTo: 'tool',
+      )
+      // 插件作者邮箱
+      ..addOption(
+        'author_email',
+        help: '作者邮箱地址',
+        valueHelp: 'email',
+      )
+      // 插件版本
+      ..addOption(
+        'version',
+        help: '插件版本号',
+        valueHelp: 'version',
+        defaultsTo: '1.0.0',
+      )
+      // 许可证类型
+      ..addOption(
+        'license',
+        help: '许可证类型',
+        valueHelp: 'license',
+        defaultsTo: 'MIT',
+      )
+      // UI组件支持
+      ..addFlag(
+        'include_ui_components',
+        help: '包含UI组件支持',
+        defaultsTo: true,
+      )
+      // 服务支持
+      ..addFlag(
+        'include_services',
+        help: '包含后台服务支持',
+        defaultsTo: false,
+      )
+      // 资源文件支持
+      ..addFlag(
+        'include_assets',
+        help: '包含资源文件支持',
+        defaultsTo: false,
+      )
       // 干运行模式
       ..addFlag(
         'dry-run',
@@ -413,8 +458,19 @@ class CreateCommand extends BaseCommand {
   }) async {
     final variables = <String, dynamic>{};
 
-    // 基础变量
-    variables['module_name'] = projectName;
+    // 基础变量 - 根据模板类型设置不同的项目名称变量
+    if (templateName == 'plugin') {
+      variables['plugin_name'] = projectName;
+
+      // 生成字符串变体以支持Mustache函数调用语法
+      variables['plugin_name_snake_case'] = _toSnakeCase(projectName);
+      variables['plugin_name_title_case'] = _toTitleCase(projectName);
+      variables['plugin_name_pascal_case'] = _toPascalCase(projectName);
+      variables['plugin_name_camel_case'] = _toCamelCase(projectName);
+      variables['plugin_name_kebab_case'] = _toKebabCase(projectName);
+    } else {
+      variables['module_name'] = projectName;
+    }
     variables['generated_date'] =
         DateTime.now().toIso8601String().substring(0, 10);
 
@@ -422,6 +478,19 @@ class CreateCommand extends BaseCommand {
     variables['author'] = results['author'] ?? userConfig.defaults.author;
     variables['description'] = results['description'] ??
         'A new Flutter project created with Ming Status CLI';
+
+    // 处理插件特定参数
+    if (templateName == 'plugin') {
+      variables['plugin_type'] = results['plugin_type'] ?? 'tool';
+      variables['author_email'] =
+          results['author_email'] ?? 'lgnorantlu@gmail.com';
+      variables['version'] = results['version'] ?? '1.0.0';
+      variables['license'] = results['license'] ?? 'MIT';
+      variables['include_ui_components'] =
+          results['include_ui_components'] ?? true;
+      variables['include_services'] = results['include_services'] ?? false;
+      variables['include_assets'] = results['include_assets'] ?? false;
+    }
 
     // Task 30.2: 处理命令行变量参数
     final varOptions = results['var'] as List<String>;
@@ -444,6 +513,34 @@ class CreateCommand extends BaseCommand {
           variables[key] = value;
         }
       }
+    }
+
+    // 模板特定的默认变量
+    if (templateName == 'plugin') {
+      // 为plugin模板设置默认值
+      variables['plugin_type'] ??= 'tool';
+      variables['version'] ??= '1.0.0';
+      variables['author'] ??= 'lgnorant-lu';
+      variables['description'] ??= 'A Pet App plugin created with Ming CLI';
+      variables['author_email'] ??= 'lgnorantlu@gmail.com';
+      variables['dart_version'] ??= '^3.2.0';
+      variables['license'] ??= 'MIT';
+      variables['include_ui_components'] ??= true;
+      variables['include_services'] ??= false;
+      variables['need_file_system'] ??= false;
+      variables['need_network'] ??= false;
+      variables['need_camera'] ??= false;
+      variables['need_microphone'] ??= false;
+      variables['need_location'] ??= false;
+      variables['need_notifications'] ??= false;
+      variables['support_android'] ??= true;
+      variables['support_ios'] ??= true;
+      variables['support_web'] ??= true;
+      variables['support_desktop'] ??= true;
+      variables['flutter_version'] ??= '>=3.0.0';
+      variables['use_analysis'] ??= true;
+      variables['include_assets'] ??= false;
+      variables['include_tests'] ??= true;
     }
 
     // Task 30.3: 简化的交互式变量收集
@@ -1028,6 +1125,68 @@ class CreateCommand extends BaseCommand {
     }
 
     return variables;
+  }
+
+  // ============================================================================
+  // 字符串转换工具方法 - 支持Mustache函数调用语法
+  // ============================================================================
+
+  /// 转换为snake_case格式
+  String _toSnakeCase(String input) {
+    return input
+        .replaceAllMapped(
+            RegExp(r'[A-Z]'), (match) => '_${match.group(0)!.toLowerCase()}')
+        .replaceAll(RegExp(r'^_'), '')
+        .replaceAll(RegExp(r'[^a-z0-9_]'), '_')
+        .replaceAll(RegExp(r'_+'), '_')
+        .toLowerCase();
+  }
+
+  /// 转换为TitleCase格式
+  String _toTitleCase(String input) {
+    return input
+        .split(RegExp(r'[_\-\s]+'))
+        .map((word) => word.isEmpty
+            ? ''
+            : word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join(' ');
+  }
+
+  /// 转换为PascalCase格式
+  String _toPascalCase(String input) {
+    return input
+        .split(RegExp(r'[_\-\s]+'))
+        .map((word) => word.isEmpty
+            ? ''
+            : word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join('');
+  }
+
+  /// 转换为camelCase格式
+  String _toCamelCase(String input) {
+    final words = input.split(RegExp(r'[_\-\s]+'));
+    if (words.isEmpty) return input.toLowerCase();
+
+    final first = words.first.toLowerCase();
+    final rest = words
+        .skip(1)
+        .map((word) => word.isEmpty
+            ? ''
+            : word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join('');
+
+    return first + rest;
+  }
+
+  /// 转换为kebab-case格式
+  String _toKebabCase(String input) {
+    return input
+        .replaceAllMapped(
+            RegExp(r'[A-Z]'), (match) => '-${match.group(0)!.toLowerCase()}')
+        .replaceAll(RegExp(r'^-'), '')
+        .replaceAll(RegExp(r'[^a-z0-9\-]'), '-')
+        .replaceAll(RegExp(r'-+'), '-')
+        .toLowerCase();
   }
 }
 

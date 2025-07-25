@@ -1,0 +1,29 @@
+# 集成测试目录
+# 
+# 此目录用于存放插件的集成测试文件
+# 
+# 建议的文件结构：
+# - full_lifecycle_test.dart   # 完整生命周期测试
+# - plugin_integration_test.dart # 插件集成测试
+# - pet_app_integration_test.dart # Pet App V3集成测试
+# - performance_test.dart      # 性能测试
+# 
+# 示例集成测试：
+# void main() {
+#   group('Plugin Integration Tests', () {
+#     test('complete plugin lifecycle with Pet App V3', () async {
+#       final plugin = {{plugin_name.pascalCase()}}Plugin();
+#       
+#       // 测试完整的插件生命周期
+#       await plugin.initialize();
+#       await plugin.start();
+#       
+#       // 测试与Pet App V3的集成
+#       final result = await plugin.handleMessage('ping', {});
+#       expect(result['status'], equals('pong'));
+#       
+#       await plugin.stop();
+#       await plugin.dispose();
+#     });
+#   });
+# }

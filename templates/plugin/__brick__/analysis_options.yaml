@@ -1,0 +1,43 @@
+# {{plugin_display_name}} - Dart 代码分析配置
+# 简化的分析配置，适用于插件模板
+
+include: package:lints/recommended.yaml
+
+analyzer:
+  # 排除生成的文件
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.mocks.dart"
+    - "build/**"
+    - ".dart_tool/**"
+
+  # 错误处理
+  errors:
+    # 将警告提升为错误
+    invalid_assignment: error
+    missing_return: error
+    
+    # 忽略一些在模板中不重要的问题
+    todo: ignore
+
+linter:
+  rules:
+    # 基础代码质量规则
+    - avoid_print
+    - prefer_const_constructors
+    - prefer_final_fields
+    - prefer_single_quotes
+    - sort_constructors_first
+    - lines_longer_than_80_chars
+    
+    # 插件开发推荐规则
+    - cancel_subscriptions
+    - close_sinks
+    - avoid_empty_else
+    
+    # 禁用一些过于严格的规则（适合模板使用）
+    # 开发者可以根据需要启用这些规则：
+    # - public_member_api_docs
+    # - prefer_expression_function_bodies
+    # - always_specify_types

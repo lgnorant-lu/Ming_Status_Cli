@@ -1,0 +1,15 @@
+{{#include_ui_components}}
+# UI组件目录
+# 
+# 此目录用于存放插件的用户界面组件
+# 
+# 建议的子目录结构：
+# - widgets/    # 可复用的UI组件
+# - pages/      # 完整的页面组件  
+# - themes/     # 主题配置和样式
+# 
+# 示例文件：
+# - widgets/plugin_widget.dart
+# - pages/main_page.dart
+# - themes/plugin_theme.dart
+{{/include_ui_components}}

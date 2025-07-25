@@ -1,0 +1,22 @@
+{{#include_models}}
+# 数据模型目录
+# 
+# 此目录用于存放插件的数据模型类
+# 
+# 建议的文件结构：
+# - plugin_config.dart    # 插件配置模型
+# - plugin_data.dart      # 插件数据模型
+# - user_settings.dart    # 用户设置模型
+# - api_models.dart       # API响应模型
+# 
+# 示例模型类：
+# class PluginConfig {
+#   final String name;
+#   final bool enabled;
+#   
+#   const PluginConfig({required this.name, required this.enabled});
+#   
+#   factory PluginConfig.fromJson(Map<String, dynamic> json) { ... }
+#   Map<String, dynamic> toJson() { ... }
+# }
+{{/include_models}}
