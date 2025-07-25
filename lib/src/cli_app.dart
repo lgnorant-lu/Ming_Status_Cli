@@ -21,6 +21,7 @@ import 'package:ming_status_cli/src/commands/help_command.dart';
 import 'package:ming_status_cli/src/commands/init_command.dart';
 import 'package:ming_status_cli/src/commands/optimize_command.dart';
 import 'package:ming_status_cli/src/commands/registry_command.dart';
+import 'package:ming_status_cli/src/commands/plugin_command.dart';
 import 'package:ming_status_cli/src/commands/template_command.dart';
 import 'package:ming_status_cli/src/commands/validate_command.dart';
 import 'package:ming_status_cli/src/commands/version_command.dart';
@@ -150,6 +151,9 @@ Ming Status CLI - 企业级项目管理和模板生态系统
     // Phase 2.2: 远程模板生态系统命令
     _runner.addCommand(RegistryCommand());
 
+    // Phase A1: 插件管理系统命令
+    _runner.addCommand(PluginCommand());
+
     // 注意：使用自定义帮助处理而不是添加help命令
     // 因为CommandRunner已经有内置的help命令
 
@@ -260,6 +264,7 @@ Ming Status CLI - 企业级项目管理和模板生态系统
   ming doctor                    # 检查开发环境
   ming init my-project           # 创建新项目
   ming template list             # 浏览模板
+  ming plugin list               # 查看已安装插件
 
 📋 📖 基本用法
   ming <command> [arguments]     # 基本格式
@@ -277,6 +282,7 @@ Ming Status CLI - 企业级项目管理和模板生态系统
 📋 📚 高级功能
   template - 🎨 模板管理系统
   registry - 🗄️  注册表管理
+  plugin   - 🧩 插件开发和管理
 
 📋 💡 获取详细帮助
   ming help <command>            # 命令详细帮助

@@ -37,6 +37,27 @@ enum PluginPermission {
   storage,
 }
 
+/// 插件权限扩展
+extension PluginPermissionExtension on PluginPermission {
+  /// 获取权限的显示名称
+  String get displayName {
+    switch (this) {
+      case PluginPermission.fileSystem:
+        return '文件系统访问';
+      case PluginPermission.network:
+        return '网络访问';
+      case PluginPermission.camera:
+        return '摄像头访问';
+      case PluginPermission.microphone:
+        return '麦克风访问';
+      case PluginPermission.location:
+        return '位置访问';
+      case PluginPermission.storage:
+        return '存储访问';
+    }
+  }
+}
+
 /// 插件依赖
 class PluginDependency {
   final String name;
@@ -69,6 +90,8 @@ enum PluginState {
   stopped,
   disposing,
   disposed,
+  unloaded,
+  loaded,
   error,
 }
 
@@ -92,7 +115,7 @@ abstract class Plugin {
   Future<void> stop();
   Future<void> dispose();
   Object? getConfigWidget();
-  Object getMainWidget();
+  Object? getMainWidget();
   Future<dynamic> handleMessage(String action, Map<String, dynamic> data);
   PluginState get currentState;
   Stream<PluginState> get stateChanges;
@@ -287,10 +310,10 @@ class {{plugin_name.pascalCase()}}Plugin extends Plugin {
   }
 
   @override
-  Object getMainWidget() {
+  Object? getMainWidget() {
     // 返回主界面Widget
     // 在实际实现中，这里应该返回一个Flutter Widget
-    return '{{plugin_display_name}} Main Widget';
+    return null; // 返回null，让example应用处理
   }
 
   @override

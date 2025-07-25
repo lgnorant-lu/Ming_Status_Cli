@@ -1,85 +1,226 @@
-# Pet App V3 插件清单文件
-# 此文件定义了插件的基本信息和配置
+# =============================================================================
+# Pet App V3 插件清单文件 (plugin.yaml)
+# 插件名称: {{plugin_name}}
+# 生成时间: {{generated_date}}
+# 模板版本: 1.0.0
+# =============================================================================
 
-# 基本信息
-id: "{{plugin_name}}"
-name: "{{plugin_display_name}}"
-version: "{{version}}"
-description: "{{description}}"
-author: "{{author}}"
-email: "{{author_email}}"
-category: "{{plugin_type}}"
+# 插件基本信息
+plugin:
+  # 插件标识 (必需)
+  id: {{plugin_name}}
+  name: {{#plugin_display_name}}{{plugin_display_name}}{{/plugin_display_name}}{{^plugin_display_name}}{{plugin_name.titleCase()}}{{/plugin_display_name}}
+  version: {{version}}
+  description: {{description}}
+  
+  # 作者信息
+  author: {{author}}{{#author_email}}
+  author_email: {{author_email}}{{/author_email}}
+  
+  # 插件分类
+  category: {{plugin_type}}
+  type: {{plugin_type}}
+  
+  # 插件标签
+  tags:
+    - {{plugin_type}}
+    - pet_app
+    - creative_workshop{{#include_ui_components}}
+    - ui{{/include_ui_components}}{{#include_services}}
+    - service{{/include_services}}
+
+# 版本兼容性
+compatibility:
+  # Pet App版本要求
+  min_pet_app_version: "3.0.0"
+  max_pet_app_version: "4.0.0"
+  
+  # SDK版本要求
+  min_dart_version: {{dart_version}}
+  min_flutter_version: {{flutter_version}}
+  
+  # 插件系统版本
+  plugin_system_version: "^1.0.0"
 
 # 平台支持
-platforms:
-  - android
-  - ios
-  - web
+platforms:{{#support_android}}
+  - android{{/support_android}}{{#support_ios}}
+  - ios{{/support_ios}}{{#support_web}}
+  - web{{/support_web}}{{#support_desktop}}
   - windows
   - macos
-  - linux
-
+  - linux{{/support_desktop}}
 
 # 权限声明
-permissions:
+permissions:{{#need_file_system}}
+  - fileSystem{{/need_file_system}}{{#need_network}}
+  - network{{/need_network}}{{#need_camera}}
+  - camera{{/need_camera}}{{#need_microphone}}
+  - microphone{{/need_microphone}}{{#need_location}}
+  - location{{/need_location}}{{#need_notifications}}
+  - notifications{{/need_notifications}}
 
-
-# 依赖声明
+# 依赖管理
 dependencies:
-  # Pet App核心依赖
-  pet_app_core: "^3.0.0"
-  plugin_system: "^1.0.0"
+  # 核心依赖
+  required:
+    - id: plugin_system
+      version: "^1.0.0"
+      description: Pet App插件系统核心库{{#include_ui_components}}
+    - id: flutter
+      version: {{flutter_version}}
+      description: Flutter UI框架{{/include_ui_components}}
   
-  # Flutter核心依赖
-  flutter:
-    sdk: flutter
-  
-  # UI相关依赖
-  flutter_bloc: ^8.1.0
-  provider: ^6.0.0
-  
-
-
-# 开发依赖
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^2.0.0
-  very_good_analysis: ^5.0.0
-
+  # 可选依赖
+  optional: []
 
 # 插件配置
 configuration:
-  # 主入口文件
-  main: lib/plugin_main.dart
+  # 插件设置
+  settings:
+    # 是否可配置
+    configurable: true
+    
+    # 默认启用状态
+    enabled_by_default: false
+    
+    # 是否支持热重载
+    hot_reload_supported: true
+    
+    # 是否需要重启应用
+    requires_app_restart: false
   
-  # 插件类名
-  plugin_class: {{plugin_name.pascalCase()}}Plugin
-
-  # UI组件配置
+  # 资源配置{{#include_assets}}
+  assets:
+    # 资源目录
+    asset_directories:
+      - "assets/"
+    
+    # 支持的资源类型
+    supported_formats:
+      - "png"
+      - "jpg"
+      - "svg"
+      - "json"{{/include_assets}}
+  
+  # UI配置{{#include_ui_components}}
   ui:
-    main_widget: {{plugin_name.pascalCase()}}Widget
+    # 主题支持
     theme_support: true
     
-  # 资源配置
+    # 响应式设计
+    responsive: true
+    
+    # 无障碍支持
+    accessibility: true{{/include_ui_components}}
 
+# 插件入口点
+entry_points:
+  # 主入口
+  main: "lib/{{plugin_name.snakeCase()}}.dart"
+  
+  # 插件实现{{#include_ui_components}}
+  widget: "lib/src/{{plugin_name.snakeCase()}}_plugin.dart"{{/include_ui_components}}{{#include_services}}
+  service: "lib/src/services/{{plugin_name.snakeCase()}}_service.dart"{{/include_services}}
 
-# 许可证信息
-license: {{license}}
+# 导出配置
+exports:
+  # 公共API
+  public_api:
+    - "{{plugin_name.pascalCase()}}Plugin"{{#include_ui_components}}
+    - "{{plugin_name.pascalCase()}}Widget"{{/include_ui_components}}{{#include_services}}
+    - "{{plugin_name.pascalCase()}}Service"{{/include_services}}
+  
+  # 内部API (仅供插件系统使用)
+  internal_api: []
 
-# 仓库信息
-repository:
-  type: git
-  {{#repository_url}}url: "{{repository_url}}"{{/repository_url}}{{^repository_url}}url: "https://github.com/{{author}}/{{plugin_name}}.git"{{/repository_url}}
+# 生命周期钩子
+lifecycle:
+  # 初始化钩子
+  on_initialize: "initialize"
+  
+  # 启动钩子
+  on_start: "start"
+  
+  # 暂停钩子
+  on_pause: "pause"
+  
+  # 恢复钩子
+  on_resume: "resume"
+  
+  # 停止钩子
+  on_stop: "stop"
+  
+  # 清理钩子
+  on_dispose: "dispose"
 
-# 标签
-tags:
-  - pet-app
-  - plugin
-  - {{plugin_type}}
+# 安全配置
+security:
+  # 数字签名 (生产环境需要)
+  signature: null
+  
+  # 安全级别
+  security_level: "standard"
+  
+  # 沙箱模式
+  sandboxed: true
+  
+  # 网络访问限制{{#need_network}}
+  network_restrictions:
+    allowed_domains: []
+    blocked_domains: []{{/need_network}}
 
-# 最低要求
-requirements:
-  pet_app_version: ">=3.0.0"
-  dart_version: "{{dart_version}}"
-  flutter_version: ">=3.0.0"
+# 性能配置
+performance:
+  # 内存限制 (MB)
+  max_memory_usage: 100
+  
+  # CPU使用限制 (%)
+  max_cpu_usage: 50
+  
+  # 启动超时 (秒)
+  startup_timeout: 30
+  
+  # 响应超时 (秒)
+  response_timeout: 10
+
+# 元数据
+metadata:
+  # 项目信息
+  homepage: "https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}"
+  repository: "https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}.git"
+  issue_tracker: "https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}/issues"
+  documentation: "https://github.com/{{author.kebabCase()}}/{{plugin_name.kebabCase()}}/blob/main/README.md"
+  
+  # 许可证
+  license: {{license}}
+  
+  # 关键词
+  keywords:
+    - {{plugin_type}}
+    - pet-app
+    - plugin
+    - creative-workshop{{#include_ui_components}}
+    - ui{{/include_ui_components}}{{#include_services}}
+    - service{{/include_services}}
+  
+  # 创建信息
+  created_with: "Ming Status CLI"
+  template_version: "1.0.0"
+  generated_date: "{{generated_date}}"
+
+# 开发信息 (仅开发环境)
+development:
+  # 调试模式
+  debug_mode: false
+  
+  # 日志级别
+  log_level: "info"
+  
+  # 热重载端口
+  hot_reload_port: 0
+  
+  # 开发服务器
+  dev_server:
+    enabled: false
+    port: 8080

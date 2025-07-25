@@ -1,0 +1,18 @@
+# 插件批量操作列表
+# 每行一个插件ID，支持注释
+
+# 核心插件
+test_build_plugin
+plugin_system
+
+# 工具插件
+dev_tools
+code_generator
+
+# UI插件
+ui_components
+theme_manager
+
+# 测试插件
+test_plugin1
+test_plugin2
