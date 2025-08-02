@@ -15,6 +15,7 @@ Change History:
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
@@ -293,6 +294,8 @@ class PluginPublisher {
         return await _publishToLocalRegistry(packagePath, manifest);
       } else if (registry == 'pub.dev') {
         return await _publishToPubDev(packagePath, manifest);
+      } else if (registry == 'github') {
+        return await _publishToGitHub(packagePath, manifest);
       } else if (registry == 'private') {
         return await _publishToPrivateRegistry(packagePath, manifest);
       } else {
@@ -359,7 +362,8 @@ class PluginPublisher {
       }
 
       // 2. 生成pubspec.yaml
-      final pubspecResult = await _generatePubspecForPubDev(manifest);
+      final pubspecResult =
+          await _generatePubspecForPubDev(manifest, packagePath);
       if (!(pubspecResult['success'] as bool)) {
         errors.addAll(pubspecResult['errors'] as List<String>);
       }
@@ -386,6 +390,70 @@ class PluginPublisher {
         'errors': errors,
         'warnings': warnings,
         'registry': 'pub.dev',
+      };
+    }
+  }
+
+  /// 发布到GitHub注册表
+  Future<Map<String, dynamic>> _publishToGitHub(
+    String packagePath,
+    Map<String, dynamic> manifest,
+  ) async {
+    final errors = <String>[];
+    final warnings = <String>[];
+
+    try {
+      // 1. 获取GitHub配置
+      final githubConfig = await _getGitHubConfiguration();
+      if (githubConfig == null) {
+        errors.add('未找到GitHub配置信息');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+          'registry': 'github',
+        };
+      }
+
+      // 2. 验证GitHub发布要求
+      final validationResult = await _validateGitHubRequirements(manifest);
+      if (!(validationResult['isValid'] as bool)) {
+        errors.addAll(validationResult['errors'] as List<String>);
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+          'registry': 'github',
+        };
+      }
+
+      // 3. 创建GitHub Release
+      final releaseResult = await _createGitHubRelease(
+        packagePath,
+        manifest,
+        githubConfig,
+      );
+
+      if (!(releaseResult['success'] as bool)) {
+        errors.addAll(releaseResult['errors'] as List<String>);
+      }
+      warnings.addAll(releaseResult['warnings'] as List<String>);
+
+      return {
+        'success': errors.isEmpty,
+        'errors': errors,
+        'warnings': warnings,
+        'registry': 'github',
+        'release_url': releaseResult['release_url'],
+        'download_url': releaseResult['download_url'],
+      };
+    } catch (e) {
+      errors.add('GitHub发布失败: $e');
+      return {
+        'success': false,
+        'errors': errors,
+        'warnings': warnings,
+        'registry': 'github',
       };
     }
   }
@@ -426,6 +494,7 @@ class PluginPublisher {
   /// 生成pub.dev兼容的pubspec.yaml
   Future<Map<String, dynamic>> _generatePubspecForPubDev(
     Map<String, dynamic> manifest,
+    String packagePath,
   ) async {
     final errors = <String>[];
     final warnings = <String>[];
@@ -461,8 +530,9 @@ class PluginPublisher {
         },
       };
 
-      // TODO: 实际写入pubspec.yaml文件
-      warnings.add('pubspec.yaml生成完成（模拟）');
+      // 实际写入pubspec.yaml文件
+      await _writePubspecFile(pubspec, packagePath);
+      warnings.add('pubspec.yaml文件已生成并写入');
 
       return {
         'success': true,
@@ -480,28 +550,73 @@ class PluginPublisher {
     }
   }
 
-  /// 执行pub publish
+  /// 执行pub publish（真实命令执行）
   Future<Map<String, dynamic>> _executePubPublish(String packagePath) async {
     final errors = <String>[];
     final warnings = <String>[];
 
     try {
-      // TODO: 实现真实的pub publish命令执行
-      // final result = await Process.run('dart', ['pub', 'publish'], workingDirectory: packagePath);
+      // 检查是否在正确的包目录中
+      final pubspecFile = File(path.join(packagePath, 'pubspec.yaml'));
+      if (!await pubspecFile.exists()) {
+        errors.add('pubspec.yaml文件不存在: $packagePath');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
 
-      // 模拟发布过程
-      await Future<void>.delayed(const Duration(seconds: 2));
+      // 执行 dart pub publish --dry-run 进行预检查
+      final dryRunResult = await Process.run(
+        'dart',
+        ['pub', 'publish', '--dry-run'],
+        workingDirectory: packagePath,
+        runInShell: true,
+      );
 
-      warnings.add('模拟pub publish执行成功');
+      if (dryRunResult.exitCode != 0) {
+        errors.add('pub publish预检查失败: ${dryRunResult.stderr}');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
 
-      return {
-        'success': true,
-        'errors': errors,
-        'warnings': warnings,
-        'package_url': 'https://pub.dev/packages/example_plugin',
-      };
+      // 执行实际的pub publish命令
+      final publishResult = await Process.run(
+        'dart',
+        ['pub', 'publish', '--force'], // 使用--force跳过交互式确认
+        workingDirectory: packagePath,
+        runInShell: true,
+      );
+
+      if (publishResult.exitCode == 0) {
+        // 解析输出以获取包URL
+        final output = publishResult.stdout.toString();
+        final packageName = await _getPackageNameFromPubspec(packagePath);
+        final packageUrl = 'https://pub.dev/packages/$packageName';
+
+        warnings.add('pub publish执行成功');
+        warnings.add('输出: $output');
+
+        return {
+          'success': true,
+          'errors': errors,
+          'warnings': warnings,
+          'package_url': packageUrl,
+        };
+      } else {
+        errors.add('pub publish执行失败: ${publishResult.stderr}');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
     } catch (e) {
-      errors.add('执行pub publish失败: $e');
+      errors.add('执行pub publish异常: $e');
       return {
         'success': false,
         'errors': errors,
@@ -611,16 +726,74 @@ class PluginPublisher {
     }
   }
 
-  /// 获取私有注册表配置
+  /// 获取私有注册表配置（真实配置读取）
   Future<Map<String, dynamic>?> _getPrivateRegistryConfig() async {
-    // TODO: 从配置文件或环境变量读取私有注册表配置
-    // 模拟配置
-    return {
-      'url': 'https://registry.company.com',
-      'auth_type': 'token',
-      'auth_token': 'private_registry_token',
-      'upload_endpoint': '/api/v1/packages/upload',
-    };
+    try {
+      // 1. 尝试从环境变量读取配置
+      final registryUrl = Platform.environment['PRIVATE_REGISTRY_URL'];
+      final authType = Platform.environment['PRIVATE_REGISTRY_AUTH_TYPE'];
+      final authToken = Platform.environment['PRIVATE_REGISTRY_AUTH_TOKEN'];
+      final apiKey = Platform.environment['PRIVATE_REGISTRY_API_KEY'];
+      final uploadEndpoint =
+          Platform.environment['PRIVATE_REGISTRY_UPLOAD_ENDPOINT'];
+
+      if (registryUrl != null && authType != null) {
+        final config = {
+          'url': registryUrl,
+          'auth_type': authType,
+          'upload_endpoint': uploadEndpoint ?? '/api/v1/packages/upload',
+          'timeout': 30000,
+          'retry_count': 3,
+        };
+
+        // 根据认证类型添加相应的认证信息
+        switch (authType) {
+          case 'token':
+            if (authToken != null) {
+              config['auth_token'] = authToken;
+            }
+            break;
+          case 'apikey':
+            if (apiKey != null) {
+              config['api_key'] = apiKey;
+            }
+            break;
+        }
+
+        return config;
+      }
+
+      // 2. 尝试从配置文件读取
+      final configFile = File('private_registry.json');
+      if (await configFile.exists()) {
+        final configContent = await configFile.readAsString();
+        final config = jsonDecode(configContent) as Map<String, dynamic>;
+
+        if (config['url'] != null && config['auth_type'] != null) {
+          return config;
+        }
+      }
+
+      // 3. 尝试从用户配置目录读取
+      final homeDir =
+          Platform.environment['HOME'] ?? Platform.environment['USERPROFILE'];
+      if (homeDir != null) {
+        final userConfigFile =
+            File(path.join(homeDir, '.ming', 'private_registry.json'));
+        if (await userConfigFile.exists()) {
+          final configContent = await userConfigFile.readAsString();
+          final config = jsonDecode(configContent) as Map<String, dynamic>;
+
+          if (config['url'] != null && config['auth_type'] != null) {
+            return config;
+          }
+        }
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   /// 验证私有注册表认证
@@ -678,31 +851,391 @@ class PluginPublisher {
     try {
       final registryUrl = config['url'] as String;
       final uploadEndpoint = config['upload_endpoint'] as String;
-      final authToken = config['auth_token'] as String;
+      final authType = config['auth_type'] as String;
+      final timeout = config['timeout'] as int? ?? 30000;
+      final retryCount = config['retry_count'] as int? ?? 3;
 
-      // TODO: 实现真实的HTTP上传
-      // 模拟上传过程
-      await Future<void>.delayed(const Duration(seconds: 1));
+      // 构建上传URL
+      final uploadUrl = '$registryUrl$uploadEndpoint';
+
+      // 准备认证头
+      final headers = <String, String>{
+        'Content-Type': 'multipart/form-data',
+        'User-Agent': 'Ming-CLI/1.0.0',
+      };
+
+      // 根据认证类型添加认证头
+      switch (authType) {
+        case 'token':
+          final authToken = config['auth_token'] as String?;
+          if (authToken != null) {
+            headers['Authorization'] = 'Bearer $authToken';
+          }
+          break;
+        case 'apikey':
+          final apiKey = config['api_key'] as String?;
+          if (apiKey != null) {
+            headers['X-API-Key'] = apiKey;
+          }
+          break;
+      }
+
+      // 读取插件包文件
+      final packageFile = File(packagePath);
+      if (!await packageFile.exists()) {
+        errors.add('插件包文件不存在: $packagePath');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
 
       final pluginId = manifest['plugin']?['id'] ?? manifest['id'];
       final version = manifest['plugin']?['version'] ?? manifest['version'];
+      final packageBytes = await packageFile.readAsBytes();
 
-      warnings.add('模拟上传到私有注册表成功');
+      // 创建multipart请求
+      final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
+      request.headers.addAll(headers);
 
-      return {
-        'success': true,
-        'errors': errors,
-        'warnings': warnings,
-        'registry_url': registryUrl,
-        'package_id': '$pluginId@$version',
-      };
+      // 添加文件
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'package',
+          packageBytes,
+          filename: path.basename(packagePath),
+        ),
+      );
+
+      // 添加元数据
+      request.fields['plugin_id'] = pluginId.toString();
+      request.fields['version'] = version.toString();
+      request.fields['manifest'] = jsonEncode(manifest);
+
+      // 执行上传（带重试机制）
+      http.StreamedResponse? response;
+      Exception? lastException;
+
+      for (int attempt = 1; attempt <= retryCount; attempt++) {
+        try {
+          response =
+              await request.send().timeout(Duration(milliseconds: timeout));
+          break;
+        } catch (e) {
+          lastException = e is Exception ? e : Exception(e.toString());
+          if (attempt < retryCount) {
+            warnings.add('上传尝试 $attempt 失败，正在重试...');
+            await Future<void>.delayed(Duration(seconds: attempt));
+          }
+        }
+      }
+
+      if (response == null) {
+        errors.add('上传失败，已重试 $retryCount 次: ${lastException?.toString()}');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
+
+      // 处理响应
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        warnings.add('成功上传到私有注册表');
+
+        // 尝试解析响应以获取更多信息
+        Map<String, dynamic>? responseData;
+        try {
+          responseData = jsonDecode(responseBody) as Map<String, dynamic>;
+        } catch (e) {
+          // 忽略JSON解析错误
+        }
+
+        return {
+          'success': true,
+          'errors': errors,
+          'warnings': warnings,
+          'registry_url': registryUrl,
+          'package_id': '$pluginId@$version',
+          'response_data': responseData,
+        };
+      } else {
+        errors.add('私有注册表返回错误: ${response.statusCode} - $responseBody');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
     } catch (e) {
-      errors.add('上传到私有注册表失败: $e');
+      errors.add('上传到私有注册表异常: $e');
       return {
         'success': false,
         'errors': errors,
         'warnings': warnings,
       };
+    }
+  }
+
+  /// 获取GitHub配置
+  Future<Map<String, dynamic>?> _getGitHubConfiguration() async {
+    try {
+      // 尝试从环境变量读取
+      final token = Platform.environment['GITHUB_TOKEN'];
+      final owner = Platform.environment['GITHUB_OWNER'];
+      final repo = Platform.environment['GITHUB_REPO'];
+
+      if (token != null && owner != null && repo != null) {
+        return {
+          'token': token,
+          'owner': owner,
+          'repo': repo,
+          'baseUrl': 'https://api.github.com',
+        };
+      }
+
+      // 尝试从配置文件读取
+      final configFile = File('github_config.json');
+      if (await configFile.exists()) {
+        final configContent = await configFile.readAsString();
+        final config = jsonDecode(configContent) as Map<String, dynamic>;
+
+        if (config['token'] != null &&
+            config['owner'] != null &&
+            config['repo'] != null) {
+          return config;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// 验证GitHub发布要求
+  Future<Map<String, dynamic>> _validateGitHubRequirements(
+    Map<String, dynamic> manifest,
+  ) async {
+    final errors = <String>[];
+
+    // 检查必需字段
+    final requiredFields = ['name', 'version', 'description'];
+    for (final field in requiredFields) {
+      final value = manifest['plugin']?[field] ?? manifest[field];
+      if (value == null || value.toString().trim().isEmpty) {
+        errors.add('GitHub发布需要字段: $field');
+      }
+    }
+
+    // 检查版本格式
+    final version = manifest['plugin']?['version'] ?? manifest['version'];
+    if (version != null && !_isValidSemVer(version as String)) {
+      errors.add('版本号必须符合语义化版本规范: $version');
+    }
+
+    return {
+      'isValid': errors.isEmpty,
+      'errors': errors,
+    };
+  }
+
+  /// 创建GitHub Release
+  Future<Map<String, dynamic>> _createGitHubRelease(
+    String packagePath,
+    Map<String, dynamic> manifest,
+    Map<String, dynamic> config,
+  ) async {
+    final errors = <String>[];
+    final warnings = <String>[];
+
+    try {
+      final pluginId = manifest['plugin']?['id'] ?? manifest['id'];
+      final version = manifest['plugin']?['version'] ?? manifest['version'];
+      final description =
+          manifest['plugin']?['description'] ?? manifest['description'];
+
+      // 创建release数据
+      final releaseData = {
+        'tag_name': 'v$version',
+        'target_commitish': 'main',
+        'name': '$pluginId v$version',
+        'body': description,
+        'draft': false,
+        'prerelease': false,
+      };
+
+      // 发送创建release请求
+      final releaseUrl =
+          '${config['baseUrl']}/repos/${config['owner']}/${config['repo']}/releases';
+      final response = await http.post(
+        Uri.parse(releaseUrl),
+        headers: {
+          'Authorization': 'token ${config['token']}',
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(releaseData),
+      );
+
+      if (response.statusCode == 201) {
+        final releaseInfo = jsonDecode(response.body) as Map<String, dynamic>;
+
+        // 上传插件包文件
+        final uploadResult = await _uploadReleaseAsset(
+          packagePath,
+          releaseInfo,
+          config,
+        );
+
+        if (!(uploadResult['success'] as bool)) {
+          errors.addAll(uploadResult['errors'] as List<String>);
+        }
+        warnings.addAll(uploadResult['warnings'] as List<String>);
+
+        return {
+          'success': errors.isEmpty,
+          'errors': errors,
+          'warnings': warnings,
+          'release_url': releaseInfo['html_url'],
+          'download_url': uploadResult['download_url'],
+        };
+      } else {
+        errors.add(
+            '创建GitHub Release失败: ${response.statusCode} - ${response.body}');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
+    } catch (e) {
+      errors.add('创建GitHub Release异常: $e');
+      return {
+        'success': false,
+        'errors': errors,
+        'warnings': warnings,
+      };
+    }
+  }
+
+  /// 上传Release资产
+  Future<Map<String, dynamic>> _uploadReleaseAsset(
+    String packagePath,
+    Map<String, dynamic> releaseInfo,
+    Map<String, dynamic> config,
+  ) async {
+    final errors = <String>[];
+    final warnings = <String>[];
+
+    try {
+      final packageFile = File(packagePath);
+      if (!await packageFile.exists()) {
+        errors.add('插件包文件不存在: $packagePath');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
+
+      final fileName = path.basename(packagePath);
+      final uploadUrl = (releaseInfo['upload_url'] as String)
+          .replaceAll('{?name,label}', '?name=$fileName');
+
+      final fileBytes = await packageFile.readAsBytes();
+
+      final response = await http.post(
+        Uri.parse(uploadUrl),
+        headers: {
+          'Authorization': 'token ${config['token']}',
+          'Content-Type': 'application/octet-stream',
+        },
+        body: fileBytes,
+      );
+
+      if (response.statusCode == 201) {
+        final assetInfo = jsonDecode(response.body) as Map<String, dynamic>;
+        return {
+          'success': true,
+          'errors': errors,
+          'warnings': warnings,
+          'download_url': assetInfo['browser_download_url'],
+        };
+      } else {
+        errors.add('上传Release资产失败: ${response.statusCode} - ${response.body}');
+        return {
+          'success': false,
+          'errors': errors,
+          'warnings': warnings,
+        };
+      }
+    } catch (e) {
+      errors.add('上传Release资产异常: $e');
+      return {
+        'success': false,
+        'errors': errors,
+        'warnings': warnings,
+      };
+    }
+  }
+
+  /// 写入pubspec.yaml文件
+  Future<void> _writePubspecFile(
+    Map<String, dynamic> pubspec,
+    String packagePath,
+  ) async {
+    final pubspecFile = File(path.join(packagePath, 'pubspec.yaml'));
+
+    // 将Map转换为YAML格式字符串
+    final yamlContent = _mapToYaml(pubspec);
+
+    // 写入文件
+    await pubspecFile.writeAsString(yamlContent);
+  }
+
+  /// 将Map转换为YAML格式字符串
+  String _mapToYaml(Map<String, dynamic> map, [int indent = 0]) {
+    final buffer = StringBuffer();
+    final indentStr = '  ' * indent;
+
+    for (final entry in map.entries) {
+      if (entry.value is Map) {
+        buffer.writeln('$indentStr${entry.key}:');
+        buffer
+            .write(_mapToYaml(entry.value as Map<String, dynamic>, indent + 1));
+      } else if (entry.value is List) {
+        buffer.writeln('$indentStr${entry.key}:');
+        for (final item in entry.value as List) {
+          if (item is Map) {
+            buffer.write(_mapToYaml(item as Map<String, dynamic>, indent + 1));
+          } else {
+            buffer.writeln('$indentStr  - $item');
+          }
+        }
+      } else {
+        buffer.writeln('$indentStr${entry.key}: ${entry.value}');
+      }
+    }
+
+    return buffer.toString();
+  }
+
+  /// 从pubspec.yaml获取包名
+  Future<String> _getPackageNameFromPubspec(String packagePath) async {
+    try {
+      final pubspecFile = File(path.join(packagePath, 'pubspec.yaml'));
+      if (await pubspecFile.exists()) {
+        final content = await pubspecFile.readAsString();
+        final yamlData = loadYaml(content) as Map;
+        return yamlData['name'] as String? ?? 'unknown_package';
+      }
+      return 'unknown_package';
+    } catch (e) {
+      return 'unknown_package';
     }
   }
 }

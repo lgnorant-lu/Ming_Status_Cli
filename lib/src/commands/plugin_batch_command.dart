@@ -203,7 +203,8 @@ class PluginBatchCommand extends BaseCommand {
   }
 
   /// 获取插件列表
-  Future<List<String>> _getPluginList(String? pluginsFile, String? pluginsArg) async {
+  Future<List<String>> _getPluginList(
+      String? pluginsFile, String? pluginsArg) async {
     final pluginIds = <String>[];
 
     // 从文件读取
@@ -225,7 +226,8 @@ class PluginBatchCommand extends BaseCommand {
 
     // 从命令行参数读取
     if (pluginsArg != null) {
-      final plugins = pluginsArg.split(',').map((p) => p.trim()).where((p) => p.isNotEmpty);
+      final plugins =
+          pluginsArg.split(',').map((p) => p.trim()).where((p) => p.isNotEmpty);
       pluginIds.addAll(plugins);
     }
 
@@ -261,7 +263,7 @@ class PluginBatchCommand extends BaseCommand {
         verbose,
       ).then((result) {
         results.add(result);
-        
+
         if (verbose) {
           final status = result['success'] as bool ? '✅' : '❌';
           Logger.info('$status $pluginId: ${result['message']}');
@@ -274,7 +276,7 @@ class PluginBatchCommand extends BaseCommand {
           'error': error.toString(),
         };
         results.add(result);
-        
+
         if (verbose) {
           Logger.error('❌ $pluginId: ${result['message']}');
         }
@@ -332,7 +334,8 @@ class PluginBatchCommand extends BaseCommand {
   }
 
   /// 验证插件
-  Future<Map<String, dynamic>> _validatePlugin(String pluginId, bool isDryRun) async {
+  Future<Map<String, dynamic>> _validatePlugin(
+      String pluginId, bool isDryRun) async {
     if (isDryRun) {
       return {
         'pluginId': pluginId,
@@ -351,7 +354,8 @@ class PluginBatchCommand extends BaseCommand {
   }
 
   /// 构建插件
-  Future<Map<String, dynamic>> _buildPlugin(String pluginId, bool isDryRun) async {
+  Future<Map<String, dynamic>> _buildPlugin(
+      String pluginId, bool isDryRun) async {
     if (isDryRun) {
       return {
         'pluginId': pluginId,
@@ -370,7 +374,8 @@ class PluginBatchCommand extends BaseCommand {
   }
 
   /// 发布插件
-  Future<Map<String, dynamic>> _publishPlugin(String pluginId, String registry, bool isDryRun) async {
+  Future<Map<String, dynamic>> _publishPlugin(
+      String pluginId, String registry, bool isDryRun) async {
     if (isDryRun) {
       return {
         'pluginId': pluginId,
@@ -389,7 +394,8 @@ class PluginBatchCommand extends BaseCommand {
   }
 
   /// 同步插件
-  Future<Map<String, dynamic>> _syncPlugin(String pluginId, bool isDryRun) async {
+  Future<Map<String, dynamic>> _syncPlugin(
+      String pluginId, bool isDryRun) async {
     if (isDryRun) {
       return {
         'pluginId': pluginId,
@@ -408,7 +414,8 @@ class PluginBatchCommand extends BaseCommand {
   }
 
   /// 安装插件
-  Future<Map<String, dynamic>> _installPlugin(String pluginId, bool isDryRun) async {
+  Future<Map<String, dynamic>> _installPlugin(
+      String pluginId, bool isDryRun) async {
     if (isDryRun) {
       return {
         'pluginId': pluginId,
@@ -427,7 +434,8 @@ class PluginBatchCommand extends BaseCommand {
   }
 
   /// 卸载插件
-  Future<Map<String, dynamic>> _uninstallPlugin(String pluginId, bool isDryRun) async {
+  Future<Map<String, dynamic>> _uninstallPlugin(
+      String pluginId, bool isDryRun) async {
     if (isDryRun) {
       return {
         'pluginId': pluginId,

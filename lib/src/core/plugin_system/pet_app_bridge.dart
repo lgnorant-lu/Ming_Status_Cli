@@ -12,8 +12,10 @@ Change History:
 ---------------------------------------------------------------
 */
 
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
@@ -666,45 +668,110 @@ class PetAppBridge {
     };
   }
 
-  /// 执行同步操作
+  /// 执行同步操作（真实HTTP通信）
   Future<Map<String, dynamic>> _performSync(
       Map<String, dynamic> syncPacket) async {
-    // 模拟同步延迟
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    try {
+      // 获取Pet App V3同步端点配置
+      final syncConfig = await _getSyncConfiguration();
+      if (syncConfig == null) {
+        throw Exception('未找到Pet App V3同步配置');
+      }
 
-    // 模拟同步结果
-    return {
-      'syncId': syncPacket['syncId'],
-      'status': 'completed',
-      'message': '插件同步成功',
-      'pet_app_plugin_id': syncPacket['pluginId'],
-      'sync_timestamp': DateTime.now().toIso8601String(),
-    };
+      final syncUrl = '${syncConfig['baseUrl']}/api/plugins/sync';
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${syncConfig['apiKey']}',
+        'X-Sync-Version': '1.0',
+      };
+
+      // 发送同步请求
+      final response = await http.post(
+        Uri.parse(syncUrl),
+        headers: headers,
+        body: jsonEncode(syncPacket),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        return {
+          'syncId': syncPacket['syncId'],
+          'status': 'completed',
+          'message': '插件同步成功',
+          'pet_app_plugin_id': responseData['plugin_id'],
+          'sync_timestamp': DateTime.now().toIso8601String(),
+          'response_data': responseData,
+        };
+      } else {
+        throw Exception('同步请求失败: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      // 同步失败时返回错误信息
+      return {
+        'syncId': syncPacket['syncId'],
+        'status': 'failed',
+        'message': '插件同步失败: $e',
+        'error': e.toString(),
+        'sync_timestamp': DateTime.now().toIso8601String(),
+      };
+    }
   }
 
-  /// 从Pet App V3获取插件数据
+  /// 从Pet App V3获取插件数据（真实HTTP通信）
   Future<Map<String, dynamic>> _fetchFromPetApp(String pluginId) async {
-    // 模拟网络延迟
-    await Future<void>.delayed(const Duration(milliseconds: 300));
+    try {
+      // 获取Pet App V3同步端点配置
+      final syncConfig = await _getSyncConfiguration();
+      if (syncConfig == null) {
+        throw Exception('未找到Pet App V3同步配置');
+      }
 
-    // 模拟Pet App V3插件数据
-    return {
-      'id': pluginId,
-      'name': 'Pet App Plugin',
-      'version': '1.0.0',
-      'description': 'A plugin from Pet App V3',
-      'author': 'Pet App Developer',
-      'category': 'tool',
-      'manifest': {
-        'main': 'lib/main.dart',
-        'platforms': ['android', 'ios', 'web'],
-        'permissions': ['network'],
-      },
-      'metadata': {
-        'source': 'pet_app_v3',
-        'export_timestamp': DateTime.now().toIso8601String(),
-      },
-    };
+      final fetchUrl = '${syncConfig['baseUrl']}/api/plugins/$pluginId';
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${syncConfig['apiKey']}',
+        'X-Sync-Version': '1.0',
+      };
+
+      // 发送获取请求
+      final response = await http.get(
+        Uri.parse(fetchUrl),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+
+        // 确保返回的数据包含必要字段
+        return {
+          'id': responseData['id'] ?? pluginId,
+          'name': responseData['name'] ?? 'Unknown Plugin',
+          'version': responseData['version'] ?? '1.0.0',
+          'description':
+              responseData['description'] ?? 'Plugin from Pet App V3',
+          'author': responseData['author'] ?? 'Pet App Developer',
+          'category': responseData['category'] ?? 'tool',
+          'manifest': responseData['manifest'] ??
+              {
+                'main': 'lib/main.dart',
+                'platforms': ['android', 'ios', 'web'],
+                'permissions': ['network'],
+              },
+          'metadata': {
+            'source': 'pet_app_v3',
+            'export_timestamp': DateTime.now().toIso8601String(),
+            'original_response': responseData,
+          },
+        };
+      } else if (response.statusCode == 404) {
+        throw Exception('插件 $pluginId 在Pet App V3中不存在');
+      } else {
+        throw Exception('获取插件数据失败: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      // 如果网络请求失败，返回基本的错误信息
+      throw Exception('从Pet App V3获取插件数据失败: $e');
+    }
   }
 
   /// 转换为Ming CLI格式
@@ -761,5 +828,62 @@ class PetAppBridge {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final random = (timestamp % 10000).toString().padLeft(4, '0');
     return 'sync_${timestamp}_$random';
+  }
+
+  /// 获取Pet App V3同步配置
+  Future<Map<String, dynamic>?> _getSyncConfiguration() async {
+    try {
+      // 尝试从环境变量读取配置
+      final baseUrl = Platform.environment['PET_APP_V3_BASE_URL'];
+      final apiKey = Platform.environment['PET_APP_V3_API_KEY'];
+
+      if (baseUrl != null && apiKey != null) {
+        return {
+          'baseUrl': baseUrl,
+          'apiKey': apiKey,
+          'timeout': 30000,
+          'retryCount': 3,
+        };
+      }
+
+      // 尝试从配置文件读取
+      final configFile = File('pet_app_sync.json');
+      if (await configFile.exists()) {
+        final configContent = await configFile.readAsString();
+        final config = jsonDecode(configContent) as Map<String, dynamic>;
+
+        if (config['baseUrl'] != null && config['apiKey'] != null) {
+          return config;
+        }
+      }
+
+      // 使用默认配置（开发环境）
+      return {
+        'baseUrl': 'http://localhost:8080',
+        'apiKey': 'dev_api_key',
+        'timeout': 30000,
+        'retryCount': 3,
+      };
+    } catch (e) {
+      // 配置读取失败
+      return null;
+    }
+  }
+
+  /// 验证同步配置
+  Future<bool> _validateSyncConfiguration(Map<String, dynamic> config) async {
+    try {
+      final healthUrl = '${config['baseUrl']}/api/health';
+      final response = await http.get(
+        Uri.parse(healthUrl),
+        headers: {
+          'Authorization': 'Bearer ${config['apiKey']}',
+        },
+      ).timeout(Duration(milliseconds: config['timeout'] as int));
+
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 }

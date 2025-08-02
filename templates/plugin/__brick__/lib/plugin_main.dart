@@ -44,5 +44,8 @@ Change History:
 
 library {{plugin_name}};
 
+// 导出Pet App V3插件系统
+export 'package:plugin_system/plugin_system.dart';
+
 // 导出核心插件类
 export 'src/plugin_core.dart';
